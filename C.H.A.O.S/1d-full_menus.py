@@ -323,7 +323,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
     print(base)
 
     run = 1
-    FPS = 30
+    FPS = 90
     rule = 1
     step = 0
     clock = pygame.time.Clock()
@@ -335,8 +335,6 @@ def Chaos_Window(base, pixel_res, cell_vel):
     # journal = pickle.load(infile)
     # infile.close
 
-    print("journal type")
-    print(type(journal))
 
     r_c = 0
     haptic = 0
@@ -375,8 +373,8 @@ def Chaos_Window(base, pixel_res, cell_vel):
         WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
         WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
 
-        WIN.blit(step_label_b, (WIDTH - step_label_b.get_width() - 10, 10))
-        WIN.blit(rand_count_l, (WIDTH - step_label_b.get_width() - 39, 50))
+        WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
+        WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 30))
 
 
 
@@ -892,7 +890,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
                         cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_10')
                         cells[r].append(cell)
 
-    def input(letter, base):
+    def input(letter, base, page):
 
         bv = base ** view
 
@@ -933,6 +931,13 @@ def Chaos_Window(base, pixel_res, cell_vel):
             i_rule[place] = 0
             d_rule[list(d_rule.keys())[place]] = 0
 
+        if rule not in journal:
+            journal[rule] = []
+            journal[rule].append(page)
+
+        else:
+            journal[rule].append(page)
+
 
     last_step = 0
 
@@ -963,7 +968,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
                 color, rc, row = Color_cells(color, d_rule, cell_row_width, base, row)
 
-                row_l = np.ndarray.tolist(row)
+                row_l = np.ndarray.tolist(row)[0]
                 line = (row_l, rc)
 
                 if line in page:
@@ -1033,7 +1038,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
                     # print(d_rule)
 
                 else:
-                    page.append((row_l, rc))
+                    page.append(line)
 
                 step += 1
 
@@ -1049,9 +1054,6 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
         #keyboard inputs
 
-        delay = 1
-        keys = pygame.key.get_pressed()
-
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -1063,85 +1065,112 @@ def Chaos_Window(base, pixel_res, cell_vel):
                     run = 2
 
                 if event.key == pygame.K_q:
-                    input('q', base)
+                    input('q', base, page)
+                    page = []
 
                 if event.key == pygame.K_w:
-                    input('w', base)
+                    input('w', base, page)
+                    page = []
 
                 if event.key == pygame.K_e:
-                    input('e', base)
+                    input('e', base, page)
+                    page = []
 
                 if event.key == pygame.K_r:
-                    input('r', base)
+                    input('r', base, page)
+                    page = []
 
                 if event.key == pygame.K_t:
-                    input('t', base)
+                    input('t', base, page)
+                    page = []
 
                 if event.key == pygame.K_y:
-                    input('y', base)
+                    input('y', base, page)
+                    page = []
 
                 if event.key == pygame.K_u:
-                    input('u', base)
+                    input('u', base, page)
+                    page = []
 
                 if event.key == pygame.K_i:
-                    input('i', base)
+                    input('i', base, page)
+                    page = []
 
                 if event.key == pygame.K_o:
-                    input('o', base)
+                    input('o', base, page)
+                    page = []
 
                 if event.key == pygame.K_p:
-                    input('p', base)
+                    input('p', base, page)
+                    page = []
 
                 if event.key == pygame.K_a:
-                    input('a', base)
+                    input('a', base, page)
+                    page = []
 
                 if event.key == pygame.K_s:
-                    input('s', base)
+                    input('s', base, page)
+                    page = []
 
                 if event.key == pygame.K_d:
-                    input('d', base)
+                    input('d', base, page)
+                    page = []
 
                 if event.key == pygame.K_f:
-                    input('f', base)
+                    input('f', base, page)
+                    page = []
 
                 if event.key == pygame.K_g:
-                    input('g', base)
+                    input('g', base, page)
+                    page = []
 
                 if event.key == pygame.K_h:
-                    input('h', base)
+                    input('h', base, page)
+                    page = []
 
                 if event.key == pygame.K_j:
-                    input('j', base)
+                    input('j', base, page)
+                    page = []
 
                 if event.key == pygame.K_k:
-                    input('k', base)
+                    input('k', base, page)
+                    page = []
 
                 if event.key == pygame.K_l:
-                    input('l', base)
+                    input('l', base, page)
+                    page = []
 
                 if event.key == pygame.K_z:
-                    input('z', base)
+                    input('z', base, page)
+                    page = []
 
                 if event.key == pygame.K_x:
-                    input('x', base)
+                    input('x', base, page)
+                    page = []
 
                 if event.key == pygame.K_c:
-                    input('c', base)
+                    input('c', base, page)
+                    page = []
 
                 if event.key == pygame.K_v:
-                    input('v', base)
+                    input('v', base, page)
+                    page = []
 
                 if event.key == pygame.K_b:
-                    input('b', base)
+                    input('b', base, page)
+                    page = []
 
                 if event.key == pygame.K_n:
-                    input('n', base)
+                    input('n', base, page)
+                    page = []
 
                 if event.key == pygame.K_m:
-                    input('m', base)
+                    input('m', base, page)
+                    page = []
 
                 if event.key == pygame.K_SPACE:
-                    input(' ', base)
+                    input(' ', base, page)
+                    page = []
 
         for r in range(cell_rows):
             for cell in cells[r][:]:
@@ -1165,7 +1194,7 @@ from pygame.locals import *
 pygame.init()
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
 small_font = pygame.font.SysFont("leelawadeeuisemilight", 24)
-main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
+main_font = pygame.font.SysFont("leelawadeeuisemilight", 12)
 TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
 
@@ -1365,4 +1394,4 @@ def menu():
 
 # menu()
 
-Chaos_Window(2, 2, 6)
+Chaos_Window(4, 2, 6)
