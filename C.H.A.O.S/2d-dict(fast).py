@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 import pickle
 import sys
+import random
 
 pygame.font.init()
 
@@ -275,7 +276,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 603, 603
+WIDTH, HEIGHT = 123, 123
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -290,7 +291,7 @@ click = False
 
 def Chaos_Window(base, pixel_res):
 
-    run, FPS, rule, clock, journal, press, view = 1, 60, 3846328716423549782364872345763829470, pygame.time.Clock(), dict(), dict(), 4
+    run, FPS, rule, clock, journal, press, view = 1, 15, 541, pygame.time.Clock(), dict(), dict(), 4
     cell_row_width, cell_rows = int(WIDTH / pixel_res), int(HEIGHT / pixel_res)
     d_rule, i_rule = rule_gen_2(rule, base)
     canvas = np.zeros((cell_rows, cell_row_width), dtype='int8')
@@ -305,6 +306,10 @@ def Chaos_Window(base, pixel_res):
     viewer_2(full_fence, cell_rows, views)
 
     cells = dict()
+
+    journal = dict()
+    page = []
+    rand_count = 0
 
     color_1 = (0, 0, 0)
     color_2 = (200, 200, 0)
@@ -400,7 +405,12 @@ def Chaos_Window(base, pixel_res):
         WIN.fill((0, 0, 0))
         clock.tick(FPS)
 
+        cnvs = []
+
         for f in full_fence:
+
+            cnvs.append(views[f][1])
+
             step(views, f, d_rule)
 
             cell = cells[f]
@@ -416,6 +426,56 @@ def Chaos_Window(base, pixel_res):
 
             if views[f][1] == 3:
                 pygame.draw.rect(WIN, color_4, cell)
+
+        cnvs = tuple(cnvs)
+
+        if cnvs in page:
+
+            rand_count += 1
+            r_0 = tuple(i_rule)
+            rand = random.randrange(0, base ** view - 1)
+
+            if r_0 in page:
+                journal[r_0].append(cnvs)
+            else:
+                journal[r_0] = []
+                journal[r_0].append(cnvs)
+
+            if base == 2:
+                if i_rule[rand] == 0:
+                    i_rule[rand] = 1
+                    d_rule[list(d_rule.keys())[rand]] = 1
+                elif i_rule[rand] == 1:
+                    i_rule[rand] = 0
+                    d_rule[list(d_rule.keys())[rand]] = 0
+
+            if base == 3:
+                if i_rule[rand] == 0:
+                    i_rule[rand] = 1
+                    d_rule[list(d_rule.keys())[rand]] = 1
+                elif i_rule[rand] == 1:
+                    i_rule[rand] = 2
+                    d_rule[list(d_rule.keys())[rand]] = 2
+                elif i_rule[rand] == 2:
+                    i_rule[rand] = 0
+                    d_rule[list(d_rule.keys())[rand]] = 0
+
+            if base == 4:
+                if i_rule[rand] == 0:
+                    i_rule[rand] = 1
+                    d_rule[list(d_rule.keys())[rand]] = 1
+                elif i_rule[rand] == 1:
+                    i_rule[rand] = 2
+                    d_rule[list(d_rule.keys())[rand]] = 2
+                elif i_rule[rand] == 2:
+                    i_rule[rand] = 3
+                    d_rule[list(d_rule.keys())[rand]] = 3
+                elif i_rule[rand] == 3:
+                    i_rule[rand] = 0
+                    d_rule[list(d_rule.keys())[rand]] = 0
+
+        else:
+            page.append(cnvs)
 
         redraw_window()
         pygame.display.update()
