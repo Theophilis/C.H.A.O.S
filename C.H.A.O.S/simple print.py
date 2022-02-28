@@ -10,13 +10,13 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 701
+length = 100
 #number of times given rule is applied and number of initial rows generated
-width = 701
+width = 101
 #number of cells in a row
-rule = '0031213232200100111023310233113323100011002333123013333110100003'
+rule = '0033200310331332120011303330002233013233212323030123103103222313'
 #number who's x_base transformation gives the rules dictionary its values
-view = 3
+view = 5
 #size of the view window that scans a row for rule application
 base = 4
 #numerical base of the rule set. number of colors each cell can be
@@ -58,6 +58,17 @@ def base_x(n, b):
         return str(q)
     else:
         return base_x(e, b) + str(q)
+
+
+def decimal(n, b):
+
+    value = 0
+
+    for c in n:
+
+        value += int(c) * n.index(c) ** b
+
+    return value
 
 
 def rule_gen(rule, base = 2, width = 0, string = 0):
@@ -137,7 +148,7 @@ def rule_gen(rule, base = 2, width = 0, string = 0):
     return rules, int_rule
 
 
-def viewer(c_a, y, view, v_0):
+def viewer(c_a, y, view, v_0, edge):
 
     # print('view')
     # print(view)
@@ -149,7 +160,7 @@ def viewer(c_a, y, view, v_0):
 
         if y + len(v_0) > len(c_a) - 1:
 
-            v_0.append('0')
+            v_0.append(edge)
 
         else:
 
@@ -159,7 +170,7 @@ def viewer(c_a, y, view, v_0):
 
         if y - len(v_0) < 0:
 
-            v_0.insert(0, '0')
+            v_0.insert(0, edge)
 
         else:
 
@@ -173,15 +184,17 @@ def viewer(c_a, y, view, v_0):
 
     else:
 
-        v_0 = viewer(c_a, y, view, v_0)
+        v_0 = viewer(c_a, y, view, v_0, edge)
 
         return v_0
 
 
-def map(length, width, rule, base, start, direction, path, rc = 0, plot=0):
+def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge='0'):
+
+    r_n = decimal(rule, base)
 
     start_0 = start
-    file = str(width) + '-' + str(rule) + '-' + str(base) + '-' + "X" + str(length) + '-' + 'kmyc'
+    file = str(width) + 'x' + str(length) + '-' + str(base) + '-' + 'colors' + '-' + str(r_n)
     path_name = os.path.join(path, file)
 
     cell_patterns = dict()
@@ -285,7 +298,7 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0):
             # print("y")
             # print(y)
 
-            v_0 = tuple(viewer(c_a, y, view, v_0))
+            v_0 = tuple(viewer(c_a, y, view, v_0, edge))
 
             # print("v_0")
             # print(v_0)
@@ -325,10 +338,10 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0):
             plt.margins(0, None)
 
             if base == 4:
-                cMap = c.ListedColormap(['k', 'm', 'y', 'c'], 'quad', 4)
+                cMap = c.ListedColormap(['k', (0, .5, 1), (0, 1, .5), (1, 0, .5)], 'quad', 4)
 
             if base == 3:
-                cMap = c.ListedColormap(['m', 'y', 'c'], 'tri', 3)
+                cMap = c.ListedColormap(['k', 'm', 'c'], 'tri', 3)
 
             if base == 2:
                 cMap = c.ListedColormap(['w', 'k'])
@@ -343,7 +356,7 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0):
             # plt.grid(visible=True, axis='both', )
 
             # c_plt.show()
-            plt.savefig(path_name, dpi=1500)
+            plt.savefig(path_name, dpi=2000)
             plt.close()
 
         if rc == 1 or rc == 2:
@@ -433,7 +446,9 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0):
 
 path = 'scarfs'
 
-infile = open("journals\journal_0", "rb")
+# map(length, width, rule, base, start, direction, path, 0, 1)
+
+infile = open("journals\journal_6", "rb")
 journal = pickle.load(infile)
 infile.close
 
@@ -442,8 +457,9 @@ journal = dict(sorted(journal.items(), key=lambda x:len(x[1][0]), reverse=True))
 
 print(len(list(journal.keys())))
 
-for k in list(journal.keys())[:30]:
+for k in list(journal.keys())[660:1000]:
     print('')
+    print(list(journal.keys()).index(k))
     print(k[0])
     jk = journal[k]
     print(len(jk[0]))
