@@ -9,7 +9,7 @@ plt.ioff()
 
 rule = 1001
 base = 2
-size = 3
+size = 1001
 view = 4
 start = (int(size/2), int(size/2))
 zero = (0, 0)
@@ -427,30 +427,30 @@ def viewer_2(fence):
 path = '2d-plot/' + str(rule) + '-' + str(size)
 canvasa = map(size, rule, path, 0, 1)
 
-fence, canvas_f = fence_map(start, 1)
-
-print(canvas_f)
-
-d_rule, i_rule = rule_gen_2(rule)
-
-canvas = np.zeros((size, size), dtype='int8')
-canvas[start] = 1
-
-views = dict()
-views[0] = 0
-
-print('')
-
-views = viewer_2(fence)
-
-
-
-for f in fence:
-    step(views, f)
-    canvas[f] = views[f][1]
+# fence, canvas_f = fence_map(start, 1)
+#
+# print(canvas_f)
+#
+# d_rule, i_rule = rule_gen_2(rule)
+#
+# canvas = np.zeros((size, size), dtype='int8')
+# canvas[start] = 1
+#
+# views = dict()
+# views[0] = 0
+#
+# print('')
+#
+# views = viewer_2(fence)
 #
 #
 #
+# for f in fence:
+#     step(views, f)
+#     canvas[f] = views[f][1]
+# #
+# #
+# #
 
 
 

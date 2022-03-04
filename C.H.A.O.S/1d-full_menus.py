@@ -24,7 +24,7 @@ width = length * 2 + 1
 #number of cells in a row
 rule = 90
 #number who's x_base transformation gives the rules dictionary its values
-view = 5
+view = 3
 #size of the view window that scans a row for rule application
 base = 2
 #numerical base of the rule set. number of colors each cell can be
@@ -203,8 +203,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-# WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 150, 150
+WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
+# WIDTH, HEIGHT = 150, 150
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -364,17 +364,17 @@ def Chaos_Window(base, pixel_res, cell_vel):
             for cell in cells[r]:
                 cell.draw(WIN)
 
-        # rule_label_0_b = main_font.render(f"RUL3: {i_rule[0:int((base**view)/2)]}", 1, (255, 255, 255))
-        # rule_label_1_b = main_font.render(f"          {i_rule[int((base**view)/2):int((base**view))]}", 1, (255, 255, 255))
+        rule_label_0_b = main_font.render(f"RUL3: {i_rule[0:int((base**view)/2)]}", 1, (255, 255, 255))
+        rule_label_1_b = main_font.render(f"          {i_rule[int((base**view)/2):int((base**view))]}", 1, (255, 255, 255))
 
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
         rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
 
-        # WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
-        # WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
+        WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
+        WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
 
         WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
-        WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 30))
+        WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
 
 
 
@@ -1122,7 +1122,7 @@ from pygame.locals import *
 pygame.init()
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
 small_font = pygame.font.SysFont("leelawadeeuisemilight", 24)
-main_font = pygame.font.SysFont("leelawadeeuisemilight", 12)
+main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
 TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
 
@@ -1320,7 +1320,7 @@ def menu():
         pygame.display.update()
         mainClock.tick(60)
 
-# menu()
+menu()
 
-Chaos_Window(4, 10, 48)
+# Chaos_Window(4, 10, 48)
 #test update

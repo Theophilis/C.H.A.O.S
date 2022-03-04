@@ -178,10 +178,10 @@ def fence_map(size, start, order=0):
         canvas_f = np.zeros((size, size), dtype='int8')
         full_fence.insert(0, start)
 
-        for f in full_fence:
-            canvas_f[f] = full_fence.index(f)
+        # for f in full_fence:
+        #     canvas_f[f] = full_fence.index(f)
 
-        return full_fence, canvas_f
+        return full_fence
 
     elif order == 1:
         canvas_t = np.zeros((size, size), dtype='int8')
@@ -192,10 +192,10 @@ def fence_map(size, start, order=0):
             for y in range(size):
                 t_fence.append((x, y))
 
-        for t in t_fence:
-            canvas_t[t] = t_fence.index(t)
+        # for t in t_fence:
+        #     canvas_t[t] = t_fence.index(t)
 
-        return t_fence, canvas_t
+        return t_fence
 
     elif order == 2:
         canvas = np.zeros((size, size), dtype='int8')
@@ -208,10 +208,10 @@ def fence_map(size, start, order=0):
 
         fence = sorted(fence, key=lambda x: abs(x[0] * x[1]))
 
-        for f in fence:
-            canvas[f] = fence.index(f)
+        # for f in fence:
+        #     canvas[f] = fence.index(f)
 
-        return fence, canvas
+        return fence
 
 
 def step(views, f, d_rule):
@@ -276,7 +276,8 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 123, 123
+size = 5
+WIDTH, HEIGHT = (size * 30 + 3) * 2, (size * 30 + 3) * 2
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -285,19 +286,20 @@ letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7,
 
 pygame.display.set_caption("C.H.A.O.S")
 
-
 click = False
 
 
 def Chaos_Window(base, pixel_res):
 
-    run, FPS, rule, clock, journal, press, view = 1, 15, 541, pygame.time.Clock(), dict(), dict(), 4
+    run, FPS, rule, clock, journal, press, view = 1, 3840, 36493, pygame.time.Clock(), dict(), dict(), 4
     cell_row_width, cell_rows = int(WIDTH / pixel_res), int(HEIGHT / pixel_res)
     d_rule, i_rule = rule_gen_2(rule, base)
     canvas = np.zeros((cell_rows, cell_row_width), dtype='int8')
     start = (int(cell_rows / 2), int(cell_row_width / 2))
 
-    full_fence, canvas_f = fence_map(cell_row_width, start)
+    infile = open('2d-fences/full-fence_spiral_' + str(int(WIDTH/2)), 'rb')
+    full_fence = pickle.load(infile)
+    infile.close()
 
     canvas[start] = 1
     views = dict()
@@ -307,14 +309,14 @@ def Chaos_Window(base, pixel_res):
 
     cells = dict()
 
-    journal = dict()
     page = []
     rand_count = 0
+    steps = 0
 
     color_1 = (0, 0, 0)
-    color_2 = (200, 200, 0)
-    color_3 = (200, 0, 200)
-    color_4 = (0, 200, 200)
+    color_2 = (255, 0, 127)
+    color_3 = (0, 255, 127)
+    color_4 = (127, 0, 255)
 
     print(" ")
     print("d_rule")
@@ -325,18 +327,18 @@ def Chaos_Window(base, pixel_res):
 
     def redraw_window():
 
-        rule_label_0_b = text_font.render(f"RUL3: {i_rule[0:int((base ** view) / 2)]}", 1, (255, 255, 255))
+        rule_label_0_b = text_font.render(f"RUL3:{i_rule[0:int((base ** view) / 2)]}", 1, (255, 255, 255))
         rule_label_1_b = text_font.render(f"          {i_rule[int((base ** view) / 2):int((base ** view))]}", 1,
                                           (255, 255, 255))
-        #
-        # step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
-        # rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
-        #
-        WIN.blit(rule_label_0_b, (10, HEIGHT - 40))
-        WIN.blit(rule_label_1_b, (7, HEIGHT - 25))
-        #
-        # WIN.blit(step_label_b, (WIDTH - step_label_b.get_width() - 10, 10))
-        # WIN.blit(rand_count_l, (WIDTH - step_label_b.get_width() - 39, 50))
+
+        step_label_b = text_font.render(f"5T3P: {steps}", 1, (255, 255, 255))
+        rand_count_l = text_font.render(f"{rand_count}", 1, (255, 255, 255))
+
+        # WIN.blit(rule_label_0_b, (10, HEIGHT - 40))
+        # WIN.blit(rule_label_1_b, (7, HEIGHT - 25))
+
+        # WIN.blit(step_label_b, (0, 0))
+        WIN.blit(rand_count_l, (WIDTH, 0))
 
         pygame.display.update()
 
@@ -381,6 +383,17 @@ def Chaos_Window(base, pixel_res):
             i_rule[place] = 0
             d_rule[list(d_rule.keys())[place]] = 0
 
+        r_0 = tuple(i_rule)
+
+        if r_0 in page:
+
+            journal[r_0].append(page)
+
+        else:
+
+            journal[r_0] = []
+            journal[r_0].append(page)
+
     for f in full_fence:
 
         cell = pygame.Rect(f[0] * pixel_res, f[1] * pixel_res, pixel_res, pixel_res)
@@ -402,6 +415,7 @@ def Chaos_Window(base, pixel_res):
 
     while run == 1:
 
+        steps += 1
         WIN.fill((0, 0, 0))
         clock.tick(FPS)
 
@@ -436,10 +450,15 @@ def Chaos_Window(base, pixel_res):
             rand = random.randrange(0, base ** view - 1)
 
             if r_0 in page:
-                journal[r_0].append(cnvs)
+
+                journal[r_0].append(page)
+
             else:
+
                 journal[r_0] = []
-                journal[r_0].append(cnvs)
+                journal[r_0].append(page)
+
+            page = []
 
             if base == 2:
                 if i_rule[rand] == 0:
@@ -492,84 +511,118 @@ def Chaos_Window(base, pixel_res):
 
                 if event.key == pygame.K_q:
                     input('q', base)
+                    page = []
 
                 if event.key == pygame.K_w:
                     input('w', base)
+                    page = []
 
                 if event.key == pygame.K_e:
                     input('e', base)
+                    page = []
 
                 if event.key == pygame.K_r:
                     input('r', base)
+                    page = []
 
                 if event.key == pygame.K_t:
                     input('t', base)
+                    page = []
 
                 if event.key == pygame.K_y:
                     input('y', base)
+                    page = []
 
                 if event.key == pygame.K_u:
                     input('u', base)
+                    page = []
 
                 if event.key == pygame.K_i:
                     input('i', base)
+                    page = []
 
                 if event.key == pygame.K_o:
                     input('o', base)
+                    page = []
 
                 if event.key == pygame.K_p:
                     input('p', base)
+                    page = []
 
                 if event.key == pygame.K_a:
                     input('a', base)
+                    page = []
 
                 if event.key == pygame.K_s:
                     input('s', base)
+                    page = []
 
                 if event.key == pygame.K_d:
                     input('d', base)
+                    page = []
 
                 if event.key == pygame.K_f:
                     input('f', base)
+                    page = []
 
                 if event.key == pygame.K_g:
                     input('g', base)
+                    page = []
 
                 if event.key == pygame.K_h:
                     input('h', base)
+                    page = []
 
                 if event.key == pygame.K_j:
                     input('j', base)
+                    page = []
 
                 if event.key == pygame.K_k:
                     input('k', base)
+                    page = []
 
                 if event.key == pygame.K_l:
                     input('l', base)
+                    page = []
 
                 if event.key == pygame.K_z:
                     input('z', base)
+                    page = []
 
                 if event.key == pygame.K_x:
                     input('x', base)
+                    page = []
 
                 if event.key == pygame.K_c:
                     input('c', base)
+                    page = []
 
                 if event.key == pygame.K_v:
                     input('v', base)
+                    page = []
 
                 if event.key == pygame.K_b:
                     input('b', base)
+                    page = []
 
                 if event.key == pygame.K_n:
                     input('n', base)
+                    page = []
 
                 if event.key == pygame.K_m:
                     input('m', base)
+                    page = []
 
                 if event.key == pygame.K_SPACE:
                     input(' ', base)
+                    page = []
+
+    j_num = len(os.listdir('2d-journals'))
+
+    filename = '2d-journals/journal_' + str(j_num)
+    outfile = open(filename, 'wb')
+    pickle.dump(journal, outfile)
+    outfile.close
 
 
 # menus
@@ -781,4 +834,4 @@ def menu():
 
 # menu()
 
-Chaos_Window(4, 2)
+Chaos_Window(2, 2)
