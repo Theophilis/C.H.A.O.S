@@ -97,9 +97,9 @@ def fence_map(start, order=0):
         return fence, canvas
 
 
-for x in range(2, 100):
+for x in range(10):
 
-    size = x * 1000 + 1
+    size = x * 100 + 1
 
     print("")
     print(size)

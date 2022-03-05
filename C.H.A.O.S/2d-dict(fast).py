@@ -276,7 +276,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-size = 5
+size = 3
 WIDTH, HEIGHT = (size * 30 + 3) * 2, (size * 30 + 3) * 2
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
@@ -291,7 +291,7 @@ click = False
 
 def Chaos_Window(base, pixel_res):
 
-    run, FPS, rule, clock, journal, press, view = 1, 3840, 36493, pygame.time.Clock(), dict(), dict(), 4
+    run, FPS, rule, clock, journal, press, view = 1, 3840, 298364658762384345763829470, pygame.time.Clock(), dict(), dict(), 4
     cell_row_width, cell_rows = int(WIDTH / pixel_res), int(HEIGHT / pixel_res)
     d_rule, i_rule = rule_gen_2(rule, base)
     canvas = np.zeros((cell_rows, cell_row_width), dtype='int8')
@@ -314,9 +314,9 @@ def Chaos_Window(base, pixel_res):
     steps = 0
 
     color_1 = (0, 0, 0)
-    color_2 = (255, 0, 127)
-    color_3 = (0, 255, 127)
-    color_4 = (127, 0, 255)
+    color_2 = (0, 255, 255)
+    color_3 = (255, 0, 255)
+    color_4 = (255, 255, 0)
 
     print(" ")
     print("d_rule")
@@ -834,4 +834,4 @@ def menu():
 
 # menu()
 
-Chaos_Window(2, 2)
+Chaos_Window(4, 2)

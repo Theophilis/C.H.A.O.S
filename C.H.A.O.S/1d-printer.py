@@ -10,17 +10,17 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 100
+length = 20
 #number of times given rule is applied and number of initial rows generated
-width = 101
+width = 8
 #number of cells in a row
 rule = '0033200310331332120011303330002233013233212323030123103103222313'
 #number who's x_base transformation gives the rules dictionary its values
-view = 5
+view = 3
 #size of the view window that scans a row for rule application
-base = 4
+base = 2
 #numerical base of the rule set. number of colors each cell can be
-start = int(width/2)
+start = -1
 #position for a row 0 cell value 1
 direction = 0
 #if ^ = 0 view scans from left to right: else view scans right to left
@@ -191,7 +191,11 @@ def viewer(c_a, y, view, v_0, edge):
 
 def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge='0'):
 
-    r_n = decimal(rule, base)
+    if type(rule) != int:
+        r_n = decimal(rule, base)
+
+    else:
+        r_n = rule
 
     start_0 = start
     file = str(width) + 'x' + str(length) + '-' + str(base) + '-' + 'colors' + '-' + str(r_n)
@@ -202,7 +206,7 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
 
     # print("rules")
 
-    rules = rule_gen(rule, base, string=1)
+    rules = rule_gen(rule, base, string=0)
     int_rule = rules[1]
     rules = rules[0]
 
@@ -444,23 +448,28 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
     return cell_patterns, rule_patterns, rule_call, rc_val, rc_net
 
 
-path = 'scarfs'
+path = 'folds'
 
-# map(length, width, rule, base, start, direction, path, 0, 1)
-
-infile = open("journals\journal_6", "rb")
-journal = pickle.load(infile)
-infile.close
+map(length, width, 145, base, start, direction, path, 0, 1)
 
 
-journal = dict(sorted(journal.items(), key=lambda x:len(x[1][0]), reverse=True))
+journaling = 0
 
-print(len(list(journal.keys())))
+if journaling != 0:
 
-for k in list(journal.keys())[660:1000]:
-    print('')
-    print(list(journal.keys()).index(k))
-    print(k[0])
-    jk = journal[k]
-    print(len(jk[0]))
-    map(length, width, k[0], base, start, direction, path, 0, 1)
+    infile = open("journals\journal_6", "rb")
+    journal = pickle.load(infile)
+    infile.close
+
+
+    journal = dict(sorted(journal.items(), key=lambda x:len(x[1][0]), reverse=True))
+
+    print(len(list(journal.keys())))
+
+    for k in list(journal.keys())[660:1000]:
+        print('')
+        print(list(journal.keys()).index(k))
+        print(k[0])
+        jk = journal[k]
+        print(len(jk[0]))
+        map(length, width, k[0], base, start, direction, path, 0, 1)

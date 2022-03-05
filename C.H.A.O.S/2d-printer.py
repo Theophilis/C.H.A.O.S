@@ -9,7 +9,7 @@ plt.ioff()
 
 rule = 6049069618215839565782842634507394848996362563177470174153113185201852971153494239366465579843681897245316220263433329934471947410885434974601214619829353
 base = 4
-size = 10001
+size = 20001
 view = 4
 start = (int(size/2), int(size/2))
 zero = (0, 0)
@@ -392,7 +392,7 @@ def map(size, rule, path, full_fence, canvas = 0, steps = 0, plot=0):
 #
 
 journaling = 0
-lvling = 1
+lvling = 0
 path = 'scarfs/quaternary'
 
 if journaling != 0:
