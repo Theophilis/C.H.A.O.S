@@ -298,13 +298,16 @@ def rolling_river(dot, vector, validity, polar):
     valid = carve(dot, vector, base ** base ** view, 2, 10)
 
     # print(valid)
+    if len(valid) == 0:
+        validity.append([(dot, vector)])
 
-    validity.append(valid)
+    else:
+        validity.append(valid)
 
     for v in valid:
         polar.append(v)
 
-    validity = sorted(validity, key=lambda x:len(x))
+    validity = sorted(validity, key=lambda x:len(x) + len(x[0]))
 
     return validity, polar
 
@@ -313,17 +316,19 @@ def rolling_river(dot, vector, validity, polar):
 
 validity = []
 polar = []
+domain = 32
 
-for x in range(10):
-    print(x)
-    validity, paths = rolling_river(x, x + 1, validity, polar)
+for x in range(domain):
+    for y in range(x + 1, domain):
+        print((x, y))
+        validity, paths = rolling_river(x, y, validity, polar)
 
 print("")
 print("rolling river")
 print(" ")
 print('validity')
 
-for v in validity:
+for v in validity[:50]:
     print(v)
 
 print(" ")
