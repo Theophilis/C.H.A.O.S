@@ -21,6 +21,13 @@ match = 0
 start_0 = 1
 end_0 = 100
 
+#####things to do#####
+
+#expand the row lengths for the cellular automata
+
+#experiment with different view lengths
+
+#experiments with different bases
 
 def base_x(n, b):
     e = n//b
@@ -198,18 +205,18 @@ def fold(row, goal, d_rule, v_rule, step_size, leash):
         duration += 1
 
 
-def explore(start_0, end_0, results, base, step_size):
+def carve(start_0, end_0, results, base, step_size):
 
     leash = 0
-    valid = dict()
+    valid = []
 
     start = rule_gen(start_0, base)[1]
     goal = rule_gen(end_0, base)[1]
 
-    print("start")
-    print(start)
-    print("goal")
-    print(goal)
+    # print("start")
+    # print(start)
+    # print("goal")
+    # print(goal)
 
     while len(valid) < results:
 
@@ -250,7 +257,8 @@ def explore(start_0, end_0, results, base, step_size):
                 if leash != 0:
                     span = span + leash * (step_size + 1)
 
-                valid[x] = span
+                valid.append((start_0, end_0, x, span))
+
 
         if leash > 5:
             break
@@ -258,13 +266,100 @@ def explore(start_0, end_0, results, base, step_size):
         leash += 1
 
 
-    valid = dict(sorted(valid.items(), key=lambda x:x[1]))
+    valid = sorted(valid, key=lambda x:x[0])
 
     return valid
 
+validity = dict()
 
-valid = explore(1, 100, 10, 2, 11)
+# for x in range(base ** base ** view):
+#
+#     valid = explore(1, x, 10, 2, 110)
+#
+#     validity[x] = valid
+#
+#     # print(" ")
+#     # print(valid)
+#     # print(len(valid))
+#
+# validity = dict(sorted(validity.items(), key=lambda x:len(x[1]), reverse=True))
+#
+# print("")
+# print("validity")
+# print(list(validity.keys()))
+
+test = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+print("list to run")
+print(test)
+
+def rolling_river(dot, vector, validity, polar):
+
+    valid = carve(dot, vector, base ** base ** view, 2, 10)
+
+    # print(valid)
+
+    validity.append(valid)
+
+    for v in valid:
+        polar.append(v)
+
+    validity = sorted(validity, key=lambda x:len(x))
+
+    return validity, polar
+
+    # print("river")
+    # print(river)
+
+validity = []
+polar = []
+
+for x in range(10):
+    print(x)
+    validity, paths = rolling_river(x, x + 1, validity, polar)
+
+print("")
+print("rolling river")
+print(" ")
+print('validity')
+
+for v in validity:
+    print(v)
 
 print(" ")
-print(valid)
-print(len(valid))
+print("polar")
+print(len(polar))
+
+polarity = dict()
+
+for p in polar:
+
+    cell = (p[2], p[3])
+
+    if cell not in polarity:
+        polarity[cell] = 1
+    else:
+        polarity[cell] += 1
+
+polarity = dict(sorted(polarity.items(), key=lambda x:x[1], reverse=True))
+
+print(" ")
+print("polarity")
+print(len(polarity))
+
+for p in list(polarity.items())[:10]:
+    print(p)
+
+# print(" ")
+# print('stream')
+# # print(stream)
+#
+# for s in stream.items():
+#     print(s)
+#
+# print("")
+# print('river')
+# # print(river)
+#
+# for r in river:
+#     print(r)
