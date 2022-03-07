@@ -7,6 +7,8 @@ import random
 import os
 import pickle
 import sys
+import matplotlib.pyplot as plt
+from matplotlib import colors
 
 rule = 90
 #number who's x_base transformation gives the rules dictionary its values
@@ -28,6 +30,9 @@ end_0 = 100
 #experiment with different view lengths
 
 #experiments with different bases
+
+
+#cellular automata generation functions
 
 def base_x(n, b):
     e = n//b
@@ -159,20 +164,19 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
     return row_1, rc
 
-duration = 0
-rand_count = 0
 
-journal = dict()
-valid = dict()
-page = []
+#folding functions
 
-def fold(row, goal, d_rule, v_rule, step_size, leash):
+def fold(journal, row, goal, d_rule, v_rule, step_size, leash):
 
     page = []
     duration = 0
     match = 0
 
     page.append(row)
+
+    if leash not in journal:
+        journal[leash] = dict()
 
     while match == 0:
 
@@ -194,10 +198,6 @@ def fold(row, goal, d_rule, v_rule, step_size, leash):
 
         if duration == step_size:
 
-            if leash not in journal:
-
-                journal[leash] = dict()
-
             journal[leash][v_rule] = page
 
             return -1
@@ -205,7 +205,7 @@ def fold(row, goal, d_rule, v_rule, step_size, leash):
         duration += 1
 
 
-def carve(start_0, end_0, results, base, step_size):
+def carve(journal, start_0, end_0, results, base, step_size):
 
     leash = 0
     valid = []
@@ -233,9 +233,12 @@ def carve(start_0, end_0, results, base, step_size):
 
             else:
 
-                if len(journal) == 0:
+                # print("journal[leash - 1]")
+                # print(journal[leash - 1])
 
-                    valid = dict(sorted(valid.items(), key=lambda x: x[1]))
+                if len(journal[leash - 1]) == 0:
+
+                    valid = sorted(valid, key=lambda x: x[1])
 
                     return valid
 
@@ -250,18 +253,14 @@ def carve(start_0, end_0, results, base, step_size):
 
             d_rule, i_rule = rule_gen(x, base)
 
-            span = fold(row, goal, d_rule, x, step_size, leash)
+            span = fold(journal, row, goal, d_rule, x, step_size, leash)
 
             if span != -1:
 
                 if leash != 0:
                     span = span + leash * (step_size + 1)
 
-                valid.append((start_0, end_0, x, span))
-
-
-        if leash > 5:
-            break
+                valid.append((start_0, end_0, x, span + 1))
 
         leash += 1
 
@@ -270,32 +269,10 @@ def carve(start_0, end_0, results, base, step_size):
 
     return valid
 
-validity = dict()
 
-# for x in range(base ** base ** view):
-#
-#     valid = explore(1, x, 10, 2, 110)
-#
-#     validity[x] = valid
-#
-#     # print(" ")
-#     # print(valid)
-#     # print(len(valid))
-#
-# validity = dict(sorted(validity.items(), key=lambda x:len(x[1]), reverse=True))
-#
-# print("")
-# print("validity")
-# print(list(validity.keys()))
+def rolling_river(journal, dot, vector, validity, polar):
 
-test = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-print("list to run")
-print(test)
-
-def rolling_river(dot, vector, validity, polar):
-
-    valid = carve(dot, vector, base ** base ** view, 2, 10)
+    valid = carve(journal, dot, vector, base ** base ** view, 2, base ** base ** view)
 
     # print(valid)
     if len(valid) == 0:
@@ -309,62 +286,320 @@ def rolling_river(dot, vector, validity, polar):
 
     validity = sorted(validity, key=lambda x:len(x) + len(x[0]))
 
-    return validity, polar
+    polar_u = []
+
+    for p in polar:
+
+        if p not in polar_u:
+            polar_u.append(p)
+
+    return validity, polar, polar_u
 
     # print("river")
     # print(river)
 
-validity = []
-polar = []
-domain = 32
 
-for x in range(domain):
-    for y in range(x + 1, domain):
-        print((x, y))
-        validity, paths = rolling_river(x, y, validity, polar)
+def bend(confluence, polar_u, elbows_0, v, v_0, depth, c_d=2):
+
+    # print(" ")
+    # print("currend_depth")
+    # print(c_d)
+
+    elbows_1 = []
+
+    for e in elbows_0:
+
+        for p in polar_u:
+
+            # print("")
+            # print("e")
+            # print(e)
+            # print("p")
+            # print(p)
+
+            if e[-1][1] == p[0] and p[1] != v[0][0]:
+                # print("")
+                # print("e")
+                # print(e)
+                # print("p")
+                # print(p)
+
+                e_p = e[::]
+                e_p.append(p)
+
+                # print("e_p")
+                # print(e_p)
+
+                elbows_1.append(e_p)
+
+            if e[-1][1] == p[0] and p[1] == v[0][1]:
+
+                confluence[v_0][c_d].append((e, p))
+
+    c_d += 1
+
+    if c_d == depth:
+
+        # print(" ")
+        # print('#####done#####')
+
+        return elbows_1
+
+    else:
+
+        # print(" ")
+        # print("#####recur#####")
+
+        print(depth)
+
+        bend(confluence, elbows_1, v, depth, c_d)
+
+
+def converge(validity, confluence, depth, max_distance, polar_u):
+
+    for v in validity:
+
+        # print(validity.index(v))
+        # print(len(validity))
+
+        elbows = []
+
+        v_0 = (v[0][0], v[0][1])
+
+        if v_0 not in confluence:
+
+            confluence[v_0] = dict()
+
+            for r in range(depth):
+                confluence[v_0][r] = []
+
+        if len(v[0]) == 2:
+
+            # print("dry")
+            # print(v)
+
+            for p in polar_u:
+
+                if v[0][0] == p[0] and p[1] != v[0][0]:
+                    p_list = [p]
+
+                    elbows.append(p_list)
+
+            if len(v[0]) == 2:
+
+                if len(elbows) > 0:
+                    # print("bend")
+                    # print(v)
+                    # print(r)
+                    # print(depth)
+                    # print(elbows)
+
+                    bend(confluence, polar_u, elbows, v, v_0, depth)
+
+                    elbows = []
+
+            # print("elbows")
+
+        if len(v[0]) == 4 and v[0][3] > max_distance:
+
+            # print("flooding")
+            # print(v)
+
+            for p in polar_u:
+
+                if v[0][0] == p[0] and p[1] != v[0][0]:
+                    p_list = [p]
+
+                    elbows.append(p_list)
+
+        if len(v[0]) == 4:
+
+            if len(elbows) > 0:
+                # print("bend")
+                # print(v)
+                # print(r)
+                # print(depth)
+                # print(elbows)
+
+                bend(confluence, polar_u, elbows, v, v_0, depth)
+
+        confluence[v_0][1] = v
+
+
+def flow(input, depth, max_distance, w_s = 0):
+
+    journal = dict()
+    confluence = dict()
+    polarity = dict()
+
+    validity = []
+    polar = []
+
+    # print("")
+
+    for z in range(len(input) - 1):
+
+        x = input[z]
+        y = input[z + 1]
+
+        # print((x, y))
+
+        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar)
+
+    converge(validity, confluence, depth, max_distance, polar_u)
+
+    # print("")
+    # print("confluence")
+    #
+    # for c in list(confluence.keys())[:10]:
+    #
+    #     print(" ")
+    #     print("c_r")
+    #
+    #     for r in range(1, depth):
+    #
+    #         if len(confluence[c][r]) > 0:
+    #
+    #             confluence[c][r] = sorted(confluence[c][r], key=lambda x:x[3])
+    #
+    #             print(c)
+    #             print(confluence[c][r][:5])
+
+
+    for p in polar:
+
+        cell = (p[2], p[3])
+
+        if cell not in polarity:
+
+            polarity[cell] = 1
+
+        else:
+
+            polarity[cell] += 1
+
+    polarity = dict(sorted(polarity.items(), key=lambda x:x[1], reverse=True))
+
+    # print(" ")
+    # print("polarity")
+    # print(len(polarity))
+    #
+    # for p in list(polarity.items())[:10]:
+    #     print(p)
+
+    return confluence, polarity
+
+
+depth = 3
+max_distance = 10
+
+message = 'hello edward'
+message_i = [ord(l) - 96 for l in message]
+message_i[5] = 255
 
 print("")
-print("rolling river")
+print(message_i)
+
+confluence, polarity = flow(message_i, depth, max_distance)
+
+sum = 0
+basin = []
+
+for c in confluence:
+
+    basin.append(confluence[c][1][0])
+    sum += confluence[c][1][0][3]
+
+
+basin_o = []
+for m in range(len(message_i) - 1):
+
+    x = message_i[m]
+    y = message_i[m + 1]
+
+    for b in basin:
+
+        if b[0] == x and b[1] == y:
+
+            basin_o.append(b)
+
+
 print(" ")
-print('validity')
+print("sum")
+print(sum)
 
-for v in validity[:50]:
-    print(v)
+print('basin')
+print(basin_o)
+print(" ")
+
+canvas = []
+
+for b in basin_o:
+
+    print(basin_o.index(b))
+    print(b)
+
+    d_rule, i_rule = rule_gen(b[2], base)
+    row = rule_gen(b[0], base)[1]
+    letter_break = [2 for n in range(len(row))]
+
+    canvas.append(row)
+
+    steps = 0
+
+    while steps < b[3]:
+
+        row = Color_cells(d_rule, len(row), row)[0]
+
+        canvas.append(row)
+
+        steps += 1
+
+    canvas.append(letter_break)
+    # canvas.append(letter_break)
+    # canvas.append(letter_break)
 
 print(" ")
-print("polar")
-print(len(polar))
+print('canvas')
 
-polarity = dict()
+for c in canvas:
+    print(c)
 
-for p in polar:
+canvas = np.asarray(canvas)
+# canvas = np.flip(canvas, 0)
+canvas = np.rot90(canvas)
 
-    cell = (p[2], p[3])
+print("")
+print(canvas)
 
-    if cell not in polarity:
-        polarity[cell] = 1
-    else:
-        polarity[cell] += 1
+path = 'cellular-script'
+file = 'hello-edward_cellular-script'
+path_name = os.path.join(path, file)
 
-polarity = dict(sorted(polarity.items(), key=lambda x:x[1], reverse=True))
+ax = plt.gca()
+ax.set_aspect(1)
 
-print(" ")
-print("polarity")
-print(len(polarity))
+plt.margins(0, None)
 
-for p in list(polarity.items())[:10]:
-    print(p)
+if base == 4:
+    cMap = colors.ListedColormap(['k', (0, .5, 1), (0, 1, .5), (1, 0, .5)], 'quad', 4)
 
-# print(" ")
-# print('stream')
-# # print(stream)
+# if base == 3:
+cMap = colors.ListedColormap(['k', 'm', 'c'], 'tri', 3)
+
+# if base == 2:
+#     cMap = colors.ListedColormap(['w', 'k'])
+
+plt.pcolormesh(canvas, cmap=cMap)
+
+# plt.xticks(np.arange(0, width, step=1))
+# plt.yticks(np.arange(0, length, step=1))
 #
-# for s in stream.items():
-#     print(s)
-#
-# print("")
-# print('river')
-# # print(river)
-#
-# for r in river:
-#     print(r)
+plt.figtext(.125, .625, 'h,   e, l, l,   o,      _, e,      d,  w,    a,           r, d', fontsize=16)
+# plt.figtext(.0075, .05, rules, fontsize=7)
+# plt.grid(visible=True, axis='both', )
+
+# c_plt.show()
+plt.savefig(path_name, dpi=900)
+plt.close()
+
