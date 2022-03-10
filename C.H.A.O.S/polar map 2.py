@@ -490,116 +490,164 @@ def flow(input, depth, max_distance, w_s = 0):
     return confluence, polarity
 
 
-depth = 3
-max_distance = 10
+def cell_translate(depth, max_distance, message):
+    message_i = [ord(l) - 96 for l in message]
 
-message = 'hello edward'
-message_i = [ord(l) - 96 for l in message]
-message_i[5] = 255
+    for m in message_i:
+        if abs(m) == 64:
+            message_i[message_i.index(m)] = 255
 
-print("")
-print(message_i)
+    print("")
+    print(message_i)
 
-confluence, polarity = flow(message_i, depth, max_distance)
+    confluence, polarity = flow(message_i, depth, max_distance)
 
-sum = 0
-basin = []
+    sum = 0
+    basin = []
 
-for c in confluence:
+    for c in confluence:
 
-    basin.append(confluence[c][1][0])
-    sum += confluence[c][1][0][3]
+        print(" ")
+        print("confluence")
+        print(confluence[c][1])
+        print(confluence[c][2])
+
+        if len(confluence[c][1][0]) == 2:
+
+            basin.append(confluence[c][2][0])
+
+            print(confluence[c][2][0])
+            print(confluence[c][2][0][0][0][3])
+
+            sum += confluence[c][2][0][0][0][3]
+            sum += confluence[c][2][0][1][3]
+
+        else:
+
+            basin.append(confluence[c][1][0])
+
+            sum += confluence[c][1][0][3]
 
 
-basin_o = []
-for m in range(len(message_i) - 1):
+    basin_o = []
+    for m in range(len(message_i) - 1):
 
-    x = message_i[m]
-    y = message_i[m + 1]
+        x = message_i[m]
+        y = message_i[m + 1]
 
-    for b in basin:
+        for b in basin:
 
-        if b[0] == x and b[1] == y:
+            if b[0] == x and b[1] == y:
 
-            basin_o.append(b)
+                basin_o.append(b)
 
 
-print(" ")
-print("sum")
-print(sum)
+    print(" ")
+    print("sum")
+    print(sum)
 
-print('basin')
-print(basin_o)
-print(" ")
+    print('basin')
+    print(basin_o)
+    print(" ")
 
-canvas = []
+    canvas = []
 
-for b in basin_o:
+    for b in basin_o:
 
-    print(basin_o.index(b))
-    print(b)
+        print(basin_o.index(b))
+        print(b)
 
-    d_rule, i_rule = rule_gen(b[2], base)
-    row = rule_gen(b[0], base)[1]
-    letter_break = [2 for n in range(len(row))]
-
-    canvas.append(row)
-
-    steps = 0
-
-    while steps < b[3]:
-
-        row = Color_cells(d_rule, len(row), row)[0]
+        d_rule, i_rule = rule_gen(b[2], base)
+        row = rule_gen(b[0], base)[1]
+        letter_break = [2 for n in range(len(row))]
 
         canvas.append(row)
 
-        steps += 1
+        steps = 0
 
-    canvas.append(letter_break)
-    # canvas.append(letter_break)
-    # canvas.append(letter_break)
+        while steps < b[3]:
+
+            row = Color_cells(d_rule, len(row), row)[0]
+
+            canvas.append(row)
+
+            steps += 1
+
+        canvas.append(letter_break)
+        # canvas.append(letter_break)
+        # canvas.append(letter_break)
+
+    print(" ")
+    print('canvas')
+
+    for c in canvas:
+        print(c)
+
+    canvas = np.asarray(canvas)
+    # canvas = np.flip(canvas, 0)
+    canvas = np.rot90(canvas)
+
+    print("")
+    print(canvas)
+
+    path = 'cellular-script'
+    file = message + '_cellular-script'
+    path_name = os.path.join(path, file)
+
+    ax = plt.gca()
+    ax.set_aspect(1)
+
+    plt.margins(0, None)
+
+    if base == 4:
+        cMap = colors.ListedColormap(['k', (0, .5, 1), (0, 1, .5), (1, 0, .5)], 'quad', 4)
+
+    # if base == 3:
+    cMap = colors.ListedColormap(['k', 'm', 'c'], 'tri', 3)
+
+    # if base == 2:
+    #     cMap = colors.ListedColormap(['w', 'k'])
+
+    plt.pcolormesh(canvas, cmap=cMap)
+
+    # plt.xticks(np.arange(0, width, step=1))
+    # plt.yticks(np.arange(0, length, step=1))
+    #
+    plt.figtext(.125, .625, message, fontsize=16)
+    # plt.figtext(.0075, .05, rules, fontsize=7)
+    # plt.grid(visible=True, axis='both', )
+
+    # c_plt.show()
+    plt.savefig(path_name, dpi=900)
+    plt.close()
+
+
+depth = 3
+max_distance = 10
+domain = 64
+
+journal = dict()
+confluence = dict()
+polarity = dict()
+
+validity = []
+polar = []
+
+
+for x in range(domain):
+
+    print(x)
+
+    for y in range(domain):
+        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar)
+
 
 print(" ")
-print('canvas')
+print("polar_u")
+print(len(polar_u))
 
-for c in canvas:
-    print(c)
 
-canvas = np.asarray(canvas)
-# canvas = np.flip(canvas, 0)
-canvas = np.rot90(canvas)
-
-print("")
-print(canvas)
-
-path = 'cellular-script'
-file = 'hello-edward_cellular-script'
-path_name = os.path.join(path, file)
-
-ax = plt.gca()
-ax.set_aspect(1)
-
-plt.margins(0, None)
-
-if base == 4:
-    cMap = colors.ListedColormap(['k', (0, .5, 1), (0, 1, .5), (1, 0, .5)], 'quad', 4)
-
-# if base == 3:
-cMap = colors.ListedColormap(['k', 'm', 'c'], 'tri', 3)
-
-# if base == 2:
-#     cMap = colors.ListedColormap(['w', 'k'])
-
-plt.pcolormesh(canvas, cmap=cMap)
-
-# plt.xticks(np.arange(0, width, step=1))
-# plt.yticks(np.arange(0, length, step=1))
-#
-plt.figtext(.125, .625, 'h,   e, l, l,   o,      _, e,      d,  w,    a,           r, d', fontsize=16)
-# plt.figtext(.0075, .05, rules, fontsize=7)
-# plt.grid(visible=True, axis='both', )
-
-# c_plt.show()
-plt.savefig(path_name, dpi=900)
-plt.close()
-
+filename = 'polar maps/polar_u-' + str(domain)
+outfile = open(filename, 'wb')
+pickle.dump(polar_u, outfile)
+outfile.close()
