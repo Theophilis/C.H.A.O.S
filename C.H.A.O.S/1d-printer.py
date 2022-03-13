@@ -18,7 +18,7 @@ rule = '0033200310331332120011303330002233013233212323030123103103222313'
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 5
+base = 3
 #numerical base of the rule set. number of colors each cell can be
 start = length
 #position for a row 0 cell value 1
@@ -467,7 +467,7 @@ journaling = 1
 
 if journaling != 0:
 
-    infile = open("/Users/edwardmaclean/PycharmProjects/GitHub/C.H.A.O.S/journals/journal_8", "rb")
+    infile = open("/Users/edwardmaclean/PycharmProjects/GitHub/C.H.A.O.S/journals/journal_4", "rb")
     journal = pickle.load(infile)
     infile.close
 

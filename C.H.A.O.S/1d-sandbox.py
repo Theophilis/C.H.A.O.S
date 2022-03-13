@@ -19,7 +19,7 @@ rule = 90
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 2
+base = 3
 #numerical base of the rule set. number of colors each cell can be
 start = length
 #position for a row 0 cell value 1
@@ -193,8 +193,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-# WIDTH, HEIGHT = 150, 150
+# WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
+WIDTH, HEIGHT = 600, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -313,23 +313,27 @@ def Chaos_Window(base, pixel_res, cell_vel):
     print(base)
 
     run = 1
-    FPS = 120
-    rule = 937242306726991693566917139006605210481439305105293420943093557027229959742464709823293
+    FPS = 30
+    rule = 21621
     step = 0
     clock = pygame.time.Clock()
+
     journal = dict()
     page = []
     press = dict()
+    press_vault = dict()
 
     # infile = open("cell-journal", "rb")
     # journal = pickle.load(infile)
     # infile.close
 
-
     r_c = 0
     r_i = 0
     rand_count = 0
     iterate = 0
+    input_box = 0
+    v_input = ''
+
 
     cells = []
     cell_row_width = int(WIDTH/pixel_res)
@@ -348,7 +352,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
     print(i_rule)
     print(len(i_rule))
 
-    def redraw_window():
+    def redraw_window(input_box, v_input):
 
         for r in range(cell_rows):
             for cell in cells[r]:
@@ -366,6 +370,15 @@ def Chaos_Window(base, pixel_res, cell_vel):
         WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
         WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
 
+        if input_box == 1:
+
+            v_input_r = small_font.render(v_input, 1, (0, 0, 0))
+
+            type_box = pygame.Rect(10, 10, v_input_r.get_width() + 2, 20)
+
+            pygame.draw.rect(WIN, (255, 255, 255), type_box)
+
+            WIN.blit(v_input_r, (11, 11))
 
 
         pygame.display.update()
@@ -847,8 +860,11 @@ def Chaos_Window(base, pixel_res, cell_vel):
                         cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'white_2')
                         cells[r].append(cell)
 
+    def input(letter, base, page, input_box, v_input):
 
-    def input(letter, base, page):
+        if input_box == 1:
+
+            v_input += letter
 
         bv = base ** view
 
@@ -906,6 +922,8 @@ def Chaos_Window(base, pixel_res, cell_vel):
         else:
             journal[rule].append(page)
 
+        return v_input
+
     for r in range(cell_rows):
         cells.append([])
 
@@ -921,7 +939,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
     while run == 1:
 
         WIN.fill((0, 0, 0))
-        redraw_window()
+        redraw_window(input_box, v_input)
         clock.tick(FPS)
         # print("")
         # print("cell_rows")
@@ -1035,112 +1053,238 @@ def Chaos_Window(base, pixel_res, cell_vel):
                     run = 2
 
                 if event.key == pygame.K_q:
-                    input('q', base, page)
+                    v_input = input('q', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_w:
-                    input('w', base, page)
+                    v_input = input('w', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_e:
-                    input('e', base, page)
+                    v_input = input('e', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_r:
-                    input('r', base, page)
+                    v_input = input('r', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_t:
-                    input('t', base, page)
+                    v_input = input('t', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_y:
-                    input('y', base, page)
+                    v_input = input('y', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_u:
-                    input('u', base, page)
+                    v_input = input('u', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_i:
-                    input('i', base, page)
+                    v_input = input('i', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_o:
-                    input('o', base, page)
+                    v_input = input('o', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_p:
-                    input('p', base, page)
+                    v_input = input('p', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_a:
-                    input('a', base, page)
+                    v_input = input('a', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_s:
-                    input('s', base, page)
+                    v_input = input('s', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_d:
-                    input('d', base, page)
+                    v_input = input('d', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_f:
-                    input('f', base, page)
+                    v_input = input('f', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_g:
-                    input('g', base, page)
+                    v_input = input('g', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_h:
-                    input('h', base, page)
+                    v_input = input('h', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_j:
-                    input('j', base, page)
+                    v_input = input('j', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_k:
-                    input('k', base, page)
+                    v_input = input('k', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_l:
-                    input('l', base, page)
+                    v_input = input('l', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_z:
-                    input('z', base, page)
+                    v_input = input('z', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_x:
-                    input('x', base, page)
+                    v_input = input('x', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_c:
-                    input('c', base, page)
+                    v_input = input('c', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_v:
-                    input('v', base, page)
+                    v_input = input('v', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_b:
-                    input('b', base, page)
+                    v_input = input('b', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_n:
-                    input('n', base, page)
+                    v_input = input('n', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_m:
-                    input('m', base, page)
+                    v_input = input('m', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_SPACE:
-                    input(' ', base, page)
+                    v_input = input(' ', base, page, input_box, v_input)
                     page = []
+
+                if event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+
+                    if input_box == 0:
+
+                        input_box = 1
+
+                    else:
+
+                        if type(v_input[0]) == str:
+
+                            input_list = v_input.split()[1:]
+
+                            if len(input_list) == 5:
+
+                                
+
+                            print(input_list)
+
+                            v_input = ''
+
+                        else:
+                            d_rule, i_rule = rule_gen(int(v_input), base)
+                            v_input = ''
+
+                        input_box = 0
+
+                elif event.key == pygame.K_RETURN:
+
+                    d_rule, i_rule = rule_gen(1, base)
+
+                    for letter in press:
+
+                        if letter in press_vault:
+
+                            press_vault[letter] += press[letter]
+
+                        else:
+                            press_vault[letter] = press[letter]
+
+                        press[letter] = 0
+
+                if event.key == pygame.K_0:
+
+                    v = 0
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_1:
+
+                    v = 1
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_2:
+
+                    v = 2
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_3:
+
+                    v = 3
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_4:
+
+                    v = 4
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_5:
+
+                    v = 5
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_6:
+
+                    v = 6
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_7:
+
+                    v = 7
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_8:
+
+                    v = 8
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_9:
+
+                    v = 9
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_BACKSPACE:
+
+                    v_input = v_input[0:-1]
+
 
         for r in range(cell_rows):
             for cell in cells[r][:]:
@@ -1366,4 +1510,4 @@ def menu():
 # menu()
 
 
-Chaos_Window(5, 2, 10)
+Chaos_Window(4, 2, 10)
