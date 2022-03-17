@@ -194,7 +194,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
-WIDTH, HEIGHT = 600, 600
+WIDTH, HEIGHT = 800, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -314,7 +314,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
     run = 1
     FPS = 30
-    rule = 21621
+    rule = 2012577293263684576546122253534797258019201612892875700360998252923917409187612365349409
     step = 0
     clock = pygame.time.Clock()
 
@@ -331,8 +331,12 @@ def Chaos_Window(base, pixel_res, cell_vel):
     r_i = 0
     rand_count = 0
     iterate = 0
+
     input_box = 0
+    list_count = 0
     v_input = ''
+    write = 0
+    j_name = ''
 
 
     cells = []
@@ -340,10 +344,10 @@ def Chaos_Window(base, pixel_res, cell_vel):
     cell_rows = int(HEIGHT/pixel_res) + 1
     d_rule, i_rule = rule_gen(rule, base)
 
-    i_rule[0] = 1
-    i_rule[-1] = 1
-    d_rule[list(d_rule.keys())[0]] = 1
-    d_rule[list(d_rule.keys())[-1]] = 1
+    # i_rule[0] = 1
+    # i_rule[-1] = 1
+    # d_rule[list(d_rule.keys())[0]] = 1
+    # d_rule[list(d_rule.keys())[-1]] = 1
 
     print(" ")
     print("d_rule")
@@ -380,6 +384,10 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
             WIN.blit(v_input_r, (11, 11))
 
+
+        if list_count != 0:
+
+            draw_text(str(list_count), small_font, (255, 255, 255), WIN, 11, 33)
 
         pygame.display.update()
 
@@ -924,6 +932,48 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
         return v_input
 
+    def rl_gen(input_list):
+
+        if input_list[0] == 'm':
+
+            input_list = input_list[1:]
+
+            if len(input_list) == 2:
+
+                rule_list = [x * int(input_list[1]) for x in range(int(input_list[0]))]
+
+            elif len(input_list) == 4:
+
+                # print(" ")
+                # print("input_list")
+                # print(input_list)
+
+                rule_list = [x * int(input_list[3]) for x in range(int(input_list[0]), int(input_list[1]), int(input_list[2]))]
+
+                # print(" ")
+                # print("len() 4")
+                # print(rule_list)
+
+            elif len(input_list) == 5:
+
+                rule_list = []
+
+                rule_list_0 = [x * int(input_list[3]) for x in range(int(input_list[0]), int(input_list[1]), int(input_list[2]))]
+
+                for rule in rule_list_0:
+
+                    for x in range(int(input_list[4])):
+
+                        rule_list.append(rule)
+
+                # print(rule_list)
+
+
+            list_count = len(rule_list)
+
+        return rule_list, list_count
+
+    
     for r in range(cell_rows):
         cells.append([])
 
@@ -945,6 +995,13 @@ def Chaos_Window(base, pixel_res, cell_vel):
         # print("cell_rows")
         # print(cell_rows)
 
+        if list_count != 0:
+
+            d_rule, i_rule = rule_gen(rule_list[0], base)
+            rule_list = rule_list[1:]
+
+            list_count -= 1
+
         for r in range(cell_rows):
 
             if len(cells[r]) == 0:
@@ -956,7 +1013,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
                 if line in page:
 
-                    if r_i == 0:
+                    if r_i == 0 and list_count == 0:
 
                         rand_count += 1
 
@@ -987,38 +1044,43 @@ def Chaos_Window(base, pixel_res, cell_vel):
                         journal[rule].append(page)
                     page = []
 
-                    if base == 2:
-                        if i_rule[rand] == 0:
-                            i_rule[rand] = 1
-                            d_rule[list(d_rule.keys())[rand]] = 1
-                        elif i_rule[rand] == 1:
-                            i_rule[rand] = 0
-                            d_rule[list(d_rule.keys())[rand]] = 0
+                    if list_count == 0:
 
-                    if base == 3:
-                        if i_rule[rand] == 0:
-                            i_rule[rand] = 1
-                            d_rule[list(d_rule.keys())[rand]] = 1
-                        elif i_rule[rand] == 1:
-                            i_rule[rand] = 2
-                            d_rule[list(d_rule.keys())[rand]] = 2
-                        elif i_rule[rand] == 2:
-                            i_rule[rand] = 0
-                            d_rule[list(d_rule.keys())[rand]] = 0
+                        print("list_count == 0:")
+                        print("randomizer")
 
-                    if base == 4:
-                        if i_rule[rand] == 0:
-                            i_rule[rand] = 1
-                            d_rule[list(d_rule.keys())[rand]] = 1
-                        elif i_rule[rand] == 1:
-                            i_rule[rand] = 2
-                            d_rule[list(d_rule.keys())[rand]] = 2
-                        elif i_rule[rand] == 2:
-                            i_rule[rand] = 3
-                            d_rule[list(d_rule.keys())[rand]] = 3
-                        elif i_rule[rand] == 3:
-                            i_rule[rand] = 0
-                            d_rule[list(d_rule.keys())[rand]] = 0
+                        if base == 2:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 3:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 4:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
 
 
                     # print("change")
@@ -1160,47 +1222,6 @@ def Chaos_Window(base, pixel_res, cell_vel):
                     v_input = input(' ', base, page, input_box, v_input)
                     page = []
 
-                if event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-
-                    if input_box == 0:
-
-                        input_box = 1
-
-                    else:
-
-                        if type(v_input[0]) == str:
-
-                            input_list = v_input.split()[1:]
-
-                            if len(input_list) == 5:
-
-                                
-
-                            print(input_list)
-
-                            v_input = ''
-
-                        else:
-                            d_rule, i_rule = rule_gen(int(v_input), base)
-                            v_input = ''
-
-                        input_box = 0
-
-                elif event.key == pygame.K_RETURN:
-
-                    d_rule, i_rule = rule_gen(1, base)
-
-                    for letter in press:
-
-                        if letter in press_vault:
-
-                            press_vault[letter] += press[letter]
-
-                        else:
-                            press_vault[letter] = press[letter]
-
-                        press[letter] = 0
-
                 if event.key == pygame.K_0:
 
                     v = 0
@@ -1285,6 +1306,79 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
                     v_input = v_input[0:-1]
 
+                if event.key == pygame.K_MINUS:
+
+                    print("underscore")
+
+                    v_input += "-"
+
+                if event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+
+                    if input_box == 0:
+
+                        input_box = 1
+
+                    else:
+
+                        if len(v_input) != 0:
+
+                            input_list = v_input.split()
+
+                            # print(" ")
+                            # print("input_list")
+                            # print(input_list)
+                            # print(len(input_list))
+                            # print(len(input_list[0]))
+
+                            if len(input_list) > 1 and len(input_list[0]) == 1:
+
+                                rule_list, list_count = rl_gen(input_list)
+
+                            elif v_input == 'write':
+
+                                write = 1
+
+                            elif input_list[0] == 'name':
+
+                                j_name = input_list[1]
+
+                                write = 1
+
+                            elif input_list[0] == 'invalid':
+
+                                v_input = ''
+
+                            else:
+
+                                try:
+
+                                    d_rule, i_rule = rule_gen(int(v_input), base)
+
+                                except:
+
+                                    v_input = 'invalid'
+
+                                    continue
+
+                            v_input = ''
+
+                        input_box = 0
+
+                elif event.key == pygame.K_RETURN:
+
+                    d_rule, i_rule = rule_gen(1, base)
+
+                    for letter in press:
+
+                        if letter in press_vault:
+
+                            press_vault[letter] += press[letter]
+
+                        else:
+                            press_vault[letter] = press[letter]
+
+                        press[letter] = 0
+
 
         for r in range(cell_rows):
             for cell in cells[r][:]:
@@ -1292,14 +1386,23 @@ def Chaos_Window(base, pixel_res, cell_vel):
                 if cell.y + cell.get_height() > HEIGHT:
                     cells[r].remove(cell)
 
-    j_num = len(os.listdir('journals'))
+    if write == 1:
 
-    filename = 'journals/journal_' + str(j_num)
-    outfile = open(filename, 'wb')
-    pickle.dump(journal, outfile)
-    outfile.close
+        if len(j_name) > 0:
 
-    print(len(journal))
+            filename = 'journals/journal_' + j_name
+
+        else:
+
+            j_num = len(os.listdir('journals'))
+
+            filename = 'journals/journal_' + str(j_num)
+
+        outfile = open(filename, 'wb')
+        pickle.dump(journal, outfile)
+        outfile.close
+
+        print(len(journal))
 
 
 #menus
@@ -1510,4 +1613,4 @@ def menu():
 # menu()
 
 
-Chaos_Window(4, 2, 10)
+Chaos_Window(5, 2, 10)

@@ -198,25 +198,22 @@ WIDTH, HEIGHT = 1750, 1000
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 BLACK_PIXEL_1 = pygame.image.load(os.path.join('assets', 'black-2.png')).convert()
-WHITE_PIXEL_1 = pygame.image.load(os.path.join('assets', 'grey-3-1.png')).convert()
+WHITE_PIXEL_1 = pygame.image.load(os.path.join('assets', 'grey-2.png')).convert()
 M_GREEN_PIXEL_1 = pygame.image.load(os.path.join('assets', 'cyan-2.png')).convert()
 BLUE_PIXEL_1 = pygame.image.load(os.path.join('assets', 'cyan-2.png')).convert_alpha()
 PURPLE_PIXEL_1 = pygame.image.load(os.path.join('assets', 'magenta-2.png')).convert_alpha()
-RED_PIXEL_1 = pygame.image.load(os.path.join('assets', "red-3-1.png"))
-ORANGE_PIXEL_1 = pygame.image.load(os.path.join('assets', 'orange-3-1.png'))
-YELLOW_PIXEL_1 = pygame.image.load(os.path.join('assets', 'yellow-3-1.png'))
+RED_PIXEL_1 = pygame.image.load(os.path.join('assets', "magenta-2.png"))
+ORANGE_PIXEL_1 = pygame.image.load(os.path.join('assets', 'orange-2.png'))
+YELLOW_PIXEL_1 = pygame.image.load(os.path.join('assets', 'yellow-2.png'))
 
-BLACK_PIXEL_0 = pygame.image.load(os.path.join('assets', 'aqua-3-0.png')).convert()
-WHITE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'grey-3-0.png')).convert()
-M_GREEN_PIXEL_0 = pygame.image.load(os.path.join('assets', 'green-3-0.png')).convert()
-BLUE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'black-2.png')).convert_alpha()
-PURPLE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'wine-3-0.png')).convert_alpha()
-RED_PIXEL_0 = pygame.image.load(os.path.join('assets', "red-3-0.png"))
-ORANGE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'orange-3-0.png'))
-YELLOW_PIXEL_0 = pygame.image.load(os.path.join('assets', 'yellow-3-0.png'))
-
-
-BG = pygame.transform.scale(pygame.image.load(os.path.join('assets', 'backround.png')), (WIDTH, HEIGHT)).convert()
+BLACK_PIXEL_0 = pygame.image.load(os.path.join('assets', 'black-2.png')).convert()
+WHITE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'grey-2.png')).convert()
+M_GREEN_PIXEL_0 = pygame.image.load(os.path.join('assets', 'moss-2.png')).convert()
+BLUE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'cyan-2.png')).convert_alpha()
+PURPLE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'magenta-2.png')).convert_alpha()
+RED_PIXEL_0 = pygame.image.load(os.path.join('assets', "magenta-2.png"))
+ORANGE_PIXEL_0 = pygame.image.load(os.path.join('assets', 'orange-2.png'))
+YELLOW_PIXEL_0 = pygame.image.load(os.path.join('assets', 'yellow-2.png'))
 
 pygame.init()
 
@@ -305,12 +302,8 @@ def main(device_id=None):
     step = 0
     clock = pygame.time.Clock()
     main_font = pygame.font.SysFont("arial", 32)
-    # journal = dict()
+    journal = dict()
     page = []
-
-    infile = open("cell-journal", "rb")
-    journal = pickle.load(infile)
-    infile.close
 
     print("")
     print("journal type")
@@ -326,7 +319,7 @@ def main(device_id=None):
     cells = []
     cell_row_width = int(WIDTH/BLUE_PIXEL_0.get_width())
     cell_rows = int(HEIGHT/BLUE_PIXEL_0.get_height())
-    cell_vel = 5
+    cell_vel = 10
 
     d_rule, i_rule = rule_gen(rule, base)
 
@@ -365,7 +358,6 @@ def main(device_id=None):
     print(i_rule)
 
     def redraw_window():
-        WIN.blit(BG, (0,0))
 
         for r in range(cell_rows):
             for cell in cells[r]:
