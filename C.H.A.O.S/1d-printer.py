@@ -340,6 +340,7 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
 #export pcolormesh of cells
 
     if plot != 0:
+
         if rc == 0 or rc == 2:
 
             ax = plt.gca()
