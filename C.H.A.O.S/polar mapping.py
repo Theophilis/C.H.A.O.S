@@ -178,11 +178,11 @@ def fold(journal, row, goal, d_rule, v_rule, step_size, leash, length):
     if leash not in journal:
         journal[leash] = dict()
 
-        print(" ")
-        print("duration")
-        print(duration)
-        print("goal")
-        print(goal)
+        # print(" ")
+        # print("duration")
+        # print(duration)
+        # print("goal")
+        # print(goal)
 
 
     while match == 0:
@@ -216,7 +216,7 @@ def fold(journal, row, goal, d_rule, v_rule, step_size, leash, length):
         duration += 1
 
 
-def carve(journal, start_0, end_0, results, base, step_size, length):
+def carve(journal, start_0, end_0, results, base, step_size, length, cutoff):
 
     leash = 0
     valid = []
@@ -224,11 +224,11 @@ def carve(journal, start_0, end_0, results, base, step_size, length):
     start = rule_gen(start_0, base, length)[1]
     goal = rule_gen(end_0, base, length)[1]
 
-    print(" ")
-    print("start")
-    print(start)
-    print("goal")
-    print(goal)
+    # print(" ")
+    # print("start")
+    # print(start)
+    # print("goal")
+    # print(goal)
 
     while len(valid) < results:
 
@@ -278,17 +278,20 @@ def carve(journal, start_0, end_0, results, base, step_size, length):
 
         leash += 1
 
+        if leash == cut_off:
+            break
+
 
     valid = sorted(valid, key=lambda x:x[0])
 
-    print(valid)
+    # print(valid)
 
     return valid
 
 
-def rolling_river(journal, dot, vector, validity, polar, length):
+def rolling_river(journal, dot, vector, validity, polar, length, cut_off):
 
-    valid = carve(journal, dot, vector, 16, 2, base ** base ** view, length)
+    valid = carve(journal, dot, vector, 1, base, 32, length, cut_off)
 
     # print(valid)
     if len(valid) == 0:
@@ -296,6 +299,9 @@ def rolling_river(journal, dot, vector, validity, polar, length):
 
     else:
         validity.append(valid)
+
+    for v in valid:
+        polar.append(v)
 
     validity = sorted(validity, key=lambda x:len(x) + len(x[0]))
 
@@ -308,8 +314,8 @@ def rolling_river(journal, dot, vector, validity, polar, length):
 
     for p in polar:
 
-        print("p")
-        print(p)
+        # print("p")
+        # print(p)
 
         if p not in polar_u:
             polar_u.append(p)
@@ -371,7 +377,7 @@ def bend(confluence, polar_u, elbows_0, v, v_0, depth, c_d=2):
         # print(" ")
         # print("#####recur#####")
 
-        print(depth)
+        # print(depth)
 
         bend(confluence, elbows_1, v, depth, c_d)
 
@@ -518,8 +524,8 @@ def cell_translate(depth, max_distance, message):
         if abs(m) == 64:
             message_i[message_i.index(m)] = 255
 
-    print("")
-    print(message_i)
+    # print("")
+    # print(message_i)
 
     confluence, polarity = flow(message_i, depth, max_distance)
 
@@ -528,17 +534,17 @@ def cell_translate(depth, max_distance, message):
 
     for c in confluence:
 
-        print(" ")
-        print("confluence")
-        print(confluence[c][1])
-        print(confluence[c][2])
+        # print(" ")
+        # print("confluence")
+        # print(confluence[c][1])
+        # print(confluence[c][2])
 
         if len(confluence[c][1][0]) == 2:
 
             basin.append(confluence[c][2][0])
 
-            print(confluence[c][2][0])
-            print(confluence[c][2][0][0][0][3])
+            # print(confluence[c][2][0])
+            # print(confluence[c][2][0][0][0][3])
 
             sum += confluence[c][2][0][0][0][3]
             sum += confluence[c][2][0][1][3]
@@ -563,20 +569,20 @@ def cell_translate(depth, max_distance, message):
                 basin_o.append(b)
 
 
-    print(" ")
-    print("sum")
-    print(sum)
-
-    print('basin')
-    print(basin_o)
-    print(" ")
+    # print(" ")
+    # print("sum")
+    # print(sum)
+    #
+    # print('basin')
+    # print(basin_o)
+    # print(" ")
 
     canvas = []
 
     for b in basin_o:
 
-        print(basin_o.index(b))
-        print(b)
+        # print(basin_o.index(b))
+        # print(b)
 
         d_rule, i_rule = rule_gen(b[2], base, length)
         row = rule_gen(b[0], base, length)[1]
@@ -598,18 +604,18 @@ def cell_translate(depth, max_distance, message):
         # canvas.append(letter_break)
         # canvas.append(letter_break)
 
-    print(" ")
-    print('canvas')
+    # print(" ")
+    # print('canvas')
 
-    for c in canvas:
-        print(c)
+    # for c in canvas:
+    #     print(c)
 
     canvas = np.asarray(canvas)
     # canvas = np.flip(canvas, 0)
     canvas = np.rot90(canvas)
 
-    print("")
-    print(canvas)
+    # print("")
+    # print(canvas)
 
     path = 'cellular-script'
     file = message + '_cellular-script'
@@ -645,7 +651,9 @@ def cell_translate(depth, max_distance, message):
 
 depth = 3
 max_distance = 10
-domain = 3
+cut_off = 1
+
+domain = 128
 length = 16
 
 journal = dict()
@@ -664,7 +672,7 @@ for x in range(domain):
 
     for y in range(domain):
 
-        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar, length)
+        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar, length, cut_off)
 
 
 print(" ")
@@ -674,7 +682,7 @@ for p in polar_u:
     print(p)
 
 
-filename = 'polar maps/polar_u-' + str(domain)
+filename = 'polar maps/polar_u-' + str(domain) + '-' + str(length)
 outfile = open(filename, 'wb')
 pickle.dump(polar_u, outfile)
 outfile.close()

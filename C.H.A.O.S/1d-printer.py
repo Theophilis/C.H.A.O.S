@@ -10,17 +10,17 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 20
+length = 1001
 #number of times given rule is applied and number of initial rows generated
-width = 8
+width = length
 #number of cells in a row
-rule = '0033200310331332120011303330002233013233212323030123103103222313'
+rule = 2012577293263684576546122253534797258019201612892875700360998252923917409187612365349409
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 2
+base = 5
 #numerical base of the rule set. number of colors each cell can be
-start = -1
+start = int(width/2)
 #position for a row 0 cell value 1
 direction = 0
 #if ^ = 0 view scans from left to right: else view scans right to left
@@ -62,11 +62,17 @@ def base_x(n, b):
 
 def decimal(n, b):
 
+    n = list(reversed(n))
+    n = [int(v) for v in n]
+
     value = 0
+    place = 0
+
 
     for c in n:
 
-        value += int(c) * n.index(c) ** b
+        value += int(c) * b ** place
+        place += 1
 
     return value
 
@@ -198,7 +204,7 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
         r_n = rule
 
     start_0 = start
-    file = str(width) + 'x' + str(length) + '-' + str(base) + '-' + 'colors' + '-' + str(r_n)
+    file = str(width) + 'x' + str(length) + '-' + str(base) + '-' + 'colors' + '-' + str(r_n) + '-' + '10'
     path_name = os.path.join(path, file)
 
     cell_patterns = dict()
@@ -210,8 +216,8 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
     int_rule = rules[1]
     rules = rules[0]
 
-    print(int_rule)
-    print(rules)
+    # print(int_rule)
+    # print(rules)
 
     # print(" ")
     # print("start")
@@ -334,6 +340,7 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
 #export pcolormesh of cells
 
     if plot != 0:
+
         if rc == 0 or rc == 2:
 
             ax = plt.gca()
@@ -341,8 +348,21 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
 
             plt.margins(0, None)
 
+            magenta = (1, 0, 1)
+            yellow = (1, 1, 0)
+            cyan = (0, 1, 1)
+            red = (1, 0, 0)
+            blue = (0, 0, 1)
+            green = (0, 1, 0)
+            black = (0, 0, 0)
+            white = (1, 1, 1)
+            grey = (.5, .5, .5)
+
+            if base == 5:
+                cMap = c.ListedColormap([black, magenta, cyan, yellow, red])
+
             if base == 4:
-                cMap = c.ListedColormap(['k', (0, .5, 1), (0, 1, .5), (1, 0, .5)], 'quad', 4)
+                cMap = c.ListedColormap(['k', (0, .5, 1), (0, 1, .5), (1, 0, .5)], 'quad', 5)
 
             if base == 3:
                 cMap = c.ListedColormap(['k', 'm', 'c'], 'tri', 3)
@@ -360,7 +380,7 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
             # plt.grid(visible=True, axis='both', )
 
             # c_plt.show()
-            plt.savefig(path_name, dpi=2000)
+            plt.savefig(path_name, dpi=1000)
             plt.close()
 
         if rc == 1 or rc == 2:
@@ -448,16 +468,14 @@ def map(length, width, rule, base, start, direction, path, rc = 0, plot=0, edge=
     return cell_patterns, rule_patterns, rule_call, rc_val, rc_net
 
 
-path = 'folds'
-
-map(length, width, 145, base, start, direction, path, 0, 1)
-
+path = 'scarfs'
 
 journaling = 0
+leveling = 0
 
 if journaling != 0:
 
-    infile = open("journals\journal_6", "rb")
+    infile = open("/Users/edwardmaclean/PycharmProjects/GitHub/C.H.A.O.S/journals/journal_hb1802", "rb")
     journal = pickle.load(infile)
     infile.close
 
@@ -466,10 +484,48 @@ if journaling != 0:
 
     print(len(list(journal.keys())))
 
-    for k in list(journal.keys())[660:1000]:
+    for k in list(journal.keys())[20:]:
         print('')
         print(list(journal.keys()).index(k))
         print(k[0])
         jk = journal[k]
         print(len(jk[0]))
         map(length, width, k[0], base, start, direction, path, 0, 1)
+
+#folders to level
+##pentary lvl-3
+##quaternary lvl-1
+
+elif leveling != 0:
+
+    lvl = os.listdir('/Users/edwardmaclean/PycharmProjects/GitHub/C.H.A.O.S/scarfs/pentary/lvl-2')
+
+    path = 'scarfs/pentary'
+
+    print(len(lvl))
+
+    for l in lvl:
+
+        print(" ")
+        print(lvl.index(l))
+
+        print(l)
+
+        try:
+
+            l = int(l[17:-4])
+
+        except:
+
+            continue
+
+        print(l)
+
+        map(length, width, l, base, start, direction, path, 0, 1)
+
+else:
+
+    map(length, width, rule, base, start, direction, path, 0, 1)
+
+
+##qb syles for dark frames

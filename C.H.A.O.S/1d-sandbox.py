@@ -9,6 +9,8 @@ import os
 import pickle
 import sys
 
+sys.setrecursionlimit(999999999)
+
 pygame.font.init()
 
 length = 8
@@ -19,7 +21,7 @@ rule = 90
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 2
+base = 3
 #numerical base of the rule set. number of colors each cell can be
 start = length
 #position for a row 0 cell value 1
@@ -141,7 +143,7 @@ def Color_cells(color, d_rule, cell_row_width, base, row_0):
     #is the separate path for base two calculation worth it anymore?
 
     color_n = []
-    rc = []
+    # rc = []
     if base == 2:
         row_0 = np.zeros((1, cell_row_width), dtype='int8')
         for c in color:
@@ -168,7 +170,7 @@ def Color_cells(color, d_rule, cell_row_width, base, row_0):
         # print("rule")
         # print(d_rule[v_0])
 
-        rc.append(list(d_rule.keys()).index(v_0))
+        # rc.append(list(d_rule.keys()).index(v_0))
 
         row_1[0, y] = d_rule[v_0]
 
@@ -177,14 +179,14 @@ def Color_cells(color, d_rule, cell_row_width, base, row_0):
             # print("bingo")
             # print(y)
             color_n.append(y)
-            rc.append(list(d_rule.keys()).index(v_0))
+            # rc.append(list(d_rule.keys()).index(v_0))
 
     # print("Color")
     # print(row_1)
     # print(type(row_1))
     # print(rc)
 
-    return color_n, rc, row_1
+    return color_n, row_1
 
 
 #####game#####
@@ -193,8 +195,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-# WIDTH, HEIGHT = 150, 150
+# WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
+WIDTH, HEIGHT = 800, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -313,33 +315,42 @@ def Chaos_Window(base, pixel_res, cell_vel):
     print(base)
 
     run = 1
-    FPS = 120
-    rule = 65902836457908231649082136409872316489072316498273876523094875612893074692183746203198467238746
+    FPS = 30
+    rule = 64443191043997765918127867791009023071
     step = 0
     clock = pygame.time.Clock()
+
     journal = dict()
     page = []
     press = dict()
+    press_vault = dict()
 
     # infile = open("cell-journal", "rb")
     # journal = pickle.load(infile)
     # infile.close
-
 
     r_c = 0
     r_i = 0
     rand_count = 0
     iterate = 0
 
+    input_box = 0
+    list_count = 0
+    v_input = ''
+    write = 0
+    j_name = ''
+    max_rule = base ** base ** view
+
+
     cells = []
     cell_row_width = int(WIDTH/pixel_res)
     cell_rows = int(HEIGHT/pixel_res) + 1
     d_rule, i_rule = rule_gen(rule, base)
 
-    i_rule[0] = 1
-    i_rule[-1] = 1
-    d_rule[list(d_rule.keys())[0]] = 1
-    d_rule[list(d_rule.keys())[-1]] = 1
+    # i_rule[0] = 1
+    # i_rule[-1] = 1
+    # d_rule[list(d_rule.keys())[0]] = 1
+    # d_rule[list(d_rule.keys())[-1]] = 1
 
     print(" ")
     print("d_rule")
@@ -348,7 +359,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
     print(i_rule)
     print(len(i_rule))
 
-    def redraw_window():
+    def redraw_window(input_box, v_input):
 
         for r in range(cell_rows):
             for cell in cells[r]:
@@ -366,84 +377,28 @@ def Chaos_Window(base, pixel_res, cell_vel):
         WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
         WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
 
+        if input_box == 1:
 
+            v_input_r = small_font.render(v_input, 1, (0, 0, 0))
+
+            type_box = pygame.Rect(10, 10, v_input_r.get_width() + 2, 20)
+
+            pygame.draw.rect(WIN, (255, 255, 255), type_box)
+
+            WIN.blit(v_input_r, (11, 11))
+
+
+        if list_count != 0:
+
+            draw_text(str(list_count), small_font, (255, 255, 255), WIN, 11, 33)
 
         pygame.display.update()
 
-    def mitosis(i, r, color, rc, row, pixel_res):
+    def mitosis(i, r, color, row, pixel_res):
 
         if r > 0:
 
-            if r_c == 1:
-                # full rc spectrum
-                if i in color:
-                    if rc[i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_1')
-                        cells[r].append(cell)
-                    if rc[i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'white_1')
-                        cells[r].append(cell)
-                    if rc[i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'red_1')
-                        cells[r].append(cell)
-                    if rc[i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'orange_1')
-                        cells[r].append(cell)
-                    if rc[i] == 4:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_1')
-                        cells[r].append(cell)
-                    if rc[i] == 5:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'green_1')
-                        cells[r].append(cell)
-                    if rc[i] == 6:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_1')
-                        cells[r].append(cell)
-                    if rc[i] == 7:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_1')
-                        cells[r].append(cell)
-                else:
-                    if rc[i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_0')
-                        cells[r].append(cell)
-                    if rc[i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'white_0')
-                        cells[r].append(cell)
-                    if rc[i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'red_0')
-                        cells[r].append(cell)
-                    if rc[i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'orange_0')
-                        cells[r].append(cell)
-                    if rc[i] == 4:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_0')
-                        cells[r].append(cell)
-                    if rc[i] == 5:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'green_0')
-                        cells[r].append(cell)
-                    if rc[i] == 6:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_0')
-                        cells[r].append(cell)
-                    if rc[i] == 7:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_0')
-                        cells[r].append(cell)
-
-            elif base == 2:
+            if base == 2:
 
                 if pixel_res == 2:
                     if row[0, i] == 0:
@@ -640,61 +595,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
         else:
 
-            if r_c == 1:
-                # full rc spectrum
-                if i in color:
-                    # print(type(cells[0]))
-                    if rc[i] == 0:
-                        cell = Cell(1 * pixel_res * i, 0, 'black_1')
-                        cells[r].append(cell)
-                    if rc[i] == 1:
-                        cell = Cell(1 * pixel_res * i, 0, 'white_1')
-                        cells[r].append(cell)
-                    if rc[i] == 2:
-                        cell = Cell(1 * pixel_res * i, 0, 'red_1')
-                        cells[r].append(cell)
-                    if rc[i] == 3:
-                        cell = Cell(1 * pixel_res * i, 0, 'orange_1')
-                        cells[r].append(cell)
-                    if rc[i] == 4:
-                        cell = Cell(1 * pixel_res * i, 0, 'yellow_1')
-                        cells[r].append(cell)
-                    if rc[i] == 5:
-                        cell = Cell(1 * pixel_res * i, 0, 'green_1')
-                        cells[r].append(cell)
-                    if rc[i] == 6:
-                        cell = Cell(1 * pixel_res * i, 0, 'blue_1')
-                        cells[r].append(cell)
-                    if rc[i] == 7:
-                        cell = Cell(1 * pixel_res * i, 0, 'purple_1')
-                        cells[r].append(cell)
-                else:
-                    if rc[i] == 0:
-                        cell = Cell(1 * pixel_res * i, 0, 'black_0')
-                        cells[r].append(cell)
-                    if rc[i] == 1:
-                        cell = Cell(1 * pixel_res * i, 0, 'white_0')
-                        cells[r].append(cell)
-                    if rc[i] == 2:
-                        cell = Cell(1 * pixel_res * i, 0, 'red_0')
-                        cells[r].append(cell)
-                    if rc[i] == 3:
-                        cell = Cell(1 * pixel_res * i, 0, 'orange_0')
-                        cells[r].append(cell)
-                    if rc[i] == 4:
-                        cell = Cell(1 * pixel_res * i, 0, 'yellow_0')
-                        cells[r].append(cell)
-                    if rc[i] == 5:
-                        cell = Cell(1 * pixel_res * i, 0, 'green_0')
-                        cells[r].append(cell)
-                    if rc[i] == 6:
-                        cell = Cell(1 * pixel_res * i, 0, 'blue_0')
-                        cells[r].append(cell)
-                    if rc[i] == 7:
-                        cell = Cell(1 * pixel_res * i, 0, 'purple_0')
-                        cells[r].append(cell)
-
-            elif base == 2:
+            if base == 2:
                 if pixel_res == 2:
                     if row[0, i] == 0:
                         cell = Cell(1 * pixel_res * i, 0, 'black_2')
@@ -847,8 +748,11 @@ def Chaos_Window(base, pixel_res, cell_vel):
                         cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'white_2')
                         cells[r].append(cell)
 
+    def input(letter, base, page, input_box, v_input):
 
-    def input(letter, base, page):
+        if input_box == 1:
+
+            v_input += letter
 
         bv = base ** view
 
@@ -906,6 +810,91 @@ def Chaos_Window(base, pixel_res, cell_vel):
         else:
             journal[rule].append(page)
 
+        return v_input
+
+    def fibonacci(a, duration, list, calls=1, b=0):
+
+        if b == 0:
+            b = a
+
+            list.append(a)
+            list.append(b)
+
+        c = a + b
+
+        for x in range(calls):
+            list.append(c)
+
+        if duration != 0:
+            duration -= 1
+
+            fibonacci(c, duration, list, calls, a)
+
+    def rl_gen(input_list):
+
+        if input_list[0] == 'm':
+
+            input_list = input_list[1:]
+
+            if len(input_list) == 2:
+
+                rule_list = [x * int(input_list[1]) for x in range(int(input_list[0]))]
+
+            elif len(input_list) == 4:
+
+                # print(" ")
+                # print("input_list")
+                # print(input_list)
+
+                rule_list = [x * int(input_list[3]) for x in range(int(input_list[0]), int(input_list[1]), int(input_list[2]))]
+
+                # print(" ")
+                # print("len() 4")
+                # print(rule_list)
+
+            elif len(input_list) == 5:
+
+                rule_list = []
+
+                rule_list_0 = [x * int(input_list[3]) for x in range(int(input_list[0]), int(input_list[1]), int(input_list[2]))]
+
+                for rule in rule_list_0:
+
+                    for x in range(int(input_list[4])):
+
+                        rule_list.append(rule)
+
+                # print(rule_list)
+
+            list_count = len(rule_list)
+
+        elif input_list[0] == 'fib':
+
+            input_list = input_list[1:]
+
+            rule_list = []
+
+            if len(input_list) == 1:
+
+                fibonacci(1, int(input_list[0]), rule_list)
+
+            elif len(input_list) == 2:
+
+                fibonacci(1, int(input_list[0]), rule_list, int(input_list[1]))
+
+            elif len(input_list) == 3:
+
+                fibonacci(int(input_list[2]), int(input_list[0]), rule_list, int(input_list[1]))
+
+            # print(" ")
+            # print("rule_list")
+            # print(rule_list)
+
+            list_count = len(rule_list)
+
+        return rule_list, list_count
+
+    
     for r in range(cell_rows):
         cells.append([])
 
@@ -921,24 +910,44 @@ def Chaos_Window(base, pixel_res, cell_vel):
     while run == 1:
 
         WIN.fill((0, 0, 0))
-        redraw_window()
+        redraw_window(input_box, v_input)
         clock.tick(FPS)
         # print("")
         # print("cell_rows")
         # print(cell_rows)
 
+        if list_count != 0:
+
+            if rule_list[0] < max_rule:
+
+                # print("")
+                # print('valid')
+                # print(rule_list[0])
+
+                d_rule, i_rule = rule_gen(rule_list[0], base)
+
+            else:
+
+                new_rule = rule_list[0] % max_rule
+
+                d_rule, i_rule = rule_gen(new_rule, base)
+
+            rule_list = rule_list[1:]
+
+            list_count -= 1
+
         for r in range(cell_rows):
 
             if len(cells[r]) == 0:
 
-                color, rc, row = Color_cells(color, d_rule, cell_row_width, base, row)
+                color, row = Color_cells(color, d_rule, cell_row_width, base, row)
 
                 row_l = np.ndarray.tolist(row)[0]
-                line = (row_l, rc)
+                line = tuple(row_l)
 
                 if line in page:
 
-                    if r_i == 0:
+                    if r_i == 0 and list_count == 0:
 
                         rand_count += 1
 
@@ -969,38 +978,62 @@ def Chaos_Window(base, pixel_res, cell_vel):
                         journal[rule].append(page)
                     page = []
 
-                    if base == 2:
-                        if i_rule[rand] == 0:
-                            i_rule[rand] = 1
-                            d_rule[list(d_rule.keys())[rand]] = 1
-                        elif i_rule[rand] == 1:
-                            i_rule[rand] = 0
-                            d_rule[list(d_rule.keys())[rand]] = 0
+                    if list_count == 0:
 
-                    if base == 3:
-                        if i_rule[rand] == 0:
-                            i_rule[rand] = 1
-                            d_rule[list(d_rule.keys())[rand]] = 1
-                        elif i_rule[rand] == 1:
-                            i_rule[rand] = 2
-                            d_rule[list(d_rule.keys())[rand]] = 2
-                        elif i_rule[rand] == 2:
-                            i_rule[rand] = 0
-                            d_rule[list(d_rule.keys())[rand]] = 0
+                        # print("list_count == 0:")
+                        # print("randomizer")
 
-                    if base == 4:
-                        if i_rule[rand] == 0:
-                            i_rule[rand] = 1
-                            d_rule[list(d_rule.keys())[rand]] = 1
-                        elif i_rule[rand] == 1:
-                            i_rule[rand] = 2
-                            d_rule[list(d_rule.keys())[rand]] = 2
-                        elif i_rule[rand] == 2:
-                            i_rule[rand] = 3
-                            d_rule[list(d_rule.keys())[rand]] = 3
-                        elif i_rule[rand] == 3:
-                            i_rule[rand] = 0
-                            d_rule[list(d_rule.keys())[rand]] = 0
+                        if base == 2:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 3:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 4:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 5:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 4
+                                d_rule[list(d_rule.keys())[rand]] = 4
+                            elif i_rule[rand] == 4:
+                                i_rule[rand] = 5
+                                d_rule[list(d_rule.keys())[rand]] = 5
 
 
                     # print("change")
@@ -1014,7 +1047,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
                 for i in range(cell_row_width):
 
-                    mitosis(i, r, color, rc, row, pixel_res)
+                    mitosis(i, r, color, row, pixel_res)
 
         rule = str()
         for ir in i_rule:
@@ -1035,112 +1068,270 @@ def Chaos_Window(base, pixel_res, cell_vel):
                     run = 2
 
                 if event.key == pygame.K_q:
-                    input('q', base, page)
+                    v_input = input('q', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_w:
-                    input('w', base, page)
+                    v_input = input('w', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_e:
-                    input('e', base, page)
+                    v_input = input('e', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_r:
-                    input('r', base, page)
+                    v_input = input('r', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_t:
-                    input('t', base, page)
+                    v_input = input('t', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_y:
-                    input('y', base, page)
+                    v_input = input('y', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_u:
-                    input('u', base, page)
+                    v_input = input('u', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_i:
-                    input('i', base, page)
+                    v_input = input('i', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_o:
-                    input('o', base, page)
+                    v_input = input('o', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_p:
-                    input('p', base, page)
+                    v_input = input('p', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_a:
-                    input('a', base, page)
+                    v_input = input('a', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_s:
-                    input('s', base, page)
+                    v_input = input('s', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_d:
-                    input('d', base, page)
+                    v_input = input('d', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_f:
-                    input('f', base, page)
+                    v_input = input('f', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_g:
-                    input('g', base, page)
+                    v_input = input('g', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_h:
-                    input('h', base, page)
+                    v_input = input('h', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_j:
-                    input('j', base, page)
+                    v_input = input('j', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_k:
-                    input('k', base, page)
+                    v_input = input('k', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_l:
-                    input('l', base, page)
+                    v_input = input('l', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_z:
-                    input('z', base, page)
+                    v_input = input('z', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_x:
-                    input('x', base, page)
+                    v_input = input('x', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_c:
-                    input('c', base, page)
+                    v_input = input('c', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_v:
-                    input('v', base, page)
+                    v_input = input('v', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_b:
-                    input('b', base, page)
+                    v_input = input('b', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_n:
-                    input('n', base, page)
+                    v_input = input('n', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_m:
-                    input('m', base, page)
+                    v_input = input('m', base, page, input_box, v_input)
                     page = []
 
                 if event.key == pygame.K_SPACE:
-                    input(' ', base, page)
+                    v_input = input(' ', base, page, input_box, v_input)
                     page = []
+
+                if event.key == pygame.K_0:
+
+                    v = 0
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_1:
+
+                    v = 1
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_2:
+
+                    v = 2
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_3:
+
+                    v = 3
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_4:
+
+                    v = 4
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_5:
+
+                    v = 5
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_6:
+
+                    v = 6
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_7:
+
+                    v = 7
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_8:
+
+                    v = 8
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_9:
+
+                    v = 9
+
+                    if input_box == 1:
+
+                        v_input += str(v)
+
+                if event.key == pygame.K_BACKSPACE:
+
+                    v_input = v_input[0:-1]
+
+                if event.key == pygame.K_MINUS:
+
+                    # print("underscore")
+
+                    v_input += "-"
+
+                if event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+
+                    if input_box == 0:
+
+                        input_box = 1
+
+                    else:
+
+                        if len(v_input) != 0:
+
+                            input_list = v_input.split()
+
+                            # print(" ")
+                            # print("input_list")
+                            # print(input_list)
+                            # print(len(input_list))
+                            # print(len(input_list[0]))
+
+                            if len(input_list) > 1:
+
+                                rule_list, list_count = rl_gen(input_list)
+
+                            elif v_input == 'write':
+
+                                write = 1
+
+                            elif input_list[0] == 'name':
+
+                                j_name = input_list[1]
+
+                                write = 1
+
+                            elif input_list[0] == 'invalid':
+
+                                v_input = ''
+
+                            else:
+
+                                try:
+
+                                    d_rule, i_rule = rule_gen(int(v_input), base)
+
+                                except:
+
+                                    v_input = 'invalid'
+
+                                    continue
+
+                            v_input = ''
+
+                        input_box = 0
+
+                elif event.key == pygame.K_RETURN:
+
+                    d_rule, i_rule = rule_gen(1, base)
+
+                    for letter in press:
+
+                        if letter in press_vault:
+
+                            press_vault[letter] += press[letter]
+
+                        else:
+                            press_vault[letter] = press[letter]
+
+                        press[letter] = 0
+
 
         for r in range(cell_rows):
             for cell in cells[r][:]:
@@ -1148,14 +1339,23 @@ def Chaos_Window(base, pixel_res, cell_vel):
                 if cell.y + cell.get_height() > HEIGHT:
                     cells[r].remove(cell)
 
-    j_num = len(os.listdir('journals'))
+    if write == 1:
 
-    filename = 'journals/journal_' + str(j_num)
-    outfile = open(filename, 'wb')
-    pickle.dump(journal, outfile)
-    outfile.close
+        if len(j_name) > 0:
 
-    print(len(journal))
+            filename = 'journals/journal_' + j_name
+
+        else:
+
+            j_num = len(os.listdir('journals'))
+
+            filename = 'journals/journal_' + str(j_num)
+
+        outfile = open(filename, 'wb')
+        pickle.dump(journal, outfile)
+        outfile.close
+
+        print(len(journal))
 
 
 #menus
@@ -1366,4 +1566,4 @@ def menu():
 # menu()
 
 
-Chaos_Window(5, 2, 7)
+Chaos_Window(4, 2, 10)

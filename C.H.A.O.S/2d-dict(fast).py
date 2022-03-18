@@ -276,7 +276,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-size = 3
+size = 5
 WIDTH, HEIGHT = (size * 30 + 3) * 2, (size * 30 + 3) * 2
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
@@ -291,7 +291,7 @@ click = False
 
 def Chaos_Window(base, pixel_res):
 
-    run, FPS, rule, clock, journal, press, view = 1, 3840, 298364658762384345763829470, pygame.time.Clock(), dict(), dict(), 4
+    run, FPS, rule, clock, journal, press, view = 1, 3840, 98758628239846752987346374599823174569333, pygame.time.Clock(), dict(), dict(), 4
     cell_row_width, cell_rows = int(WIDTH / pixel_res), int(HEIGHT / pixel_res)
     d_rule, i_rule = rule_gen_2(rule, base)
     canvas = np.zeros((cell_rows, cell_row_width), dtype='int8')
