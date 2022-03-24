@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 2001
+length = 1501
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -385,7 +385,7 @@ def map(canvas, length, width, rule, base, start, direction, path, rc = 0, plot=
                 cMap = c.ListedColormap([grey, cyan, magenta, green, black])
 
             if base == 3:
-                cMap = c.ListedColormap([white, red, blue, green])
+                cMap = c.ListedColormap([black, magenta, cyan, red])
 
             if base == 2:
                 cMap = c.ListedColormap([black, magenta, cyan])
@@ -498,13 +498,13 @@ journaling = 0
 leveling = 0
 
 size = length
-l_size = 301
-space = 20
+l_size = 225
+space = 15
 
-offset_size = 24
-density = 5
-x_o = 40
-y_o = 80
+offset_size = 18
+density = 3
+x_o = 20
+y_o = 60
 
 def kord_ami(size, l_size, space, offset_size, x_o, y_o):
 
