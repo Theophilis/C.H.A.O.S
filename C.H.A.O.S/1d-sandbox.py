@@ -195,8 +195,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-# WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
-WIDTH, HEIGHT = 800, 800
+WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
+# WIDTH, HEIGHT = 800, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -316,7 +316,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
     run = 1
     FPS = 30
-    rule = 64443191043997765918127867791009023071
+    rule = 21621
     step = 0
     clock = pygame.time.Clock()
 
@@ -381,7 +381,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
             v_input_r = small_font.render(v_input, 1, (0, 0, 0))
 
-            type_box = pygame.Rect(10, 10, v_input_r.get_width() + 2, 20)
+            type_box = pygame.Rect(10, 10, v_input_r.get_width() + 2, v_input_r.get_height() + 2)
 
             pygame.draw.rect(WIN, (255, 255, 255), type_box)
 
@@ -1285,7 +1285,10 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
                             if len(input_list) > 1:
 
-                                rule_list, list_count = rl_gen(input_list)
+                                try:
+                                    rule_list, list_count = rl_gen(input_list)
+                                except:
+                                    v_input = 'invalid'
 
                             elif v_input == 'write':
 
@@ -1379,7 +1382,8 @@ def draw_text(text, font, color_dt, surface, x, y):
 def menu():
 
     click = False
-    input_text = ''
+    input_text_c = ''
+    input_text_v = ''
 
     while True:
 
@@ -1389,7 +1393,8 @@ def menu():
         draw_text('C311UL4R H4PT1C 4UT0M4T4 0P3R4T1NG 5Y5T3M', TITLE_FONT, (10, 100, 10), WIN, WIDTH/2 - 655, 100)
         pygame.draw.rect(WIN, (10, 100, 10), t_line)
 
-        text_surface = main_font.render(input_text, True, (100, 10, 100))
+        text_surface_c = main_font.render(input_text_c, True, (100, 10, 10))
+        text_surface_v = main_font.render(input_text_v, True, (100, 10, 100))
         mx, my = pygame.mouse.get_pos()
 
 
@@ -1402,20 +1407,22 @@ def menu():
         size_5_i = pygame.Rect(WIDTH/2 - 300, 600, 197, 43)
         size_10_i = pygame.Rect(WIDTH/2 - 300, 700, 197, 43)
 
-        binary = pygame.Rect(WIDTH/2 + 100, 400, 200, 50)
-        ternary = pygame.Rect(WIDTH/2 + 100, 500, 200, 50)
-        quaternary = pygame.Rect(WIDTH/2 + 100, 600, 200, 50)
-        binary_i = pygame.Rect(WIDTH/2 + 100, 400, 197, 43)
-        ternary_i = pygame.Rect(WIDTH/2 + 100, 500, 197, 43)
-        quaternary_i = pygame.Rect(WIDTH/2 + 100, 600, 197, 43)
+        # binary = pygame.Rect(WIDTH/2 + 100, 400, 200, 50)
+        # ternary = pygame.Rect(WIDTH/2 + 100, 500, 200, 50)
+        # quaternary = pygame.Rect(WIDTH/2 + 100, 600, 200, 50)
+        # binary_i = pygame.Rect(WIDTH/2 + 100, 400, 197, 43)
+        # ternary_i = pygame.Rect(WIDTH/2 + 100, 500, 197, 43)
+        # quaternary_i = pygame.Rect(WIDTH/2 + 100, 600, 197, 43)
 
-        vel_rect = pygame.Rect(WIDTH/2 + 100, 700, 200, 50)
-        vel_rect_i = pygame.Rect(WIDTH/2 + 100, 700, 197, 43)
+        color_rect = pygame.Rect(WIDTH/2 + 100, 400, 200, 50)
+        color_rect_i = pygame.Rect(WIDTH/2 + 100, 400, 197, 43)
 
-        enter = pygame.Rect(WIDTH/2 - 100, 850, 200, 50)
-        enter_i = pygame.Rect(WIDTH/2 - 100, 850, 197, 43)
+        vel_rect = pygame.Rect(WIDTH/2 + 100, 500, 200, 50)
+        vel_rect_i = pygame.Rect(WIDTH/2 + 100, 500, 197, 43)
 
-        underline_1 = pygame.Rect(WIDTH/2 + 100, 385, 200, 2)
+        enter = pygame.Rect(WIDTH/2 + 100, 700, 200, 50)
+        enter_i = pygame.Rect(WIDTH/2 + 100, 700, 197, 43)
+
         underline_2 = pygame.Rect(WIDTH/2 - 300, 385, 200, 2)
 
 
@@ -1434,42 +1441,54 @@ def menu():
         draw_text('Cell Size', main_font, (10, 100, 10), WIN, WIDTH/2 - 280, 340)
         pygame.draw.rect(WIN, (10, 100, 10), underline_2)
 
-        pygame.draw.rect(WIN, (100, 10, 10), binary)
-        pygame.draw.rect(WIN, (100, 10, 10), ternary)
-        pygame.draw.rect(WIN, (100, 10, 10), quaternary)
-        pygame.draw.rect(WIN, (0, 0, 0), binary_i)
-        pygame.draw.rect(WIN, (0, 0, 0), ternary_i)
-        pygame.draw.rect(WIN, (0, 0, 0), quaternary_i)
-        draw_text(' Two', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 400)
-        draw_text(' Three', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 500)
-        draw_text(' Four', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 600)
-        draw_text('Number of Colors', main_font, (100, 10, 10), WIN, WIDTH/2 + 80, 340)
-        pygame.draw.rect(WIN, (100, 10, 10), underline_1)
+        # pygame.draw.rect(WIN, (100, 10, 10), binary)
+        # pygame.draw.rect(WIN, (100, 10, 10), ternary)
+        # pygame.draw.rect(WIN, (100, 10, 10), quaternary)
+        # pygame.draw.rect(WIN, (0, 0, 0), binary_i)
+        # pygame.draw.rect(WIN, (0, 0, 0), ternary_i)
+        # pygame.draw.rect(WIN, (0, 0, 0), quaternary_i)
+        # draw_text(' Two', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 400)
+        # draw_text(' Three', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 500)
+        # draw_text(' Four', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 600)
+        # draw_text('Number of Colors', main_font, (100, 10, 10), WIN, WIDTH/2 + 80, 340)
+        # pygame.draw.rect(WIN, (100, 10, 10), underline_1)
+
+        pygame.draw.rect(WIN, (100, 10, 10), color_rect)
+        pygame.draw.rect(WIN, (0, 0, 0), color_rect_i)
+        draw_text('<place mouse-pointer on box to type;', small_font, (100, 10, 10), WIN, WIDTH/2 + 350, 400)
+        draw_text('choose a single number 2, 3, 4, or 5', small_font, (100, 10, 10), WIN, WIDTH/2 + 360, 425)
 
         pygame.draw.rect(WIN, (100, 10, 100), vel_rect)
         pygame.draw.rect(WIN, (0, 0, 0), vel_rect_i)
-        draw_text('^place mouse-pointer on box to type;', small_font, (100, 10, 100), WIN, WIDTH/2 + 200, 775)
-        draw_text('numbers between 1-10 recommended', small_font, (100, 10, 100), WIN, WIDTH/2 + 210, 800)
+        draw_text('<place mouse-pointer on box to type;', small_font, (100, 10, 100), WIN, WIDTH/2 + 350, 500)
+        draw_text('numbers between 1-10 recommended', small_font, (100, 10, 100), WIN, WIDTH/2 + 360, 525)
 
         pygame.draw.rect(WIN, (10, 10, 100), enter)
         pygame.draw.rect(WIN, (0, 0, 0), enter_i)
-        draw_text(' Enter', main_font, (10, 10, 100), WIN, WIDTH/2 - 100, 850)
+        draw_text(' Enter', main_font, (10, 10, 100), WIN, WIDTH/2 + 100, 700)
 
-        draw_text('Instructions:', small_font, (200, 200, 200), WIN, 50, 275)
-        draw_text('1. Choose a cell-size. [GREEN]', small_font, (200, 200, 200), WIN, 50, 325)
-        draw_text('     -Start with X-large to be safe. Smaller cells', text_font, (200, 200, 200), WIN, 50, 365)
-        draw_text('         may cause issues on slower computers.', text_font, (200, 200, 200), WIN, 50, 390)
-        draw_text('2. Choose the number of cell colors. [RED]', small_font, (200, 200, 200), WIN, 50, 425)
-        draw_text('3. Set a desired speed. [PURPLE]', small_font, (200, 200, 200), WIN, 50, 475)
-        draw_text('4. Press Enter [BLUE]', small_font, (200, 200, 200), WIN, 50, 525)
-        draw_text('     The program will have loaded once you see Step & Count', text_font, (200, 200, 200), WIN, 50, 575)
-        draw_text('     in the top right, and Rule in the bottom left.', text_font, (200, 200, 200), WIN, 50, 600)
-        draw_text('     Typing has no effect until the first row of colored', text_font, (200, 200, 200), WIN, 50, 625)
-        draw_text('     cells reach the bottom of the page.', text_font, (200, 200, 200), WIN, 50, 650)
-        draw_text('     Two cell colors uses the keys (asdf-jkl;) to change the rules.', text_font, (200, 200, 200), WIN, 50, 675)
-        draw_text('     For three colors+, the best effects are seen while typing full sentences', text_font, (200, 200, 200), WIN, 50, 700)
-        draw_text('     Press the escape key to exit the program at any time.', text_font, (200, 200, 200), WIN, 50, 725)
-        draw_text('     Enjoy!', text_font, (200, 200, 200), WIN, 50, 750)
+        draw_text('Instructions:', small_font, (200, 200, 200), WIN, 50, 225)
+        draw_text('1. Choose a cell-size. [GREEN]', small_font, (200, 200, 200), WIN, 50, 275)
+        draw_text('     -Start with X-large to be safe. Smaller cells', text_font, (200, 200, 200), WIN, 50, 315)
+        draw_text('         may cause issues on slower computers.', text_font, (200, 200, 200), WIN, 50, 340)
+        draw_text('2. Choose the number of cell colors. [RED]', small_font, (200, 200, 200), WIN, 50, 375)
+        draw_text('3. Set a desired speed. [PURPLE]', small_font, (200, 200, 200), WIN, 50, 425)
+        draw_text('4. Press Enter [BLUE]', small_font, (200, 200, 200), WIN, 50, 475)
+        draw_text('     The program will have loaded once you see Step & Count', text_font, (200, 200, 200), WIN, 50, 525)
+        draw_text('     in the top right, and Rule in the bottom left.', text_font, (200, 200, 200), WIN, 50, 550)
+        draw_text('     Typing has no effect until the first row of colored', text_font, (200, 200, 200), WIN, 50, 575)
+        draw_text('     cells reach the bottom of the page.', text_font, (200, 200, 200), WIN, 50, 600)
+        draw_text('     Two cell colors uses the keys (asdf jkl;) to change the rules.', text_font, (200, 200, 200), WIN, 50, 625)
+        draw_text('     For three colors+, the best effects are seen while typing full sentences', text_font, (200, 200, 200), WIN, 50, 650)
+        draw_text('     Press the escape key to exit the program at any time.', text_font, (200, 200, 200), WIN, 50, 675)
+        draw_text('     Enjoy!', text_font, (200, 200, 200), WIN, 50, 700)
+        draw_text('Command Menu (Advanced Technique)', small_font, (200, 200, 200), WIN, 50, 750)
+        draw_text('     Press shift & enter keys, at the same time, to activate. A white box will appear in the top left corner of the screen.', text_font, (200, 200, 200), WIN, 50, 800)
+        draw_text('     Once the desired command is typed into the box, press the shift & enter keys again to input the command and close the box.', text_font, (200, 200, 200), WIN, 50, 825)
+        draw_text('     All commands are lowercase or integer values, spaces matter, and invalid commands will return a warning in the type field', text_font, (200, 200, 200), WIN, 50, 850)
+        draw_text('     To save the designs found during a session input(write) or (name *desired-name*). names longer than one word must be separated by a -', text_font, (200, 200, 200), WIN, 50, 875)
+        draw_text('     All values are accepted as inputs and will change the rule accordingly', text_font, (200, 200, 200), WIN, 50, 900)
+
 
         if size_2.collidepoint((mx, my)):
             if click:
@@ -1492,53 +1511,87 @@ def menu():
                 pixel_res = 10
                 draw_text(' X-large', main_font, (255, 255, 255), WIN, WIDTH / 2 - 300, 700)
 
-        if binary.collidepoint((mx, my)):
-            if click:
-                print("binary")
-                base = 2
-                draw_text(' Two', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 400)
-        if ternary.collidepoint((mx, my)):
-            if click:
-                print("ternary")
-                base = 3
-                draw_text(' Three', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 500)
-        if quaternary.collidepoint((mx, my)):
-            if click:
-                print("quaternary")
-                base = 4
-                draw_text(' Four', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 600)
+        # if binary.collidepoint((mx, my)):
+        #     if click:
+        #         print("binary")
+        #         base = 2
+        #         draw_text(' Two', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 400)
+        # if ternary.collidepoint((mx, my)):
+        #     if click:
+        #         print("ternary")
+        #         base = 3
+        #         draw_text(' Three', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 500)
+        # if quaternary.collidepoint((mx, my)):
+        #     if click:
+        #         print("quaternary")
+        #         base = 4
+        #         draw_text(' Four', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 600)
 
-        if vel_rect.collidepoint((mx, my)):
-            draw_text('Speed:', main_font, (100, 10, 100), WIN, WIDTH / 2 + 100, 700)
-            WIN.blit(text_surface, (WIDTH / 2 + 200, 700))
+        if color_rect.collidepoint((mx, my)):
+            draw_text('Colors:', main_font, (100, 10, 10), WIN, WIDTH / 2 + 100, 400)
+            WIN.blit(text_surface_c, (WIDTH / 2 + 200, 400))
+
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == K_1:
-                        input_text += '1'
+                        input_text_c += '1'
                     if event.key == K_2:
-                        input_text += '2'
+                        input_text_c += '2'
                     if event.key == K_3:
-                        input_text += '3'
+                        input_text_c += '3'
                     if event.key == K_4:
-                        input_text += '4'
+                        input_text_c += '4'
                     if event.key == K_5:
-                        input_text += '5'
+                        input_text_c += '5'
                     if event.key == K_6:
-                        input_text += '6'
+                        input_text_c += '6'
                     if event.key == K_7:
-                        input_text += '7'
+                        input_text_c += '7'
                     if event.key == K_8:
-                        input_text += '8'
+                        input_text_c += '8'
                     if event.key == K_9:
-                        input_text += '9'
+                        input_text_c += '9'
                     if event.key == K_0:
-                        input_text += '0'
+                        input_text_c += '0'
                     if event.key == K_BACKSPACE:
-                        input_text = input_text[:len(input_text) - 1]
-                    print(input_text)
+                        input_text_c = input_text_c[:len(input_text_c) - 1]
+                    print(input_text_c)
 
-            if len(input_text) > 0:
-                cell_vel = int(input_text)
+            if len(input_text_c) > 0:
+                base = int(input_text_c)
+
+        if vel_rect.collidepoint((mx, my)):
+            draw_text('Speed:', main_font, (100, 10, 100), WIN, WIDTH / 2 + 100, 500)
+            WIN.blit(text_surface_v, (WIDTH / 2 + 200, 500))
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == K_1:
+                        input_text_v += '1'
+                    if event.key == K_2:
+                        input_text_v += '2'
+                    if event.key == K_3:
+                        input_text_v += '3'
+                    if event.key == K_4:
+                        input_text_v += '4'
+                    if event.key == K_5:
+                        input_text_v += '5'
+                    if event.key == K_6:
+                        input_text_v += '6'
+                    if event.key == K_7:
+                        input_text_v += '7'
+                    if event.key == K_8:
+                        input_text_v += '8'
+                    if event.key == K_9:
+                        input_text_v += '9'
+                    if event.key == K_0:
+                        input_text_v += '0'
+                    if event.key == K_BACKSPACE:
+                        input_text_v = input_text_v[:len(input_text_v) - 1]
+                    print(input_text_v)
+
+            if len(input_text_v) > 0:
+                cell_vel = int(input_text_v)
 
         if enter.collidepoint((mx, my)):
             if click:
@@ -1563,7 +1616,7 @@ def menu():
         pygame.display.update()
         mainClock.tick(60)
 
-# menu()
+menu()
 
 
-Chaos_Window(4, 2, 10)
+# Chaos_Window(3, 2, 7)

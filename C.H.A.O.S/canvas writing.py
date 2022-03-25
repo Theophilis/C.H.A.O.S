@@ -4,58 +4,41 @@ from matplotlib import colors as c
 
 plt.ioff()
 
-size = 501
-l_size = 71
+size = 41
+l_size = 31
 space = 5
 
-def draw_r(size, canvas, corner):
-
-    canvas[corner[1]:corner[1] + size, corner[0]] = 1
-
-    r_coord_0 = (corner[1] + int(size/2), corner[0] + 1)
-    r_coord_1 = (corner[1], corner[0] + 1)
-    r_coord_2 = (corner[1] + int(size/2), corner[0] + 1 + int(size/5))
-    r_coord_3 = (corner[1], corner[0] + 1 + int(size/5))
-
-    # print(r_coord_1)
-    # print(r_coord_2)
 
 
-    canvas[corner[1], corner[0]:corner[0] + int(size/4)] = 1
-    canvas[corner[1] + int(size/2), corner[0]:corner[0] + int(size/4)] = 1
+def draw_a(size, canvas, corner):
+
+    apex = (corner[1], corner[0] + int(size/2))
+
+    canvas[apex] = 1
+
+    a_legs = dict()
+
+    for x in range(2):
+        a_legs[x] = []
 
 
-    r_legs = dict()
+    for x in range(size - 1):
 
-    for x in range(3):
-        r_legs[x] = []
+        if x % 2 == 0:
 
-    for x in range(int(size/2) + 1):
+            a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x/2)))
+            a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x/2)))
 
-        canvas[corner[1] + int(size/2) + x, corner[0] + int(size/5) + int(x/2)] = 1
+        else:
 
-    for x in range(int(size/4) + 1):
+            a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 -int(x/2)))
+            a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x/2)))
 
-        canvas[corner[1] + x, corner[0] + int(size/4) + int(x/2)] = 1
-        canvas[corner[1] + int(size/2) - x, corner[0] + int(size/4) + int(x/2)] = 1
+    for x in range(2):
+        for a in a_legs[x]:
+            canvas[a] = 1
 
-def draw_o(size, canvas, corner):
-
-    for x in range(int(size/3) + 1):
-
-        canvas[corner[1] + int(size/3) - x, corner[0] + int(x/2)] = 1
-        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2)] = 1
-        canvas[corner[1] + int(size/3) - x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
-        canvas[corner[1] + int(size/3 * 2) + x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
-
-
-        canvas[corner[1] + int(size/3) + x, corner[0]] = 1
-        canvas[corner[1] + int(size/3) + x, corner[0] + int(size/3 * 2)] = 1
-
-    for x in range(int(size/3) + 2):
-
-        canvas[corner[1], corner[0] + int(size/3/2) + x] = 1
-        canvas[corner[1] + size - 1, corner[0] + int(size/3/2) + x] = 1
+    canvas[a_legs[0][int(len(a_legs[0])/2)][0], a_legs[0][int(len(a_legs[0])/2)][1]:a_legs[1][int(len(a_legs[1])/2)][1]] = 1
 
 def draw_b(size, canvas, corner):
 
@@ -73,37 +56,20 @@ def draw_b(size, canvas, corner):
         canvas[corner[1] + x + int(size/2), corner[0] + int(size/4) + int(x/2)] = 1
         canvas[corner[1] + int(size) - x - 1, corner[0] + int(size/4) + int(x/2)] = 1
 
-def draw_k(size, canvas, corner):
+def draw_c(size, canvas, corner):
 
-    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    for x in range(int(size/3) + 1):
 
-    k_coord_0 = (corner[1] + int(size/2), corner[0] + 1)
+        canvas[corner[1] + int(size/3) - x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2)] = 1
 
-    canvas[k_coord_0] = 1
+        canvas[corner[1] + int(size/3) + x, corner[0]] = 1
 
-    k_legs = dict()
 
-    for x in range(2):
-        k_legs[x] = []
+    for x in range(int(size/3) + 2):
 
-    for x in range(int(size/2)):
-
-        if x == 0:
-
-            k_legs[0].append(k_coord_0)
-            k_legs[1].append(k_coord_0)
-
-        k_legs[0].append((k_coord_0[0] + 1 + x, k_coord_0[1] + 1 + x))
-        k_legs[1].append((k_coord_0[0] - 1 - x, k_coord_0[1] + 1 + x))
-
-    # print(k_legs[0])
-    # print(k_legs[1])
-
-    for k in k_legs[0]:
-        canvas[k] = 1
-
-    for k in k_legs[1]:
-        canvas[k] = 1
+        canvas[corner[1], corner[0] + int(size/3/2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size/3/2) + x] = 1
 
 def draw_d(size, canvas, corner):
 
@@ -145,35 +111,97 @@ def draw_d(size, canvas, corner):
 
     canvas[d_legs[0][-1][0]:d_legs[1][-1][0], d_legs[0][-1][1]] = 1
 
-def draw_a(size, canvas, corner):
+def draw_e(size, canvas, corner):
 
-    apex = (corner[1], corner[0] + int(size/2))
+    canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    canvas[corner[1], corner[0]:corner[0] + int(size/3)] = 1
+    canvas[corner[1] + int(size/2), corner[0]:corner[0] + int(size/4)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size/3)] = 1
 
-    canvas[apex] = 1
+def draw_f(size, canvas, corner):
 
-    a_legs = dict()
+    canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    canvas[corner[1], corner[0]:corner[0] + int(size/3)] = 1
+    canvas[corner[1] + int(size/2), corner[0]:corner[0] + int(size/4)] = 1
+
+def draw_g(size, canvas, corner):
+
+    canvas[corner[1] + int(size/3 * 2), corner[0] + int(size/3):corner[0] + int(size/3 * 2)] = 1
+
+    for x in range(int(size/3) + 1):
+
+        canvas[corner[1] + int(size/3) - x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
+
+        canvas[corner[1] + int(size/3) + x, corner[0]] = 1
+
+    for x in range(int(size/3) + 2):
+
+        canvas[corner[1], corner[0] + int(size/3/2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size/3/2) + x] = 1
+
+def draw_h(size, canvas, corner):
+
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    canvas[corner[1]:corner[1] + size, corner[0] + int(size/2)] = 1
+    canvas[corner[1] + int(size/2), corner[0]:corner[0] + int(size/2)] = 1
+
+def draw_i(size, canvas, corner):
+
+    canvas[corner[1], corner[0] + int(size/4):corner[0] + size - int(size/4)] = 1
+    canvas[corner[1] + size - 1, corner[0] + int(size/4):corner[0] + size - int(size/4)] = 1
+    canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size/2)] = 1
+
+def draw_j(size, canvas, corner):
+
+    for x in range(int(size/3) + 1):
+
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
+
+    for x in range(int(size/3*2)):
+        canvas[corner[1] + x, corner[0] + int(size/3 * 2)] = 1
+
+    for x in range(int(size/3) + 2):
+
+        canvas[corner[1] + size - 1, corner[0] + int(size/3/2) + x] = 1
+
+def draw_k(size, canvas, corner):
+
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    k_coord_0 = (corner[1] + int(size/2), corner[0] + 1)
+
+    canvas[k_coord_0] = 1
+
+    k_legs = dict()
 
     for x in range(2):
-        a_legs[x] = []
+        k_legs[x] = []
 
+    for x in range(int(size/2)):
 
-    for x in range(size - 1):
+        if x == 0:
 
-        if x % 2 == 0:
+            k_legs[0].append(k_coord_0)
+            k_legs[1].append(k_coord_0)
 
-            a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x/2)))
-            a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x/2)))
+        k_legs[0].append((k_coord_0[0] + 1 + x, k_coord_0[1] + 1 + x))
+        k_legs[1].append((k_coord_0[0] - 1 - x, k_coord_0[1] + 1 + x))
 
-        else:
+    # print(k_legs[0])
+    # print(k_legs[1])
 
-            a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 -int(x/2)))
-            a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x/2)))
+    for k in k_legs[0]:
+        canvas[k] = 1
 
-    for x in range(2):
-        for a in a_legs[x]:
-            canvas[a] = 1
+    for k in k_legs[1]:
+        canvas[k] = 1
 
-    canvas[a_legs[0][int(len(a_legs[0])/2)][0], a_legs[0][int(len(a_legs[0])/2)][1]:a_legs[1][int(len(a_legs[1])/2)][1]] = 1
+def draw_l(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2)] = 1
 
 def draw_m(size, canvas, corner):
 
@@ -205,30 +233,164 @@ def draw_m(size, canvas, corner):
         for m in m_legs[x]:
             canvas[m] = 1
 
-def draw_i(size, canvas, corner):
-
-    canvas[corner[1], corner[0] + int(size/4):corner[0] + size - int(size/4)] = 1
-    canvas[corner[1] + size - 1, corner[0] + int(size/4):corner[0] + size - int(size/4)] = 1
-    canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size/2)] = 1
-
-def draw_e(size, canvas, corner):
+def draw_n(size, canvas, corner):
 
     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
-    canvas[corner[1], corner[0]:corner[0] + int(size/3)] = 1
+    canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size/2)] = 1
+
+    for x in range(size - 1):
+
+        canvas[corner[1] + x, corner[0] + int(x/2)] = 1
+
+def draw_o(size, canvas, corner):
+
+    for x in range(int(size/3) + 1):
+
+        canvas[corner[1] + int(size/3) - x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3) - x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
+
+
+        canvas[corner[1] + int(size/3) + x, corner[0]] = 1
+        canvas[corner[1] + int(size/3) + x, corner[0] + int(size/3 * 2)] = 1
+
+    for x in range(int(size/3) + 2):
+
+        canvas[corner[1], corner[0] + int(size/3/2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size/3/2) + x] = 1
+
+def draw_p(size, canvas, corner):
+
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    canvas[corner[1], corner[0]:corner[0] + int(size/4)] = 1
     canvas[corner[1] + int(size/2), corner[0]:corner[0] + int(size/4)] = 1
-    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size/3)] = 1
+
+    for x in range(int(size/4) + 1):
+
+        canvas[corner[1] + x, corner[0] + int(size/4) + int(x/2)] = 1
+        canvas[corner[1] + int(size/2) - x, corner[0] + int(size/4) + int(x/2)] = 1
+
+def draw_q(size, canvas, corner):
+
+    for x in range(int(size/3) + 1):
+
+        canvas[corner[1] + int(size/3) - x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3) - x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2) + int(size/3) + int(size/3/2)] = 1
+
+        canvas[corner[1] + int(size/3) + x, corner[0]] = 1
+        canvas[corner[1] + int(size/3) + x, corner[0] + int(size/3 * 2)] = 1
+
+    for x in range(int(size/3) + 2):
+
+        canvas[corner[1], corner[0] + int(size/3/2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size/3/2) + x] = 1
+
+def draw_r(size, canvas, corner):
+
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    r_coord_0 = (corner[1] + int(size/2), corner[0] + 1)
+    r_coord_1 = (corner[1], corner[0] + 1)
+    r_coord_2 = (corner[1] + int(size/2), corner[0] + 1 + int(size/5))
+    r_coord_3 = (corner[1], corner[0] + 1 + int(size/5))
+
+    # print(r_coord_1)
+    # print(r_coord_2)
+
+
+    canvas[corner[1], corner[0]:corner[0] + int(size/4)] = 1
+    canvas[corner[1] + int(size/2), corner[0]:corner[0] + int(size/4)] = 1
+
+
+    r_legs = dict()
+
+    for x in range(3):
+        r_legs[x] = []
+
+    for x in range(int(size/2) + 1):
+
+        canvas[corner[1] + int(size/2) + x, corner[0] + int(size/5) + int(x/2)] = 1
+
+    for x in range(int(size/4) + 1):
+
+        canvas[corner[1] + x, corner[0] + int(size/4) + int(x/2)] = 1
+        canvas[corner[1] + int(size/2) - x, corner[0] + int(size/4) + int(x/2)] = 1
+
+def draw_s(size, canvas, corner):
+
+    canvas[corner[1] + int(size/6):corner[1] + int(size/6) * 2, corner[0]] = 1
+    canvas[corner[1] + int(size/6) * 4:corner[1] + int(size/6) * 5, corner[0] + int(size/2)] = 1
+    canvas[corner[1], corner[0] + int(size/6):corner[0] + int(size/2)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size/2) - int(size/6)] = 1
+
+    for x in range(int(size/2)):
+        canvas[corner[1] + int(size/6) * 2 + int(5 * x/6) - 1, corner[0] + x] = 1
+
+    for x in range(int(size/6)):
+
+        canvas[corner[1] + int(size/6) - x, corner[0] + x] = 1
+        canvas[corner[1] + int(size/6) * 5 + x, corner[0] + int(size/2) - x - 1] = 1
 
 def draw_t(size, canvas, corner):
 
     canvas[corner[1]:corner[1] + size, corner[0] + int(size/2)] = 1
     canvas[corner[1], corner[0] + int(size/5):corner[0] + size - int(size/5)] = 1
 
-def draw_h(size, canvas, corner):
+def draw_u(size, canvas, corner):
 
-    canvas[corner[1]:corner[1] + size, corner[0]] = 1
-    canvas[corner[1]:corner[1] + size, corner[0] + int(size/2)] = 1
-    canvas[corner[1] + int(size/2), corner[0]:corner[0] + int(size/2)] = 1
+    for x in range(int(size/3) + 1):
 
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + int(size/3 * 2) + x, corner[0] - int(x/2) + int(size/3 * 2)] = 1
+
+    for x in range(int(size/3*2)):
+        canvas[corner[1] + x, corner[0]] = 1
+        canvas[corner[1] + x, corner[0] + int(size/3 * 2)] = 1
+
+    for x in range(int(size/3) + 2):
+
+        canvas[corner[1] + size - 1, corner[0] + int(size/3/2) + x] = 1
+
+def draw_v(size, canvas, corner):
+
+    for x in range(size - 1):
+        canvas[corner[1] + x, corner[0] + int(x/3)] = 1
+        canvas[corner[1] + x, corner[0] + int(size/3*2) - int(x/3) - 1] = 1
+
+def draw_w(size, canvas, corner):
+
+    for x in range(size):
+
+        canvas[corner[1] + x, corner[0] + int(x/4)] = 1
+        canvas[corner[1] + x, corner[0] + int(size/2) - int(x/4)] = 1
+        canvas[corner[1] + x, corner[0] + int(x/4) + int(size/2)] = 1
+        canvas[corner[1] + x, corner[0] + int(size) - int(x/4) - 1] = 1
+
+def draw_x(size, canvas, corner):
+
+    for x in range(size - 1):
+        canvas[corner[1] + x, corner[0] + int(x/2)] = 1
+        canvas[corner[1] + x, corner[0] + int(size/2) - int(x/2) - 1] = 1
+
+def draw_y(size, canvas, corner):
+
+    canvas[corner[1] + int(size/2):corner[1] + int(size), corner[0] + int(size/2)] = 1
+
+    for x in range(int(size/2)):
+        canvas[corner[1] + x, corner[0] + int(size/4) + int(x/2)] = 1
+        canvas[corner[1] + x, corner[0] + int(size/4*3) - int(x/2)] = 1
+
+def draw_z(size, canvas, corner):
+    canvas[corner[1], corner[0]:corner[0] + int(size/3*2)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size/3*2)] = 1
+
+    for x in range(size):
+        canvas[corner[1] + x, corner[0] + int(size/3*2) - int(2*x/3)] = 1
 
 
 
@@ -601,14 +763,16 @@ def breathe(size, l_size, space, offset_size, density, x_o, y_o):
 
     return canvas
 
-canvas = breathe(size, l_size, space, 10, 2, 10, 20)
 
-#l_size letter width chart
-#    k  o  r  d  a  m  i
-#11: 7  8  6  7  11 11 7
-#13: 8  10 7  9  13 13 7
-#15: 9  11 8  11 15 15 9
-#17: 10 13 9  11 17 17 9
+
+
+# canvas = breathe(size, l_size, space, 10, 2, 10, 20)
+
+
+
+canvas = np.zeros((size, size), dtype='int8')
+
+draw_j(l_size, canvas, (2, 2))
 
 
 magenta = (1, 0, 1)
