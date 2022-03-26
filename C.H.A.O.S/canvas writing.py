@@ -4,10 +4,9 @@ from matplotlib import colors as c
 
 plt.ioff()
 
-size = 41
-l_size = 31
-space = 5
-
+size = 2001
+l_size = 241
+space = 40
 
 
 def draw_a(size, canvas, corner):
@@ -764,15 +763,162 @@ def breathe(size, l_size, space, offset_size, density, x_o, y_o):
     return canvas
 
 
+def mckinley(size, l_size, space, offset_size, density, x_o, y_o):
 
+    def draw_m(size, canvas, corner):
+
+        canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        canvas[corner[1]:corner[1] + size, corner[0] + size - 1] = 1
+
+        apex = (corner[1] + size - 1, corner[0] + int(size / 2))
+
+        canvas[apex] = 1
+
+        m_legs = dict()
+
+        for x in range(2):
+            m_legs[x] = []
+
+        for x in range(size - 2):
+
+            if x % 2 == 0:
+
+                m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+                m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+
+            else:
+
+                m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+                m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+
+        for x in range(2):
+            for m in m_legs[x]:
+                canvas[m] = 1
+
+    def draw_c(size, canvas, corner):
+
+        for x in range(int(size / 3) + 1):
+            canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+            canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+
+            canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+
+        for x in range(int(size / 3) + 2):
+            canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+            canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+
+    def draw_k(size, canvas, corner):
+
+        canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+        k_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
+
+        canvas[k_coord_0] = 1
+
+        k_legs = dict()
+
+        for x in range(2):
+            k_legs[x] = []
+
+        for x in range(int(size / 2)):
+
+            if x == 0:
+                k_legs[0].append(k_coord_0)
+                k_legs[1].append(k_coord_0)
+
+            k_legs[0].append((k_coord_0[0] + 1 + x, k_coord_0[1] + 1 + x))
+            k_legs[1].append((k_coord_0[0] - 1 - x, k_coord_0[1] + 1 + x))
+
+        # print(k_legs[0])
+        # print(k_legs[1])
+
+        for k in k_legs[0]:
+            canvas[k] = 1
+
+        for k in k_legs[1]:
+            canvas[k] = 1
+
+    def draw_i(size, canvas, corner):
+
+        canvas[corner[1], corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+        canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+
+    def draw_n(size, canvas, corner):
+
+        canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+        canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+
+        for x in range(size - 1):
+            canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
+
+    def draw_l(size, canvas, corner):
+        canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+        canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2)] = 1
+
+    def draw_e(size, canvas, corner):
+
+        canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+        canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+        canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+        canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
+
+    def draw_y(size, canvas, corner):
+
+        canvas[corner[1] + int(size / 2):corner[1] + int(size), corner[0] + int(size / 2)] = 1
+
+        for x in range(int(size / 2)):
+            canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+            canvas[corner[1] + x, corner[0] + int(size / 4 * 3) - int(x / 2)] = 1
+
+
+
+    canvas = np.zeros((size, size), dtype='int8')
+
+
+    for offset in range(0, offset_size, density):
+
+        draw_m(l_size, canvas, (x_o + offset, y_o))
+        draw_c(l_size, canvas, (x_o + offset + l_size + space, y_o))
+        draw_k(l_size, canvas, (x_o + offset + l_size * 2 + space, y_o))
+        draw_i(l_size, canvas, (x_o + offset + l_size * 3 + space, y_o))
+        draw_n(l_size, canvas, (x_o + offset + l_size * 4 + space, y_o))
+        draw_l(l_size, canvas, (x_o + offset + l_size * 5 + space, y_o))
+        draw_e(l_size, canvas, (x_o + offset + l_size * 6 + space, y_o))
+        draw_y(l_size, canvas, (x_o + offset + l_size * 7 + space, y_o))
+
+        draw_m(l_size, canvas, (x_o - offset, y_o))
+        draw_c(l_size, canvas, (x_o - offset + l_size + space, y_o))
+        draw_k(l_size, canvas, (x_o - offset + l_size * 2 + space, y_o))
+        draw_i(l_size, canvas, (x_o - offset + l_size * 3 + space, y_o))
+        draw_n(l_size, canvas, (x_o - offset + l_size * 4 + space, y_o))
+        draw_l(l_size, canvas, (x_o - offset + l_size * 5 + space, y_o))
+        draw_e(l_size, canvas, (x_o - offset + l_size * 6 + space, y_o))
+        draw_y(l_size, canvas, (x_o - offset + l_size * 7 + space, y_o))
+
+        draw_m(l_size, canvas, (x_o, y_o + offset))
+        draw_c(l_size, canvas, (x_o + l_size + space, y_o + offset))
+        draw_k(l_size, canvas, (x_o + l_size * 2 + space, y_o + offset))
+        draw_i(l_size, canvas, (x_o + l_size * 3 + space, y_o + offset))
+        draw_n(l_size, canvas, (x_o + l_size * 4 + space, y_o + offset))
+        draw_l(l_size, canvas, (x_o + l_size * 5 + space, y_o + offset))
+        draw_e(l_size, canvas, (x_o + l_size * 6 + space, y_o + offset))
+        draw_y(l_size, canvas, (x_o + l_size * 7 + space, y_o + offset))
+
+        draw_m(l_size, canvas, (x_o, y_o - offset))
+        draw_c(l_size, canvas, (x_o + l_size + space, y_o - offset))
+        draw_k(l_size, canvas, (x_o + l_size * 2 + space, y_o - offset))
+        draw_i(l_size, canvas, (x_o + l_size * 3 + space, y_o - offset))
+        draw_n(l_size, canvas, (x_o + l_size * 4 + space, y_o - offset))
+        draw_l(l_size, canvas, (x_o + l_size * 5 + space, y_o - offset))
+        draw_e(l_size, canvas, (x_o + l_size * 6 + space, y_o - offset))
+        draw_y(l_size, canvas, (x_o + l_size * 7 + space, y_o - offset))
+
+    return canvas
 
 # canvas = breathe(size, l_size, space, 10, 2, 10, 20)
 
-
-
-canvas = np.zeros((size, size), dtype='int8')
-
-draw_j(l_size, canvas, (2, 2))
+canvas = mckinley(size, l_size, space, 24, 8, 18, 18)
 
 
 magenta = (1, 0, 1)
