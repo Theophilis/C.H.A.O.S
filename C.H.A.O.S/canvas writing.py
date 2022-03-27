@@ -4,9 +4,9 @@ from matplotlib import colors as c
 
 plt.ioff()
 
-size = 1001
-l_size = 61
-space = 20
+size = 303
+l_size = 31
+space = 3
 
 
 def draw_a(size, canvas, corner):
@@ -1512,7 +1512,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
 
     return canvas
 
-message = 'please -----embrace chaos'
+message = 'please embrace chaos'
 
 canvas = canvas_write(message, size, l_size, 10, 30, 3, 1, 10, 30)
 
