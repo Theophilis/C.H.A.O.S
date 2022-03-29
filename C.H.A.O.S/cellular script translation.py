@@ -45,7 +45,7 @@ def base_x(n, b):
         return base_x(e, b) + str(q)
 
 
-def rule_gen(rule, base = 2):
+def rule_gen(rule, base, length):
     rules = dict()
 
     if base == 2:
@@ -56,7 +56,7 @@ def rule_gen(rule, base = 2):
 
     x = int_rule[::-1]
 
-    while len(x) < base ** view:
+    while len(x) < length:
         x += '0'
 
     bnr = x[::-1]
@@ -167,7 +167,7 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
 #folding functions
 
-def fold(journal, row, goal, d_rule, v_rule, step_size, leash):
+def fold(journal, row, goal, d_rule, v_rule, step_size, leash, length):
 
     page = []
     duration = 0
@@ -178,9 +178,20 @@ def fold(journal, row, goal, d_rule, v_rule, step_size, leash):
     if leash not in journal:
         journal[leash] = dict()
 
+        # print(" ")
+        # print("duration")
+        # print(duration)
+        # print("goal")
+        # print(goal)
+
+
     while match == 0:
 
-        row, rc = Color_cells(d_rule, len(goal), row)
+        row, rc = Color_cells(d_rule, length, row)
+
+
+        # print("row")
+        # print(row)
 
         line = (row, rc)
 
@@ -205,14 +216,15 @@ def fold(journal, row, goal, d_rule, v_rule, step_size, leash):
         duration += 1
 
 
-def carve(journal, start_0, end_0, results, base, step_size):
+def carve(journal, start_0, end_0, results, base, step_size, length, cut_off):
 
     leash = 0
     valid = []
 
-    start = rule_gen(start_0, base)[1]
-    goal = rule_gen(end_0, base)[1]
+    start = rule_gen(start_0, base, length)[1]
+    goal = rule_gen(end_0, base, length)[1]
 
+    # print(" ")
     # print("start")
     # print(start)
     # print("goal")
@@ -251,9 +263,11 @@ def carve(journal, start_0, end_0, results, base, step_size):
 
                     continue
 
-            d_rule, i_rule = rule_gen(x, base)
+            d_rule, i_rule = rule_gen(x, base, length)
 
-            span = fold(journal, row, goal, d_rule, x, step_size, leash)
+            span = fold(journal, row, goal, d_rule, x, step_size, leash, length)
+
+            # print(span)
 
             if span != -1:
 
@@ -264,22 +278,22 @@ def carve(journal, start_0, end_0, results, base, step_size):
 
         leash += 1
 
+        if leash == cut_off:
+            break
+
 
     valid = sorted(valid, key=lambda x:x[0])
+
+    # print(valid)
 
     return valid
 
 
-def rolling_river(journal, dot, vector, validity, polar):
+def rolling_river(journal, dot, vector, validity, polar, length, cut_off):
 
-    valid = carve(journal, dot, vector, base ** base ** view, 2, base ** base ** view)
+    valid = carve(journal, dot, vector, 1, base, 32, length, cut_off)
 
-
-    valid = sorted(valid, key=lambda x:x[3])
-
-    # print("valid")
     # print(valid)
-
     if len(valid) == 0:
         validity.append([(dot, vector)])
 
@@ -291,9 +305,17 @@ def rolling_river(journal, dot, vector, validity, polar):
 
     validity = sorted(validity, key=lambda x:len(x) + len(x[0]))
 
+    # for v in validity:
+        # print("")
+        # print("V")
+        # print(v)
+
     polar_u = []
 
     for p in polar:
+
+        # print("p")
+        # print(p)
 
         if p not in polar_u:
             polar_u.append(p)
@@ -431,7 +453,7 @@ def converge(validity, confluence, depth, max_distance, polar_u):
         confluence[v_0][1] = v
 
 
-def flow(input, depth, max_distance, w_s = 0):
+def flow(input, depth, max_distance, length, cut_off, w_s = 0):
 
     journal = dict()
     confluence = dict()
@@ -449,10 +471,10 @@ def flow(input, depth, max_distance, w_s = 0):
 
         # print((x, y))
 
-        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar)
+        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar, length, cut_off)
 
     if w_s != 0:
-        infile = open("polar maps/polar_u-64", "rb")
+        infile = open("polar maps/polar_u-64-16", "rb")
         polar_u = pickle.load(infile)
         infile.close
 
@@ -500,9 +522,32 @@ def flow(input, depth, max_distance, w_s = 0):
     return confluence, polarity
 
 
-def cell_translate(depth, max_distance, message, w_s = 0, plot=0):
+def cell_translate(depth, max_distance, message, length, cut_off, w_s = 0, plot=0):
 
     message_i = [ord(l) - 96 for l in message]
+
+    # if length > base ** view:
+    #
+    #     m_i = []
+    #
+    #     print(message_i)
+    #
+    #     for m in message_i:
+    #
+    #         if m > 0:
+    #             m_i.append(int(m / (base ** base ** view) * base ** length))
+    #
+    #         else:
+    #             m_i.append(m)
+    #
+    #     message_i = m_i
+    #
+    #     # message_i = [int(i / (base ** base ** view) * base ** length) for i in message_i]
+    #
+    #     print(" ")
+    #     print("m_i")
+    #     print(message_i)
+    #     print(m_i)
 
     for m in message_i:
         if abs(m) == 64:
@@ -513,7 +558,7 @@ def cell_translate(depth, max_distance, message, w_s = 0, plot=0):
     print(message)
     print(message_i)
 
-    confluence, polarity = flow(message_i, depth, max_distance, w_s)
+    confluence, polarity = flow(message_i, depth, max_distance, length, cut_off, w_s)
 
     sum = 0
     basin = []
@@ -623,8 +668,8 @@ def cell_translate(depth, max_distance, message, w_s = 0, plot=0):
         # print(basin_o.index(b))
         # print(b)
 
-        d_rule, i_rule = rule_gen(b[2], base)
-        row = rule_gen(b[0], base)[1]
+        d_rule, i_rule = rule_gen(b[2], base, length)
+        row = rule_gen(b[0], base, length)[1]
         duration = 0
 
         while duration < b[3]:
@@ -775,16 +820,20 @@ def cell_translate(depth, max_distance, message, w_s = 0, plot=0):
 
 
 depth = 3
-max_distance = 2
+max_distance = 10
+cut_off = 1
 
-message = [' the', ' them', ' then', ' there']
+domain = 128
+length = 16
+
+message = [' the']
 
 rosetta = dict()
 rosy = []
 
 for m in message:
 
-    rosetta[m] = cell_translate(depth, max_distance, m, 1)
+    rosetta[m] = cell_translate(depth, max_distance, m, length, cut_off, 1)
     rosy.append(rosetta[m])
 
     # print("message")
@@ -835,9 +884,9 @@ path_name = os.path.join(path, str(message) + '-' + 'rule_calls')
 
 
 plt.figtext(0, .9, message[0], fontsize=12)
-plt.figtext(0, .7, message[1], fontsize=12)
-plt.figtext(0, .475, message[2], fontsize=12)
-plt.figtext(0, .3, message[3], fontsize=12)
+# plt.figtext(0, .7, message[1], fontsize=12)
+# plt.figtext(0, .475, message[2], fontsize=12)
+# plt.figtext(0, .3, message[3], fontsize=12)
 
 # plt.savefig(path_name, dpi=900)
 # plt.close()

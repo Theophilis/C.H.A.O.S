@@ -18,7 +18,7 @@ rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 5
+base = 4
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -276,7 +276,11 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
 
 
     canvas_0[0, start_0] = 1
+    # canvas_0[0, int(start_0/4)] = 1
+    # canvas_0[0, -int(start_0/32)] = 1
     rule_call[0] = start[1]
+
+
 
     # for x in range(width):
     #     cnvs[0, x] = x
@@ -384,7 +388,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
                 cMap = c.ListedColormap([black, blue, purple, white, orange, white])
 
             if base == 4:
-                cMap = c.ListedColormap([grey, cyan, magenta, green, black])
+                cMap = c.ListedColormap([yellow, white, red, black])
 
             if base == 3:
                 cMap = c.ListedColormap([black, white, cyan, white])
@@ -1202,7 +1206,7 @@ density = 4
 x_o = 30
 y_o = 60
 
-message = 'please --embrace -----chaos'
+message = ''
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 
@@ -1231,13 +1235,13 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('plates/please embrace chaos/lvl-2')
+    lvl = os.listdir('scarfs/quaternary/lvl-2')
 
-    path = 'plates/please embrace chaos'
+    path = 'scarfs/quaternary'
 
     print(len(lvl))
 
-    for l in lvl[2:]:
+    for l in lvl[1:]:
 
         print(" ")
         print(lvl.index(l))
@@ -1247,7 +1251,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[19:-30])
+            l = int(l[19:-5])
 
         except:
 

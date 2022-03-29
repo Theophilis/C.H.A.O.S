@@ -9,7 +9,7 @@ plt.ioff()
 
 rule = 6049069618215839565782842634507394848996362563177470174153113185201852971153494239366465579843681897245316220263433329934471947410885434974601214619829353
 base = 4
-size = 20001
+size = 1001
 view = 4
 start = (int(size/2), int(size/2))
 zero = (0, 0)
@@ -392,7 +392,7 @@ def map(size, rule, path, full_fence, canvas = 0, steps = 0, plot=0):
 #
 
 journaling = 0
-lvling = 0
+lvling = 1
 path = 'scarfs/quaternary'
 
 if journaling != 0:
@@ -401,7 +401,7 @@ if journaling != 0:
 
     # map(length, width, rule, base, start, direction, path, 0, 1)
 
-    infile = open("2d-journals\journal_22", "rb")
+    infile = open("2d-journals\journal_99", "rb")
     journal = pickle.load(infile)
     infile.close()
 
@@ -432,7 +432,7 @@ if lvling != 0:
         print(" ")
         print(lvl.index(l))
         print(l)
-        l = int(l[14:-4])
+        l = int(l[17:-4])
         print(l)
 
         map(size, l, path, full_fence, 0, 10, 1)

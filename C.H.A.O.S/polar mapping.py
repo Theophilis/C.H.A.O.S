@@ -216,7 +216,7 @@ def fold(journal, row, goal, d_rule, v_rule, step_size, leash, length):
         duration += 1
 
 
-def carve(journal, start_0, end_0, results, base, step_size, length, cutoff):
+def carve(journal, start_0, end_0, results, base, step_size, length, cut_off):
 
     leash = 0
     valid = []

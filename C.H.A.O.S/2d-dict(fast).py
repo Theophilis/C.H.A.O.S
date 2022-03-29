@@ -891,7 +891,7 @@ click = False
 
 def Chaos_Window(base, pixel_res):
 
-    run, FPS, rule, clock, journal, press, view = 1, 3840, 2900320918574698346113466237, pygame.time.Clock(), dict(), dict(), 4
+    run, FPS, rule, clock, journal, press, view = 1, 3840, 74059875469082347291091262374908567234, pygame.time.Clock(), dict(), dict(), 4
     cell_row_width, cell_rows = int(WIDTH / pixel_res), int(HEIGHT / pixel_res)
     d_rule, i_rule = rule_gen_2(rule, base)
     canvas = np.zeros((cell_rows, cell_row_width), dtype='int8')
@@ -914,20 +914,20 @@ def Chaos_Window(base, pixel_res):
     steps = 0
 
     color_1 = (0, 0, 0)
-    color_2 = (0, 255, 255)
-    color_3 = (255, 0, 255)
+    color_2 = (255, 0, 255)
+    color_3 = (0, 255, 255)
     color_4 = (255, 255, 255)
     color_l = (255, 255, 255)
 
-    message = '-w -h -y'
+    message = 'abyssmal - oblution'
 
     size = 303
-    l_size = 41
-    x_space = 10
-    y_space = 20
-    offset_size = 12
+    l_size = 21
+    x_space = 5
+    y_space = 50
+    offset_size = 4
     density = 1
-    x_o = 10
+    x_o = 7
     y_o = 20
 
     if len(message) > 0:
@@ -1452,4 +1452,4 @@ def menu():
 
 # menu()
 
-Chaos_Window(3, 2)
+Chaos_Window(4, 2)
