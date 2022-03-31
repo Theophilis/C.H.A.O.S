@@ -966,7 +966,7 @@ def Chaos_Window(base, pixel_res):
         else:
             press[letter] += 1
 
-        place = int((letter_values[letter] + ((press[letter] % (int(bv / len(letter_values)) + 2)) * int(
+        place = int((letter_values[letter] + ((press[letter] % (int(bv / len(letter_values)) + 1)) * int(
             (bv / int(bv / len(letter_values) + 1))))) % bv)
 
         if i_rule[place] == 0:

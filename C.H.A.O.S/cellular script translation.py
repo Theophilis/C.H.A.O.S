@@ -289,9 +289,9 @@ def carve(journal, start_0, end_0, results, base, step_size, length, cut_off):
     return valid
 
 
-def rolling_river(journal, dot, vector, validity, polar, length, cut_off):
+def rolling_river(journal, dot, vector, validity, polar, length, cut_off, max_distance):
 
-    valid = carve(journal, dot, vector, 1, base, 32, length, cut_off)
+    valid = carve(journal, dot, vector, max_distance, base, 32, length, cut_off)
 
     # print(valid)
     if len(valid) == 0:
@@ -384,8 +384,14 @@ def bend(confluence, polar_u, elbows_0, v, v_0, depth, c_d=2):
 
 def converge(validity, confluence, depth, max_distance, polar_u):
 
+    # print("")
+    # print("converge")
+
     for v in validity:
 
+        # print(" ")
+        # print("v")
+        # print(v)
         # print(validity.index(v))
         # print(len(validity))
 
@@ -408,6 +414,7 @@ def converge(validity, confluence, depth, max_distance, polar_u):
             for p in polar_u:
 
                 if v[0][0] == p[0] and p[1] != v[0][0]:
+
                     p_list = [p]
 
                     elbows.append(p_list)
@@ -415,6 +422,7 @@ def converge(validity, confluence, depth, max_distance, polar_u):
             if len(v[0]) == 2:
 
                 if len(elbows) > 0:
+
                     # print("bend")
                     # print(v)
                     # print(r)
@@ -471,31 +479,76 @@ def flow(input, depth, max_distance, length, cut_off, w_s = 0):
 
         # print((x, y))
 
-        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar, length, cut_off)
+        validity, polar, polar_u = rolling_river(journal, x, y, validity, polar, length, cut_off, max_distance)
+
+    for v in validity:
+
+        if len(v) == 1:
+
+            print(" ")
+            print("v")
+            print(v)
+
+            if v[0][0] > 64 or v[0][1] > 64:
+
+                for x in range(8):
+
+                    validity = []
+                    polar = []
+
+                    p_x = rolling_river(journal, v[0][0], x, validity, polar, length, cut_off, max_distance)[2]
+
+                    validity = []
+                    polar = []
+
+                    p_y = rolling_river(journal, x, v[0][1], validity, polar, length, cut_off, max_distance)[2]
+
+                    if len(p_x) > 0 and len(p_y) > 0:
+
+                        print('vertex')
+                        print(p_x)
+                        print(p_y)
+
+                        for p in p_x:
+
+                            if p not in polar_u:
+
+                                polar_u.append(p)
+
+                        for p in p_y:
+
+                            if p not in polar_u:
+
+                                polar_u.append(p)
+
 
     if w_s != 0:
         infile = open("polar maps/polar_u-64-16", "rb")
-        polar_u = pickle.load(infile)
+        polar_up = pickle.load(infile)
         infile.close
+
+        for p in polar_up:
+
+            polar_u.append(p)
 
     converge(validity, confluence, depth, max_distance, polar_u)
 
-    # print("")
-    # print("confluence")
-    #
-    # for c in list(confluence.keys())[:10]:
-    #
-    #     print(" ")
-    #     print("c_r")
-    #
-    #     for r in range(1, depth):
-    #
-    #         if len(confluence[c][r]) > 0:
-    #
-    #             confluence[c][r] = sorted(confluence[c][r], key=lambda x:x[3])
-    #
-    #             print(c)
-    #             print(confluence[c][r][:5])
+    print("")
+    print("confluence")
+
+    for c in list(confluence.keys())[:10]:
+
+        print(" ")
+        print("c_r")
+
+        for r in range(1, depth):
+
+            if len(confluence[c][r]) > 0:
+
+                confluence[c][r] = sorted(confluence[c][r], key=lambda x:x[3])
+
+                print(c)
+                print(confluence[c][r][:5])
 
 
     for p in polar:
@@ -526,28 +579,30 @@ def cell_translate(depth, max_distance, message, length, cut_off, w_s = 0, plot=
 
     message_i = [ord(l) - 96 for l in message]
 
-    # if length > base ** view:
-    #
-    #     m_i = []
-    #
-    #     print(message_i)
-    #
-    #     for m in message_i:
-    #
-    #         if m > 0:
-    #             m_i.append(int(m / (base ** base ** view) * base ** length))
-    #
-    #         else:
-    #             m_i.append(m)
-    #
-    #     message_i = m_i
-    #
-    #     # message_i = [int(i / (base ** base ** view) * base ** length) for i in message_i]
-    #
-    #     print(" ")
-    #     print("m_i")
-    #     print(message_i)
-    #     print(m_i)
+    if length > base ** view:
+
+        m_i = []
+
+        print(message_i)
+
+        for m in message_i:
+
+            if m > 0:
+                m_i.append(int(m * 4))
+
+                # m_i.append(int(m / (base ** base ** view) * base ** length))
+
+            else:
+                m_i.append(m)
+
+        message_i = m_i
+
+        # message_i = [int(i / (base ** base ** view) * base ** length) for i in message_i]
+
+        print(" ")
+        print("m_i")
+        print(message_i)
+        print(m_i)
 
     for m in message_i:
         if abs(m) == 64:
@@ -559,6 +614,10 @@ def cell_translate(depth, max_distance, message, length, cut_off, w_s = 0, plot=
     print(message_i)
 
     confluence, polarity = flow(message_i, depth, max_distance, length, cut_off, w_s)
+
+    print("")
+    print("confluence")
+    print(confluence)
 
     sum = 0
     basin = []
@@ -611,8 +670,8 @@ def cell_translate(depth, max_distance, message, length, cut_off, w_s = 0, plot=
             sum += confluence[c][1][0][3]
 
 
-    # print("basin")
-    # print(basin)
+    print("basin")
+    print(basin)
 
     basin_o = []
     for m in range(len(message_i) - 1):
@@ -653,15 +712,21 @@ def cell_translate(depth, max_distance, message, length, cut_off, w_s = 0, plot=
 
     tint = 0
 
+    print(" ")
+    print("pre-basin")
+
+    print("basin_o")
+    print(basin_o)
+
     for b in basin_o:
 
-        # print(" ")
-        # print("b")
-        # print(b)
-        # print("canvas")
-        # print(canvas)
-        # print("rule_calls")
-        # print(rule_calls)
+        print(" ")
+        print("b")
+        print(b)
+        print("canvas")
+        print(canvas)
+        print("rule_calls")
+        print(rule_calls)
 
         # print("")
         # print('basin')

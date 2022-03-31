@@ -19,7 +19,7 @@ width = length * 2 + 1
 #number of cells in a row
 rule = 90
 #number who's x_base transformation gives the rules dictionary its values
-view = 3
+view = 5
 #size of the view window that scans a row for rule application
 base = 3
 #numerical base of the rule set. number of colors each cell can be
@@ -195,8 +195,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-# WIDTH, HEIGHT = 800, 800
+# WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
+WIDTH, HEIGHT = 800, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -208,10 +208,11 @@ pygame.display.set_caption("C.H.A.O.S")
 value = 2
 BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
 WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'grey-' + str(value) + '.png')).convert()
-M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'moss-' + str(value) + '.png')).convert()
+M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-' + str(value) + '.png')).convert()
+BLUEB_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-' + str(value) + '.png')).convert()
 BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
-PURPLE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
-RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'maroon-' + str(value) + '.png')).convert()
+MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
+RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-' + str(value) + '.png')).convert()
 ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
 YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
 
@@ -271,7 +272,8 @@ class Cell(Pixel):
                 'yellow_2': (YELLOW_PIXEL_2),
                 'green_2': (M_GREEN_PIXEL_2),
                 'blue_2': (BLUE_PIXEL_2),
-                'purple_2': (PURPLE_PIXEL_2),
+                'purple_2': (MAGENTA_PIXEL_2),
+                'blueb_2': (BLUEB_PIXEL_2),
 
                 "black_3": (BLACK_PIXEL_3),
                 'white_3': (WHITE_PIXEL_3),
@@ -316,7 +318,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
     run = 1
     FPS = 30
-    rule = 21621
+    rule = 99251530153943492254901434352168140370305532691601981038364376083486202291049165983156475051246
     step = 0
     clock = pygame.time.Clock()
 
@@ -593,6 +595,34 @@ def Chaos_Window(base, pixel_res, cell_vel):
                                     'white_2')
                         cells[r].append(cell)
 
+            elif base == 6:
+
+                if pixel_res == 2:
+                    if row[0, i] == 0:
+                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                    'black_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 1:
+                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                    'purple_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 2:
+                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                    'blue_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 3:
+                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                    'yellow_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 4:
+                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                    'red_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 5:
+                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                    'green_2')
+                        cells[r].append(cell)
+
         else:
 
             if base == 2:
@@ -748,6 +778,28 @@ def Chaos_Window(base, pixel_res, cell_vel):
                         cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'white_2')
                         cells[r].append(cell)
 
+            elif base == 6:
+
+                if pixel_res == 2:
+                    if row[0, i] == 0:
+                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 1:
+                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 2:
+                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 3:
+                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 4:
+                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'white_2')
+                        cells[r].append(cell)
+                    if row[0, i] == 5:
+                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_2')
+                        cells[r].append(cell)
+
     def input(letter, base, page, input_box, v_input):
 
         if input_box == 1:
@@ -761,8 +813,16 @@ def Chaos_Window(base, pixel_res, cell_vel):
         else:
             press[letter] += 1
 
-        place = int((letter_values[letter] + ((press[letter] % (int(bv / len(letter_values)) + 2)) * int(
+        place = int((letter_values[letter] + ((press[letter] % (int(bv / len(letter_values)) + 1)) * int(
             (bv / int(bv / len(letter_values) + 1))))) % bv)
+
+        # print(' ')
+        # print("place")
+        # print(place)
+        # print(letter_values[letter])
+        # print((press[letter] % (int(bv / len(letter_values)) + 1)))
+        # print((bv / int(bv / len(letter_values) + 1)))
+        # print(bv)
 
         if i_rule[place] == 0:
 
@@ -798,6 +858,16 @@ def Chaos_Window(base, pixel_res, cell_vel):
             else:
                 i_rule[place] = 4
                 d_rule[list(d_rule.keys())[place]] = 4
+
+        elif i_rule[place] == 4:
+
+            if base == 5:
+                i_rule[place] = 0
+                d_rule[list(d_rule.keys())[place]] = 0
+
+            else:
+                i_rule[place] = 5
+                d_rule[list(d_rule.keys())[place]] = 5
 
         else:
             i_rule[place] = 0
@@ -1032,8 +1102,29 @@ def Chaos_Window(base, pixel_res, cell_vel):
                                 i_rule[rand] = 4
                                 d_rule[list(d_rule.keys())[rand]] = 4
                             elif i_rule[rand] == 4:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 6:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 4
+                                d_rule[list(d_rule.keys())[rand]] = 4
+                            elif i_rule[rand] == 4:
                                 i_rule[rand] = 5
                                 d_rule[list(d_rule.keys())[rand]] = 5
+                            elif i_rule[rand] == 5:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
 
 
                     # print("change")
@@ -1617,7 +1708,7 @@ def menu():
         pygame.display.update()
         mainClock.tick(60)
 
-menu()
+# menu()
 
 
-# Chaos_Window(3, 2, 7)
+Chaos_Window(2, 2, 10)
