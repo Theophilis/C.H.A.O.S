@@ -962,6 +962,60 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
             list_count = len(rule_list)
 
+        elif input_list[0] == 'sqr':
+
+            # print(" ")
+            # print("sqr")
+
+            input_list = input_list[1:]
+
+            if len(input_list) == 2:
+
+                rule_list = [x ** int(input_list[1]) for x in range(int(input_list[0]))]
+
+                # print('rule_list')
+                # print(rule_list)
+
+            list_count = len(rule_list)
+
+        elif input_list[0] == 'exp':
+
+            # print(" ")
+            # print("sqr")
+
+            input_list = input_list[1:]
+
+            rule_list = []
+
+            if len(input_list) == 2:
+
+                # print("")
+                # print("exp len 2")
+                # print(input_list)
+
+
+                rule_list_0 = [x ** x for x in range(int(input_list[0]))]
+
+                # print("rule_list_0")
+                # print(rule_list_0)
+
+                for rule in rule_list_0:
+
+                    # print("rule")
+                    # print(rule)
+                    #
+                    # print(input_list[1])
+
+                    for x in range(int(input_list[1])):
+
+                        rule_list.append(rule)
+
+                # print('rule_list')
+                # print(rule_list)
+
+            list_count = len(rule_list)
+
+
         return rule_list, list_count
 
     
@@ -1450,7 +1504,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
         pickle.dump(journal, outfile)
         outfile.close
 
-        print(len(journal))
+        # print(len(journal))
 
 
 #menus
@@ -1711,4 +1765,6 @@ def menu():
 # menu()
 
 
-Chaos_Window(2, 2, 10)
+Chaos_Window(3, 2, 20)
+
+

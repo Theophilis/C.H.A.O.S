@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 501
+length = 4001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -212,7 +212,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
 
     # print("rules")
 
-    rules = rule_gen(rule, base, string=1)
+    rules = rule_gen(rule, base, string=0)
     int_rule = rules[1]
     rules = rules[0]
 
@@ -1196,7 +1196,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
 
 path = 'scarfs/hexenary'
 
-journaling = 1
+journaling = 0
 leveling = 1
 
 size = length
@@ -1238,13 +1238,13 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('scarfs/pentary/lvl-1')
+    lvl = os.listdir('scarfs/hexenary/lvl-3')
 
-    path = 'scarfs/pentary'
+    path = 'scarfs/hexenary'
 
     print(len(lvl))
 
-    for l in lvl:
+    for l in lvl[45:]:
 
         print(" ")
         print(lvl.index(l))
@@ -1254,7 +1254,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[17:-5])
+            l = int(l[19:-5])
 
         except:
 

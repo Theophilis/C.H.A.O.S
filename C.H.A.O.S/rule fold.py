@@ -140,7 +140,52 @@ def Color_cells(d_rule, cell_row_width, row_0):
     return row_1, rc
 
 
-infile = open("polar maps/polar_u-64-16", "rb")
+def stream(front_row, back_row, max_steps):
+    print("stream")
+
+    route = []
+
+    for x in range(base ** base ** view):
+
+        steps = []
+        steps.append(front_row)
+
+        done = 0
+        step_count = 0
+
+        while done == 0:
+
+            row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
+
+            if row == back_row:
+
+                # print(" ")
+                # print('row')
+                # print(row)
+                # print(step_count)
+
+                polar = (front, back, x, step_count)
+
+                # print('polar')
+                # print(polar)
+
+                route.append(polar)
+
+                done = 1
+
+            elif step_count > max_steps:
+
+                done = 1
+
+            else:
+
+                steps.append(row)
+                step_count += 1
+
+    return route
+
+
+infile = open("polar maps/polar_u-16", "rb")
 polar_u_i = pickle.load(infile)
 infile.close
 
@@ -149,16 +194,20 @@ base = 2
 view = 3
 
 length = 16
-max_steps = 8
+max_steps = 16
+scale = 0
 
 
-message = ' the'
+message = ' breathe '
 
-message_i = [ord(l) - 96 for l in message]
+message_i = [(ord(l) - 96) * 2 ** scale for l in message]
+
+message_i.append(67)
 
 for m in message_i:
-    if abs(m) == 64:
-        message_i[message_i.index(m)] = 65
+    if m < 0:
+        message_i[message_i.index(m)] = 0
+
 
 print(" ")
 print("message")
@@ -183,7 +232,8 @@ for x in range(len(message_i) - 1):
 
     for p in polar_u_i:
 
-        if p[0] == front and p[1] == back:
+        #full path
+        if p[0] == front and p[1] == back and p[-1] < max_steps:
 
             # print(" ")
             # print("p")
@@ -191,6 +241,7 @@ for x in range(len(message_i) - 1):
 
             path[fb][1].append(p)
 
+        #front half path
         elif p[0] == front and p[0] != p[1]:
 
             # print(" ")
@@ -203,6 +254,7 @@ for x in range(len(message_i) - 1):
 
                     path[fb][2].append((p, o))
 
+        #back half path
         elif p[1] == back and p[0] != p[1]:
 
             # print(" ")
@@ -219,80 +271,69 @@ for x in range(len(message_i) - 1):
 
                         # print("back match")
 
+
     if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
 
-        print("")
-        print("empty")
-        print(fb)
+        # print("")
+        # print("empty")
+        # print(fb)
 
         front_row = rule_gen(front, base, length)[1]
         back_row = rule_gen(back, base, length)[1]
 
 
-        print(" ")
-        print('fb rows')
-        print(front_row)
-        print(back_row)
+        # print(" ")
+        # print('fb rows')
+        # print(front_row)
+        # print(back_row)
 
-        for x in range(base ** base ** view):
+        #fresh path
+        route = stream(front_row, back_row, max_steps)
 
-            steps = []
-            steps.append(front_row)
+        for r in route:
 
-            done = 0
-            step_count = 0
+            path[fb][1].append(r)
 
-            while done == 0:
+            if r not in polar_u_i:
 
-                row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
+                polar_u_i.append(r)
 
-                if row == back_row:
 
-                    print(" ")
-                    print('row')
-                    print(row)
-                    print(step_count)
-
-                    polar = (front, back, x, step_count)
-
-                    print('polar')
-                    print(polar)
-
-                    path[fb][1].append(polar)
-
-                    if polar not in polar_u_i:
-
-                        polar_u_i.append(polar)
-
-                    done = 1
-
-                elif step_count > max_steps:
-
-                    done = 1
-
-                else:
-
-                    steps.append(row)
-                    step_count += 1
-
-                continue
-
+        #split path
         if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
 
-            print("")
-            print("empty 2")
-            print(fb)
-
-            print(" ")
-            print('fb rows')
-            print(front_row)
-            print(back_row)
+            # print("")
+            # print("split path")
+            # print(fb)
+            #
+            # print('fb rows')
+            # print(front_row)
+            # print(back_row)
 
             for p in polar_u_i:
 
                 if p[0] == front and p[0] != p[1] and p[-1] < int(max_steps/2):
 
-                    p_1 = rule_gen(p[1], base, length)
+                    # print(" ")
+                    # print('front match, fresh back')
+                    # print(p)
+
+                    p_1 = rule_gen(p[1], base, length)[1]
+
+                    #not working
+                    route = stream(p_1, back_row, max_steps)
+
+                    for r in route:
+
+                        path[fb][2].append((p, r))
+
+                        if r not in polar_u_i:
+
+                            polar_u_i.append(r)
+
+                if p[1] == back and p[0] != p[1] and p[-1] < int(max_steps/2):
+
+                    p_0 = rule_gen(p[0], base, length)[1]
 
                     for x in range(base ** base ** view):
 
@@ -304,21 +345,26 @@ for x in range(len(message_i) - 1):
 
                         while done == 0:
 
+                            step_count += 1
+
                             row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
 
-                            if row == back_row:
+                            # print('row')
+                            # print(row)
 
-                                print(" ")
-                                print('row')
-                                print(row)
-                                print(step_count)
+                            if row == p_0:
 
-                                polar = (front, back, x, step_count)
+                                # print(" ")
+                                # print('back row match')
+                                # print(row)
+                                # print(step_count)
 
-                                print('polar')
-                                print(polar)
+                                polar = (front, p[0], x, step_count)
 
-                                path[fb][1].append(polar)
+                                # print('polar')
+                                # print(polar)
+
+                                path[fb][2].append((polar, p))
 
                                 if polar not in polar_u_i:
                                     polar_u_i.append(polar)
@@ -332,24 +378,9 @@ for x in range(len(message_i) - 1):
                             else:
 
                                 steps.append(row)
-                                step_count += 1
-
-                            continue
-
-                    continue
-
-                if p[1] == back and p[0] != p[1] and p[-1] < int(max_steps/2):
-
-                    continue
 
 
-
-
-
-
-
-
-
+frame = []
 
 for p in path:
     print(" ")
@@ -361,9 +392,72 @@ for p in path:
     print(path[p][1][:10])
     print(path[p][2][:10])
 
+    if len(path[p][1]) > 0:
+
+        frame.append(path[p][1][0])
+
+    else:
+
+        frame.append(path[p][2][0][0])
+        frame.append(path[p][2][0][1])
 
 
+canvas = []
+sum = 0
 
+print(" ")
+print('frame')
+
+for f in frame:
+
+    print(" ")
+    print('f')
+    print(f)
+
+    sum += f[-1]
+
+    steps = []
+    step_count = 0
+
+    f_0 = rule_gen(f[0], base, length)[1]
+    steps.append(f_0)
+
+    # print(f_0)
+
+    while step_count < f[-1]:
+
+        row = Color_cells(rule_gen(f[2], base, length)[0], length, steps[-1])[0]
+
+        steps.append(row)
+
+        step_count += 1
+
+    for s in steps:
+
+        canvas.append(s)
+
+
+print(" ")
+print('canvas')
+print(len(canvas))
+
+
+canvas = np.asarray(canvas)
+canvas = np.rot90(canvas)
+
+cMap = colors.ListedColormap(['w', 'k'])
+
+ax = plt.gca()
+ax.set_aspect(1)
+
+plt.pcolormesh(canvas, cmap=cMap)
+plt.show()
+
+
+# filename = 'polar maps/polar_u-' + str(length)
+# outfile = open(filename, 'wb')
+# pickle.dump(polar_u_i, outfile)
+# outfile.close()
 
 
 
