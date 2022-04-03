@@ -4,10 +4,16 @@ from matplotlib import colors as c
 
 plt.ioff()
 
-size = 303
-l_size = 31
-space = 3
+size = 2001
 
+l_size = 231
+x_space = 30
+y_space = 140
+
+offset_size = 24
+density = 1
+x_o = 30
+y_o = 120
 
 def draw_a(size, canvas, corner):
 
@@ -1512,9 +1518,10 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
 
     return canvas
 
-message = 'please embrace chaos'
 
-canvas = canvas_write(message, size, l_size, 10, 30, 3, 1, 10, 30)
+message = '-beauty will ----save the --world'
+
+canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 
 
 magenta = (1, 0, 1)

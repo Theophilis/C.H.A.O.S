@@ -919,7 +919,7 @@ def Chaos_Window(base, pixel_res):
     color_4 = (255, 255, 255)
     color_l = (255, 255, 255)
 
-    message = 'abyssmal - oblution'
+    message = '--ray --and frances'
 
     size = 303
     l_size = 21
