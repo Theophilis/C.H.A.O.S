@@ -1,5 +1,29 @@
 
-tts = 3 ** 3 ** 7
+def decimal(n, b):
 
-print(tts)
-print(len(str(tts)))
+    n = list(reversed(n))
+    n = [int(v) for v in n]
+
+    value = 0
+    place = 0
+
+
+    for c in n:
+
+        value += int(c) * b ** place
+        place += 1
+
+    return value
+
+max = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+# print("max")
+# print(max)
+# print(len(max))
+
+max = decimal(max, 2)
+
+print(max)
+
+
+
