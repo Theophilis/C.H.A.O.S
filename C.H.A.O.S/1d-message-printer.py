@@ -10,15 +10,15 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 501
+length = 2001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
 rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
-view = 5
+view = 3
 #size of the view window that scans a row for rule application
-base = 2
+base = 6
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -212,7 +212,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
 
     # print("rules")
 
-    rules = rule_gen(rule, base, string=1)
+    rules = rule_gen(rule, base, string=0)
     int_rule = rules[1]
     rules = rules[0]
 
@@ -385,7 +385,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
             orange = (1, .5, .1)
 
             if base == 6:
-                cMap = c.ListedColormap([black, magenta, cyan, yellow, red, blue])
+                cMap = c.ListedColormap([black, magenta, cyan, yellow, red, blue, white])
 
             if base == 5:
                 cMap = c.ListedColormap([black, magenta, cyan, yellow, white])
@@ -413,7 +413,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
             # plt.yticks(np.arange(0, size, step=1))
 
             # c_plt.show()
-            plt.savefig(path_name, dpi=length)
+            plt.savefig(path_name, dpi=length, bbox_inches='tight',pad_inches = 0)
             plt.close()
 
         if rc == 1 or rc == 2:
@@ -1194,22 +1194,22 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'scarfs/binary'
+path = 'plates/beauty will save the world'
 
-journaling = 1
-leveling = 0
+journaling = 0
+leveling = 1
 
 size = length
-l_size = 231
+l_size = 131
 x_space = 30
-y_space = 140
+y_space = 80
 
-offset_size = 24
-density = 4
+offset_size = 32
+density = 8
 x_o = 30
 y_o = 120
 
-message = ''
+message = '--beauty -will ------save -the ----world'
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 
@@ -1238,7 +1238,7 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('plates/beauty will save the world/lvl-3')
+    lvl = os.listdir('scarfs/hexenary/lvl-3')
 
     path = 'plates/beauty will save the world'
 
@@ -1254,7 +1254,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[19:-38])
+            l = int(l[19:-5])
 
         except:
 

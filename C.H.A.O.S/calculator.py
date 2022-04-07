@@ -25,5 +25,9 @@ max = decimal(max, 2)
 
 print(max)
 
+sensors = 2 ** 16
+
+print(sensors)
+
 
 

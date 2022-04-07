@@ -7,6 +7,7 @@ import pickle
 import sys
 import matplotlib.pyplot as plt
 from matplotlib import colors
+import matplotlib.animation as animation
 
 
 def base_x(n, b):
@@ -152,6 +153,14 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
         rc.append(list(d_rule.keys()).index(v_0))
 
+        # print("color_cells")
+        # print("y")
+        # print(y)
+        # print('len(row_1)')
+        # print(len(row_1))
+        # print("v_0")
+        # print(v_0)
+
         row_1[y] = d_rule[v_0]
 
     return row_1, rc
@@ -179,6 +188,14 @@ def stream(front, back, front_row, back_row, max_steps):
         while done == 0:
 
             step_count += 1
+
+            # print("stream row")
+            # print("rule_gen")
+            # print(rule_gen(x, base, length)[0])
+            # print("length")
+            # print(length)
+            # print("steps[-1]")
+            # print(steps[-1])
 
             row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
 
@@ -209,22 +226,37 @@ def stream(front, back, front_row, back_row, max_steps):
     return route
 
 
-infile = open("polar maps/polar_u-16", "rb")
-polar_u_i = pickle.load(infile)
-infile.close
+def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_d, plot=0):
 
+    message_t = []
 
-base = 2
-view = 3
+    if scale == 0:
 
-length = 16
-max_steps = 16
-scale = 3
+        # print(" ")
+        # print('scale = 0')
+        # print("multiple")
 
+        message_i = [(ord(l) - 96) * level for l in message]
 
-def fold(message, base, view, length, max_steps, scale):
+    elif scale == 1:
 
-    message_i = [(ord(l) - 96) * scale for l in message]
+        message_i = [(ord(l) - 96) * base ** level for l in message]
+
+    elif scale == 2:
+
+        message_i = [(ord(l) - 96) for l in message]
+
+        # print("message_i")
+        # print(message_i)
+
+        for m in message_i:
+            if m < 0:
+                message_i[message_i.index(m)] = 0
+
+        message_i = [n ** level for n in message_i]
+
+    # print("message_i")
+    # print(message_i)
 
     max = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
@@ -251,15 +283,21 @@ def fold(message, base, view, length, max_steps, scale):
         if m < 0:
             message_i[message_i.index(m)] = 0
 
+    for x in range(len(message_i) - 1):
 
-    print(" ")
+        message_t.append((message_i[x], message_i[x + 1]))
+
+    # print(" ")
     print("message")
     print(message)
-    print(" ")
+    # print(" ")
     print("message_i")
     print(message_i)
-    print("scale")
-    print(scale)
+    print(len(message_i))
+    print("message_t")
+    print(message_t)
+    # print("scale")
+    # print(scale)
 
     path = dict()
 
@@ -322,7 +360,7 @@ def fold(message, base, view, length, max_steps, scale):
                             # print("back match")
 
 
-        #new forged paths
+        #fresh forged paths
         if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
 
             # print("")
@@ -347,7 +385,12 @@ def fold(message, base, view, length, max_steps, scale):
 
                 if r not in polar_u_i:
 
+                    # print("new")
+                    # print("r")
+                    # print(r)
+
                     polar_u_i.append(r)
+                    polar_d[r] = 0
 
 
             #split path
@@ -387,7 +430,12 @@ def fold(message, base, view, length, max_steps, scale):
 
                                 if r not in polar_u_i:
 
+                                    # print("new")
+                                    # print("r")
+                                    # print(r)
+
                                     polar_u_i.append(r)
+                                    polar_d[r] = 0
 
                     #front forge
                     if p[1] == back and p[0] != p[1] and p[-1] < int(max_steps/2):
@@ -405,7 +453,13 @@ def fold(message, base, view, length, max_steps, scale):
                                 path[fb][2].append((r, p))
 
                                 if r not in polar_u_i:
+
+                                    # print("new")
+                                    # print("r")
+                                    # print(r)
+
                                     polar_u_i.append(r)
+                                    polar_d[r] = 0
 
             if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
 
@@ -417,8 +471,6 @@ def fold(message, base, view, length, max_steps, scale):
 
                 while len(routes) == 0:
 
-                    route = []
-
                     joint_row = rule_gen(joint, base, length)[1]
 
                     for x in range(depth):
@@ -427,7 +479,23 @@ def fold(message, base, view, length, max_steps, scale):
 
                             front_route = stream(front, joint, front_row, joint_row, max_steps)
 
+                            # print(" ")
+                            # print('stream, back_route')
+                            # print("joint")
+                            # print(joint)
+                            # print("back")
+                            # print(back)
+                            # print('joint row')
+                            # print(joint_row)
+                            # print("back row")
+                            # print(back_row)
+                            # print('max steps')
+                            # print(max_steps)
+
                             back_route = stream(joint, back, joint_row, back_row, max_steps)
+
+                            # print(len(front_route))
+                            # print(len(back_route))
 
                             if len(front_route) > 0 and len(back_route) > 0:
 
@@ -435,13 +503,23 @@ def fold(message, base, view, length, max_steps, scale):
 
                                     if f not in polar_u_i:
 
+                                        # print("new")
+                                        # print("f")
+                                        # print(f)
+
                                         polar_u_i.append(f)
+                                        polar_d[f] = 0
 
                                     for b in back_route:
 
                                         if b not in polar_u_i:
 
+                                            # print("new")
+                                            # print("b")
+                                            # print(b)
+
                                             polar_u_i.append(b)
+                                            polar_d[b] = 0
 
                                         routes.append((f, b))
 
@@ -457,103 +535,555 @@ def fold(message, base, view, length, max_steps, scale):
 
     frame = []
 
-    for p in path:
+    # print("")
+    # print("path")
+    # print(len(list(path.keys())))
+    # print(list(path.keys()))
+
+    pos = 0
+
+    for m in message_t:
 
         # print(" ")
         # print("path")
 
-        path[p][1] = sorted(path[p][1], key=lambda x:x[-1])
-        path[p][2] = sorted(path[p][2], key=lambda x:x[0][-1] + x[1][-1])
+        path[m][1] = sorted(path[m][1], key=lambda x:x[-1])
+        path[m][2] = sorted(path[m][2], key=lambda x:x[0][-1] + x[1][-1])
+        #
+        # print(" ")
+        # print(path[m][1][:10])
+        # print(path[m][2][:10])
 
-        # print(path[p][1][:10])
-        # print(path[p][2][:10])
+        if len(path[m][1]) > 0:
 
-        if len(path[p][1]) > 0:
+            frame.append(path[m][1][0])
 
-            frame.append(path[p][1][0])
+            # message_l[pos].append(path[m][1][0][-1] + 1)
 
         else:
 
-            frame.append(path[p][2][0][0])
-            frame.append(path[p][2][0][1])
+            frame.append(path[m][2][0])
 
+            # message_l[pos].append(path[m][2][0][0][-1] + path[m][2][0][1][-1] + 2)
 
-    canvas = []
-    sum = 0
+        pos += 1
 
-    print(" ")
-    print('frame')
-    print(frame)
+    # print("")
+    # print('message_l')
+    # print(message_l)
 
-    for f in frame:
-
-        # print(" ")
-        # print('f')
-        # print(f)
-
-        sum += f[-1]
-
-        steps = []
-        step_count = 0
-
-        f_0 = rule_gen(f[0], base, length)[1]
-        steps.append(f_0)
-
-        # print(f_0)
-
-        while step_count < f[-1]:
-
-            row = Color_cells(rule_gen(f[2], base, length)[0], length, steps[-1])[0]
-
-            steps.append(row)
-
-            step_count += 1
-
-        for s in steps:
-
-            canvas.append(s)
-
-
-    print(" ")
-    print('canvas')
-    print(len(canvas))
-
-
-    canvas = np.asarray(canvas)
-    canvas = np.rot90(canvas)
-
-    cMap = colors.ListedColormap(['w', 'k'])
-
-    ax = plt.gca()
-    ax.set_aspect(1)
 
     filename = 'polar maps/polar_u-' + str(length)
     outfile = open(filename, 'wb')
     pickle.dump(polar_u_i, outfile)
     outfile.close()
 
-    plt.pcolormesh(canvas, cmap=cMap)
+    if plot != 0:
 
-    # plt.show()
+        canvas = []
+        sum = 0
+
+        print(" ")
+        print('frame')
+        print(frame)
+
+        for f in frame:
+
+            print(" ")
+            print('f')
+            print(f)
+
+            sum += f[-1]
+
+            steps = []
+            step_count = 0
+
+            f_0 = rule_gen(f[0], base, length)[1]
+            steps.append(f_0)
+
+            # print(f_0)
+
+            while step_count < f[-1]:
+                row = Color_cells(rule_gen(f[2], base, length)[0], length, steps[-1])[0]
+
+                steps.append(row)
+
+                step_count += 1
+
+            for s in steps:
+                canvas.append(s)
+
+        print(" ")
+        print('canvas')
+        print(len(canvas))
+
+        canvas = np.asarray(canvas)
+        canvas = np.rot90(canvas)
+
+        cMap = colors.ListedColormap(['w', 'k'])
+
+        ax = plt.gca()
+        ax.set_aspect(1)
+
+        plt.pcolormesh(canvas, cmap=cMap)
+
+        # plt.show()
+
+        path = 'cell translation'
+
+        file = str(message) + str('-') + str(level)
+        path_name = os.path.join(path, file)
+
+        plt.savefig(path_name, dpi=200)
+        plt.close()
+
+    return frame
+
+
+def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, polar_u_i, polar_d, scale, vid=0):
+
+    frames = []
+    message_l = dict()
+
+    # print(list(polar_d)[:10])
+    # print(list(polar_d)[0])
+    # print(list(polar_d)[0][1])
+
+    for x in range(len(message) - 1):
+
+        message_l[x] = []
+
+    for x in range(depth):
+
+        bibliod = 0
+        x = x + 1
+
+        print(" ")
+        print('x')
+        print(x)
+
+        if message not in cellexicon[cell_key]:
+
+            cellexicon[cell_key][message] = dict()
+
+            if x not in cellexicon[cell_key][message]:
+
+                cellexicon[cell_key][message][x] = []
+
+        else:
+
+            # print("message is in cellexicon")
+
+            if x not in cellexicon[cell_key][message]:
+
+                cellexicon[cell_key][message][x] = []
+
+            else:
+
+                # print("depth is in cellexicon")
+                #
+                # print(" ")
+                # print('bibliod')
+                # print(message)
+                # print(x)
+
+                bibliod = 1
+
+                # message_l = cellexicon[cell_key][message][x][0][1]
+
+        if bibliod == 1:
+
+            print(cellexicon[cell_key][message][x])
+
+            try:
+
+                frames.append(cellexicon[cell_key][message][x][0])
+
+            except:
+
+                frames.append(fold(message, base, view, length, max_steps, scale, x, polar_u_i, polar_d))
+
+            # print('cellexicon message')
+            # print(cellexicon[message])
+            # print(cellexicon[message][x][0])
+            # print(cellexicon[message][x][0][0])
+            # print(cellexicon[message][x][0][1])
+
+        else:
+
+            frames.append(fold(message, base, view, length, max_steps, scale, x, polar_u_i, polar_d))
+
+    # print(" ")
+    # print('message_l')
+
+    l_l = []
+    sum = 0
+
+
+    for frame in frames:
+
+        pos = 0
+
+        # print("")
+        # print("frame")
+        # print(frame)
+
+        for f in frame:
+
+            if type(f[0]) == int:
+
+                # print("single")
+                # print(f[-1])
+
+                message_l[pos].append(f[-1] + 1)
+
+            else:
+
+                # print('double')
+                # print(f[0][-1] + f[1][-1])
+
+                message_l[pos].append(f[0][-1] + f[1][-1] + 2)
+
+            pos += 1
+
+    for m in message_l:
+
+        message_l[m] = sorted(message_l[m], reverse=True)
+
+        l_l.append(message_l[m][0])
+        sum += message_l[m][0]
+
+        print(" ")
+        print(m)
+        print(message_l[m])
+
+    print(" ")
+    print("l_l")
+    print(l_l)
+
+
+    # print(" ")
+    # print('letter length')
+    # print(l_l)
+    # print(sum)
+
+    canvas = dict()
+
+    # print(" ")
+    # print(len(frames))
+    # print(frames)
+
+    pos = 1
+
+    for frame in frames:
+
+        # print(" ")
+        # print("frame")
+        # print(frames.index(frame))
+        # print(frame)
+
+        if frame not in cellexicon[cell_key][message][pos]:
+
+                cellexicon[cell_key][message][pos].append(frame)
+
+        canvas[pos] = []
+
+        for x in range(len(frame)):
+
+            # print(" ")
+            # print("x ")
+            # print(x)
+            # print(l_l[x])
+            # print(frame[x])
+
+            f = frame[x]
+
+            # print(" ")
+            # print("f")
+            # print(f)
+
+            if type(frame[x][0]) == int:
+
+                # print('single')
+
+                if f not in polar_d:
+
+                    polar_d[f] = 0
+
+                polar_d[f] += 1
+
+                steps = []
+                step_count = 0
+
+                f_0 = rule_gen(f[0], base, length)[1]
+                f_1 = rule_gen(f[1], base, length)[1]
+                steps.append(f_0)
+
+                # print(f_0)
+
+                while step_count < f[-1]:
+                    row = Color_cells(rule_gen(f[2], base, length)[0], length, steps[-1])[0]
+
+                    steps.append(row)
+
+                    step_count += 1
+
+                # print(" ")
+                # print("steps")
+                # print(steps)
+                # print(len(steps))
+
+                while len(steps) - 1 < l_l[x]:
+                    # print("short")
+                    steps.append(f_1)
+
+                # print("")
+                # print(l_l[x])
+                # print(len(steps))
+
+                # print(steps)
+                # print(len(steps))
+
+                for s in steps:
+                    canvas[pos].append(s)
+
+
+            else:
+
+                # print('double')
+
+                # print(" ")
+                # print('double')
+                # print(f)
+
+                if f[0] not in polar_d:
+
+                    polar_d[f[0]] = 0
+
+                if f[1] not in polar_d:
+                    polar_d[f[1]] = 0
+
+                polar_d[f[0]] += 1
+                polar_d[f[1]] += 1
+
+                steps = []
+
+                f_1 = rule_gen(f[1][1], base, length)[1]
+
+                for y in range(2):
+
+                    step_count = 0
+
+                    f_0 = rule_gen(f[y][0], base, length)[1]
+                    steps.append(f_0)
+
+                    # print(f_0)
+
+                    while step_count < f[y][-1]:
+                        row = Color_cells(rule_gen(f[y][2], base, length)[0], length, steps[-1])[0]
+
+                        steps.append(row)
+
+                        step_count += 1
+
+                # print(" ")
+                # print("steps")
+                # print(steps)
+                # print(len(steps))
+
+                while len(steps) - 1 < l_l[x]:
+                    # print("short")
+                    steps.append(f_1)
+
+                # print("")
+                # print(l_l[x])
+                # print(len(steps))
+
+                # print(steps)
+                # print(len(steps))
+
+                for s in steps:
+                    canvas[pos].append(s)
+
+        pos += 1
+
 
     path = 'cell translation'
 
-    file = str(message) + str('-') + str(scale)
-    path_name = os.path.join(path, file)
+    cMap = colors.ListedColormap(['k', 'm'])
 
-    plt.savefig(path_name, dpi=200)
-    plt.close()
+    if vid == 0:
+
+        for c in canvas:
+
+            # print(" ")
+            # print('canvas-' + str(c))
+            # print(canvas[c])
+            # print(len(canvas[c]))
+
+            file = str(message) + str('-') + str(list(canvas.keys()).index(c) + 1)
+            path_name = os.path.join(path, file)
+
+            canvas_c = canvas[c]
+
+            canvas_c = np.asarray(canvas_c)
+            canvas_c = np.rot90(canvas_c)
+
+            ax = plt.gca()
+            ax.set_aspect(1)
+
+            plt.pcolormesh(canvas_c, cmap=cMap)
+
+            plt.axis('off')
+
+            # plt.show()
+
+            plt.savefig(path_name, dpi=200, bbox_inches='tight',pad_inches = 0)
+            plt.close()
+
+    else:
+
+        # print("vid")
+
+        gallery = []  # for storing the generated images
+        fig = plt.figure()
+        for c in canvas:
+
+            canvas_c = canvas[c]
+
+            canvas_c = np.asarray(canvas_c)
+            canvas_c = np.rot90(canvas_c)
+            canvas_c = np.flip(canvas_c, 0)
+
+            file = str(message) + str('-') + str(depth) + '.mp4'
+            path_name = os.path.join(path, file)
+
+            gallery.append([plt.imshow(canvas_c, cmap=cMap, animated=True)])
+
+        ani = animation.ArtistAnimation(fig, gallery, interval=100, blit=True,
+                                        repeat_delay=100)
+        # ani.save()
+        plt.show()
 
 
-message = ' beauty will save the world'
+    # print(list(polar_d.items())[:10])
+    # print(list(polar_d.items())[0])
+    # print(list(polar_d.items())[0][1])
 
-for x in range(1, 17):
+    p_d = dict(sorted(list(polar_d.items()), key=lambda x:x[1], reverse=True))
+    polar_u_i = list(p_d.keys())
 
-    print(" ")
-    print('x')
-    print(x)
+    # print("polar_u_i")
+    # print(polar_u_i[:10])
+    #
+    # print("p_d")
+    # print(list(p_d)[:10])
 
-    fold(message, base, view, length, max_steps, x)
+    filename = 'polar maps/polar_u-' + str(length)
+    outfile = open(filename, 'wb')
+    pickle.dump(polar_u_i, outfile)
+    outfile.close()
+
+    filename = 'polar maps/polar_d-' + str(length)
+    outfile = open(filename, 'wb')
+    pickle.dump(p_d, outfile)
+    outfile.close()
+
+    filename = 'cellexicon/cellexicon'
+    outfile = open(filename, 'wb')
+    pickle.dump(cellexicon, outfile)
+    outfile.close()
+
+    b = 0
+
+    # for p in polar_d:
+    #     b += 1
+    #
+    #     print("")
+    #     print(p)
+    #     print(polar_d[p])
+
+
+infile = open("polar maps/polar_u-16", "rb")
+polar_u_i = pickle.load(infile)
+infile.close
+
+infile = open("polar maps/polar_d-16", "rb")
+polar_d = pickle.load(infile)
+infile.close
+
+infile = open("cellexicon/cellexicon", "rb")
+cellexicon = pickle.load(infile)
+infile.close
+
+# cellexicon = dict()
+
+print(" ")
+print("polars")
+print(list(polar_d.items())[:10])
+print(list(polar_u_i[:10]))
+
+base = 2
+view = 3
+
+length = 16
+max_steps = 8
+scale = 2
+depth = 8
+
+cell_key = (base, view, length, max_steps, scale)
+
+print(" ")
+print("cell_key")
+print(cell_key)
+
+if cell_key not in cellexicon:
+
+    cellexicon[cell_key] = dict()
+
+message = ' abcdefg'
+
+# cellexicon = dict()
+
+# polar_d = dict(sorted(polar_d.items(), key=lambda x: x[1], reverse=True))
+# polar_u_i = list(polar_d.keys())
+#
+# filename = 'polar maps/polar_u-' + str(length)
+# outfile = open(filename, 'wb')
+# pickle.dump(polar_u_i, outfile)
+# outfile.close()
+#
+# filename = 'polar maps/polar_d-' + str(length)
+# outfile = open(filename, 'wb')
+# pickle.dump(polar_d, outfile)
+# outfile.close()
+
+
+paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, polar_u_i, polar_d, scale, vid=1)
+
+    # if b > 10:
+    #     break
+
+print("cellexicon")
+
+for cell in cellexicon:
+
+    print(' ')
+    print("cell")
+    print(cell)
+
+    for word in cellexicon[cell]:
+
+        print("word")
+        print(word)
+
+    # for depth in cellexicon[cell]:
+    #
+    #     print('depth')
+    #     print(depth)
+    #     print(cellexicon[cell][depth])
+
+
 
 
 

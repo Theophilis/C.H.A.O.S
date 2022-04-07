@@ -6,9 +6,9 @@ plt.ioff()
 
 size = 2001
 
-l_size = 231
+l_size = 131
 x_space = 30
-y_space = 140
+y_space = 80
 
 offset_size = 24
 density = 1
@@ -637,7 +637,6 @@ def kord_ami(size, l_size, space, offset_size, x_o, y_o):
 
     return canvas
 
-
 def breathe(size, l_size, space, offset_size, density, x_o, y_o):
 
     canvas = np.zeros((size, size), dtype='int8')
@@ -767,7 +766,6 @@ def breathe(size, l_size, space, offset_size, density, x_o, y_o):
         draw_e(l_size, canvas, (x_o + space + l_size * 6, y_o - offset))
 
     return canvas
-
 
 def mckinley(size, l_size, space, offset_size, density, x_o, y_o):
 
@@ -1519,7 +1517,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-message = '-beauty will ----save the --world'
+message = '--beauty -will ------save -the ----world'
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 

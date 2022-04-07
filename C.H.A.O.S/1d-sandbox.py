@@ -18,7 +18,7 @@ width = length * 2 + 1
 # number of cells in a row
 rule = 90
 # number who's x_base transformation gives the rules dictionary its values
-view = 5
+view = 3
 # size of the view window that scans a row for rule application
 base = 3
 # numerical base of the rule set. number of colors each cell can be
@@ -816,7 +816,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
 
         if echoing == 1:
 
-            if press[letter] % 2 ==0:
+            if press[letter] % 1 ==0:
 
                 echo = 1
 
@@ -1845,6 +1845,6 @@ def menu():
 # menu()
 
 
-Chaos_Window(3, 2, 20)
+Chaos_Window(6, 2, 20)
 
 

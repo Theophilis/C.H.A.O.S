@@ -30,6 +30,7 @@ def _print_device_info():
         )
 
 def input_main(device_id=None):
+
     pygame.init()
     pygame.fastevent.init()
     event_get = pygame.fastevent.get
@@ -37,16 +38,22 @@ def input_main(device_id=None):
 
     #rtmidi init
     midiout = rtmidi.MidiOut()
-    available_ports = midiout.get_port_name(5)
+    available_ports = midiout.get_port_name(1)
     print(" ")
+    print("midiout")
+    print(midiout)
     print("available ports")
     print(available_ports)
+
     if available_ports:
-        midiout.open_port(5)
+        midiout.open_port(1)
     else:
         midiout.open_virtual_port('My virtual output')
 
     pygame.midi.init()
+
+    print(" ")
+    print("device info")
     _print_device_info()
 
     if device_id is None:
@@ -54,8 +61,16 @@ def input_main(device_id=None):
     else:
         input_id = device_id
 
+    print(' ')
     print("using input_id :%s:" % input_id)
     i = pygame.midi.Input(input_id)
+
+    print('i')
+    print(i)
+
+    print(" ")
+    print("device info")
+    _print_device_info()
 
     pygame.display.set_mode((1, 1))
     going = True
@@ -63,6 +78,13 @@ def input_main(device_id=None):
     while going:
         events = event_get()
         for e in events:
+
+            print(" ")
+            print('e')
+            print(e)
+            print(type(e))
+
+
             if e.type in [pygame.QUIT]:
                 going = False
             if e.type in [pygame.KEYDOWN]:
@@ -82,6 +104,11 @@ def input_main(device_id=None):
                     midiout.send_noteoff(ev[0], ev[1])
 
         if i.poll():
+
+            print(' ')
+            print('i')
+            print(i)
+
             midi_events = i.read(10)
             midi_evs = pygame.midi.midis2events(midi_events, i.device_id)
 
