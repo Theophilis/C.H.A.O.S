@@ -255,16 +255,8 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
 
         message_i = [n ** level for n in message_i]
 
-    # print("message_i")
-    # print(message_i)
 
-    max = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-
-    # print("max")
-    # print(max)
-    # print(len(max))
-
-    max = decimal(max, 2)
+    max = base ** length
 
     for m in range(len(message_i)):
 
@@ -293,7 +285,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
     # print(" ")
     print("message_i")
     print(message_i)
-    print(len(message_i))
+    # print(len(message_i))
     print("message_t")
     print(message_t)
     # print("scale")
@@ -301,6 +293,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
 
     path = dict()
 
+    #path finder
     for x in range(len(message_i) - 1):
 
         front = message_i[x]
@@ -379,6 +372,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
 
             route = stream(front, back, front_row, back_row, max_steps)
 
+            #one step path
             for r in route:
 
                 path[fb][1].append(r)
@@ -391,7 +385,6 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
 
                     polar_u_i.append(r)
                     polar_d[r] = 0
-
 
             #split path
             if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
@@ -461,6 +454,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
                                     polar_u_i.append(r)
                                     polar_d[r] = 0
 
+            #n step paths
             if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
 
                 depth = 2
@@ -687,7 +681,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 # print(message)
                 # print(x)
 
-                bibliod = 1
+                bibliod = 0
 
                 # message_l = cellexicon[cell_key][message][x][0][1]
 
@@ -945,7 +939,8 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
         # print("vid")
 
-        gallery = []  # for storing the generated images
+        gal = []
+        gallery = []
         fig = plt.figure()
         for c in canvas:
 
@@ -958,10 +953,16 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
             file = str(message) + str('-') + str(depth) + '.mp4'
             path_name = os.path.join(path, file)
 
-            gallery.append([plt.imshow(canvas_c, cmap=cMap, animated=True)])
+            gal.append([plt.imshow(canvas_c, cmap=cMap, animated=True)])
+
+        for g in gal:
+            gallery.append(g)
+        #
+        # for g in reversed(gal):
+        #     gallery.append(g)
 
         ani = animation.ArtistAnimation(fig, gallery, interval=100, blit=True,
-                                        repeat_delay=100)
+                                        repeat_delay=0)
         # ani.save()
         plt.show()
 
@@ -1026,10 +1027,10 @@ print(list(polar_u_i[:10]))
 base = 2
 view = 3
 
-length = 16
+length = 32
 max_steps = 8
-scale = 2
-depth = 8
+scale = 1
+depth = 16
 
 cell_key = (base, view, length, max_steps, scale)
 
@@ -1041,7 +1042,7 @@ if cell_key not in cellexicon:
 
     cellexicon[cell_key] = dict()
 
-message = ' abcdefg'
+message = ' breathe '
 
 # cellexicon = dict()
 

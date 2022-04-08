@@ -8,12 +8,12 @@ size = 2001
 
 l_size = 131
 x_space = 30
-y_space = 80
+y_space = 250
 
 offset_size = 24
 density = 1
 x_o = 30
-y_o = 120
+y_o = 180
 
 def draw_a(size, canvas, corner):
 
@@ -1517,7 +1517,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-message = '--beauty -will ------save -the ----world'
+message = 'beauty ----will -----save ------the -------world'
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 

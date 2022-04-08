@@ -385,7 +385,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
             orange = (1, .5, .1)
 
             if base == 6:
-                cMap = c.ListedColormap([black, magenta, cyan, yellow, red, blue, white])
+                cMap = c.ListedColormap([red, black, cyan, white, magenta, yellow, black])
 
             if base == 5:
                 cMap = c.ListedColormap([black, magenta, cyan, yellow, white])
@@ -1202,14 +1202,14 @@ leveling = 1
 size = length
 l_size = 131
 x_space = 30
-y_space = 80
+y_space = 250
 
 offset_size = 32
-density = 8
+density = 16
 x_o = 30
-y_o = 120
+y_o = 180
 
-message = '--beauty -will ------save -the ----world'
+message = 'beauty ---will ----save ------the -------world'
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 
@@ -1238,7 +1238,7 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('scarfs/hexenary/lvl-3')
+    lvl = os.listdir('plates/beauty will save the world/lvl-6')
 
     path = 'plates/beauty will save the world'
 
@@ -1254,7 +1254,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[19:-5])
+            l = int(l[19:-51])
 
         except:
 
