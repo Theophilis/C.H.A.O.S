@@ -23,11 +23,17 @@ max = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 max = decimal(max, 2)
 
-print(max)
+base = 4
 
-sensors = 2 ** 16
+a = base ** base ** 3
+b = 2 ** 16
 
-print(sensors)
+
+
+print(a)
+print(b)
+
+print(int(b/a))
 
 
 

@@ -7,6 +7,9 @@ import pygame
 import os
 import pickle
 import sys
+import pygame.midi
+import time
+import rtmidi2 as rtmidi
 
 sys.setrecursionlimit(999999999)
 
@@ -311,13 +314,13 @@ class Cell(Pixel):
         self.y += vel
 
 
-def Chaos_Window(base, pixel_res, cell_vel):
+def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
     print("base")
     print(base)
 
     run = 1
-    FPS = 30
+    FPS = 60
     rule = 1
     step = 0
     clock = pygame.time.Clock()
@@ -335,6 +338,7 @@ def Chaos_Window(base, pixel_res, cell_vel):
     r_c = 0
     r_i = 0
     rand_count = 0
+    randomizer = 1
     iterate = 0
 
     input_box = 0
@@ -348,6 +352,52 @@ def Chaos_Window(base, pixel_res, cell_vel):
     cell_row_width = int(WIDTH / pixel_res)
     cell_rows = int(HEIGHT / pixel_res) + 1
     d_rule, i_rule = rule_gen(rule, base)
+
+    pygame.init()
+    pygame.fastevent.init()
+    event_get = pygame.fastevent.get
+    event_post = pygame.fastevent.post
+
+    #rtmidi init
+    midiout = rtmidi.MidiOut()
+    available_ports = midiout.get_port_name(1)
+    print(" ")
+    print("midiout")
+    print(midiout)
+    print("available ports")
+    print(available_ports)
+
+    if available_ports:
+        midiout.open_port(1)
+    else:
+        midiout.open_virtual_port('My virtual output')
+
+    pygame.midi.init()
+
+    print(" ")
+    print("device info")
+    _print_device_info()
+
+    if device_id is None:
+        input_id = pygame.midi.get_default_input_id()
+    else:
+        input_id = device_id
+
+    print(' ')
+    print("using input_id :%s:" % input_id)
+    p_m_i = pygame.midi.Input(input_id)
+
+    ev_1 = 0
+    ev_2 = 0
+    ev_3 = 0
+    ev_4 = 0
+    ev_5 = 0
+    ev_6 = 0
+    ev_7 = 0
+    ev_8 = 0
+    ev_9 = 0
+    ev_10 = 0
+    ev_11 = 0
 
     # i_rule[0] = 1
     # i_rule[-1] = 1
@@ -1189,83 +1239,86 @@ def Chaos_Window(base, pixel_res, cell_vel):
                         journal[rule].append(page)
                     page = []
 
-                    if list_count == 0:
 
-                        # print("list_count == 0:")
-                        # print("randomizer")
+                    if randomizer == 0:
 
-                        if base == 2:
-                            if i_rule[rand] == 0:
-                                i_rule[rand] = 1
-                                d_rule[list(d_rule.keys())[rand]] = 1
-                            elif i_rule[rand] == 1:
-                                i_rule[rand] = 0
-                                d_rule[list(d_rule.keys())[rand]] = 0
+                        if list_count == 0:
 
-                        if base == 3:
-                            if i_rule[rand] == 0:
-                                i_rule[rand] = 1
-                                d_rule[list(d_rule.keys())[rand]] = 1
-                            elif i_rule[rand] == 1:
-                                i_rule[rand] = 2
-                                d_rule[list(d_rule.keys())[rand]] = 2
-                            elif i_rule[rand] == 2:
-                                i_rule[rand] = 0
-                                d_rule[list(d_rule.keys())[rand]] = 0
+                            # print("list_count == 0:")
+                            # print("randomizer")
 
-                        if base == 4:
+                            if base == 2:
+                                if i_rule[rand] == 0:
+                                    i_rule[rand] = 1
+                                    d_rule[list(d_rule.keys())[rand]] = 1
+                                elif i_rule[rand] == 1:
+                                    i_rule[rand] = 0
+                                    d_rule[list(d_rule.keys())[rand]] = 0
 
-                            if i_rule[rand] == 0:
-                                i_rule[rand] = 1
-                                d_rule[list(d_rule.keys())[rand]] = 1
-                            elif i_rule[rand] == 1:
-                                i_rule[rand] = 2
-                                d_rule[list(d_rule.keys())[rand]] = 2
-                            elif i_rule[rand] == 2:
-                                i_rule[rand] = 3
-                                d_rule[list(d_rule.keys())[rand]] = 3
-                            elif i_rule[rand] == 3:
-                                i_rule[rand] = 0
-                                d_rule[list(d_rule.keys())[rand]] = 0
+                            if base == 3:
+                                if i_rule[rand] == 0:
+                                    i_rule[rand] = 1
+                                    d_rule[list(d_rule.keys())[rand]] = 1
+                                elif i_rule[rand] == 1:
+                                    i_rule[rand] = 2
+                                    d_rule[list(d_rule.keys())[rand]] = 2
+                                elif i_rule[rand] == 2:
+                                    i_rule[rand] = 0
+                                    d_rule[list(d_rule.keys())[rand]] = 0
 
-                        if base == 5:
+                            if base == 4:
 
-                            if i_rule[rand] == 0:
-                                i_rule[rand] = 1
-                                d_rule[list(d_rule.keys())[rand]] = 1
-                            elif i_rule[rand] == 1:
-                                i_rule[rand] = 2
-                                d_rule[list(d_rule.keys())[rand]] = 2
-                            elif i_rule[rand] == 2:
-                                i_rule[rand] = 3
-                                d_rule[list(d_rule.keys())[rand]] = 3
-                            elif i_rule[rand] == 3:
-                                i_rule[rand] = 4
-                                d_rule[list(d_rule.keys())[rand]] = 4
-                            elif i_rule[rand] == 4:
-                                i_rule[rand] = 0
-                                d_rule[list(d_rule.keys())[rand]] = 0
+                                if i_rule[rand] == 0:
+                                    i_rule[rand] = 1
+                                    d_rule[list(d_rule.keys())[rand]] = 1
+                                elif i_rule[rand] == 1:
+                                    i_rule[rand] = 2
+                                    d_rule[list(d_rule.keys())[rand]] = 2
+                                elif i_rule[rand] == 2:
+                                    i_rule[rand] = 3
+                                    d_rule[list(d_rule.keys())[rand]] = 3
+                                elif i_rule[rand] == 3:
+                                    i_rule[rand] = 0
+                                    d_rule[list(d_rule.keys())[rand]] = 0
 
-                        if base == 6:
+                            if base == 5:
 
-                            if i_rule[rand] == 0:
-                                i_rule[rand] = 1
-                                d_rule[list(d_rule.keys())[rand]] = 1
-                            elif i_rule[rand] == 1:
-                                i_rule[rand] = 2
-                                d_rule[list(d_rule.keys())[rand]] = 2
-                            elif i_rule[rand] == 2:
-                                i_rule[rand] = 3
-                                d_rule[list(d_rule.keys())[rand]] = 3
-                            elif i_rule[rand] == 3:
-                                i_rule[rand] = 4
-                                d_rule[list(d_rule.keys())[rand]] = 4
-                            elif i_rule[rand] == 4:
-                                i_rule[rand] = 5
-                                d_rule[list(d_rule.keys())[rand]] = 5
-                            elif i_rule[rand] == 5:
-                                i_rule[rand] = 0
-                                d_rule[list(d_rule.keys())[rand]] = 0
+                                if i_rule[rand] == 0:
+                                    i_rule[rand] = 1
+                                    d_rule[list(d_rule.keys())[rand]] = 1
+                                elif i_rule[rand] == 1:
+                                    i_rule[rand] = 2
+                                    d_rule[list(d_rule.keys())[rand]] = 2
+                                elif i_rule[rand] == 2:
+                                    i_rule[rand] = 3
+                                    d_rule[list(d_rule.keys())[rand]] = 3
+                                elif i_rule[rand] == 3:
+                                    i_rule[rand] = 4
+                                    d_rule[list(d_rule.keys())[rand]] = 4
+                                elif i_rule[rand] == 4:
+                                    i_rule[rand] = 0
+                                    d_rule[list(d_rule.keys())[rand]] = 0
+
+                            if base == 6:
+
+                                if i_rule[rand] == 0:
+                                    i_rule[rand] = 1
+                                    d_rule[list(d_rule.keys())[rand]] = 1
+                                elif i_rule[rand] == 1:
+                                    i_rule[rand] = 2
+                                    d_rule[list(d_rule.keys())[rand]] = 2
+                                elif i_rule[rand] == 2:
+                                    i_rule[rand] = 3
+                                    d_rule[list(d_rule.keys())[rand]] = 3
+                                elif i_rule[rand] == 3:
+                                    i_rule[rand] = 4
+                                    d_rule[list(d_rule.keys())[rand]] = 4
+                                elif i_rule[rand] == 4:
+                                    i_rule[rand] = 5
+                                    d_rule[list(d_rule.keys())[rand]] = 5
+                                elif i_rule[rand] == 5:
+                                    i_rule[rand] = 0
+                                    d_rule[list(d_rule.keys())[rand]] = 0
 
                     # print("change")
                     # print(i_rule)
@@ -1551,6 +1604,108 @@ def Chaos_Window(base, pixel_res, cell_vel):
                             press_vault[letter] = press[letter]
 
                         press[letter] = 0
+
+            if event.type in [pygame.midi.MIDIIN]:
+
+                # print(e)
+
+                clean_e = str(event)[21:-3]
+                list_e = clean_e.split(',')
+                ev = []
+                for l in list_e:
+                    ev.append(int(l.split(':')[1]))
+
+                # print(" ")
+                # print("ev")
+                # print(ev)
+                # print(event)
+
+                #x axis
+                if ev[1] == 1:
+
+                    ev_1 = ev[2]
+
+                #y axis
+                if ev[1] == 2:
+
+                    ev_2 = ev[2]
+
+
+                #z axis
+                if ev[1] == 3:
+
+                    ev_3 = ev[2]
+
+
+                #pitch
+                if ev[1] == 4:
+
+                    ev_4 = ev[2]
+
+
+                #yaw
+                if ev[1] == 5:
+
+                    ev_5 = ev[2]
+
+
+                #roll
+                if ev[1] == 6:
+
+                    ev_6 = ev[2]
+
+
+                #thumb
+                if ev[1] == 7:
+
+                    ev_7 = ev[2]
+
+                #pointer
+                if ev[1] == 8:
+
+                    ev_8 = ev[2]
+
+                #middle
+                if ev[1] == 9:
+
+                    ev_9 = ev[2]
+
+                #ring
+                if ev[1] == 10:
+
+                    ev_10 = ev[2]
+
+                #pinky
+                if ev[1] == 11:
+
+                    ev_11 = ev[2]
+
+
+                glove_value = ev_8 + ev_9 + ev_10 + ev_11
+
+                # print("")
+                # print(glove_value)
+
+                d_rule, i_rule = rule_gen(int(glove_value), base)
+
+                # if ev[0] == 144:
+                #     midiout.send_noteon(ev[0], ev[1], ev[2])
+                # elif ev[0] == 128:
+                #     midiout.send_noteoff(ev[0], ev[1])
+
+        if p_m_i.poll():
+
+            # print(' ')
+            # print('i')
+            # print(i)
+
+            midi_events = p_m_i.read(FPS)
+            midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
+
+            for m_e in midi_evs:
+                event_post(m_e)
+
+
 
         for r in range(cell_rows):
             for cell in cells[r][:]:
@@ -1842,9 +1997,131 @@ def menu():
         mainClock.tick(60)
 
 
+#pygame.midi interface
+
+def print_device_into():
+    pygame.midi.init()
+    _print_device_info()
+    pygame.midi.quit()
+
+def _print_device_info():
+    for i in range(pygame.midi.get_count()):
+        r = pygame.midi.get_device_info(i)
+        (interf, name, input, output, opened) = r
+
+        in_out = ""
+        if input:
+            in_out = "(input)"
+        if output:
+            in_out = "(output)"
+
+        print(
+            "%2i: interface :%s:, name :%s:, opened :%s:  %s"
+            % (i, interf, name, opened, in_out)
+        )
+
+def input_main(device_id=None):
+
+    pygame.init()
+    pygame.fastevent.init()
+    event_get = pygame.fastevent.get
+    event_post = pygame.fastevent.post
+
+    #rtmidi init
+    midiout = rtmidi.MidiOut()
+    available_ports = midiout.get_port_name(1)
+    print(" ")
+    print("midiout")
+    print(midiout)
+    print("available ports")
+    print(available_ports)
+
+    if available_ports:
+        midiout.open_port(1)
+    else:
+        midiout.open_virtual_port('My virtual output')
+
+    pygame.midi.init()
+
+    print(" ")
+    print("device info")
+    _print_device_info()
+
+    if device_id is None:
+        input_id = pygame.midi.get_default_input_id()
+    else:
+        input_id = device_id
+
+    print(' ')
+    print("using input_id :%s:" % input_id)
+    i = pygame.midi.Input(input_id)
+
+    # print('i')
+    # print(i)
+    #
+    # print(" ")
+    # print("device info")
+    # _print_device_info()
+
+    pygame.display.set_mode((1, 1))
+    going = True
+
+    while going:
+        events = event_get()
+        for e in events:
+
+            # print(" ")
+            # print('e')
+            # print(e)
+            # print(type(e))
+
+
+            if e.type in [pygame.QUIT]:
+                going = False
+            if e.type in [pygame.KEYDOWN]:
+                going = False
+            if e.type in [pygame.midi.MIDIIN]:
+
+                # print(e)
+
+                clean_e = str(e)[21:-3]
+                list_e = clean_e.split(',')
+                ev = []
+                for l in list_e:
+                    ev.append(int(l.split(':')[1]))
+
+                # print(" ")
+                # print("ev")
+                # print(ev)
+                # print(e)
+
+                if ev[0] == 144:
+                    midiout.send_noteon(ev[0], ev[1], ev[2])
+                elif ev[0] == 128:
+                    midiout.send_noteoff(ev[0], ev[1])
+
+        if i.poll():
+
+            # print(' ')
+            # print('i')
+            # print(i)
+
+            midi_events = i.read(10)
+            midi_evs = pygame.midi.midis2events(midi_events, i.device_id)
+
+            for m_e in midi_evs:
+                event_post(m_e)
+
+    del i
+    pygame.midi.quit()
+
+
+# input_main()
+
+
 # menu()
 
 
-Chaos_Window(6, 2, 20)
+Chaos_Window(2, 2, 20)
 
 

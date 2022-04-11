@@ -79,10 +79,10 @@ def input_main(device_id=None):
         events = event_get()
         for e in events:
 
-            print(" ")
-            print('e')
-            print(e)
-            print(type(e))
+            # print(" ")
+            # print('e')
+            # print(e)
+            # print(type(e))
 
 
             if e.type in [pygame.QUIT]:
@@ -90,14 +90,20 @@ def input_main(device_id=None):
             if e.type in [pygame.KEYDOWN]:
                 going = False
             if e.type in [pygame.midi.MIDIIN]:
-                print(e)
+
+                # print(e)
+
                 clean_e = str(e)[21:-3]
                 list_e = clean_e.split(',')
                 ev = []
                 for l in list_e:
                     ev.append(int(l.split(':')[1]))
 
+                print(" ")
+                print("ev")
                 print(ev)
+                print(e)
+
                 if ev[0] == 144:
                     midiout.send_noteon(ev[0], ev[1], ev[2])
                 elif ev[0] == 128:
@@ -105,9 +111,9 @@ def input_main(device_id=None):
 
         if i.poll():
 
-            print(' ')
-            print('i')
-            print(i)
+            # print(' ')
+            # print('i')
+            # print(i)
 
             midi_events = i.read(10)
             midi_evs = pygame.midi.midis2events(midi_events, i.device_id)

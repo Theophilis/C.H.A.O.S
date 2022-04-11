@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 2001
+length = 1001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -1194,7 +1194,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'plates/beauty will save the world'
+path = 'scarfs/hexenary'
 
 journaling = 0
 leveling = 1
@@ -1209,13 +1209,13 @@ density = 16
 x_o = 30
 y_o = 180
 
-message = 'beauty ---will ----save ------the -------world'
+message = ''
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 
 if journaling != 0:
 
-    infile = open("journals/journal_edge", "rb")
+    infile = open("journals/journal_flower-garden", "rb")
     journal = pickle.load(infile)
     infile.close
 
@@ -1238,9 +1238,9 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('plates/beauty will save the world/lvl-6')
+    lvl = os.listdir('scarfs/hexenary/lvl-1')
 
-    path = 'plates/beauty will save the world'
+    path = 'scarfs/hexenary'
 
     print(len(lvl))
 
@@ -1254,7 +1254,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[19:-51])
+            l = int(l[17:-5])
 
         except:
 

@@ -131,7 +131,6 @@ def Color_cells(d_rule, cell_row_width, row_0):
     rc = []
     row_1 = [0 for x in range(cell_row_width)]
 
-
     for y in range(len(row_0)):
 
         # if direction != 0:
@@ -226,7 +225,7 @@ def stream(front, back, front_row, back_row, max_steps):
     return route
 
 
-def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_d, plot=0):
+def fold(message, base, view, length, max_steps, scale, level, polar_paths, polar_u_i, polar_d, plot=0):
 
     message_t = []
 
@@ -258,13 +257,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
     # print("message_i")
     # print(message_i)
 
-    max = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-
-    # print("max")
-    # print(max)
-    # print(len(max))
-
-    max = decimal(max, 2)
+    max = base ** length - 1
 
     for m in range(len(message_i)):
 
@@ -319,259 +312,253 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
         path[fb][2] = []
         path[fb][3] = []
 
-        #pre forged paths
-        for p in polar_u_i:
+        if fb in polar_paths:
 
-            #full path
-            if p[0] == front and p[1] == back and p[-1] < max_steps:
-
-                # print(" ")
-                # print("p")
-                # print(p)
-
-                path[fb][1].append(p)
-
-            #front half path
-            elif p[0] == front and p[0] != p[1]:
-
-                # print(" ")
-                # print('front')
-                # print(p)
-
-                for o in polar_u_i:
-
-                    if p[1] == o[0] and o[1] == back:
-
-                        path[fb][2].append((p, o))
-
-                    if len(path[fb][3]) < max_steps:
-
-                        if p[1] == o[0] and o[0] != o[1]:
-
-                            for l in polar_u_i:
-
-                                if o[1] == l[0] and l[1] == back:
-
-                                    # print(" ")
-                                    # print("triple")
-
-                                    path[fb][3].append((p, o, l))
-
-
-            #back half path
-            elif p[1] == back and p[0] != p[1]:
-
-                # print(" ")
-                # print('back')
-                # print(p)
-
-                for o in polar_u_i:
-
-                    if o[0] == front and o[1] == p[0]:
-
-                        if (o, p) not in path[fb][2]:
-
-                            path[fb][2].append((o, p))
-
-                            # print("back match")
-
-                    if len(path[fb][3]) < max_steps:
-
-                        if o[1] == p[0] and o[0] != o[1]:
-
-                            for l in polar_u_i:
-
-                                if l[0] == front and l[1] == o[0]:
-
-                                    # print("")
-                                    # print("triple")
-
-                                    if (l, o, p) not in path[fb][3]:
-
-                                        path[fb][3].append((l, o, p))
-
-
-        #fresh forged paths
-        if len(path[fb][1]) == 0 and len(path[fb][2]) == 0 and len(path[fb][3]) == 0:
-
-            # print("")
-            # print("empty")
-            # print(fb)
-
-            front_row = rule_gen(front, base, length)[1]
-            back_row = rule_gen(back, base, length)[1]
+            pp_fb = polar_paths[fb][0]
 
             # print(" ")
-            # print('fb rows')
-            # print(front_row)
-            # print(back_row)
+            # print("pp_fb")
+            # print(pp_fb)
+            # print(len(pp_fb))
 
-            #fresh path
+            if type(pp_fb[0]) == int:
 
-            route = stream(front, back, front_row, back_row, max_steps)
+                # print("one")
 
-            #one step path
-            for r in route:
+                path[fb][1].append(pp_fb)
 
-                path[fb][1].append(r)
+            elif len(pp_fb) == 2:
 
-                if r not in polar_u_i:
+                # print("two")
 
-                    # print("new")
-                    # print("r")
-                    # print(r)
+                path[fb][2].append(pp_fb)
 
-                    polar_u_i.append(r)
-                    polar_d[r] = 0
+            elif len(pp_fb) == 3:
 
-            #split path
-            if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
+                # print("three")
+
+                path[fb][3].append(pp_fb)
+
+        else:
+
+            #pre forged paths
+            for p in polar_u_i:
+
+                #full path
+                if p[0] == front and p[1] == back and p[-1] < max_steps:
+
+                    # print(" ")
+                    # print("p")
+                    # print(p)
+
+                    path[fb][1].append(p)
+
+                #front half path
+                elif p[0] == front and p[0] != p[1] and p[0] != back:
+
+                    # print(" ")
+                    # print('front')
+                    # print(p)
+
+                    for o in polar_u_i:
+
+                        if p[1] == o[0] and o[1] == back:
+
+                            path[fb][2].append((p, o))
+
+                        if len(path[fb][3]) < max_steps:
+
+                            if p[1] == o[0] and o[0] != o[1]:
+
+                                for l in polar_u_i:
+
+                                    if o[1] == l[0] and l[1] == back:
+
+                                        # print(" ")
+                                        # print("triple")
+
+                                        path[fb][3].append((p, o, l))
+
+
+                #back half path
+                elif p[1] == back and p[0] != p[1]:
+
+                    # print(" ")
+                    # print('back')
+                    # print(p)
+
+                    for o in polar_u_i:
+
+                        if o[0] == front and o[1] == p[0]:
+
+                            if (o, p) not in path[fb][2]:
+
+                                path[fb][2].append((o, p))
+
+                                # print("back match")
+
+                        if len(path[fb][3]) < max_steps:
+
+                            if o[1] == p[0] and o[0] != o[1]:
+
+                                for l in polar_u_i:
+
+                                    if l[0] == front and l[1] == o[0]:
+
+                                        # print("")
+                                        # print("triple")
+
+                                        if (l, o, p) not in path[fb][3]:
+
+                                            path[fb][3].append((l, o, p))
+
+
+            #fresh forged paths
+            if len(path[fb][1]) == 0 and len(path[fb][2]) == 0 and len(path[fb][3]) == 0:
 
                 # print("")
-                # print("split path")
+                # print("empty")
                 # print(fb)
-                #
+                # print("fresh forged")
+
+                front_row = rule_gen(front, base, length)[1]
+                back_row = rule_gen(back, base, length)[1]
+
+                # print(" ")
                 # print('fb rows')
                 # print(front_row)
                 # print(back_row)
 
-                for p in polar_u_i:
+                #fresh path
 
-                    #back forge
-                    if p[0] == front and p[0] != p[1] and p[-1] < int(max_steps/2):
+                route = stream(front, back, front_row, back_row, max_steps)
 
-                        p_1 = rule_gen(p[1], base, length)[1]
+                #one step path
+                for r in route:
 
-                        # print(" ")
-                        # print("p")
-                        # print(p)
-                        # print(p_1)
-                        #
-                        # print("back")
-                        # print(back)
-                        # print(back_row)
+                    path[fb][1].append(r)
 
-                        route = stream(p[1], back, p_1, back_row, max_steps)
+                    if r not in polar_u_i:
 
-                        if len(route) > 0:
+                        # print("new")
+                        # print("r")
+                        # print(r)
 
-                            for r in route:
+                        polar_u_i.append(r)
+                        polar_d[r] = 0
 
-                                path[fb][2].append((p, r))
+                #split path
+                if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
 
-                                if r not in polar_u_i:
-
-                                    # print("new")
-                                    # print("r")
-                                    # print(r)
-
-                                    polar_u_i.append(r)
-                                    polar_d[r] = 0
-
-                    #front forge
-                    if p[1] == back and p[0] != p[1] and p[-1] < int(max_steps/2):
-
-                        # print("front forge")
-
-                        p_0 = rule_gen(p[0], base, length)[1]
-
-                        route = stream(front, p[0], front_row, p_0, max_steps)
-
-                        if len(route) > 0:
-
-                            for r in route:
-
-                                path[fb][2].append((r, p))
-
-                                if r not in polar_u_i:
-
-                                    # print("new")
-                                    # print("r")
-                                    # print(r)
-
-                                    polar_u_i.append(r)
-                                    polar_d[r] = 0
-
-            #n step paths
-            if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
-
-                routes = []
-
-                joint = 0
-
-                while len(routes) == 0:
-
-                    joint_row = rule_gen(joint, base, length)[1]
-
-                    front_route = stream(front, joint, front_row, joint_row, max_steps)
-
-                    # print(" ")
-                    # print('stream, back_route')
-                    # print("joint")
-                    # print(joint)
-                    # print("back")
-                    # print(back)
-                    # print('joint row')
-                    # print(joint_row)
-                    # print("back row")
+                    # print("")
+                    # print("split path")
+                    # print(fb)
+                    #
+                    # print('fb rows')
+                    # print(front_row)
                     # print(back_row)
-                    # print('max steps')
-                    # print(max_steps)
 
-                    back_route = stream(joint, back, joint_row, back_row, max_steps)
+                    for p in polar_u_i:
 
-                    # print(len(front_route))
-                    # print(len(back_route))
+                        #back forge
+                        if p[0] == front and p[0] != p[1] and p[-1] < int(max_steps/2):
 
-                    if len(front_route) > 0 and len(back_route) > 0:
+                            p_1 = rule_gen(p[1], base, length)[1]
 
-                        for f in front_route:
+                            # print(" ")
+                            # print("p")
+                            # print(p)
+                            # print(p_1)
+                            #
+                            # print("back")
+                            # print(back)
+                            # print(back_row)
 
-                            if f not in polar_u_i:
+                            route = stream(p[1], back, p_1, back_row, max_steps)
 
-                                # print("new")
-                                # print("f")
-                                # print(f)
+                            if len(route) > 0:
 
-                                polar_u_i.append(f)
-                                polar_d[f] = 0
+                                for r in route:
 
-                            for b in back_route:
+                                    path[fb][2].append((p, r))
 
-                                if b not in polar_u_i:
+                                    if r not in polar_u_i:
 
-                                    # print("new")
-                                    # print("b")
-                                    # print(b)
+                                        # print("new")
+                                        # print("r")
+                                        # print(r)
 
-                                    polar_u_i.append(b)
-                                    polar_d[b] = 0
+                                        polar_u_i.append(r)
+                                        polar_d[r] = 0
 
-                                routes.append((f, b))
+                        #front forge
+                        if p[1] == back and p[0] != p[1] and p[-1] < int(max_steps/2):
 
+                            # print("front forge")
 
-                    if joint > base ** length:
+                            p_0 = rule_gen(p[0], base, length)[1]
 
-                        print("broken")
+                            route = stream(front, p[0], front_row, p_0, max_steps)
 
-                        break
+                            if len(route) > 0:
 
-                    joint += 1
+                                for r in route:
 
+                                    path[fb][2].append((r, p))
 
-                for y in range(base ** length):
+                                    if r not in polar_u_i:
 
-                    joint_row_0 = rule_gen(joint, base, length)[1]
+                                        # print("new")
+                                        # print("r")
+                                        # print(r)
 
-                    for z in range(base ** length):
+                                        polar_u_i.append(r)
+                                        polar_d[r] = 0
 
-                        joint_row_1 = rule_gen(joint, base, length)[1]
+                #n step paths
+                if len(path[fb][1]) == 0 and len(path[fb][2]) == 0:
+
+                    # print("n step paths")
+                    # print("joint")
+
+                    routes = []
+
+                    joint = 0
+
+                    while len(routes) == 0:
+
+                        # print(joint)
+
+                        joint_row = rule_gen(joint, base, length)[1]
 
                         front_route = stream(front, joint, front_row, joint_row, max_steps)
-                        middle_route = stream(y, z, joint_row_0, joint_row_1, max_steps)
+
+                        # print(" ")
+                        # print('stream, back_route')
+                        # print("joint")
+                        # print(joint)
+                        # print("back")
+                        # print(back)
+                        # print('joint row')
+                        # print(joint_row)
+                        # print("back row")
+                        # print(back_row)
+                        # print('max steps')
+                        # print(max_steps)
+
                         back_route = stream(joint, back, joint_row, back_row, max_steps)
 
-                        if len(front_route) > 0 and len(middle_route) > 0 and len(back_route) > 0:
+                        # print(len(front_route))
+                        # print(len(back_route))
+
+                        # if len(front_route) > 0 or len(back_route) > 0:
+                        #
+                        #     print((len(front_route), len(back_route)))
+
+
+                        if len(front_route) > 0 and len(back_route) > 0:
+
+                            # print("valid route")
 
                             for f in front_route:
 
@@ -584,38 +571,96 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
                                     polar_u_i.append(f)
                                     polar_d[f] = 0
 
-                                    for m in middle_route:
+                                for b in back_route:
 
-                                        if m not in polar_u_i:
+                                    if b not in polar_u_i:
 
-                                            polar_u_i.append(m)
-                                            polar_d[m] = 0
+                                        # print("new")
+                                        # print("b")
+                                        # print(b)
 
-                                        for b in back_route:
+                                        polar_u_i.append(b)
+                                        polar_d[b] = 0
 
-                                            if b not in polar_u_i:
-
-                                                # print("new")
-                                                # print("b")
-                                                # print(b)
-
-                                                polar_u_i.append(b)
-                                                polar_d[b] = 0
-
-                                                print(" ")
-                                                print("triple")
-                                                print((f, m, b))
-
-                                            routes.append((f, m, b))
+                                    routes.append((f, b))
 
 
-                for r in routes:
+                        if joint > base ** length:
 
-                    if len(r) not in path[fb]:
+                            # print("broken")
 
-                        path[fb][len(r)] = []
+                            break
 
-                    path[fb][len(r)].append(r)
+                        joint += 1
+
+
+                    if len(routes) == 0:
+
+                        for y in range(base ** length):
+
+                            if len(routes) > 0:
+
+                                break
+
+                            joint_row_0 = rule_gen(y, base, length)[1]
+
+                            for z in range(base ** length):
+
+                                if len(routes) > 0:
+
+                                    break
+
+                                joint_row_1 = rule_gen(z, base, length)[1]
+
+                                front_route = stream(front, joint, front_row, joint_row, max_steps)
+                                middle_route = stream(y, z, joint_row_0, joint_row_1, max_steps)
+                                back_route = stream(joint, back, joint_row, back_row, max_steps)
+
+                                if len(front_route) > 0 and len(middle_route) > 0 and len(back_route) > 0:
+
+                                    for f in front_route:
+
+                                        if f not in polar_u_i:
+
+                                            # print("new")
+                                            # print("f")
+                                            # print(f)
+
+                                            polar_u_i.append(f)
+                                            polar_d[f] = 0
+
+                                            for m in middle_route:
+
+                                                if m not in polar_u_i:
+
+                                                    polar_u_i.append(m)
+                                                    polar_d[m] = 0
+
+                                                for b in back_route:
+
+                                                    if b not in polar_u_i:
+
+                                                        # print("new")
+                                                        # print("b")
+                                                        # print(b)
+
+                                                        polar_u_i.append(b)
+                                                        polar_d[b] = 0
+
+                                                        print(" ")
+                                                        print("triple")
+                                                        print((f, m, b))
+
+                                                    routes.append((f, m, b))
+
+
+                    for r in routes:
+
+                        if len(r) not in path[fb]:
+
+                            path[fb][len(r)] = []
+
+                        path[fb][len(r)].append(r)
 
 
     frame = []
@@ -636,12 +681,12 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
         path[m][2] = sorted(path[m][2], key=lambda x:x[0][-1] + x[1][-1])
         path[m][3] = sorted(path[m][3], key=lambda x:x[0][-1] + x[1][-1] + x[2][-1])
         #
-        print(" ")
-        print("m")
-        print(m)
-        print(path[m][1][:10])
-        print(path[m][2][:10])
-        print(path[m][3][:10])
+        # print(" ")
+        # print("m")
+        # print(m)
+        # print(path[m][1][:10])
+        # print(path[m][2][:10])
+        # print(path[m][3][:10])
 
 
         if len(path[m][1]) > 0:
@@ -734,7 +779,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
     return frame
 
 
-def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, polar_u_i, polar_d, scale, vid=0):
+def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, polar_paths, polar_u_i, polar_d, scale, vid=0):
 
     frames = []
     message_l = dict()
@@ -795,7 +840,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
             except:
 
-                frames.append(fold(message, base, view, length, max_steps, scale, x, polar_u_i, polar_d))
+                frames.append(fold(message, base, view, length, max_steps, scale, x, polar_paths, polar_u_i, polar_d))
 
             # print('cellexicon message')
             # print(cellexicon[message])
@@ -805,7 +850,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
         else:
 
-            frames.append(fold(message, base, view, length, max_steps, scale, x, polar_u_i, polar_d))
+            frames.append(fold(message, base, view, length, max_steps, scale, x, polar_paths, polar_u_i, polar_d))
 
     # print(" ")
     # print('message_l')
@@ -862,6 +907,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     # print(sum)
 
     canvas = dict()
+    rcanvas = dict()
 
     # print(" ")
     # print(len(frames))
@@ -881,6 +927,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 cellexicon[cell_key][message][pos].append(frame)
 
         canvas[pos] = []
+        rcanvas[pos] = []
 
         for x in range(len(frame)):
 
@@ -898,7 +945,8 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
             if type(frame[x][0]) == int:
 
-                # print('single')
+                print("")
+                print('single')
 
                 if f not in polar_d:
 
@@ -907,20 +955,40 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 polar_d[f] += 1
 
                 steps = []
+                rcs = []
                 step_count = 0
 
-                f_0 = rule_gen(f[0], base, length)[1]
+                row = rule_gen(f[0], base, length)[1]
                 f_1 = rule_gen(f[1], base, length)[1]
-                steps.append(f_0)
+                # steps.append(f_0)
 
                 # print(f_0)
 
                 while step_count < f[-1]:
-                    row = Color_cells(rule_gen(f[2], base, length)[0], length, steps[-1])[0]
+
+                    row, rc = Color_cells(rule_gen(f[2], base, length)[0], length, row)
 
                     steps.append(row)
+                    rcs.append(rc)
+
+                    # print("rc")
+                    # print(rc)
+                    # print(step_count)
 
                     step_count += 1
+
+                # while step_count < f[-1]:
+                #
+                #     row, rc = Color_cells(rule_gen(f[2], base, length)[0], length, steps[-1])
+                #
+                #     steps.append(row)
+                #     rcs.append(rc)
+                #
+                #     # print("rc")
+                #     # print(rc)
+                #     # print(step_count)
+                #
+                #     step_count += 1
 
                 # print(" ")
                 # print("steps")
@@ -928,8 +996,16 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 # print(len(steps))
 
                 while len(steps) - 1 < l_l[x]:
-                    # print("short")
+
+                    # print("short 1")
+
                     steps.append(f_1)
+                    rcs.append(rc)
+
+                    # print("rc")
+                    # print(rc)
+
+
 
                 # print("")
                 # print(l_l[x])
@@ -938,13 +1014,28 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 # print(steps)
                 # print(len(steps))
 
+                print(" ")
+                print("len steps rcs")
+                print(len(steps))
+                print(len(rcs))
+                print("steps")
+                print(steps)
+                print('rcs')
+                print(rcs)
+
                 for s in steps:
+
                     canvas[pos].append(s)
+
+                for r in rcs:
+
+                    rcanvas[pos].append(r)
 
 
             else:
 
-                # print('double')
+                print("")
+                print('double')
 
                 # print(" ")
                 # print('double')
@@ -961,6 +1052,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 polar_d[f[1]] += 1
 
                 steps = []
+                rcs = []
 
                 f_1 = rule_gen(f[1][1], base, length)[1]
 
@@ -968,15 +1060,23 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
                     step_count = 0
 
-                    f_0 = rule_gen(f[y][0], base, length)[1]
-                    steps.append(f_0)
+                    row = rule_gen(f[y][0], base, length)[1]
+
+                    # steps.append(f_0)
 
                     # print(f_0)
 
                     while step_count < f[y][-1]:
-                        row = Color_cells(rule_gen(f[y][2], base, length)[0], length, steps[-1])[0]
+
+                        row, rc = Color_cells(rule_gen(f[y][2], base, length)[0], length, row)
 
                         steps.append(row)
+                        rcs.append(rc)
+
+                        # print(" ")
+                        # print("len steps rcs")
+                        # print(len(steps))
+                        # print(len(rcs))
 
                         step_count += 1
 
@@ -986,8 +1086,14 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 # print(len(steps))
 
                 while len(steps) - 1 < l_l[x]:
-                    # print("short")
+
+                    # print("short 2")
+
                     steps.append(f_1)
+                    rcs.append(rc)
+
+                    # print("rc")
+                    # print(rc)
 
                 # print("")
                 # print(l_l[x])
@@ -996,15 +1102,50 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
                 # print(steps)
                 # print(len(steps))
 
+                print(" ")
+                print("len steps rcs")
+                print(len(steps))
+                print(len(rcs))
+                print("steps")
+                print(steps)
+                print('rcs')
+                print(rcs)
+
                 for s in steps:
+
                     canvas[pos].append(s)
 
+                for r in rcs:
+
+                    rcanvas[pos].append(r)
+
+        print(" ")
+        print('len canvas rcanvas')
+        print(pos)
+        print(len(canvas[pos]))
+        print(len(rcanvas[pos]))
+
         pos += 1
+
+    magenta = (1, 0, 1)
+    yellow = (1, 1, 0)
+    cyan = (0, 1, 1)
+    red = (1, 0, 0)
+    blue = (0, 0, 1)
+    green = (0, 1, 0)
+    black = (0, 0, 0)
+    white = (1, 1, 1)
+    grey = (.2, .2, .2)
+    purple = (.6, 0, .6)
+    turquoise = (0, .8, .8)
+    light_grey = (.8, .8, .8)
+    moss = (.2, .4, .2)
+    orange = (1, .5, .1)
 
 
     path = 'cell translation'
 
-    cMap = colors.ListedColormap(['k', 'c'])
+    cMap = colors.ListedColormap([blue, cyan, magenta, yellow, red, green, black])
 
     if vid == 0:
 
@@ -1039,23 +1180,55 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
         # print("vid")
 
-        gallery = []  # for storing the generated images
+        gal = []
+        gallery = []
         fig = plt.figure()
-        for c in canvas:
 
-            canvas_c = canvas[c]
+        #values
+        # for c in canvas:
+        #
+        #     print(c)
+        #     print(canvas[c])
+        #
+        #     canvas_c = canvas[c]
+        #
+        #     canvas_c = np.asarray(canvas_c)
+        #
+        #     # print(canvas_c)
+        #
+        #     canvas_c = np.rot90(canvas_c)
+        #     canvas_c = np.flip(canvas_c, 0)
+        #
+        #     file = str(message) + str('-') + str(depth) + 'val.mp4'
+        #     path_name = os.path.join(path, file)
+        #
+        #     gal.append([plt.imshow(canvas_c, cmap=cMap, animated=True)])
 
-            canvas_c = np.asarray(canvas_c)
-            canvas_c = np.rot90(canvas_c)
-            canvas_c = np.flip(canvas_c, 0)
+        #rule calls
+        for r in rcanvas:
 
-            file = str(message) + str('-') + str(depth) + '.mp4'
+            # print(r)
+            # print(rcanvas[r])
+
+            rcanvas_r = rcanvas[r]
+
+            rcanvas_r = np.asarray(rcanvas_r)
+            rcanvas_r = np.rot90(rcanvas_r)
+            rcanvas_r = np.flip(rcanvas_r, 0)
+
+            file = str(message) + str('-') + str(depth) + 'rc.mp4'
             path_name = os.path.join(path, file)
 
-            gallery.append([plt.imshow(canvas_c, cmap=cMap, animated=True)])
+            gal.append([plt.imshow(rcanvas_r, animated=True, cmap=cMap)])
+
+        for g in gal:
+            gallery.append(g)
+
+        # for g in reversed(gal):
+        #     gallery.append(g)
 
         ani = animation.ArtistAnimation(fig, gallery, interval=100, blit=True,
-                                        repeat_delay=100)
+                                        repeat_delay=0)
         # ani.save()
         plt.show()
 
@@ -1066,6 +1239,30 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
     p_d = dict(sorted(list(polar_d.items()), key=lambda x:x[1], reverse=True))
     polar_u_i = list(p_d.keys())
+
+    for p in polar_u_i:
+
+        fb = (p[0], p[1])
+
+        # print(fb)
+
+        if fb not in polar_paths:
+
+            # print("new")
+
+            polar_paths[fb] = []
+
+            if p not in polar_paths[fb]:
+                # print("append")
+
+                polar_paths[fb].append(p)
+
+        else:
+
+            if p not in polar_paths[fb]:
+                # print("append")
+
+                polar_paths[fb].append(p)
 
     # print("polar_u_i")
     # print(polar_u_i[:10])
@@ -1083,10 +1280,15 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     pickle.dump(p_d, outfile)
     outfile.close()
 
-    # filename = 'cellexicon/cellexicon'
-    # outfile = open(filename, 'wb')
-    # pickle.dump(cellexicon, outfile)
-    # outfile.close()
+    filename = 'cellexicon/cellexicon'
+    outfile = open(filename, 'wb')
+    pickle.dump(cellexicon, outfile)
+    outfile.close()
+
+    filename = 'polar maps/polar_paths-16'
+    outfile = open(filename, 'wb')
+    pickle.dump(polar_paths, outfile)
+    outfile.close()
 
 
 infile = open("polar maps/polar_u-16", "rb")
@@ -1101,22 +1303,28 @@ infile = open("cellexicon/cellexicon", "rb")
 cellexicon = pickle.load(infile)
 infile.close
 
+infile = open("polar maps/polar_paths-16", "rb")
+polar_paths = pickle.load(infile)
+infile.close
+
 # cellexicon = dict()
 
 print(" ")
 print("polars")
 print(list(polar_d.items())[:10])
+print(len(list(polar_d)))
 print(list(polar_u_i[:10]))
+print(len(list(polar_u_i)))
 
 base = 2
 view = 3
 
 length = 16
 max_steps = 16
-scale = 2
-depth = 9
+scale = 1
+depth = 8
 
-cell_key = (base, view, length, max_steps, scale)
+cell_key = (base, view, length, scale)
 
 print(" ")
 print("cell_key")
@@ -1126,7 +1334,7 @@ if cell_key not in cellexicon:
 
     cellexicon[cell_key] = dict()
 
-message = ' abcdefg'
+message = ' breathe '
 
 # cellexicon = dict()
 
@@ -1144,7 +1352,7 @@ message = ' abcdefg'
 # outfile.close()
 
 
-paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, polar_u_i, polar_d, scale, vid=1)
+paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, polar_paths, polar_u_i, polar_d, scale, vid=1)
 
     # if b > 10:
     #     break

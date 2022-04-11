@@ -19,7 +19,7 @@ width = length * 2 + 1
 #number of cells in a row
 rule = 90
 #number who's x_base transformation gives the rules dictionary its values
-view = 5
+view = 3
 #size of the view window that scans a row for rule application
 base = 3
 #numerical base of the rule set. number of colors each cell can be
@@ -208,11 +208,11 @@ pygame.display.set_caption("C.H.A.O.S")
 value = 2
 BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
 WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'grey-' + str(value) + '.png')).convert()
-M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-' + str(value) + '.png')).convert()
-BLUEB_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-' + str(value) + '.png')).convert()
+M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-d-' + str(value) + '.png')).convert()
+BLUEB_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-d-' + str(value) + '.png')).convert()
 BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
 MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
-RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-' + str(value) + '.png')).convert()
+RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-d-' + str(value) + '.png')).convert()
 ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
 YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
 
@@ -1765,6 +1765,6 @@ def menu():
 # menu()
 
 
-Chaos_Window(2, 2, 20)
+Chaos_Window(6, 2, 20)
 
 
