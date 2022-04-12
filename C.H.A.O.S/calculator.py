@@ -23,7 +23,7 @@ max = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 max = decimal(max, 2)
 
-base = 4
+base = 3
 
 a = base ** base ** 3
 b = 2 ** 16

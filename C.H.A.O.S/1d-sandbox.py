@@ -21,7 +21,7 @@ width = length * 2 + 1
 # number of cells in a row
 rule = 90
 # number who's x_base transformation gives the rules dictionary its values
-view = 3
+view = 5
 # size of the view window that scans a row for rule application
 base = 3
 # numerical base of the rule set. number of colors each cell can be
@@ -398,6 +398,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     ev_9 = 0
     ev_10 = 0
     ev_11 = 0
+
 
     # i_rule[0] = 1
     # i_rule[-1] = 1
@@ -898,7 +899,6 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                 i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 1
                 d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 1
-
 
         elif i_rule[place] == 1:
 
@@ -1630,30 +1630,25 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                     ev_2 = ev[2]
 
-
                 #z axis
                 if ev[1] == 3:
 
                     ev_3 = ev[2]
-
 
                 #pitch
                 if ev[1] == 4:
 
                     ev_4 = ev[2]
 
-
                 #yaw
                 if ev[1] == 5:
 
                     ev_5 = ev[2]
 
-
                 #roll
                 if ev[1] == 6:
 
                     ev_6 = ev[2]
-
 
                 #thumb
                 if ev[1] == 7:
@@ -1681,12 +1676,69 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                     ev_11 = ev[2]
 
 
-                glove_value = ev_8 + ev_9 + ev_10 + ev_11
+                glove_value = ev_1 + ev_2 + ev_3 + ev_4 + ev_5 + ev_6 + ev_7 + ev_8 + ev_9 + ev_10 + ev_11
+                # glove_value = ev_7 + ev_8 + ev_9 + ev_10 + ev_11
 
                 # print("")
                 # print(glove_value)
 
-                d_rule, i_rule = rule_gen(int(glove_value), base)
+                # d_rule, i_rule = rule_gen(int(glove_value), base)
+
+                glove_value = (glove_value % (base ** view) + step) % (base ** view)
+
+                if i_rule[glove_value] == 0:
+
+                    i_rule[glove_value] = 1
+                    d_rule[list(d_rule.keys())[glove_value]] = 1
+
+                elif i_rule[glove_value] == 1:
+
+                    # print("i_rule_1")
+                    # print(i_rule)
+
+                    if base == 2:
+                        i_rule[glove_value] = 0
+                        d_rule[list(d_rule.keys())[glove_value]] = 0
+
+                    else:
+                        i_rule[glove_value] = 2
+                        d_rule[list(d_rule.keys())[glove_value]] = 2
+
+                elif i_rule[glove_value] == 2:
+
+                    if base == 3:
+                        i_rule[glove_value] = 0
+                        d_rule[list(d_rule.keys())[glove_value]] = 0
+
+                    else:
+                        i_rule[glove_value] = 3
+                        d_rule[list(d_rule.keys())[glove_value]] = 3
+
+                elif i_rule[glove_value] == 3:
+
+                    if base == 4:
+                        i_rule[glove_value] = 0
+                        d_rule[list(d_rule.keys())[glove_value]] = 0
+
+                    else:
+                        i_rule[glove_value] = 4
+                        d_rule[list(d_rule.keys())[glove_value]] = 4
+
+                elif i_rule[glove_value] == 4:
+
+                    if base == 5:
+                        i_rule[glove_value] = 0
+                        d_rule[list(d_rule.keys())[glove_value]] = 0
+
+                    else:
+                        i_rule[glove_value] = 5
+                        d_rule[list(d_rule.keys())[glove_value]] = 5
+
+                else:
+
+                    i_rule[glove_value] = 0
+                    d_rule[list(d_rule.keys())[glove_value]] = 0
+
 
                 # if ev[0] == 144:
                 #     midiout.send_noteon(ev[0], ev[1], ev[2])
@@ -1699,7 +1751,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
             # print('i')
             # print(i)
 
-            midi_events = p_m_i.read(FPS)
+            midi_events = p_m_i.read(999)
             midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
 
             for m_e in midi_evs:
@@ -2122,6 +2174,6 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(2, 2, 20)
+Chaos_Window(3, 2, 40)
 
 
