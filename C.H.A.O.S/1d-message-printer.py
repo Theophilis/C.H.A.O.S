@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 1001
+length = 501
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -212,7 +212,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
 
     # print("rules")
 
-    rules = rule_gen(rule, base, string=0)
+    rules = rule_gen(rule, base, string=1)
     int_rule = rules[1]
     rules = rules[0]
 
@@ -1196,8 +1196,8 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
 
 path = 'scarfs/hexenary'
 
-journaling = 0
-leveling = 1
+journaling = 1
+leveling = 0
 
 size = length
 l_size = 131
@@ -1215,7 +1215,7 @@ canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, dens
 
 if journaling != 0:
 
-    infile = open("journals/journal_flower-garden", "rb")
+    infile = open("journals/history/journal_10", "rb")
     journal = pickle.load(infile)
     infile.close
 

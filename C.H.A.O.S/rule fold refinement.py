@@ -266,7 +266,7 @@ def canvas_stream(front, back, front_row, back_row, max_steps):
     return route
 
 
-def stream(front, back, front_row, back_row, max_steps):
+def stream(front, back, front_row, back_row, max_steps, roam):
 
     # print(" ")
     # print("stream")
@@ -275,53 +275,215 @@ def stream(front, back, front_row, back_row, max_steps):
     # print('back')
     # print(back_row)
 
+    infile = open("organized-rules/roamers-2-3", "rb")
+    roamers = pickle.load(infile)
+    infile.close
+
+    infile = open("organized-rules/right_roam-2-3", "rb")
+    right_roam = pickle.load(infile)
+    infile.close
+
+    infile = open("organized-rules/left_roam-2-3", "rb")
+    left_roam = pickle.load(infile)
+    infile.close
+
+    infile = open("organized-rules/no_roam-2-3", "rb")
+    no_roam = pickle.load(infile)
+    infile.close
+
     route = []
 
-    for x in range(base ** base ** view):
+    if roam == 0:
 
-        steps = []
-        steps.append(front_row)
+        for x in roamers:
 
-        done = 0
-        step_count = 0
+            steps = []
+            steps.append(front_row)
 
-        while done == 0:
+            done = 0
+            step_count = 0
 
-            step_count += 1
+            while done == 0:
 
-            # print("stream row")
-            # print("rule_gen")
-            # print(rule_gen(x, base, length)[0])
-            # print("length")
-            # print(length)
-            # print("steps[-1]")
-            # print(steps[-1])
+                step_count += 1
 
-            row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
+                # print("stream row")
+                # print("rule_gen")
+                # print(rule_gen(x, base, length)[0])
+                # print("length")
+                # print(length)
+                # print("steps[-1]")
+                # print(steps[-1])
 
-            if row == back_row:
+                row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
 
-                # print(" ")
-                # print('row')
-                # print(row)
-                # print(step_count)
+                if row == back_row:
 
-                polar = (front, back, x, step_count)
+                    # print(" ")
+                    # print('row')
+                    # print(row)
+                    # print(step_count)
 
-                # print('polar')
-                # print(polar)
+                    polar = (front, back, x, step_count)
 
-                route.append(polar)
+                    # print('polar')
+                    # print(polar)
 
-                done = 1
+                    route.append(polar)
 
-            elif step_count > max_steps:
+                    done = 1
 
-                done = 1
+                elif step_count > max_steps:
 
-            else:
+                    done = 1
 
-                steps.append(row)
+                else:
+
+                    steps.append(row)
+
+    if roam == 1:
+
+        for x in right_roam:
+
+            steps = []
+            steps.append(front_row)
+
+            done = 0
+            step_count = 0
+
+            while done == 0:
+
+                step_count += 1
+
+                # print("stream row")
+                # print("rule_gen")
+                # print(rule_gen(x, base, length)[0])
+                # print("length")
+                # print(length)
+                # print("steps[-1]")
+                # print(steps[-1])
+
+                row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
+
+                if row == back_row:
+
+                    # print(" ")
+                    # print('row')
+                    # print(row)
+                    # print(step_count)
+
+                    polar = (front, back, x, step_count)
+
+                    # print('polar')
+                    # print(polar)
+
+                    route.append(polar)
+
+                    done = 1
+
+                elif step_count > max_steps:
+
+                    done = 1
+
+                else:
+
+                    steps.append(row)
+
+    if roam == 2:
+
+        for x in left_roam:
+
+            steps = []
+            steps.append(front_row)
+
+            done = 0
+            step_count = 0
+
+            while done == 0:
+
+                step_count += 1
+
+                # print("stream row")
+                # print("rule_gen")
+                # print(rule_gen(x, base, length)[0])
+                # print("length")
+                # print(length)
+                # print("steps[-1]")
+                # print(steps[-1])
+
+                row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
+
+                if row == back_row:
+
+                    # print(" ")
+                    # print('row')
+                    # print(row)
+                    # print(step_count)
+
+                    polar = (front, back, x, step_count)
+
+                    # print('polar')
+                    # print(polar)
+
+                    route.append(polar)
+
+                    done = 1
+
+                elif step_count > max_steps:
+
+                    done = 1
+
+                else:
+
+                    steps.append(row)
+
+    if roam == 3:
+
+        for x in no_roam:
+
+            steps = []
+            steps.append(front_row)
+
+            done = 0
+            step_count = 0
+
+            while done == 0:
+
+                step_count += 1
+
+                # print("stream row")
+                # print("rule_gen")
+                # print(rule_gen(x, base, length)[0])
+                # print("length")
+                # print(length)
+                # print("steps[-1]")
+                # print(steps[-1])
+
+                row = Color_cells(rule_gen(x, base, length)[0], length, steps[-1])[0]
+
+                if row == back_row:
+
+                    # print(" ")
+                    # print('row')
+                    # print(row)
+                    # print(step_count)
+
+                    polar = (front, back, x, step_count)
+
+                    # print('polar')
+                    # print(polar)
+
+                    route.append(polar)
+
+                    done = 1
+
+                elif step_count > max_steps:
+
+                    done = 1
+
+                else:
+
+                    steps.append(row)
 
     return route
 
@@ -530,8 +692,18 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
                 # print(back_row)
 
                 #fresh path
+                roam = 0
+                route = []
 
-                route = stream(front, back, front_row, back_row, max_steps)
+                while len(route) == 0:
+
+                    route = stream(front, back, front_row, back_row, max_steps, roam)
+
+                    roam += 1
+
+                    if roam > 3:
+
+                        break
 
                 #one step path
                 for r in route:
@@ -574,7 +746,17 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
                             # print(back)
                             # print(back_row)
 
-                            route = stream(p[1], back, p_1, back_row, max_steps)
+                            roam = 0
+
+                            while len(route) == 0:
+
+                                route = stream(p[1], back, p_1, back_row, max_steps, roam)
+
+                                roam += 1
+
+                                if roam > 3:
+
+                                    break
 
                             if len(route) > 0:
 
@@ -598,7 +780,17 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
 
                             p_0 = rule_gen(p[0], base, length)[1]
 
-                            route = stream(front, p[0], front_row, p_0, max_steps)
+                            roam = 0
+
+                            while len(route) == 0:
+
+                                route = stream(front, p[0], front_row, p_0, max_steps, roam)
+
+                                roam += 1
+
+                                if roam > 3:
+
+                                    break
 
                             if len(route) > 0:
 
@@ -631,7 +823,17 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
 
                         joint_row = rule_gen(joint, base, length)[1]
 
-                        front_route = stream(front, joint, front_row, joint_row, max_steps)
+                        roam = 0
+
+                        while len(front_route) == 0:
+
+                            front_route = stream(front, joint, front_row, joint_row, max_steps, roam)
+
+                            roam += 1
+
+                            if roam > 3:
+
+                                break
 
                         # print(" ")
                         # print('stream, back_route')
@@ -646,7 +848,17 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
                         # print('max steps')
                         # print(max_steps)
 
-                        back_route = stream(joint, back, joint_row, back_row, max_steps)
+                        roam = 0
+
+                        while len(back_route) == 0:
+
+                            back_route = stream(joint, back, joint_row, back_row, max_steps, roam)
+
+                            roam += 1
+
+                            if roam > 3:
+
+                                break
 
                         # print(len(front_route))
                         # print(len(back_route))
@@ -712,9 +924,38 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
 
                                 joint_row_1 = rule_gen(z, base, length)[1]
 
-                                front_route = stream(front, joint, front_row, joint_row, max_steps)
-                                middle_route = stream(y, z, joint_row_0, joint_row_1, max_steps)
-                                back_route = stream(joint, back, joint_row, back_row, max_steps)
+                                roam = 0
+
+                                while len(front_route) == 0:
+
+                                    front_route = stream(front, joint, front_row, joint_row, max_steps, roam)
+
+                                    roam += 1
+
+                                    if roam > 3:
+                                        break
+
+                                roam = 0
+
+                                while len(middle_route) == 0:
+
+                                    middle_route = stream(y, z, joint_row_0, joint_row_1, max_steps, roam)
+
+                                    roam += 1
+
+                                    if roam > 3:
+                                        break
+
+                                roam = 0
+
+                                while len(back_route) == 0:
+
+                                    back_route = stream(joint, back, joint_row, back_row, max_steps, roam)
+
+                                    roam += 1
+
+                                    if roam > 3:
+                                        break
 
                                 if len(front_route) > 0 and len(middle_route) > 0 and len(back_route) > 0:
 

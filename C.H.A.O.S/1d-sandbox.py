@@ -210,11 +210,11 @@ BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) +
 WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'grey-' + str(value) + '.png')).convert()
 M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-' + str(value) + '.png')).convert()
 BLUEB_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-' + str(value) + '.png')).convert()
-BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
-MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
+BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-' + str(value) + '.png')).convert()
+MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-' + str(value) + '.png')).convert()
 RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-' + str(value) + '.png')).convert()
 ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
-YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
+YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-' + str(value) + '.png')).convert()
 
 value = 3
 BLACK_PIXEL_3 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
@@ -324,7 +324,12 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     rule = 1
     step = 0
     clock = pygame.time.Clock()
+
     echoing = 1
+    randomizer = 0
+    midi_inputs = 1
+    manic = 0
+    measured = 1
 
     journal = dict()
     page = []
@@ -338,7 +343,6 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     r_c = 0
     r_i = 0
     rand_count = 0
-    randomizer = 1
     iterate = 0
 
     input_box = 0
@@ -353,51 +357,54 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     cell_rows = int(HEIGHT / pixel_res) + 1
     d_rule, i_rule = rule_gen(rule, base)
 
-    pygame.init()
-    pygame.fastevent.init()
-    event_get = pygame.fastevent.get
-    event_post = pygame.fastevent.post
 
-    #rtmidi init
-    midiout = rtmidi.MidiOut()
-    available_ports = midiout.get_port_name(1)
-    print(" ")
-    print("midiout")
-    print(midiout)
-    print("available ports")
-    print(available_ports)
+    if midi_inputs == 1:
 
-    if available_ports:
-        midiout.open_port(1)
-    else:
-        midiout.open_virtual_port('My virtual output')
+        pygame.init()
+        pygame.fastevent.init()
+        event_get = pygame.fastevent.get
+        event_post = pygame.fastevent.post
 
-    pygame.midi.init()
+        #rtmidi init
+        midiout = rtmidi.MidiOut()
+        available_ports = midiout.get_port_name(2)
+        print(" ")
+        print("midiout")
+        print(midiout)
+        print("available ports")
+        print(available_ports)
 
-    print(" ")
-    print("device info")
-    _print_device_info()
+        if available_ports:
+            midiout.open_port(2)
+        else:
+            midiout.open_virtual_port('My virtual output')
 
-    if device_id is None:
-        input_id = pygame.midi.get_default_input_id()
-    else:
-        input_id = device_id
+        pygame.midi.init()
 
-    print(' ')
-    print("using input_id :%s:" % input_id)
-    p_m_i = pygame.midi.Input(input_id)
+        print(" ")
+        print("device info")
+        _print_device_info()
 
-    ev_1 = 0
-    ev_2 = 0
-    ev_3 = 0
-    ev_4 = 0
-    ev_5 = 0
-    ev_6 = 0
-    ev_7 = 0
-    ev_8 = 0
-    ev_9 = 0
-    ev_10 = 0
-    ev_11 = 0
+        if device_id is None:
+            input_id = pygame.midi.get_default_input_id()
+        else:
+            input_id = device_id
+
+        print(' ')
+        print("using input_id :%s:" % input_id)
+        p_m_i = pygame.midi.Input(input_id)
+
+        ev_1 = 0
+        ev_2 = 0
+        ev_3 = 0
+        ev_4 = 0
+        ev_5 = 0
+        ev_6 = 0
+        ev_7 = 0
+        ev_8 = 0
+        ev_9 = 0
+        ev_10 = 0
+        ev_11 = 0
 
 
     # i_rule[0] = 1
@@ -1157,6 +1164,66 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
         return rule_list, list_count
 
+    def place_change(place):
+
+        # print("place_change")
+        # print(place)
+
+        place = place % (base ** view)
+
+        if i_rule[place] == 0:
+
+            i_rule[place] = 1
+            d_rule[list(d_rule.keys())[place]] = 1
+
+        elif i_rule[place] == 1:
+
+            # print("i_rule_1")
+            # print(i_rule)
+
+            if base == 2:
+                i_rule[place] = 0
+                d_rule[list(d_rule.keys())[place]] = 0
+
+            else:
+                i_rule[place] = 2
+                d_rule[list(d_rule.keys())[place]] = 2
+
+        elif i_rule[place] == 2:
+
+            if base == 3:
+                i_rule[place] = 0
+                d_rule[list(d_rule.keys())[place]] = 0
+
+            else:
+                i_rule[place] = 3
+                d_rule[list(d_rule.keys())[place]] = 3
+
+        elif i_rule[place] == 3:
+
+            if base == 4:
+                i_rule[place] = 0
+                d_rule[list(d_rule.keys())[place]] = 0
+
+            else:
+                i_rule[place] = 4
+                d_rule[list(d_rule.keys())[place]] = 4
+
+        elif i_rule[place] == 4:
+
+            if base == 5:
+                i_rule[place] = 0
+                d_rule[list(d_rule.keys())[place]] = 0
+
+            else:
+                i_rule[place] = 5
+                d_rule[list(d_rule.keys())[place]] = 5
+
+        else:
+
+            i_rule[place] = 0
+            d_rule[list(d_rule.keys())[place]] = 0
+
     for r in range(cell_rows):
         cells.append([])
 
@@ -1240,7 +1307,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                     page = []
 
 
-                    if randomizer == 0:
+                    if randomizer == 1:
 
                         if list_count == 0:
 
@@ -1607,7 +1674,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
             if event.type in [pygame.midi.MIDIIN]:
 
-                # print(e)
+                # print(event)
 
                 clean_e = str(event)[21:-3]
                 list_e = clean_e.split(',')
@@ -1676,87 +1743,51 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                     ev_11 = ev[2]
 
 
-                glove_value = ev_1 + ev_2 + ev_3 + ev_4 + ev_5 + ev_6 + ev_7 + ev_8 + ev_9 + ev_10 + ev_11
-                # glove_value = ev_7 + ev_8 + ev_9 + ev_10 + ev_11
 
-                # print("")
-                # print(glove_value)
 
-                # d_rule, i_rule = rule_gen(int(glove_value), base)
+                if manic == 1:
 
-                glove_value = (glove_value % (base ** view) + step) % (base ** view)
+                    glove_value = ev_1 + ev_2 + ev_3 + ev_4 + ev_5 + ev_6 + ev_7 + ev_8 + ev_9 + ev_10 + ev_11
 
-                if i_rule[glove_value] == 0:
+                    glove_value = (glove_value % (base ** view) + step) % (base ** view)
 
-                    i_rule[glove_value] = 1
-                    d_rule[list(d_rule.keys())[glove_value]] = 1
 
-                elif i_rule[glove_value] == 1:
+                    place_change(glove_value)
+                    place_change(glove_value + ev_7)
+                    place_change(glove_value + ev_8)
+                    place_change(glove_value + ev_9)
+                    place_change(glove_value + ev_10)
+                    place_change(glove_value + ev_11)
 
-                    # print("i_rule_1")
-                    # print(i_rule)
+                if measured == 1:
 
-                    if base == 2:
-                        i_rule[glove_value] = 0
-                        d_rule[list(d_rule.keys())[glove_value]] = 0
+                    glove_value = ev_7 + 4 * ev_8 + 16 * ev_9 + 64 * ev_10
 
-                    else:
-                        i_rule[glove_value] = 2
-                        d_rule[list(d_rule.keys())[glove_value]] = 2
+                    print("")
+                    print("glove_value")
+                    print(glove_value)
 
-                elif i_rule[glove_value] == 2:
-
-                    if base == 3:
-                        i_rule[glove_value] = 0
-                        d_rule[list(d_rule.keys())[glove_value]] = 0
-
-                    else:
-                        i_rule[glove_value] = 3
-                        d_rule[list(d_rule.keys())[glove_value]] = 3
-
-                elif i_rule[glove_value] == 3:
-
-                    if base == 4:
-                        i_rule[glove_value] = 0
-                        d_rule[list(d_rule.keys())[glove_value]] = 0
-
-                    else:
-                        i_rule[glove_value] = 4
-                        d_rule[list(d_rule.keys())[glove_value]] = 4
-
-                elif i_rule[glove_value] == 4:
-
-                    if base == 5:
-                        i_rule[glove_value] = 0
-                        d_rule[list(d_rule.keys())[glove_value]] = 0
-
-                    else:
-                        i_rule[glove_value] = 5
-                        d_rule[list(d_rule.keys())[glove_value]] = 5
-
-                else:
-
-                    i_rule[glove_value] = 0
-                    d_rule[list(d_rule.keys())[glove_value]] = 0
-
+                    d_rule, i_rule = rule_gen(glove_value, base)
 
                 # if ev[0] == 144:
                 #     midiout.send_noteon(ev[0], ev[1], ev[2])
                 # elif ev[0] == 128:
                 #     midiout.send_noteoff(ev[0], ev[1])
 
-        if p_m_i.poll():
 
-            # print(' ')
-            # print('i')
-            # print(i)
+        if midi_inputs == 1:
 
-            midi_events = p_m_i.read(999)
-            midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
+            if p_m_i.poll():
 
-            for m_e in midi_evs:
-                event_post(m_e)
+                # print(' ')
+                # print('i')
+                # print(i)
 
+                midi_events = p_m_i.read(999)
+                midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
+
+                for m_e in midi_evs:
+                    event_post(m_e)
 
 
         for r in range(cell_rows):
@@ -2174,6 +2205,6 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(3, 2, 40)
+Chaos_Window(2, 2, 7, 2)
 
 
