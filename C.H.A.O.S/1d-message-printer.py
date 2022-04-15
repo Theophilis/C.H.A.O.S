@@ -16,9 +16,9 @@ width = length
 #number of cells in a row
 rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
-view = 3
+view = 5
 #size of the view window that scans a row for rule application
-base = 6
+base = 3
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -394,7 +394,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
                 cMap = c.ListedColormap([red, black, magenta, green, white])
 
             if base == 3:
-                cMap = c.ListedColormap([black, white, cyan, white])
+                cMap = c.ListedColormap([black, magenta, cyan])
 
             if base == 2:
                 cMap = c.ListedColormap([black, magenta])
@@ -1194,7 +1194,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'scarfs/hexenary'
+path = 'scarfs/ternary'
 
 journaling = 1
 leveling = 0
@@ -1215,7 +1215,7 @@ canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, dens
 
 if journaling != 0:
 
-    infile = open("journals/history/journal_10", "rb")
+    infile = open("journals/journal_three-five-041322", "rb")
     journal = pickle.load(infile)
     infile.close
 
@@ -1224,7 +1224,7 @@ if journaling != 0:
 
     print(len(list(journal.keys())))
 
-    for k in list(journal.keys()):
+    for k in list(journal.keys())[644:]:
         print('')
         print(list(journal.keys()).index(k))
         print(k[0])

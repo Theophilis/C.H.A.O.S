@@ -21,7 +21,7 @@ width = length * 2 + 1
 # number of cells in a row
 rule = 90
 # number who's x_base transformation gives the rules dictionary its values
-view = 5
+view = 3
 # size of the view window that scans a row for rule application
 base = 3
 # numerical base of the rule set. number of colors each cell can be

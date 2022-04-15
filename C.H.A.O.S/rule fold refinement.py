@@ -8,6 +8,8 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import matplotlib.animation as animation
+import ffmpeg
+
 
 
 def base_x(n, b):
@@ -617,30 +619,48 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
                     path[fb][1].append(p)
 
                 #front half path
-                elif p[0] == front and p[0] != p[1] and p[0] != back:
+                elif p[0] == front and p[0] != p[1] and p[1] != back:
 
                     # print(" ")
                     # print('front')
                     # print(p)
 
-                    for o in polar_u_i:
+                    p1_b = (p[1], back)
 
-                        if p[1] == o[0] and o[1] == back:
+                    if p1_b in polar_paths:
 
-                            path[fb][2].append((p, o))
+                        pp_fb = polar_paths[p1_b][0]
 
-                        if len(path[fb][3]) < max_steps:
+                        # print(" ")
+                        # print("pp_fb")
+                        # print(pp_fb)
+                        # print(len(pp_fb))
 
-                            if p[1] == o[0] and o[0] != o[1]:
+                        if type(pp_fb[0]) == int:
+                            # print("one")
 
-                                for l in polar_u_i:
+                            path[fb][2].append((p, pp_fb))
 
-                                    if o[1] == l[0] and l[1] == back:
+                    else:
 
-                                        # print(" ")
-                                        # print("triple")
+                        for o in polar_u_i:
 
-                                        path[fb][3].append((p, o, l))
+                            if p[1] == o[0] and o[1] == back:
+
+                                path[fb][2].append((p, o))
+
+                            if len(path[fb][3]) < max_steps:
+
+                                if p[1] == o[0] and o[0] != o[1]:
+
+                                    for l in polar_u_i:
+
+                                        if o[1] == l[0] and l[1] == back:
+
+                                            # print(" ")
+                                            # print("triple")
+
+                                            path[fb][3].append((p, o, l))
 
 
                 #back half path
@@ -650,30 +670,48 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
                     # print('back')
                     # print(p)
 
-                    for o in polar_u_i:
+                    f_p0 = (front, p[0])
 
-                        if o[0] == front and o[1] == p[0]:
+                    if f_p0 in polar_paths:
 
-                            if (o, p) not in path[fb][2]:
+                        pp_fb = polar_paths[f_p0][0]
 
-                                path[fb][2].append((o, p))
+                        # print(" ")
+                        # print("pp_fb")
+                        # print(pp_fb)
+                        # print(len(pp_fb))
 
-                                # print("back match")
+                        if type(pp_fb[0]) == int:
+                            # print("one")
 
-                        if len(path[fb][3]) < max_steps:
+                            path[fb][2].append((pp_fb, p))
 
-                            if o[1] == p[0] and o[0] != o[1]:
+                    else:
 
-                                for l in polar_u_i:
+                        for o in polar_u_i:
 
-                                    if l[0] == front and l[1] == o[0]:
+                            if o[0] == front and o[1] == p[0]:
 
-                                        # print("")
-                                        # print("triple")
+                                if (o, p) not in path[fb][2]:
 
-                                        if (l, o, p) not in path[fb][3]:
+                                    path[fb][2].append((o, p))
 
-                                            path[fb][3].append((l, o, p))
+                                    # print("back match")
+
+                            if len(path[fb][3]) < max_steps:
+
+                                if o[1] == p[0] and o[0] != o[1]:
+
+                                    for l in polar_u_i:
+
+                                        if l[0] == front and l[1] == o[0]:
+
+                                            # print("")
+                                            # print("triple")
+
+                                            if (l, o, p) not in path[fb][3]:
+
+                                                path[fb][3].append((l, o, p))
 
 
             #fresh forged paths
@@ -747,6 +785,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
                             # print(back_row)
 
                             roam = 0
+                            route = []
 
                             while len(route) == 0:
 
@@ -824,6 +863,8 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
                         joint_row = rule_gen(joint, base, length)[1]
 
                         roam = 0
+                        front_route = []
+                        back_route = []
 
                         while len(front_route) == 0:
 
@@ -1053,7 +1094,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
     # print(message_l)
 
 
-    filename = 'polar maps/polar_u-' + str(length)
+    filename = 'polar maps/polar_u_c-' + str(length)
     outfile = open(filename, 'wb')
     pickle.dump(polar_u_i, outfile)
     outfile.close()
@@ -1503,11 +1544,9 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
     album = []
 
-    print("height length")
-    print(final_height)
-    print(final_length)
-
-
+    # print("height length")
+    # print(final_height)
+    # print(final_length)
 
     for x in range(depth):
 
@@ -1520,7 +1559,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
         for y in range(len(message)):
 
-            print(canvas[y+1][x+1])
+            # print(canvas[y+1][x+1])
 
             line = np.asarray(canvas[y+1][x+1])
 
@@ -1528,18 +1567,19 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
             line = np.flip(line, 0)
 
             l_s = line.shape
+            start = int((final_length - l_s[1])/2)
 
             # print("ls")
             # print(l_s)
 
             collage.append(line)
-            mural[length * y:length * (y+1), 0:line.shape[1]] = line
+            mural[length * y:length * (y+1), start:line.shape[1] + start] = line
 
         album.append(mural)
 
     path = 'cell translation'
 
-    cMap = colors.ListedColormap([black, cyan, magenta, yellow, red, green, blue])
+    cMap = colors.ListedColormap([black, cyan, magenta, yellow, blue, green, red])
 
 
     if vid == 0:
@@ -1578,6 +1618,11 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
         gallery = []
         fig = plt.figure()
 
+        ax = plt.Axes(fig, [0., 0., 1., 1.])
+        ax.set_axis_off()
+        ax.set_aspect('auto')
+        fig.add_axes(ax)
+
         # # values
         # for c in canvas:
         #
@@ -1615,12 +1660,14 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
         #
         #     gal.append([plt.imshow(rcanvas_r, animated=True, cmap=cMap)])
 
-        print("")
-        print("album")
+        # print("")
+        # print("album")
+
         for a in album:
-            print("")
-            print("a")
-            print(a)
+
+            # print("")
+            # print("a")
+            # print(a)
 
             gal.append([plt.imshow(a, animated=True, cmap=cMap)])
 
@@ -1630,9 +1677,15 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
         # for g in reversed(gal):
         #     gallery.append(g)
 
-        ani = animation.ArtistAnimation(fig, gallery, interval=100, blit=True,
+
+
+        ani = animation.ArtistAnimation(fig, gallery, interval=150, blit=True,
                                         repeat_delay=0)
-        # ani.save()
+
+        writer = animation.PillowWriter(fps=8)
+
+        ani.save('cell translation/fire-and-ice.gif', dpi=500, writer=writer)
+
         plt.show()
 
 
@@ -1673,7 +1726,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     # print("p_d")
     # print(list(p_d)[:10])
 
-    filename = 'polar maps/polar_u-' + str(length)
+    filename = 'polar maps/polar_u_c-' + str(length)
     outfile = open(filename, 'wb')
     pickle.dump(polar_u_i, outfile)
     outfile.close()
@@ -1694,7 +1747,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     outfile.close()
 
 
-infile = open("polar maps/polar_u-16", "rb")
+infile = open("polar maps/polar_u_c-16", "rb")
 polar_u_i = pickle.load(infile)
 infile.close
 
@@ -1725,7 +1778,7 @@ view = 3
 length = 16
 max_steps = 16
 scale = 1
-depth = 15
+depth = 16
 
 cell_key = (base, view, length, scale)
 
