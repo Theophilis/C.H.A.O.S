@@ -10,15 +10,15 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 501
+length = 2001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
 rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
-view = 5
+view = 3
 #size of the view window that scans a row for rule application
-base = 3
+base = 6
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -212,7 +212,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
 
     # print("rules")
 
-    rules = rule_gen(rule, base, string=1)
+    rules = rule_gen(rule, base, string=0)
     int_rule = rules[1]
     rules = rules[0]
 
@@ -412,7 +412,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
             # plt.xticks(np.arange(0, size, step=1))
             # plt.yticks(np.arange(0, size, step=1))
 
-            # c_plt.show()
+            # plt.show()
             plt.savefig(path_name, dpi=length, bbox_inches='tight',pad_inches = 0)
             plt.close()
 
@@ -1194,10 +1194,10 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'scarfs/ternary'
+path = 'scarfs/hexenary'
 
-journaling = 1
-leveling = 0
+journaling = 0
+leveling = 1
 
 size = length
 l_size = 131
@@ -1215,7 +1215,7 @@ canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, dens
 
 if journaling != 0:
 
-    infile = open("journals/journal_three-five-041322", "rb")
+    infile = open("journals/journal_bermuda", "rb")
     journal = pickle.load(infile)
     infile.close
 
@@ -1224,7 +1224,7 @@ if journaling != 0:
 
     print(len(list(journal.keys())))
 
-    for k in list(journal.keys())[644:]:
+    for k in list(journal.keys()):
         print('')
         print(list(journal.keys()).index(k))
         print(k[0])
@@ -1238,7 +1238,7 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('scarfs/hexenary/lvl-1')
+    lvl = os.listdir('scarfs/hexenary/lvl-2')
 
     path = 'scarfs/hexenary'
 
@@ -1254,7 +1254,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[17:-5])
+            l = int(l[19:-5])
 
         except:
 

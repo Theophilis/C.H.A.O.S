@@ -1,8 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-from matplotlib import colors as c
-import pandas as pd
 import pickle
 
 
@@ -146,6 +143,29 @@ right_roam = []
 left_roam = []
 no_roam = []
 
+rulidex = dict()
+used = []
+
+roams = ['full_roam', 'right_roam', 'left_roam', 'no_roam']
+tendency = ['grow', 'shrink', 'stagnate']
+
+for r in roams:
+
+    rulidex[r] = dict()
+
+    for t in tendency:
+
+        rulidex[r][t] = []
+
+
+for r in rulidex:
+
+    print("")
+    print(r)
+    print(rulidex[r])
+
+
+#full roam
 for x in range(256):
 
     i_rule = rule_gen(x, base, 8)[1]
@@ -157,10 +177,45 @@ for x in range(256):
 
     value = decimal(i_rule, 2)
 
-    if value not in roamers:
+    oc = 0
 
-        roamers.append(value)
+    for i in i_rule:
 
+        if i == 1:
+
+            oc += 1
+
+    if oc <= 4:
+
+        if value not in rulidex['full_roam']['shrink']:
+
+            rulidex['full_roam']['shrink'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+    if oc >= 3 and oc <= 5:
+
+        if value not in rulidex['full_roam']['stagnate']:
+
+            rulidex['full_roam']['stagnate'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+    if oc >= 4:
+
+        if value not in rulidex['full_roam']['grow']:
+
+            rulidex['full_roam']['grow'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+#right roam
 for x in range(256):
 
     i_rule = rule_gen(x, base, 8)[1]
@@ -171,9 +226,45 @@ for x in range(256):
 
     value = decimal(i_rule, 2)
 
-    if value not in right_roam and value not in roamers:
-        right_roam.append(value)
+    oc = 0
 
+    for i in i_rule:
+
+        if i == 1:
+
+            oc += 1
+
+    if oc <= 4:
+
+        if value not in rulidex['right_roam']['shrink']:
+
+            rulidex['right_roam']['shrink'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+    if oc >= 3 and oc <= 5:
+
+        if value not in rulidex['right_roam']['stagnate']:
+
+            rulidex['right_roam']['stagnate'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+    if oc >= 4:
+
+        if value not in rulidex['right_roam']['grow']:
+
+            rulidex['right_roam']['grow'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+#left roam
 for x in range(256):
 
     i_rule = rule_gen(x, base, 8)[1]
@@ -184,65 +275,188 @@ for x in range(256):
 
     value = decimal(i_rule, 2)
 
-    if value not in left_roam and value not in roamers:
-        left_roam.append(value)
+    oc = 0
 
+    for i in i_rule:
 
-print("")
-print("roamers")
-print(roamers)
-print(len(roamers))
-print(right_roam)
-print(len(right_roam))
-print(left_roam)
-print(len(left_roam))
+        if i == 1:
 
-rule_count = dict()
+            oc += 1
 
-for p in polar_u_i:
+    if oc <= 4:
 
-    if p[2] not in rule_count:
+        if value not in rulidex['left_roam']['shrink']:
 
-        rule_count[p[2]] = 1
+            rulidex['left_roam']['shrink'].append(value)
 
-    else:
+        if value not in used:
 
-        rule_count[p[2]] += 1
+            used.append(value)
 
-rule_count = dict(sorted(list(rule_count.items()), key=lambda x:x[1], reverse=True))
+    if oc >= 3 and oc <= 5:
 
-print("")
-print("rule_count")
-print(rule_count)
+        if value not in rulidex['left_roam']['stagnate']:
 
+            rulidex['left_roam']['stagnate'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+    if oc >= 4:
+
+        if value not in rulidex['left_roam']['grow']:
+
+            rulidex['left_roam']['grow'].append(value)
+
+        if value not in used:
+
+            used.append(value)
+
+# no roam
 for x in range(256):
 
-    if x not in roamers and x not in right_roam and x not in left_roam:
+    i_rule = rule_gen(x, base, 8)[1]
 
-        no_roam.append(x)
+    # print(i_rule)
 
-print("")
-print("no_roam")
-print(no_roam)
-print(len(no_roam))
+    value = decimal(i_rule, 2)
+
+    oc = 0
+
+    for i in i_rule:
+
+        if i == 1:
+
+            oc += 1
+
+    if value not in used:
+
+        if oc <= 4:
+
+            if value not in rulidex['no_roam']['shrink']:
+
+                rulidex['no_roam']['shrink'].append(value)
+
+        if oc >= 3 and oc <= 5:
+
+            if value not in rulidex['no_roam']['stagnate']:
+
+                rulidex['no_roam']['stagnate'].append(value)
+
+        if oc >= 4:
+
+            if value not in rulidex['no_roam']['grow']:
+
+                rulidex['no_roam']['grow'].append(value)
 
 
-filename = 'organized-rules/roamers-2-3'
+for r in rulidex:
+
+    print("")
+    print(r)
+    print(rulidex[r])
+
+    for u in rulidex[r]:
+
+        print(u)
+        print(rulidex[r][u])
+
+filename = 'organized-rules/rulidex-2-3'
 outfile = open(filename, 'wb')
-pickle.dump(roamers, outfile)
+pickle.dump(rulidex, outfile)
 outfile.close()
 
-filename = 'organized-rules/right_roam-2-3'
-outfile = open(filename, 'wb')
-pickle.dump(right_roam, outfile)
-outfile.close()
 
-filename = 'organized-rules/left_roam-2-3'
-outfile = open(filename, 'wb')
-pickle.dump(left_roam, outfile)
-outfile.close()
+# for x in range(256):
+#
+#     i_rule = rule_gen(x, base, 8)[1]
+#
+#     i_rule[3] = 1
+#
+#     # print(i_rule)
+#
+#     value = decimal(i_rule, 2)
+#
+#     if value not in right_roam and value not in roamers:
+#         right_roam.append(value)
+#
+# for x in range(256):
+#
+#     i_rule = rule_gen(x, base, 8)[1]
+#
+#     i_rule[-2] = 1
+#
+#     # print(i_rule)
+#
+#     value = decimal(i_rule, 2)
+#
+#     if value not in left_roam and value not in roamers:
+#         left_roam.append(value)
+#
+#
+# print("")
+# print("roamers")
+# print(roamers)
+# print(len(roamers))
+# print(right_roam)
+# print(len(right_roam))
+# print(left_roam)
+# print(len(left_roam))
+#
+# rule_count = dict()
+#
+# for p in polar_u_i:
+#
+#     if p[2] not in rule_count:
+#
+#         rule_count[p[2]] = 1
+#
+#     else:
+#
+#         rule_count[p[2]] += 1
+#
+# rule_count = dict(sorted(list(rule_count.items()), key=lambda x:x[1], reverse=True))
+#
+# print("")
+# print("rule_count")
+# print(rule_count)
+#
+# for x in range(256):
+#
+#     if x not in roamers and x not in right_roam and x not in left_roam:
+#
+#         no_roam.append(x)
+#
+# print("")
+# print("no_roam")
+# print(no_roam)
+# print(len(no_roam))
 
-filename = 'organized-rules/no_roam-2-3'
-outfile = open(filename, 'wb')
-pickle.dump(no_roam, outfile)
-outfile.close()
+
+# filename = 'organized-rules/roamers-2-3'
+# outfile = open(filename, 'wb')
+# pickle.dump(roamers, outfile)
+# outfile.close()
+#
+# filename = 'organized-rules/right_roam-2-3'
+# outfile = open(filename, 'wb')
+# pickle.dump(right_roam, outfile)
+# outfile.close()
+#
+# filename = 'organized-rules/left_roam-2-3'
+# outfile = open(filename, 'wb')
+# pickle.dump(left_roam, outfile)
+# outfile.close()
+#
+# filename = 'organized-rules/no_roam-2-3'
+# outfile = open(filename, 'wb')
+# pickle.dump(no_roam, outfile)
+# outfile.close()
+
+
+
+
+
+
+

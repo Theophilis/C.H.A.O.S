@@ -1765,6 +1765,6 @@ def menu():
 # menu()
 
 
-Chaos_Window(6, 2, 20)
+Chaos_Window(6, 2, 7)
 
 

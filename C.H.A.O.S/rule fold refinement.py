@@ -8,7 +8,6 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import matplotlib.animation as animation
-import ffmpeg
 
 
 
@@ -1158,6 +1157,10 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
         plt.savefig(path_name, dpi=200)
         plt.close()
 
+    print("")
+    print("frame")
+    print(frame)
+
     return frame
 
 
@@ -1682,9 +1685,9 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
         ani = animation.ArtistAnimation(fig, gallery, interval=150, blit=True,
                                         repeat_delay=0)
 
-        writer = animation.PillowWriter(fps=8)
-
-        ani.save('cell translation/fire-and-ice.gif', dpi=500, writer=writer)
+        # writer = animation.PillowWriter(fps=8)
+        #
+        # ani.save('cell translation/fire-and-ice.gif', dpi=500, writer=writer)
 
         plt.show()
 
@@ -1736,7 +1739,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     pickle.dump(p_d, outfile)
     outfile.close()
 
-    filename = 'cellexicon/cellexicon'
+    filename = 'cellexicon/cellexicon-' + str(length)
     outfile = open(filename, 'wb')
     pickle.dump(cellexicon, outfile)
     outfile.close()
@@ -1747,21 +1750,44 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     outfile.close()
 
 
-infile = open("polar maps/polar_u_c-16", "rb")
-polar_u_i = pickle.load(infile)
-infile.close
+base = 2
+view = 3
 
-infile = open("polar maps/polar_d-16", "rb")
-polar_d = pickle.load(infile)
-infile.close
+length = 32
+max_steps = 16
+scale = 1
+depth = 16
 
-infile = open("cellexicon/cellexicon", "rb")
-cellexicon = pickle.load(infile)
-infile.close
+try:
 
-infile = open("polar maps/polar_paths-16", "rb")
-polar_paths = pickle.load(infile)
-infile.close
+    infile = open("polar maps/polar_u-" + str(length), "rb")
+    polar_u_i = pickle.load(infile)
+    infile.close
+except:
+    polar_u_i = []
+
+try:
+
+    infile = open("polar maps/polar_d-" + str(length), "rb")
+    polar_d = pickle.load(infile)
+    infile.close
+except:
+    polar_d = dict()
+
+try:
+
+    infile = open("polar maps/polar_paths-" + str(length), "rb")
+    polar_paths = pickle.load(infile)
+    infile.close
+except:
+    polar_paths = dict()
+
+try:
+    infile = open("cellexicon/cellexicon-" + str(length), "rb")
+    cellexicon = pickle.load(infile)
+    infile.close
+except:
+    cellexicon = dict()
 
 # cellexicon = dict()
 
@@ -1771,14 +1797,6 @@ print(list(polar_d.items())[:10])
 print(len(list(polar_d)))
 print(list(polar_u_i[:10]))
 print(len(list(polar_u_i)))
-
-base = 2
-view = 3
-
-length = 16
-max_steps = 16
-scale = 1
-depth = 16
 
 cell_key = (base, view, length, scale)
 
@@ -1792,6 +1810,8 @@ if cell_key not in cellexicon:
 
 message = ['Some say the world will end in fire', 'Some say in ice', 'From what Ive tasted of desire', 'I hold with those who favor fire',
 'But if it had to perish twice', 'I think I know enough of hate', 'To say that for destruction ice', 'Is also great', 'And would suffice']
+
+message = ['breath']
 
 # cellexicon = dict()
 
