@@ -53,6 +53,23 @@ def base_x(n, b):
         return base_x(e, b) + str(q)
 
 
+def decimal(n, b):
+
+    n = list(reversed(n))
+    n = [int(v) for v in n]
+
+    value = 0
+    place = 0
+
+
+    for c in n:
+
+        value += int(c) * b ** place
+        place += 1
+
+    return value
+
+
 def rule_gen(rule, base=2):
     rules = dict()
 
@@ -206,6 +223,8 @@ letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7,
 pygame.display.set_caption("C.H.A.O.S")
 
 value = 2
+
+# full color
 BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
 WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'grey-' + str(value) + '.png')).convert()
 M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-' + str(value) + '.png')).convert()
@@ -215,6 +234,17 @@ MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-' + str(valu
 RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-' + str(value) + '.png')).convert()
 ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
 YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-' + str(value) + '.png')).convert()
+
+#dark
+# BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
+# WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'grey-' + str(value) + '.png')).convert()
+# M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-d-' + str(value) + '.png')).convert()
+# BLUEB_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-d-' + str(value) + '.png')).convert()
+# BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
+# MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
+# RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-d-' + str(value) + '.png')).convert()
+# ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
+# YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
 
 value = 3
 BLACK_PIXEL_3 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
@@ -324,11 +354,12 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     rule = 2938476213907846921360748213607442931678407023823923838947609234788912370742137984760213578938750762352480324975202490673879693285632584053279
     step = 0
     clock = pygame.time.Clock()
+    origin_rule = 0
 
     echoing = 1
     randomizer = 1
-    midi_inputs = 0
-    manic = 0
+    midi_inputs = 1
+    manic = 1
     measured = 0
 
     journal = dict()
@@ -406,6 +437,46 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
         ev_10 = 0
         ev_11 = 0
 
+    if origin_rule == 0:
+
+        magnify = 1
+        colors = 5
+
+        step_size = int(base ** view / (base - 1) / magnify)
+        bv = base ** view
+
+        print("")
+        print("step_size")
+        print(step_size)
+        print(base ** view)
+        print(base - 1)
+
+        o_r = rule_gen(0, base)[1]
+
+        print(o_r)
+
+        for x in range(int((base ** view))):
+
+            print(step_size * x)
+
+            if x > 0:
+
+                o_r[-((step_size * x + 1) % bv)] = x % colors
+
+            else:
+
+                o_r[-((step_size * x + 1) % bv)] = 1
+
+
+        o_r[-1] = 1
+
+        origin_rule = decimal(o_r, base)
+
+        print(o_r)
+        print(origin_rule)
+
+
+
 
     # i_rule[0] = 1
     # i_rule[-1] = 1
@@ -432,8 +503,8 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
         rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
 
-        WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
-        WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
+        # WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
+        # WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
 
         WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
         WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
@@ -1304,6 +1375,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                     else:
                         journal[rule].append(page)
+
                     page = []
 
 
@@ -1657,9 +1729,9 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                         input_box = 0
 
-                elif event.key == pygame.K_RETURN:
+                elif event.key == pygame.K_PERIOD:
 
-                    d_rule, i_rule = rule_gen(1, base)
+                    d_rule, i_rule = rule_gen(origin_rule, base)
 
                     for letter in press:
 
@@ -1679,7 +1751,9 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                 clean_e = str(event)[21:-3]
                 list_e = clean_e.split(',')
                 ev = []
+
                 for l in list_e:
+
                     ev.append(int(l.split(':')[1]))
 
                 # print(" ")
@@ -1759,6 +1833,25 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                     place_change(glove_value + ev_10)
                     place_change(glove_value + ev_11)
 
+                    # print("")
+                    # print("rule")
+                    # print(rule)
+
+                    if rule not in journal:
+
+                        # print("############## not in ##############")
+
+                        journal[rule] = []
+                        journal[rule].append(page)
+
+                    else:
+
+                        # print("else")
+
+                        journal[rule].append(page)
+
+                    # print(len(journal))
+
                 if measured == 1:
 
                     glove_value = ev_7 + 4 * ev_8 + 16 * ev_9 + 64 * ev_10
@@ -1768,6 +1861,19 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                     print(glove_value)
 
                     d_rule, i_rule = rule_gen(glove_value, base)
+
+                    if rule not in journal:
+                        journal[rule] = []
+                        journal[rule].append(page)
+
+                    else:
+                        journal[rule].append(page)
+
+                if ev[1] == 9:
+
+                    if ev[2] > 40:
+
+                        d_rule, i_rule = rule_gen(origin_rule , base)
 
                 # if ev[0] == 144:
                 #     midiout.send_noteon(ev[0], ev[1], ev[2])
@@ -2204,7 +2310,6 @@ def input_main(device_id=None):
 
 # menu()
 
-
-Chaos_Window(6, 2, 6, 2)
+Chaos_Window(5, 2, 10, 2)
 
 

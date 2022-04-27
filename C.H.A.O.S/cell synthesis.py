@@ -18,7 +18,7 @@ rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 4
+base = 5
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -235,19 +235,17 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
 
 
-j_name = 'journal_rainbow-family'
+j_name = 'journal_4-24-22-stream-3-5'
 
 simple = 0
 full = 1
 
 scale = 1
-shrink = 5
+shrink = 1000000
 
-synthesis = []
-frame = []
 width = 0
 
-infile = open("journals/" + j_name, "rb")
+infile = open("journals/streams/4-24-22/" + j_name, "rb")
 journal = pickle.load(infile)
 infile.close
 
@@ -255,181 +253,211 @@ path = 'synthesis'
 
 print(len(list(journal.keys())))
 
-if simple == 1:
-
-    for k in list(journal.keys()):
-
-        # print(k[0])
-        jk = journal[k]
-
-        if len(jk[0]) > 0:
-
-            # print('')
-            print(list(journal.keys()).index(k))
-            # print(k)
-            # print(jk)
-
-            width += len(jk[0])
-
-            for j in jk:
-
-                for k in j:
-
-                    synthesis.append(k)
+def synthesize(j_name, width, split, s_f):
 
 
-
-    synthesis = np.asarray(synthesis)
-
-    j_name += '-simple'
-
-if full == 1:
-
-    for k in list(journal.keys()):
-
-        # print(k[0])
-        jk = journal[k]
-
-        if list(journal.keys()).index(k) == 0:
-
-            # print('')
-            # print(list(journal.keys()).index(k))
-            # print(k)
-            # print(jk)
-
-            rows = 0
-
-            for j in jk:
-
-                for j_1 in j:
-
-                    rows += 1
-                    width += 1
-
-            try:
-                i_rule = rule_gen(int(k), base)[1]
-
-            except:
-                i_rule = rule_gen(k[0], base, string=1)[1]
-
-
-            k_str = ''
-
-            for i in i_rule:
-
-                k_str += i
-
-            frame.append((k_str, int(rows * scale / shrink) + 1))
-
-            continue
-
-
-        if len(jk[0]) > 0:
-
-            # print('')
-            # print(list(journal.keys()).index(k))
-            # print(k)
-            # print(jk)
-
-
-            frame.append((k[0], int(len(jk[0]) * scale / shrink) + 1))
-
-            width += int(len(jk[0]) * scale / shrink) + 1
+    l_j = len(list(journal.keys()))
+    s_j = int(len(list(journal.keys())) / split)
 
     print("")
-    # print("frame")
-    # print(frame)
-    print('width')
-    print(width)
+    print("l_j")
+    print(l_j)
 
-    row = [0 for x in range(width)]
-    row[int(len(row)/2)] = 1
+    print("")
+    print("s_j")
+    print(s_j)
 
-    synthesis.append(row)
+    for x in range(split):
 
-    # print('row')
-    # print(row)
-    print(len(row))
+        synthesis = []
+        frame = []
 
-    for f in frame:
+        print("split")
+        print(x)
 
-        count = 0
+        journal_key = list(journal.keys())[x * s_j:(x + 1) * s_j]
 
-        d_rule, i_rule = rule_gen(f[0], base, string=1)
+        print("")
+        print('journal_key')
+        print((x * s_j, (x + 1) * s_j))
 
-        while count < f[1]:
+        if s_f == 0:
 
-            synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
+            for k in journal_key:
 
-            count += 1
+                # print(k[0])
+                jk = journal[k]
 
-    # print("")
-    # print("synthesis")
-    # print(synthesis)
+                if len(jk[0]) > 0:
 
-    synthesis = np.asarray(synthesis)
+                    # print('')
+                    print(list(journal.keys()).index(k))
+                    # print(k)
+                    # print(jk)
 
-    j_name += '-full'
+                    width += len(jk[0])
 
-    # print("")
-    # print("synthesis")
-    # print(synthesis)
+                    for j in jk:
 
-file = str(base) + '-' + j_name + '-' + str(scale) + '-' + str(shrink)
-path_name = os.path.join(path, file)
+                        for k in j:
 
-ax = plt.gca()
-ax.set_aspect(1)
+                            synthesis.append(k)
 
-plt.margins(0, None)
 
-magenta = (1, 0, 1)
-magenta_d = (.8, 0, .8)
-yellow = (1, 1, 0)
-yellow_d = (.8, .8, 0)
-cyan = (0, 1, 1)
-cyan_d = (0, .8, .8)
-red = (1, 0, 0)
-blue = (0, 0, 1)
-green = (0, 1, 0)
-black = (0, 0, 0)
-white = (1, 1, 1)
-grey = (.2, .2, .2)
-purple = (.6, 0, .6)
-turquoise = (0, .8, .8)
-light_grey = (.8 , .8, .8)
-moss = (.2, .4, .2)
-orange = (1, .5, .1)
 
-if base == 6:
-    cMap = c.ListedColormap([red, black, cyan, white, magenta, yellow, black])
+            synthesis = np.asarray(synthesis)
 
-if base == 5:
-    cMap = c.ListedColormap([black, magenta_d, cyan_d, yellow_d, grey])
+            j_name += '-simple'
 
-if base == 4:
-    cMap = c.ListedColormap([black, magenta, cyan, yellow])
+        if s_f == 1:
 
-if base == 3:
-    cMap = c.ListedColormap([black, magenta, cyan])
+            for k in journal_key:
 
-if base == 2:
-    cMap = c.ListedColormap([black, cyan])
+                # print(k[0])
+                jk = journal[k]
 
-plt.pcolormesh(synthesis, cmap=cMap)
+                if list(journal.keys()).index(k) == 0:
 
-#hide x-axis
-ax.get_xaxis().set_visible(False)
+                    # print('')
+                    # print(list(journal.keys()).index(k))
+                    # print(k)
+                    # print(jk)
 
-#hide y-axis
-ax.get_yaxis().set_visible(False)
+                    rows = 0
 
-print("")
-print("printing")
+                    for j in jk:
 
-# plt.show()
-plt.savefig(path_name, dpi=width, bbox_inches='tight',pad_inches = 0)
-plt.close()
+                        for j_1 in j:
+
+                            rows += 1
+                            width += 1
+
+                    try:
+                        i_rule = rule_gen(int(k), base)[1]
+
+                    except:
+                        i_rule = rule_gen(k[0], base, string=1)[1]
+
+
+                    k_str = ''
+
+                    for i in i_rule:
+
+                        k_str += i
+
+                    frame.append((k_str, int(rows * scale / shrink) + 1))
+
+                    continue
+
+
+                if len(jk[0]) > 0:
+
+                    # print('')
+                    # print(list(journal.keys()).index(k))
+                    # print(k)
+                    # print(jk)
+
+
+                    frame.append((k[0], int(len(jk[0]) * scale / shrink) + 1))
+
+                    width += int(len(jk[0]) * scale / shrink) + 1
+
+            print("")
+            # print("frame")
+            # print(frame)
+            print('width')
+            print(width)
+
+            row = [0 for x in range(width)]
+            row[int(len(row)/2)] = 1
+
+            synthesis.append(row)
+
+            # print('row')
+            # print(row)
+            print(len(row))
+
+            for f in frame:
+
+                count = 0
+
+                d_rule, i_rule = rule_gen(f[0], base, string=1)
+
+                while count < f[1]:
+
+                    synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
+
+                    count += 1
+
+            # print("")
+            # print("synthesis")
+            # print(synthesis)
+
+            synthesis = np.asarray(synthesis)
+
+            j_name += '-full'
+
+            # print("")
+            # print("synthesis")
+            # print(synthesis)
+
+        file = str(base) + '-' + j_name + '-' + str(scale) + '-' + str(shrink) + '-' + str(x)
+        path_name = os.path.join(path, file)
+
+        ax = plt.gca()
+        ax.set_aspect(1)
+
+        plt.margins(0, None)
+
+        magenta = (1, 0, 1)
+        magenta_d = (.8, 0, .8)
+        yellow = (1, 1, 0)
+        yellow_d = (.8, .8, 0)
+        cyan = (0, 1, 1)
+        cyan_d = (0, .8, .8)
+        red = (1, 0, 0)
+        blue = (0, 0, 1)
+        green = (0, 1, 0)
+        black = (0, 0, 0)
+        white = (1, 1, 1)
+        grey = (.2, .2, .2)
+        purple = (.6, 0, .6)
+        turquoise = (0, .8, .8)
+        light_grey = (.8 , .8, .8)
+        moss = (.2, .4, .2)
+        orange = (1, .5, .1)
+
+        if base == 6:
+            cMap = c.ListedColormap([red, black, cyan, white, magenta, yellow, black])
+
+        if base == 5:
+            cMap = c.ListedColormap([magenta, cyan, yellow, red, blue])
+
+        if base == 4:
+            cMap = c.ListedColormap([black, magenta, cyan, yellow])
+
+        if base == 3:
+            cMap = c.ListedColormap([black, magenta, cyan])
+
+        if base == 2:
+            cMap = c.ListedColormap([black, cyan])
+
+        plt.pcolormesh(synthesis, cmap=cMap)
+
+        #hide x-axis
+        ax.get_xaxis().set_visible(False)
+
+        #hide y-axis
+        ax.get_yaxis().set_visible(False)
+
+        print("")
+        print("printing")
+
+        # plt.show()
+        plt.savefig(path_name, dpi=width, bbox_inches='tight',pad_inches = 0)
+        plt.close()
+
+synthesize(j_name, width, 30, 1)
 
 
 
