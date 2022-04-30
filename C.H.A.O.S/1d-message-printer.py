@@ -1210,7 +1210,7 @@ density = 16
 x_o = 30
 y_o = 180
 
-message = ''
+message = 'this building will burn one day, stealing is a mercy'
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 

@@ -351,15 +351,15 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
     run = 1
     FPS = 60
-    rule = 2938476213907846921360748213607442931678407023823923838947609234788912370742137984760213578938750762352480324975202490673879693285632584053279
+    rule = 2162121621216212162121621216212162121621
     step = 0
     clock = pygame.time.Clock()
     origin_rule = 0
 
     echoing = 1
     randomizer = 1
-    midi_inputs = 1
-    manic = 1
+    midi_inputs = 0
+    manic = 0
     measured = 0
 
     journal = dict()
@@ -439,8 +439,8 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
     if origin_rule == 0:
 
-        magnify = 1
-        colors = 5
+        magnify = 2
+        colors = base - 1
 
         step_size = int(base ** view / (base - 1) / magnify)
         bv = base ** view
@@ -2310,6 +2310,6 @@ def input_main(device_id=None):
 
 # menu()
 
-Chaos_Window(5, 2, 10, 2)
+Chaos_Window(4, 2, 10, 0)
 
 
