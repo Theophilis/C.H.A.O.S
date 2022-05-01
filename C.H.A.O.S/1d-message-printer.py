@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 4001
+length = 2001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -383,12 +383,15 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
             light_grey = (.8 , .8, .8)
             moss = (.2, .4, .2)
             orange = (1, .5, .1)
+            dark_blue = (0, .1, .5)
+            auburn = (.2, .1, .1)
+
 
             if base == 6:
                 cMap = c.ListedColormap([red, black, cyan, white, magenta, yellow, black])
 
             if base == 5:
-                cMap = c.ListedColormap([black, magenta, cyan, yellow, white])
+                cMap = c.ListedColormap([auburn, black, dark_blue, white, grey])
 
             if base == 4:
                 cMap = c.ListedColormap([red, black, magenta, green, white])
@@ -1216,7 +1219,7 @@ canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, dens
 
 if journaling != 0:
 
-    infile = open("journals/streams/4-25-22/journal_4-25-22-0-5", "rb")
+    infile = open("journals/streams/april/4-25-22/journal_4-25-22-0-5", "rb")
     journal = pickle.load(infile)
     infile.close
 

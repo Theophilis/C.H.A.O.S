@@ -226,11 +226,11 @@ value = 2
 
 # full color
 BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
-WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'grey-' + str(value) + '.png')).convert()
+WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-' + str(value) + '.png')).convert()
 M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-' + str(value) + '.png')).convert()
 BLUEB_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-' + str(value) + '.png')).convert()
 BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-' + str(value) + '.png')).convert()
-MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-' + str(value) + '.png')).convert()
+MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'dark-grey-' + str(value) + '.png')).convert()
 RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-' + str(value) + '.png')).convert()
 ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
 YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-' + str(value) + '.png')).convert()
@@ -351,10 +351,12 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
     run = 1
     FPS = 60
-    rule = 2162121621216212162121621216212162121621
+    rule = 21621
     step = 0
+    step_show = 0
     clock = pygame.time.Clock()
     origin_rule = 0
+
 
     echoing = 1
     randomizer = 1
@@ -375,6 +377,26 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     r_i = 0
     rand_count = 0
     iterate = 0
+
+    zero_out = cell_vel * 100
+    zero_count = cell_vel * 100
+    origin_threshold = 50
+
+    t0_threshold = 50
+    t1_threshold = 50
+    t2_threshold = 50
+    t3_threshold = 50
+    t4_threshold = 50
+
+    trigger_0 = 0
+    trigger_1 = 0
+    trigger_2 = 0
+    trigger_3 = 0
+    trigger_4 = 0
+
+    triggers = []
+    ts_percentage = []
+    thresholds = []
 
     input_box = 0
     list_count = 0
@@ -441,7 +463,6 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
         magnify = 2
         colors = base - 1
-
         step_size = int(base ** view / (base - 1) / magnify)
         bv = base ** view
 
@@ -455,13 +476,16 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
         print(o_r)
 
-        for x in range(int((base ** view))):
+        for x in range(int((base ** view) / step_size) + 1):
 
+            print("step_size * x")
             print(step_size * x)
+            print("current place")
+            print(-((step_size * x + 1) % bv))
 
             if x > 0:
 
-                o_r[-((step_size * x + 1) % bv)] = x % colors
+                o_r[-((step_size * x + 1) % bv)] = x % colors + 1
 
             else:
 
@@ -472,10 +496,9 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
         origin_rule = decimal(o_r, base)
 
+        print("origin rule")
         print(o_r)
         print(origin_rule)
-
-
 
 
     # i_rule[0] = 1
@@ -490,7 +513,11 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     print(i_rule)
     print(len(i_rule))
 
-    def redraw_window(input_box, v_input):
+    def redraw_window(input_box, v_input, zero_count, step_show, origin_threshold, triggers, ts_percentage, thresholds):
+
+        zero_count = int(zero_count / cell_vel)
+
+        triggers = [int(t / cell_vel) for t in triggers]
 
         for r in range(cell_rows):
             for cell in cells[r]:
@@ -503,11 +530,25 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
         rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
 
-        # WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
-        # WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
+        zero_count = main_font.render(f"ZERO: {zero_count}", 1, (255, 255, 255))
+        origin_value = main_font.render(f"ORIGIN: {origin_threshold}", 1, (255, 255, 255))
+
+        trigger_values = main_font.render(f"TRIGGERS: {triggers}", 1, (255, 255, 255))
+        tsp_values = main_font.render(f"PERCENTAGE: {ts_percentage}", 1, (255, 255, 255))
+
+        if step_show == 1:
+
+            WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
+            WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
 
         WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
         WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
+
+        WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
+        WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 130))
+
+        WIN.blit(trigger_values, (WIDTH - trigger_values.get_width(), HEIGHT - 100))
+        WIN.blit(tsp_values, (WIDTH - tsp_values.get_width(), HEIGHT - 200))
 
         if input_box == 1:
             v_input_r = small_font.render(v_input, 1, (0, 0, 0))
@@ -1309,7 +1350,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     while run == 1:
 
         WIN.fill((0, 0, 0))
-        redraw_window(input_box, v_input)
+        redraw_window(input_box, v_input, zero_count, step_show, origin_threshold, triggers, ts_percentage, thresholds)
         clock.tick(FPS)
         # print("")
         # print("cell_rows")
@@ -1705,6 +1746,44 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                                         write = 1
 
+                                    if input_list[0] == 'threshold':
+
+                                        origin_threshold = int(input_list[1])
+
+                                        # print("")
+                                        # print("originated")
+                                        # print(origin_threshold)
+
+                                    if input_list[0] == 'threshold-0':
+
+                                        t0_threshold = int(input_list[1])
+
+                                    if input_list[0] == 'threshold-1':
+
+                                        t1_threshold = int(input_list[1])
+
+                                    if input_list[0] == 'threshold-2':
+
+                                        t2_threshold = int(input_list[1])
+
+                                    if input_list[0] == 'threshold-3':
+
+                                        t3_threshold = int(input_list[1])
+
+                                    if input_list[0] == 'threshold-4':
+
+                                        t4_threshold = int(input_list[1])
+
+                                    if input_list[0] == 'threshold-all':
+
+                                        t0_threshold = int(input_list[1])
+                                        t1_threshold = int(input_list[1])
+                                        t2_threshold = int(input_list[1])
+                                        t3_threshold = int(input_list[1])
+                                        t4_threshold = int(input_list[1])
+
+                                    thresholds = [t0_threshold, t1_threshold, t2_threshold, t3_threshold, t4_threshold]
+
                             elif v_input == 'write':
 
                                 write = 1
@@ -1827,11 +1906,11 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
 
                     place_change(glove_value)
-                    place_change(glove_value + ev_7)
-                    place_change(glove_value + ev_8)
-                    place_change(glove_value + ev_9)
-                    place_change(glove_value + ev_10)
-                    place_change(glove_value + ev_11)
+                    # place_change(glove_value + ev_7)
+                    # place_change(glove_value + ev_8)
+                    # place_change(glove_value + ev_9)
+                    # place_change(glove_value + ev_10)
+                    # place_change(glove_value + ev_11)
 
                     # print("")
                     # print("rule")
@@ -1871,14 +1950,263 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                 if ev[1] == 9:
 
-                    if ev[2] > 40:
+                    if ev[2] > origin_threshold:
 
-                        d_rule, i_rule = rule_gen(origin_rule , base)
+                        if zero_count > 0:
 
-                # if ev[0] == 144:
-                #     midiout.send_noteon(ev[0], ev[1], ev[2])
-                # elif ev[0] == 128:
-                #     midiout.send_noteoff(ev[0], ev[1])
+                            zero_count -= int(cell_vel/5)
+
+                        if zero_count < 0:
+
+                            zero_count = 1
+
+
+                if ev[1] == 7:
+
+                    if ev[2] > t0_threshold:
+
+                        if trigger_0 < 0:
+
+                            trigger_0 = 0
+
+                        else:
+
+                            trigger_0 += int(cell_vel/5)
+
+                if ev[1] == 8:
+
+                    if ev[2] > t1_threshold:
+
+                        if trigger_1 < 0:
+
+                            trigger_1 = 0
+
+                        else:
+
+                            trigger_1 += int(cell_vel/5)
+
+                if ev[1] == 9:
+
+                    if ev[2] > t2_threshold:
+
+                        if trigger_2 < 0:
+
+                            trigger_2 = 0
+
+                        else:
+
+                            trigger_2 += int(cell_vel / 5)
+
+                if ev[1] == 10:
+
+                    if ev[2] > t3_threshold:
+
+                        if trigger_3 < 0:
+
+                            trigger_3 = 0
+
+                        else:
+
+                            trigger_3 += int(cell_vel / 5)
+
+                if ev[1] == 11:
+
+                    if ev[2] > t4_threshold:
+
+                        if trigger_4 < 0:
+
+                            trigger_4 = 0
+
+                        else:
+
+                            trigger_4 += int(cell_vel / 5)
+
+
+        if zero_count < zero_out:
+
+            # print(" ")
+            # print("zero count")
+            # print(zero_count)
+            # print(step)
+
+            zero_count += int(cell_vel/2)
+
+            if zero_count > zero_out:
+
+                zero_count = cell_vel * 100
+
+            or_d, or_i = rule_gen(origin_rule, base)
+
+            for x in range(0, int(zero_count / 100), 1):
+
+                # x = cell_vel ** x
+
+                # print("zero count x")
+                # print(x)
+
+
+                if x % 2 == 1:
+
+                    # print("zero")
+                    i_rule[(glove_value + x) % (base ** view)] = or_i[(glove_value + x) % (base ** view)]
+                    # print(list(d_rule.keys())[x])
+                    d_rule[list(d_rule.keys())[(glove_value + x) % (base ** view)]] = or_i[(glove_value + x) % (base ** view)]
+
+                else:
+
+                    # print("zero")
+                    i_rule[(glove_value - x) % (base ** view)] = or_i[(glove_value + x) % (base ** view)]
+                    # print(list(d_rule.keys())[x])
+                    d_rule[list(d_rule.keys())[(glove_value - x) % (base ** view)]] = or_i[(glove_value + x) % (base ** view)]
+
+            for o in range(len(or_i)):
+
+                if int( or_i[o]) != 0:
+
+                    # print("zero")
+                    i_rule[o] = or_i[o]
+                    # print(list(d_rule.keys())[x])
+                    d_rule[list(d_rule.keys())[o]] = or_i[o]
+
+            # print('zero_count')
+            # print(zero_count)
+            # print(1 + int(cell_vel/2))
+
+            if zero_count == zero_out or zero_count == 1 + int(cell_vel/2):
+
+                # print("max or min")
+
+                d_rule, i_rule = rule_gen(origin_rule, base)
+
+            # print("rules")
+            # print(or_i)
+            # print(i_rule)
+
+            # if ev[0] == 144:
+            #     midiout.send_noteon(ev[0], ev[1], ev[2])
+            # elif ev[0] == 128:
+            #     midiout.send_noteoff(ev[0], ev[1])
+
+
+        if trigger_0 > 0:
+
+            trigger_0 -= int(cell_vel/2)
+
+            if trigger_0 > zero_out:
+
+                trigger_0 = zero_out
+
+            if trigger_0 < 0:
+
+                trigger_0 = 0
+
+            if trigger_0 == zero_out:
+
+                d_rule, i_rule = rule_gen(origin_rule, base)
+
+        if trigger_1 > 0:
+
+            trigger_1 -= int(cell_vel/2)
+
+            if trigger_1 > zero_out:
+
+                trigger_1 = zero_out
+
+            if trigger_1 < 0:
+
+                trigger_1 = 0
+
+            if trigger_1 == zero_out:
+
+                d_rule, i_rule = rule_gen(origin_rule, base)
+
+        if trigger_2 > 0:
+
+            trigger_2 -= int(cell_vel / 2)
+
+            if trigger_2 > zero_out:
+
+                trigger_2 = zero_out
+
+            if trigger_2 < 0:
+
+                trigger_2 = 0
+
+            if trigger_2 == zero_out:
+
+                d_rule, i_rule = rule_gen(origin_rule, base)
+
+        if trigger_3 > 0:
+
+            trigger_3 -= int(cell_vel / 2)
+
+            if trigger_3 > zero_out:
+
+                trigger_3 = zero_out
+
+            if trigger_3 < 0:
+
+                trigger_3 = 0
+
+            if trigger_3 == zero_out:
+
+                d_rule, i_rule = rule_gen(origin_rule, base)
+
+        if trigger_4 > 0:
+
+            trigger_4 -= int(cell_vel / 2)
+
+            if trigger_4 > zero_out:
+
+                trigger_4 = zero_out
+
+            if trigger_4 < 0:
+
+                trigger_4 = 0
+
+            if trigger_4 == zero_out:
+
+                d_rule, i_rule = rule_gen(origin_rule, base)
+
+        triggers = [trigger_1, trigger_2, trigger_3, trigger_4, trigger_0]
+
+        t_sum = 1
+
+        print(" ")
+        print("triggers")
+        print(triggers)
+        for t in triggers:
+
+            print("t")
+            print(t)
+
+            if t > triggers[-1]:
+
+                triggers[-1] = t
+
+
+            t_sum += t
+
+        print("t_sum")
+        print(t_sum)
+
+        ts_percentage = [round((t / t_sum * 100), 3) for t in triggers]
+
+        # largest = 0
+        #
+        # for t in ts_percentage:
+        #
+        #     if t > largest:
+        #
+        #         largest = t
+        #
+        # ts_percentage.append(largest)
+
+
+
+        print(ts_percentage)
+
+        triggers.append(t_sum)
 
 
         if midi_inputs == 1:
@@ -2310,6 +2638,8 @@ def input_main(device_id=None):
 
 # menu()
 
-Chaos_Window(4, 2, 10, 0)
+
+Chaos_Window(5, 2, 20, 2)
+
 
 
