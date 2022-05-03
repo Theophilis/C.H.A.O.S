@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 2001
+length = 8001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -391,7 +391,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
                 cMap = c.ListedColormap([red, black, cyan, white, magenta, yellow, black])
 
             if base == 5:
-                cMap = c.ListedColormap([auburn, black, dark_blue, white, grey])
+                cMap = c.ListedColormap([black, magenta, cyan, yellow, grey])
 
             if base == 4:
                 cMap = c.ListedColormap([red, black, magenta, green, white])
@@ -1197,23 +1197,23 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'scarfs/pentary'
+path = 'plates/this building will burn, theft is a mercy'
 
 
 journaling = 0
 leveling = 1
 
 size = length
-l_size = 131
-x_space = 30
-y_space = 250
+l_size = 401
+x_space = 150
+y_space = 400
 
-offset_size = 32
-density = 16
-x_o = 30
-y_o = 180
+offset_size = 72
+density = 12
+x_o = 120
+y_o = 720
 
-message = 'this building will burn one day, stealing is a mercy'
+message = ' - -this-building ---will-burn - -  -----theft ------is -------a -----mercy'
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 
@@ -1277,13 +1277,11 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('scarfs/pentary/lvl-3')
-
-    path = 'scarfs/pentary'
+    lvl = os.listdir('plates/this building will burn, theft is a mercy/lvl-2')
 
     print(len(lvl))
 
-    for l in lvl:
+    for l in lvl[14:]:
 
         print(" ")
         print(lvl.index(l))
@@ -1293,7 +1291,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[19:-5])
+            l = int(l[19:-79])
 
         except:
 
