@@ -380,7 +380,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
             grey = (.2, .2, .2)
             purple = (.6, 0, .6)
             turquoise = (0, .8, .8)
-            light_grey = (.8 , .8, .8)
+            light_grey = (.4, .4, .4)
             moss = (.2, .4, .2)
             orange = (1, .5, .1)
             dark_blue = (0, .1, .5)
@@ -391,7 +391,7 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
                 cMap = c.ListedColormap([red, black, cyan, white, magenta, yellow, black])
 
             if base == 5:
-                cMap = c.ListedColormap([black, magenta, cyan, yellow, grey])
+                cMap = c.ListedColormap([black, magenta, grey, red, orange, white])
 
             if base == 4:
                 cMap = c.ListedColormap([red, black, magenta, green, white])
@@ -1208,7 +1208,7 @@ l_size = 401
 x_space = 150
 y_space = 400
 
-offset_size = 72
+offset_size = 60
 density = 12
 x_o = 120
 y_o = 720
@@ -1277,11 +1277,11 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('plates/this building will burn, theft is a mercy/lvl-2')
+    lvl = os.listdir('plates/this building will burn, theft is a mercy/lvl-3')
 
     print(len(lvl))
 
-    for l in lvl[14:]:
+    for l in lvl:
 
         print(" ")
         print(lvl.index(l))
@@ -1291,7 +1291,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[19:-79])
+            l = int(l[19:-80])
 
         except:
 
