@@ -18,7 +18,7 @@ rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 5
+base = 3
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -271,8 +271,15 @@ def map(canvas, message, length, width, rule, base, start, direction, path, rc =
     # for x in range(len(rules)):
     #     print(rc_net[x])
 
-    canvas_0 = np.copy(canvas)
-    rule_call = np.zeros((length, width), dtype='int8')
+    if length == width:
+
+        canvas_0 = np.copy(canvas)
+        rule_call = np.zeros((length, width), dtype='int8')
+
+    else:
+
+        canvas_0 = np.zeros((length, width), dtype='int8')
+        rule_call = np.zeros((length, width), dtype='int8')
 
 
     canvas_0[0, start_0] = 1
@@ -1197,11 +1204,11 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'plates/this building will burn, theft is a mercy'
+path = 'scarfs'
 
 
 journaling = 0
-leveling = 1
+leveling = 0
 
 size = length
 l_size = 401
@@ -1213,7 +1220,9 @@ density = 12
 x_o = 120
 y_o = 720
 
-message = ' - -this-building ---will-burn - -  -----theft ------is -------a -----mercy'
+# message = ' - -this-building ---will-burn - -  -----theft ------is -------a -----mercy'
+
+message = ''
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 
@@ -1305,6 +1314,7 @@ elif leveling != 0:
 else:
 
     for x in range(1):
+
         print(" ")
         print(x)
         map(canvas, message, length, width, rule, base, start, direction, path, 0, 1)
