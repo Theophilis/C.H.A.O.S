@@ -235,16 +235,17 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
 
 
-j_name = 'journal_syn-test-3'
+j_name = 'journal_reflect-2'
 
-simple = 0
-full = 1
+simple = 1
+full = 0
+reflect = 1
 
 scale = 1
 shrink = 1
 
 split = 0
-rectangle = 2
+rectangle = .5
 
 width = 0
 
@@ -441,7 +442,7 @@ def synthesize(j_name, width, split, rectangle, s_f):
                 cMap = c.ListedColormap([black, magenta, cyan, yellow])
 
             if base == 3:
-                cMap = c.ListedColormap([black, magenta, cyan])
+                cMap = c.ListedColormap([white, magenta, cyan])
 
             if base == 2:
                 cMap = c.ListedColormap([black, cyan])
@@ -492,7 +493,19 @@ def synthesize(j_name, width, split, rectangle, s_f):
                         for k in j:
                             synthesis.append(k)
 
+            print("len syn")
+            print(len(synthesis))
+
+            if reflect == 1:
+
+                for s in synthesis[:]:
+
+                    synthesis.append(s)
+
+            print(len(synthesis))
+
             synthesis = np.asarray(synthesis)
+
 
             j_name += '-simple'
 
@@ -556,10 +569,6 @@ def synthesize(j_name, width, split, rectangle, s_f):
 
             synthesis.append(row)
 
-            # print('row')
-            # print(row)
-            print(len(row))
-
             for f in frame:
 
                 count = 0
@@ -575,7 +584,30 @@ def synthesize(j_name, width, split, rectangle, s_f):
             # print("synthesis")
             # print(synthesis)
 
-            synthesis = np.asarray(synthesis)
+            print("len syn")
+            print(len(synthesis))
+
+            if reflect == 1:
+
+                for s in reversed(synthesis[:]):
+
+                    # print("")
+                    # print("s")
+                    # print(s)
+                    # print(type(s))
+
+                    # s = list(reversed(s[:]))
+
+                    # print(s)
+                    # print(type(s))
+
+                    synthesis.append(s)
+
+            print(len(synthesis))
+
+
+
+
 
             j_name += '-full'
 
@@ -619,7 +651,7 @@ def synthesize(j_name, width, split, rectangle, s_f):
             cMap = c.ListedColormap([black, magenta, cyan, yellow])
 
         if base == 3:
-            cMap = c.ListedColormap([black, magenta, cyan])
+            cMap = c.ListedColormap([light_grey, cyan, blue])
 
         if base == 2:
             cMap = c.ListedColormap([black, cyan])

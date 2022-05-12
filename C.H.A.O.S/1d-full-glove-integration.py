@@ -10,6 +10,7 @@ import sys
 import pygame.midi
 import time
 import rtmidi2 as rtmidi
+from collections import deque
 
 sys.setrecursionlimit(999999999)
 
@@ -71,13 +72,14 @@ def decimal(n, b):
 
 
 def rule_gen(rule, base=2):
+
     rules = dict()
 
     if base == 2:
         int_rule = bin(rule).replace('0b', '')
 
     else:
-        int_rule = base_x(rule, base)
+        int_rule = base_x(int(rule), (base))
 
     x = int_rule[::-1]
 
@@ -212,8 +214,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-# WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 1600, 800
+WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
+# WIDTH, HEIGHT = 1600, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -222,60 +224,17 @@ letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7,
 
 pygame.display.set_caption("C.H.A.O.S")
 
-value = 2
 
-# full color
-BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
-GREY_D_PIXEL_2 = pygame.image.load(os.path.join('assets', 'dark-grey-' + str(value) + '.png')).convert()
-GREY_L_PIXEL_2 = pygame.image.load(os.path.join('assets', 'dark-grey-' + str(value) + '.png')).convert()
-GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-' + str(value) + '.png')).convert()
-BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-' + str(value) + '.png')).convert()
-CYAN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-' + str(value) + '.png')).convert()
-MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-' + str(value) + '.png')).convert()
-RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-' + str(value) + '.png')).convert()
-ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
-YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-' + str(value) + '.png')).convert()
-
-#dark
-# BLACK_PIXEL_2 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
-# WHITE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'grey-' + str(value) + '.png')).convert()
-# M_GREEN_PIXEL_2 = pygame.image.load(os.path.join('assets', 'green-d-' + str(value) + '.png')).convert()
-# BLUEB_PIXEL_2 = pygame.image.load(os.path.join('assets', 'blue-d-' + str(value) + '.png')).convert()
-# BLUE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
-# MAGENTA_PIXEL_2 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
-# RED_PIXEL_2 = pygame.image.load(os.path.join('assets', 'red-d-' + str(value) + '.png')).convert()
-# ORANGE_PIXEL_2 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
-# YELLOW_PIXEL_2 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
-
-value = 3
-BLACK_PIXEL_3 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
-WHITE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'white-' + str(value) + '.png')).convert()
-M_GREEN_PIXEL_3 = pygame.image.load(os.path.join('assets', 'moss-' + str(value) + '.png')).convert()
-BLUE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
-PURPLE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
-RED_PIXEL_3 = pygame.image.load(os.path.join('assets', 'maroon-' + str(value) + '.png')).convert()
-ORANGE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
-YELLOW_PIXEL_3 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
-
-value = 5
-BLACK_PIXEL_5 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
-WHITE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'white-' + str(value) + '.png')).convert()
-M_GREEN_PIXEL_5 = pygame.image.load(os.path.join('assets', 'moss-' + str(value) + '.png')).convert()
-BLUE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
-PURPLE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
-RED_PIXEL_5 = pygame.image.load(os.path.join('assets', 'maroon-' + str(value) + '.png')).convert()
-ORANGE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
-YELLOW_PIXEL_5 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
-
-value = 10
-BLACK_PIXEL_10 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
-WHITE_PIXEL_10 = pygame.image.load(os.path.join('assets', 'dark-grey-' + str(value) + '.png')).convert()
-GREEN_PIXEL_10 = pygame.image.load(os.path.join('assets', 'green-' + str(value) + '.png')).convert()
-CYAN_PIXEL_10 = pygame.image.load(os.path.join('assets', 'cyan-' + str(value) + '.png')).convert()
-PURPLE_PIXEL_10 = pygame.image.load(os.path.join('assets', 'magenta-' + str(value) + '.png')).convert()
-RED_PIXEL_10 = pygame.image.load(os.path.join('assets', 'red-' + str(value) + '.png')).convert()
-BLUE_PIXEL_10 = pygame.image.load(os.path.join('assets', 'blue-' + str(value) + '.png')).convert()
-YELLOW_PIXEL_10 = pygame.image.load(os.path.join('assets', 'yellow-' + str(value) + '.png')).convert()
+color_x_size = 2
+BLACK_PIXEL = pygame.image.load(os.path.join('assets', 'black-' + str(color_x_size) + '.png')).convert()
+GREY_D_PIXEL = pygame.image.load(os.path.join('assets', 'dark-grey-' + str(color_x_size) + '.png')).convert()
+GREY_L_PIXEL = pygame.image.load(os.path.join('assets', 'light-grey-' + str(color_x_size) + '.png')).convert()
+CYAN_PIXEL = pygame.image.load(os.path.join('assets', 'cyan-' + str(color_x_size) + '.png')).convert()
+MAGENTA_PIXEL = pygame.image.load(os.path.join('assets', 'magenta-' + str(color_x_size) + '.png')).convert()
+YELLOW_PIXEL = pygame.image.load(os.path.join('assets', 'yellow-' + str(color_x_size) + '.png')).convert()
+BLUE_PIXEL = pygame.image.load(os.path.join('assets', 'blue-' + str(color_x_size) + '.png')).convert()
+RED_PIXEL = pygame.image.load(os.path.join('assets', 'red-' + str(color_x_size) + '.png')).convert()
+GREEN_PIXEL = pygame.image.load(os.path.join('assets', 'green-' + str(color_x_size) + '.png')).convert()
 
 color_x_size = 20
 BLACK_PIXEL_X = pygame.image.load(os.path.join('assets', 'black-' + str(color_x_size) + '.png')).convert()
@@ -293,6 +252,9 @@ click = False
 
 
 class Pixel:
+
+    __slots__ = ['x', 'y', 'img']
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -311,43 +273,15 @@ class Pixel:
 class Cell(Pixel):
 
     COLOR_MAP = {
-        "black_2": (BLACK_PIXEL_2),
-        'light-grey_2': (GREY_L_PIXEL_2),
-        'dark-grey_2': (GREY_D_PIXEL_2),
-        'red_2': (RED_PIXEL_2),
-        'orange_2': (ORANGE_PIXEL_2),
-        'yellow_2': (YELLOW_PIXEL_2),
-        'green_2': (GREEN_PIXEL_2),
-        'blue_2': (BLUE_PIXEL_2),
-        'magenta_2': (MAGENTA_PIXEL_2),
-        'cyan_2': (CYAN_PIXEL_2),
-
-        "black_3": (BLACK_PIXEL_3),
-        'white_3': (WHITE_PIXEL_3),
-        'red_3': (RED_PIXEL_3),
-        'orange_3': (ORANGE_PIXEL_3),
-        'yellow_3': (YELLOW_PIXEL_3),
-        'green_3': (M_GREEN_PIXEL_3),
-        'blue_3': (BLUE_PIXEL_3),
-        'purple_3': (PURPLE_PIXEL_3),
-
-        "black_5": (BLACK_PIXEL_5),
-        'white_5': (WHITE_PIXEL_5),
-        'red_5': (RED_PIXEL_5),
-        'orange_5': (ORANGE_PIXEL_5),
-        'yellow_5': (YELLOW_PIXEL_5),
-        'green_5': (M_GREEN_PIXEL_5),
-        'blue_5': (BLUE_PIXEL_5),
-        'purple_5': (PURPLE_PIXEL_5),
-
-        "black_10": (BLACK_PIXEL_10),
-        'white_10': (WHITE_PIXEL_10),
-        'red_10': (RED_PIXEL_10),
-        'green_10': (GREEN_PIXEL_10),
-        'yellow_10': (YELLOW_PIXEL_10),
-        'cyan_10': (CYAN_PIXEL_10),
-        'blue_10': (BLUE_PIXEL_10),
-        'purple_10': (PURPLE_PIXEL_10),
+        "black": (BLACK_PIXEL),
+        'light-grey': (GREY_L_PIXEL),
+        'dark-grey': (GREY_D_PIXEL),
+        'red': (RED_PIXEL),
+        'yellow': (YELLOW_PIXEL),
+        'green': (GREEN_PIXEL),
+        'blue': (BLUE_PIXEL),
+        'magenta': (MAGENTA_PIXEL),
+        'cyan': (CYAN_PIXEL),
 
         "black_x": (BLACK_PIXEL_X),
         'light-grey_x': (GREY_L_PIXEL_X),
@@ -360,6 +294,7 @@ class Cell(Pixel):
         'green_x': (GREEN_PIXEL_X),
 
     }
+    __slots__ = ['img', 'mask', 'y']
 
     def __init__(self, x, y, color):
         super().__init__(x, y)
@@ -374,8 +309,10 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
     print("base")
     print(base)
+    print("device_id")
+    print(device_id)
 
-    def redraw_window(input_box, v_input, zero_count, step_show, triggers):
+    def redraw_window(input_box, v_input, zero_count, step_show, triggers, dt):
 
         #preparation
         zero_count = int(zero_count / cell_vel)
@@ -412,14 +349,22 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                 cell.draw(WIN)
 
-        print(ts_percentage)
-        print(len(ts_percentage))
+        # print('tsp-redraw')
+        # print(ts_percentage)
+        # print(len(ts_percentage))
 
-        bar_colors = [(32, 32, 32), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192), (255, 0, 0), (0, 255, 0), (0, 0, 255)]
+        if base < 5:
 
-        print("triggers")
-        print(triggers)
-        print(len(triggers))
+            bar_colors = [(255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192), (255, 0, 0),
+                          (0, 255, 0), (0, 0, 255)]
+
+        else:
+
+            bar_colors = [(32, 32, 32), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192), (255, 0, 0), (0, 255, 0), (0, 0, 255)]
+
+        # print("triggers-redraw")
+        # print(triggers)
+        # print(len(triggers))
 
         for x in range(len(ts_percentage) - 1):
 
@@ -484,486 +429,676 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
         if list_count != 0:
             draw_text(str(list_count), small_font, (255, 255, 255), WIN, 11, 33)
 
+        draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 80, 150)
+
         pygame.display.update()
 
     def mitosis(i, r, color, row, pixel_res):
 
         if r > 0:
 
-            if base == 2:
+            if base < 5:
 
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_2')
-                        cells[r].append(cell)
-                if pixel_res == 3:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_3')
-                        cells[r].append(cell)
-                if pixel_res == 5:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_5')
-                        cells[r].append(cell)
-                if pixel_res == 10:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_10')
-                        cells[r].append(cell)
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'black')
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'magenta')
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'cyan')
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'yellow')
 
-            elif base == 3:
+            else:
 
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_2')
-                        cells[r].append(cell)
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'black')
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'dark-grey')
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'magenta')
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'cyan')
+                if row[0, i] == 4:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'yellow')
+                if row[0, i] == 5:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'light-grey')
+                if row[0, i] == 6:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'red')
+                if row[0, i] == 7:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'green')
+                if row[0, i] == 8:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'blue')
 
-                if pixel_res == 3:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_3')
-                        cells[r].append(cell)
-
-                if pixel_res == 5:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_5')
-                        cells[r].append(cell)
-
-                if pixel_res == 10:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_10')
-                        cells[r].append(cell)
-
-            elif base == 4:
-
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_2')
-                        cells[r].append(cell)
-
-                if pixel_res == 3:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_3')
-                        cells[r].append(cell)
-
-                if pixel_res == 5:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_5')
-                        cells[r].append(cell)
-
-                if pixel_res == 10:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_10')
-                        cells[r].append(cell)
-
-            elif base == 5:
-
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'white_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 4:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'purple_2')
-                        cells[r].append(cell)
-
-            elif base == 6:
-
-                if pixel_res == 2:
-
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'dark-grey_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'magenta_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'cyan_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 4:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 5:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'light-grey_2')
-                        cells[r].append(cell)
-
-            elif base == 9:
-
-                if pixel_res == 2:
-
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'dark-grey_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'magenta_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'cyan_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 4:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'yellow_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 5:
-                            cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                        'light-grey_2')
-                            cells[r].append(cell)
-                    if row[0, i] == 6:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'red_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 7:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'green_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 8:
-                        cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
-                                    'blue_2')
-                        cells[r].append(cell)
-
-
+            # if base == 2:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_2')
+            #             cells[r].append(cell)
+            #     if pixel_res == 3:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_3')
+            #             cells[r].append(cell)
+            #     if pixel_res == 5:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_5')
+            #             cells[r].append(cell)
+            #     if pixel_res == 10:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_10')
+            #             cells[r].append(cell)
+            #
+            # elif base == 3:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_2')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 3:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_3')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 5:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_5')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 10:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_10')
+            #             cells[r].append(cell)
+            #
+            # elif base == 4:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'yellow_2')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 3:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'yellow_3')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 5:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'yellow_5')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 10:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'yellow_10')
+            #             cells[r].append(cell)
+            #
+            # elif base == 5:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'dark-grey_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 4:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'yellow_2')
+            #             cells[r].append(cell)
+            #
+            # elif base == 6:
+            #
+            #     if pixel_res == 2:
+            #
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'dark-grey_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 4:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'yellow_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 5:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'light-grey_2')
+            #             cells[r].append(cell)
+            #
+            # elif base == 9:
+            #
+            #     if pixel_res == 2:
+            #
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'black_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'dark-grey_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'magenta_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'cyan_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 4:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'yellow_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 5:
+            #                 cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                             'light-grey_' + str(pixel_res))
+            #                 cells[r].append(cell)
+            #         if row[0, i] == 6:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'red_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 7:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'green_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 8:
+            #             cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+            #                         'blue_' + str(pixel_res))
+            #             cells[r].append(cell)
 
         else:
 
-            if base == 2:
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, 0, 'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, 0, 'blue_2')
-                        cells[r].append(cell)
-                if pixel_res == 3:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, 0, 'black_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, 0, 'blue_3')
-                        cells[r].append(cell)
-                if pixel_res == 5:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, 0, 'black_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, 0, 'blue_5')
-                        cells[r].append(cell)
-                if pixel_res == 10:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, 0, 'black_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, 0, 'blue_10')
-                        cells[r].append(cell)
+            if base < 5:
 
-            elif base == 3:
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black')
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta')
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan')
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow')
 
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_2')
-                        cells[r].append(cell)
+            else:
 
-                if pixel_res == 3:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_3')
-                        cells[r].append(cell)
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black')
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'dark-grey')
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta')
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan')
+                if row[0, i] == 4:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow')
+                if row[0, i] == 5:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'light-grey')
+                if row[0, i] == 6:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'red')
+                if row[0, i] == 7:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green')
+                if row[0, i] == 8:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'blue')
 
-                if pixel_res == 5:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_5')
-                        cells[r].append(cell)
 
-                if pixel_res == 10:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_10')
-                        cells[r].append(cell)
 
-            elif base == 4:
+            # if base == 2:
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, 0, 'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, 0, 'cyan_2')
+            #             cells[r].append(cell)
+            #     if pixel_res == 3:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, 0, 'black_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, 0, 'blue_3')
+            #             cells[r].append(cell)
+            #     if pixel_res == 5:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, 0, 'black_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, 0, 'blue_5')
+            #             cells[r].append(cell)
+            #     if pixel_res == 10:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, 0, 'black_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, 0, 'blue_10')
+            #             cells[r].append(cell)
+            #
+            # elif base == 3:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_2')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 3:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_3')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 5:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_5')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 10:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'black_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'purple_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + 2, 'green_10')
+            #             cells[r].append(cell)
+            #
+            # elif base == 4:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 3:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_3')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_3')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 5:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_5')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_5')
+            #             cells[r].append(cell)
+            #
+            #     if pixel_res == 10:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_10')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_10')
+            #             cells[r].append(cell)
+            #
+            # elif base == 5:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'white_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 4:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_2')
+            #             cells[r].append(cell)
+            #
+            # elif base == 6:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'dark-grey_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 4:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
+            #             cells[r].append(cell)
+            #         if row[0, i] == 5:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'light-grey_2')
+            #             cells[r].append(cell)
+            #
+            # elif base == 9:
+            #
+            #     if pixel_res == 2:
+            #         if row[0, i] == 0:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 1:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'dark-grey_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 2:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 3:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 4:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 5:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'light-grey_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 6:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'red_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 7:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_' + str(pixel_res))
+            #             cells[r].append(cell)
+            #         if row[0, i] == 8:
+            #             cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'blue_' + str(pixel_res))
+            #             cells[r].append(cell)
 
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
-                        cells[r].append(cell)
+        return cell
 
-                if pixel_res == 3:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_3')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_3')
-                        cells[r].append(cell)
+    def mitosis_cell_list(i, r, color, row, pixel_res):
 
-                if pixel_res == 5:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_5')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_5')
-                        cells[r].append(cell)
+        if r > 0:
 
-                if pixel_res == 10:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_10')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_10')
-                        cells[r].append(cell)
+            if base < 5:
 
-            elif base == 5:
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'black')
+                    cells[r].append(cell)
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'magenta')
+                    cells[r].append(cell)
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'cyan')
+                    cells[r].append(cell)
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'yellow')
+                    cells[r].append(cell)
 
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'white_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 4:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'purple_2')
-                        cells[r].append(cell)
+            else:
 
-            elif base == 6:
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'black')
+                    cells[r].append(cell)
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'dark-grey')
+                    cells[r].append(cell)
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'magenta')
+                    cells[r].append(cell)
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'cyan')
+                    cells[r].append(cell)
+                if row[0, i] == 4:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'yellow')
+                    cells[r].append(cell)
+                if row[0, i] == 5:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'light-grey')
+                    cells[r].append(cell)
+                if row[0, i] == 6:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'red')
+                    cells[r].append(cell)
+                if row[0, i] == 7:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'green')
+                    cells[r].append(cell)
+                if row[0, i] == 8:
+                    cell = Cell(1 * pixel_res * i, cells[r - 1][i].y - pixel_res,
+                                'blue')
+                    cells[r].append(cell)
 
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'dark-grey_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 4:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 5:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'light-grey_2')
-                        cells[r].append(cell)
+        else:
 
-            elif base == 9:
+            if base < 5:
 
-                if pixel_res == 2:
-                    if row[0, i] == 0:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 1:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'dark-grey_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 2:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 3:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 4:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 5:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'light-grey_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 6:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'red_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 7:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green_2')
-                        cells[r].append(cell)
-                    if row[0, i] == 8:
-                        cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'blue_2')
-                        cells[r].append(cell)
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black')
+                    cells[r].append(cell)
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta')
+                    cells[r].append(cell)
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan')
+                    cells[r].append(cell)
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow')
+                    cells[r].append(cell)
+
+            else:
+
+                if row[0, i] == 0:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'black')
+                    cells[r].append(cell)
+                if row[0, i] == 1:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'dark-grey')
+                    cells[r].append(cell)
+                if row[0, i] == 2:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'magenta')
+                    cells[r].append(cell)
+                if row[0, i] == 3:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'cyan')
+                    cells[r].append(cell)
+                if row[0, i] == 4:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'yellow')
+                    cells[r].append(cell)
+                if row[0, i] == 5:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'light-grey')
+                    cells[r].append(cell)
+                if row[0, i] == 6:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'red')
+                    cells[r].append(cell)
+                if row[0, i] == 7:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'green')
+                    cells[r].append(cell)
+                if row[0, i] == 8:
+                    cell = Cell(1 * pixel_res * i, - pixel_res + cell_vel, 'blue')
+                    cells[r].append(cell)
 
     def input(letter, base, page, input_box, v_input):
 
@@ -1339,11 +1474,12 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     #active variables
     run = 1
     FPS = 60
-    rule = 1
+    rule = 21621
     step = 0
     step_show = 0
     clock = pygame.time.Clock()
     origin_rule = 0
+    bv = base ** view
 
     #window
     CELL_WIDTH = HEIGHT
@@ -1357,7 +1493,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     characters_g = 0
     words_g = 2
     rules_g = 0
-    digits = 0
+    digits = 1
 
     #glove value scales
     tplus_scale = 3
@@ -1383,6 +1519,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     zero_out = cell_vel * 2000
     zero_count = cell_vel * 2000
     origin_threshold = 50
+    over_flow = 0
 
     rule_pause = 128
     gvp_threshold = 128
@@ -1414,6 +1551,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     tsp_portion = []
     placed = []
     glove_value = 0
+    rule_window_scale = 2
 
     #chaos console
     input_box = 0
@@ -1424,10 +1562,15 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     max_rule = base ** base ** view
 
     #cell design
-    cells = []
+
     cell_row_width = int(CELL_WIDTH / pixel_res)
     cell_rows = int(HEIGHT / pixel_res) + 1
     d_rule, i_rule = rule_gen(rule, base)
+    cells = deque(maxlen=cell_rows)
+
+    # print('crw')
+    # print(cell_row_width)
+    # print(cell_rows)
 
     #ui
     ui_on = 1
@@ -1453,33 +1596,34 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
         event_post = pygame.fastevent.post
 
         #rtmidi init
-        midiout = rtmidi.MidiOut()
-        available_ports = midiout.get_port_name(2)
-        print(" ")
-        print("midiout")
-        print(midiout)
-        print("available ports")
-        print(available_ports)
+        try:
+            midiout = rtmidi.MidiOut()
+            available_ports = midiout.get_port_name(device_id - 1)
+            print(" ")
+            print("midiout")
+            print(midiout)
+            print("available ports")
+            print(available_ports)
 
-        if available_ports:
-            midiout.open_port(2)
-        else:
-            midiout.open_virtual_port('My virtual output')
+            midiout.open_port(device_id - 1)
+            pygame.midi.init()
 
-        pygame.midi.init()
+            print(" ")
+            print("device info")
+            _print_device_info()
+            p_m_i = pygame.midi.Input(device_id)
 
-        print(" ")
-        print("device info")
-        _print_device_info()
+        except:
 
-        if device_id is None:
-            input_id = pygame.midi.get_default_input_id()
-        else:
-            input_id = device_id
+            midi_inputs = 0
+        # if device_id is None:
+        #     input_id = pygame.midi.get_default_input_id()
+        # else:
+        #     input_id = device_id
+        # print(' ')
+        # print("using input_id :%s:" % input_id)
 
-        print(' ')
-        print("using input_id :%s:" % input_id)
-        p_m_i = pygame.midi.Input(input_id)
+
 
         ev_1 = 0
         ev_2 = 0
@@ -1498,7 +1642,6 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
         magnify = 4
         colors = 1
         step_size = int(base ** view / (base - 1) / magnify)
-        bv = base ** view
 
         # print("")
         # print("step_size")
@@ -1558,6 +1701,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     # print(" ")
     # print("color")
     # print(color)
+
     while run == 1:
 
         # print("")
@@ -1565,8 +1709,8 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
 
         WIN.fill((0, 0, 0))
-        redraw_window(input_box, v_input, zero_count, step_show, triggers)
-        clock.tick(FPS)
+        dt = clock.tick(FPS)
+        redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
 
         # print("")
         # print("cell_rows")
@@ -1605,41 +1749,61 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                     # print(1 * 10 * clunk + x_offset)
                     # print(1 * 10 + y_offset)
 
-                    if i == 0:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'black_x')
+                    if base < 5:
 
-                    if i == 1:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'dark-grey_x')
+                        if i == 0:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'black_x')
 
-                    if i == 2:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'magenta_x')
+                        if i == 1:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'magenta_x')
 
-                    if i == 3:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'cyan_x')
+                        if i == 2:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'cyan_x')
 
-                    if i == 4:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'yellow_x')
+                        if i == 3:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'yellow_x')
 
-                    if i == 5:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'light-grey_x')
+                    else:
 
-                    if i == 6:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'red_x')
+                        if i == 0:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'black_x')
 
-                    if i == 7:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'green_x')
+                        if i == 1:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'dark-grey_x')
 
-                    if i == 8:
-                        cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
-                                    'blue_x')
+                        if i == 2:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'magenta_x')
+
+                        if i == 3:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'cyan_x')
+
+                        if i == 4:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'yellow_x')
+
+                        if i == 5:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'light-grey_x')
+
+                        if i == 6:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'red_x')
+
+                        if i == 7:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'green_x')
+
+                        if i == 8:
+                            cell = Cell(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset,
+                                        'blue_x')
 
                     if gv_track == glove_value:
 
@@ -1767,12 +1931,16 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
             if len(cells[r]) == 0:
 
-                if step == 0:
+                # if step == 0:
+                #
+                #     print('crw')
+                #     print(cell_row_width)
+                #
+                #     for i in range(cell_row_width):
+                #
+                #         mitosis_cell_list(i, r, color, row, pixel_res)
 
-                    for i in range(cell_row_width):
-                        mitosis(i, r, color, row, pixel_res)
 
-                        continue
 
                 color, row = Color_cells(color, d_rule, cell_row_width, base, row)
 
@@ -1904,7 +2072,14 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                 step += 1
 
                 for i in range(cell_row_width):
-                    mitosis(i, r, color, row, pixel_res)
+                    mitosis_cell_list(i, r, color, row, pixel_res)
+
+                # cells.appendleft(tuple(mitosis(i, r, color, row, pixel_res) for i in range(cell_row_width)))
+                # print(cells[0])
+                # print("")
+                # print("len(cells)")
+                # print(len(cells))
+                # print(len(cells[0]))
 
         rule = str()
         for ir in i_rule:
@@ -2137,6 +2312,123 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                                 except:
 
+                                    if input_list[0] == 'base':
+
+                                        print("##########based##########")
+
+                                        row = np.zeros((1, cell_row_width), dtype='int8')
+                                        base = int(input_list[1])
+                                        bv = base ** view
+
+                                        step_size = int(base ** view / (base - 1) / magnify)
+                                        o_r = rule_gen(0, base)[1]
+                                        for x in range(int((base ** view) / step_size) + 1):
+
+                                            if x > 0:
+
+                                                o_r[-((step_size * x + 1) % bv)] = x % colors + 1
+
+                                            else:
+
+                                                o_r[-((step_size * x + 1) % bv)] = 1
+                                        o_r[-1] = 1
+                                        origin_rule = decimal(o_r, base)
+
+                                        print("origin rule")
+                                        print(o_r)
+                                        print(origin_rule)
+
+                                        d_rule, i_rule = rule_gen(origin_rule, base)
+
+                                        if words_g > 0:
+
+                                            triggers = [trigger_1, trigger_2, trigger_3, trigger_4, trigger_5, trigger_6,
+                                                        trigger_7, trigger_8][:base - 1]
+
+                                            triggers.append(trigger_0)
+
+                                            t_sum = 1
+
+                                            for t in triggers:
+
+                                                # print("t")
+                                                # print(t)
+
+                                                if t > triggers[-1]:
+                                                    triggers[-1] = t
+
+                                                t_sum += t
+
+                                            rw_length = int(
+                                                round(triggers[-1] / zero_out, 3) * base ** view / rule_window_scale)
+
+                                            ts_percentage = [round((t / t_sum * 100), 0) for t in triggers]
+
+                                            tsp_portion = [int(round((t / t_sum), 3) * rw_length) for t in triggers]
+
+                                            for x in range(len(triggers)):
+
+                                                if triggers[x] != 0 and tsp_portion[x] == 0:
+                                                    tsp_portion[x] = 1
+
+                                            t_dict = dict()
+
+                                            for x in range(len(triggers)):
+
+                                                # print("x")
+                                                # print(x)
+
+                                                if x == len(triggers) - 1:
+
+                                                    t_dict[0] = tsp_portion[x]
+
+                                                else:
+
+                                                    t_dict[x + 1] = tsp_portion[x]
+
+                                            t_dict = sorted(list(t_dict.items()), key=lambda x: x[1], reverse=True)
+
+                                            # print("t_dict")
+                                            # print(t_dict)
+                                            #
+                                            # print("i_rule")
+                                            # print(i_rule
+
+                                            place = (glove_value % (base ** view)) - 1
+                                            glove_value = (glove_value % (base ** view)) - 1
+
+                                            for t in t_dict:
+
+                                                if t[1] != 0:
+
+                                                    for x in range(t[1]):
+
+                                                        # print("ir gv len(t)")
+                                                        # print(len(i_rule))
+                                                        # print(place)
+                                                        # print(len(t))
+                                                        # print(base ** view)
+
+                                                        if i_rule[place % len(i_rule)] != t[0]:
+
+                                                            # print("place")
+                                                            # print(place % len(i_rule))
+
+                                                            if place % len(i_rule) not in placed:
+                                                                placed.append(place % len(i_rule))
+
+                                                            # print("len(placed)")
+                                                            # print(len(placed))
+
+                                                            i_rule[place % len(i_rule)] = t[0] % base
+                                                            d_rule[list(d_rule.keys())[place % len(i_rule)]] = t[0] % base
+
+                                                        else:
+
+                                                            continue
+
+                                                        place += 1
+
                                     if input_list[0] == 'name':
                                         j_name = input_list[1]
 
@@ -2216,7 +2508,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                                     if input_list[0] == 'threshold-5':
 
-                                        t5_thresold = int(input_list[1])
+                                        t5_threshold = int(input_list[1])
 
                                     if input_list[0] == 'threshold-6':
 
@@ -2228,7 +2520,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                                     if input_list[0] == 'threshold-8':
 
-                                        t8_thresold = int(input_list[1])
+                                        t8_threshold = int(input_list[1])
 
                                     if input_list[0] == 'threshold-all':
 
@@ -2355,17 +2647,19 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                     ev_7 = ev[2]
 
-                    if ev[2] > t0_threshold:
+                    if words_g != 3:
 
-                        if trigger_0 < 0:
+                        if ev[2] > t0_threshold:
 
-                            trigger_0 = 0
+                            if trigger_0 < 0:
 
-                        else:
+                                trigger_0 = 0
 
-                            trigger_0 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 0
+                                trigger_0 += int(cell_vel * tplus_scale)
+
+                            current_digit = 0
 
                     # if words_g > 0:
                     #
@@ -2382,56 +2676,60 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                     ev_8 = ev[2]
 
-                    if ev[2] > t1_threshold:
+                    if words_g != 3:
 
-                        if trigger_1 < 0:
+                        if ev[2] > t1_threshold:
 
-                            trigger_1 = 0
+                            if trigger_1 < 0:
 
-                        else:
+                                trigger_1 = 0
 
-                            trigger_1 += int(cell_vel * tplus_scale)
+                            else:
 
-                    if ev[2] < t5_threshold:
+                                trigger_1 += int(cell_vel * tplus_scale)
 
-                        if trigger_5 < 0:
+                        if ev[2] < t5_threshold:
 
-                            trigger_5 = 0
+                            if trigger_5 < 0:
 
-                        else:
+                                trigger_5 = 0
 
-                            trigger_5 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 1
+                                trigger_5 += int(cell_vel * tplus_scale)
+
+                            current_digit = 1
 
                 #middle
                 if ev[1] == 9:
 
                     ev_9 = ev[2]
 
-                    if ev[2] > t2_threshold:
+                    if words_g != 3:
 
-                        if trigger_2 < 0:
+                        if ev[2] > t2_threshold:
 
-                            trigger_2 = 0
+                            if trigger_2 < 0:
 
-                        else:
+                                trigger_2 = 0
 
-                            trigger_2 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 2
+                                trigger_2 += int(cell_vel * tplus_scale)
 
-                    if ev[2] < t6_threshold:
+                            current_digit = 2
 
-                        if trigger_6 < 0:
+                        if ev[2] < t6_threshold:
 
-                            trigger_6 = 0
+                            if trigger_6 < 0:
 
-                        else:
+                                trigger_6 = 0
 
-                            trigger_6 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 1
+                                trigger_6 += int(cell_vel * tplus_scale)
+
+                            current_digit = 1
 
                     # if ev[2] > origin_threshold:
                     #
@@ -2448,58 +2746,62 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                     ev_10 = ev[2]
 
-                    if ev[2] > t3_threshold:
+                    if words_g != 3:
 
-                        if trigger_3 < 0:
+                        if ev[2] > t3_threshold:
 
-                            trigger_3 = 0
+                            if trigger_3 < 0:
 
-                        else:
+                                trigger_3 = 0
 
-                            trigger_3 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 3
+                                trigger_3 += int(cell_vel * tplus_scale)
 
-                    if ev[2] < t7_threshold:
+                            current_digit = 3
 
-                        if trigger_7 < 0:
+                        if ev[2] < t7_threshold:
 
-                            trigger_7 = 0
+                            if trigger_7 < 0:
 
-                        else:
+                                trigger_7 = 0
 
-                            trigger_7 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 1
+                                trigger_7 += int(cell_vel * tplus_scale)
+
+                            current_digit = 1
 
                 #pinky
                 if ev[1] == 11:
 
                     ev_11 = ev[2]
 
-                    if ev[2] > t4_threshold:
+                    if words_g != 3:
 
-                        if trigger_4 < 0:
+                        if ev[2] > t4_threshold:
 
-                            trigger_4 = 0
+                            if trigger_4 < 0:
 
-                        else:
+                                trigger_4 = 0
 
-                            trigger_4 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 4
+                                trigger_4 += int(cell_vel * tplus_scale)
 
-                    if ev[2] < t8_threshold:
+                            current_digit = 4
 
-                        if trigger_8 < 0:
+                        if ev[2] < t8_threshold:
 
-                            trigger_8 = 0
+                            if trigger_8 < 0:
 
-                        else:
+                                trigger_8 = 0
 
-                            trigger_8 += int(cell_vel * tplus_scale)
+                            else:
 
-                        current_digit = 1
+                                trigger_8 += int(cell_vel * tplus_scale)
+
+                            current_digit = 1
 
 
 
@@ -2581,15 +2883,16 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                     if words_g == 2:
 
-                        triggers = [trigger_1, trigger_2, trigger_3, trigger_4, trigger_5, trigger_6, trigger_7, trigger_8][:base]
+                        triggers = [trigger_1, trigger_2, trigger_3, trigger_4, trigger_5, trigger_6, trigger_7, trigger_8][:base - 1]
 
                         triggers.append(trigger_0)
 
                         t_sum = 1
 
                         # print(" ")
-                        # print("triggers")
+                        # print("triggers-event")
                         # print(triggers)
+                        # print(len(triggers))
 
                         for t in triggers:
 
@@ -2610,7 +2913,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                         # print('t-1 / zero_out')
                         # print(round(triggers[-1] / zero_out, 3) * base ** view)
 
-                        rw_length = int(round(triggers[-1] / zero_out, 3) * base ** view / 4)
+                        rw_length = int(round(triggers[-1] / zero_out, 3) * base ** view / rule_window_scale)
 
                         # print("t_sum")
                         # print(t_sum)
@@ -2688,8 +2991,13 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                                         # print("len(placed)")
                                         # print(len(placed))
 
-                                        i_rule[place % len(i_rule)] = t[0] % base
-                                        d_rule[list(d_rule.keys())[place % len(i_rule)]] = t[0] % base
+                                        # print("place")
+                                        # print(place)
+                                        # print(len(i_rule))
+                                        # print(bv)
+
+                                        i_rule[place % len(i_rule) - 1] = t[0] % base
+                                        d_rule[list(d_rule.keys())[place % len(i_rule) - 1]] = t[0] % base
 
                                     else:
 
@@ -2707,9 +3015,9 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
                     glove_value = ev_7 + 4 * ev_8 + 16 * ev_9 + 64 * ev_10
 
-                    print("")
-                    print("glove_value")
-                    print(glove_value)
+                    # print("")
+                    # print("glove_value")
+                    # print(glove_value)
 
                     d_rule, i_rule = rule_gen(glove_value, base)
 
@@ -2801,7 +3109,14 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                         trigger_0 = 0
 
                     if trigger_0 == zero_out:
+
+                        print("trigger0 == zero_out origin_rule")
+
                         d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_0 = 0
 
                 if trigger_1 > 0:
 
@@ -2814,7 +3129,14 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                         trigger_1 = 0
 
                     if trigger_1 == zero_out:
+
+                        print("trigger1 == zero_out origin_rule")
+
                         d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_1 = 0
 
                 if trigger_2 > 0:
 
@@ -2827,7 +3149,14 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                         trigger_2 = 0
 
                     if trigger_2 == zero_out:
+
+                        print("trigger2 == zero_out origin_rule")
+
                         d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_2 = 0
 
                 if trigger_3 > 0:
 
@@ -2840,7 +3169,14 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                         trigger_3 = 0
 
                     if trigger_3 == zero_out:
+
+                        print("trigger3 == zero_out origin_rule")
+
                         d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_3 = 0
 
                 if trigger_4 > 0:
 
@@ -2853,7 +3189,14 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                         trigger_4 = 0
 
                     if trigger_4 == zero_out:
+
+                        print("trigger4 == zero_out origin_rule")
+
                         d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_4 = 0
 
                 if trigger_5 > 0:
 
@@ -2866,7 +3209,74 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                         trigger_5 = 0
 
                     if trigger_5 == zero_out:
+
+                        print("trigger5 == zero_out origin_rule")
+
                         d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_5 = 0
+
+                if trigger_6 > 0:
+
+                    trigger_6 -= int(cell_vel * tminus_scale)
+
+                    if trigger_6 > zero_out:
+                        trigger_6 = zero_out
+
+                    if trigger_6 < 0:
+                        trigger_6 = 0
+
+                    if trigger_6 == zero_out:
+
+                        print("trigger6 == zero_out origin_rule")
+
+                        d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_6 = 0
+
+                if trigger_7 > 0:
+
+                    trigger_7 -= int(cell_vel * tminus_scale)
+
+                    if trigger_7 > zero_out:
+                        trigger_7 = zero_out
+
+                    if trigger_7 < 0:
+                        trigger_7 = 0
+
+                    if trigger_7 == zero_out:
+
+                        print("trigger7 == zero_out origin_rule")
+
+                        d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_7 = 0
+
+                if trigger_8 > 0:
+
+                    trigger_8 -= int(cell_vel * tminus_scale)
+
+                    if trigger_8 > zero_out:
+                        trigger_8 = zero_out
+
+                    if trigger_8 < 0:
+                        trigger_8 = 0
+
+                    if trigger_8 == zero_out:
+
+                        print("trigger8 == zero_out origin_rule")
+
+                        d_rule, i_rule = rule_gen(origin_rule, base)
+
+                        if over_flow == 0:
+
+                            trigger_8 = 0
 
             if words_g == 1:
 
@@ -3089,11 +3499,16 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
                     event_post(m_e)
 
 
+        # for r in cells:
+        #
+        #     map(lambda c, cv=cell_vel:c.move(cv), r)
+
         for r in range(cell_rows):
             for cell in cells[r][:]:
                 cell.move(cell_vel)
                 if cell.y + cell.get_height() > HEIGHT:
                     cells[r].remove(cell)
+
 
     if write == 1:
 
@@ -3134,11 +3549,63 @@ def draw_text(text, font, color_dt, surface, x, y):
 
 
 def menu():
+
     click = False
     input_text_c = ''
     input_text_v = ''
+    device_id = None
+
+    pygame.init()
+    pygame.fastevent.init()
+
+    #rtmidi init
+    midiout = rtmidi.MidiOut()
+    available_ports = midiout.get_port_name(2)
+    print(" ")
+    print("midiout")
+    print(midiout)
+    print("available ports")
+    print(available_ports)
+
+    if available_ports:
+        midiout.open_port(2)
+    else:
+        midiout.open_virtual_port('My virtual output')
+
+    pygame.midi.init()
+
+    print(" ")
+    print("device info")
+    _print_device_info()
+
+    mc = pygame.midi.get_count()
+    print("mc")
+    print(mc)
+
+    ports = dict()
+
+    for m in range(pygame.midi.get_count()):
+
+
+        mdi = pygame.midi.get_device_info(m)
+
+        ports[m] = str(mdi[1])
+
+
+
+
+    if device_id is None:
+        input_id = pygame.midi.get_default_input_id()
+    else:
+        input_id = device_id
+
+    print(' ')
+    print("using input_id :%s:" % input_id)
+    p_m_i = pygame.midi.Input(input_id)
+
 
     while True:
+
 
         WIN.fill((0, 0, 0))
         t_line = pygame.Rect(WIDTH / 2 - 633, 200, 1360, 2)
@@ -3148,6 +3615,32 @@ def menu():
         text_surface_c = main_font.render(input_text_c, True, (100, 10, 10))
         text_surface_v = main_font.render(input_text_v, True, (100, 10, 100))
         mx, my = pygame.mouse.get_pos()
+
+        for p in ports:
+
+            # print("")
+            # print(p)
+            # print(ports[p])
+
+            port_button = pygame.Rect(WIDTH / 2 + 400, 600 + p * 40, 362, 32)
+            pygame.draw.rect(WIN, (192, 128, 0), port_button)
+
+            port_button = pygame.Rect(WIDTH / 2 + 400, 600 + p * 40, 360, 30)
+            pygame.draw.rect(WIN, (0, 0, 0), port_button)
+
+            if port_button.collidepoint((mx, my)):
+
+                # print("collide")
+                # print(p)
+
+                if click:
+
+                    print(p)
+
+                    device_id = int(p)
+                    draw_text('> ' + str(ports[p]), small_font, (255, 255, 255), WIN, WIDTH / 2 + 400, 600 + p * 40)
+
+            draw_text('> ' + str(ports[p]), small_font, (192, 128, 0), WIN, WIDTH / 2 + 400, 600 + p * 40)
 
         size_2 = pygame.Rect(WIDTH / 2 - 300, 400, 200, 50)
         size_3 = pygame.Rect(WIDTH / 2 - 300, 500, 200, 50)
@@ -3206,7 +3699,7 @@ def menu():
         pygame.draw.rect(WIN, (100, 10, 10), color_rect)
         pygame.draw.rect(WIN, (0, 0, 0), color_rect_i)
         draw_text('<place mouse-pointer on box to type;', small_font, (100, 10, 10), WIN, WIDTH / 2 + 350, 400)
-        draw_text('choose a single number 2, 3, 4, or 5', small_font, (100, 10, 10), WIN, WIDTH / 2 + 360, 425)
+        draw_text('choose a single number between 2 and 9', small_font, (100, 10, 10), WIN, WIDTH / 2 + 360, 425)
 
         pygame.draw.rect(WIN, (100, 10, 100), vel_rect)
         pygame.draw.rect(WIN, (0, 0, 0), vel_rect_i)
@@ -3361,7 +3854,7 @@ def menu():
                 print("pixel_res")
                 print(pixel_res)
                 draw_text('Enter', main_font, (255, 255, 255), WIN, WIDTH / 2 - 100, 800)
-                Chaos_Window(base, pixel_res, cell_vel)
+                Chaos_Window(base, pixel_res, cell_vel, device_id)
 
         click = False
         for event in pygame.event.get():
@@ -3501,10 +3994,11 @@ def input_main(device_id=None):
 # input_main()
 
 
-# menu()
+menu()
 
 
-Chaos_Window(6, 2, 10, 2)
+# Chaos_Window(5, 2, 10, 2)
+
 
 
 
