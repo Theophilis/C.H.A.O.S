@@ -1619,7 +1619,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
         print(' ')
         print("using input_id :%s:" % input_id)
-        p_m_i = pygame.midi.Input(input_id)
+        p_m_i = pygame.midi.Input(2)
 
         ev_1 = 0
         ev_2 = 0
@@ -3849,10 +3849,10 @@ def input_main(device_id=None):
 # input_main()
 
 
-menu()
+# menu()
 
 
-# Chaos_Window(5, 2, 10, 2)
+Chaos_Window(5, 2, 10, 2)
 
 
 

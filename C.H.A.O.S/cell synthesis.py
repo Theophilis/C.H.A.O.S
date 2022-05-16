@@ -18,7 +18,7 @@ rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 3
+base = 5
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -235,7 +235,7 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
 
 
-j_name = 'journal_reflect-2'
+j_name = 'journal_array-0'
 
 simple = 1
 full = 0
@@ -245,7 +245,7 @@ scale = 1
 shrink = 1
 
 split = 0
-rectangle = .5
+rectangle = 1
 
 width = 0
 
