@@ -53,7 +53,7 @@ def base_x(n, b):
         return base_x(e, b) + q
 
 
-def rule_gen_2(rule, base=2, width=0):
+def rule_gen_2d(rule, base=2, width=0):
     rules = dict()
 
     int_rule = base_x(rule, base)
