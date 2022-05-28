@@ -29,11 +29,10 @@ a = base ** base ** 3
 b = 2 ** 16
 
 
+nr = 8 ** (1/2)
 
-print(a)
-print(b)
+print(nr)
 
-print(int(b/a))
 
 
 

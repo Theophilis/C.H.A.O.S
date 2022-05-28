@@ -21,7 +21,7 @@ width = length * 2 + 1
 # number of cells in a row
 rule = 90
 # number who's x_base transformation gives the rules dictionary its values
-view = 4
+view = 3
 # size of the view window that scans a row for rule application
 base = 3
 # numerical base of the rule set. number of colors each cell can be
@@ -70,7 +70,7 @@ def decimal(n, b):
     return value
 
 
-def rule_gen_1d(rule, base=2):
+def rule_gen(rule, base=2):
 
     rules = dict()
 
@@ -118,7 +118,7 @@ def rule_gen_1d(rule, base=2):
     return rules, int_rule
 
 
-def rule_gen_1d_fold(rule, base, length):
+def rule_gen_2(rule, base, length):
     rules = dict()
 
     if base == 2:
@@ -161,46 +161,6 @@ def rule_gen_1d_fold(rule, base, length):
     # print("")
     # print("rules")
     # print(rules)
-
-    return rules, int_rule
-
-
-def rule_gen_2d(rule, base=2, width=0):
-    rules = dict()
-
-    int_rule = base_x(rule, base)
-
-    x = int_rule[::-1]
-
-    if width == 0:
-        while len(x) < base ** view:
-            x += '0'
-
-    else:
-        while len(x) < width:
-            x += '0'
-
-    bnr = x[::-1]
-
-    int_rule = [int(v) for v in bnr]
-
-    for x in range(len(int_rule)):
-
-        x = len(int_rule) - x - 1
-
-        key = tuple(base_x(x, base)[-view:])
-
-        if len(key) < view:
-
-            diff = view - len(key)
-            key = list(key)
-
-            for y in range(diff):
-                key.insert(0, str(0))
-
-        key = "".join(key)
-
-        rules[tuple(key)] = int_rule[-x - 1]
 
     return rules, int_rule
 
@@ -265,7 +225,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 800, 400
+WIDTH, HEIGHT = 800, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -277,15 +237,12 @@ pygame.display.set_caption("C.H.A.O.S")
 click = False
 
 
-def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1):
+def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
-    print("dimensions")
-    print(dimensions)
     print("base")
     print(base)
     print("device_id")
     print(device_id)
-
     p_m_i = 0
 
     # color_x_size = pixel_res
@@ -363,7 +320,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     #         self.y += vel
 
 
-    def redraw_window(bar_colors, input_box, v_input, zero_count, step_show, triggers, dt):
+    def redraw_window(input_box, v_input, zero_count, step_show, triggers, dt):
 
         #preparation
         zero_count = int(zero_count / cell_vel)
@@ -371,18 +328,19 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
         triggers = [int(t / cell_vel) for t in triggers][0:base - 1]
 
 
+        #colors
+        if base < 5:
+
+            bar_colors = [(0, 0, 0), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192), (255, 0, 0),
+                          (0, 255, 0), (0, 0, 255)]
+
+        else:
+
+            bar_colors = [(0, 0, 0), (32, 32, 32), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192), (255, 0, 0), (0, 255, 0), (0, 0, 255)]
+
+
         # cell drawing
-        if dimensions == 1:
-
-            [pygame.draw.rect(WIN, bar_colors[cells_1d_a[cell]], cells_rect[cell]) for cell in cells_rect]
-
-        if dimensions == 2:
-
-            # print("")
-            # print("redraw")
-            # print(cells_2d_a)
-
-            [pygame.draw.rect(WIN, bar_colors[cells_2d_a[0, cell[1], cell[0]]], cells_rect[cell]) for cell in cells_rect]
+        [pygame.draw.rect(WIN, bar_colors[cells_a[cell]], cells_rect[cell]) for cell in cells_rect]
 
         # #pixel class cells
         # [cell.draw(WIN) for cell in cells_pixel]
@@ -1509,7 +1467,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
     #active variables
     run = 1
-    FPS = 120
+    FPS = 10
     rule = 21621
     start = 0
     step = 0
@@ -1519,18 +1477,10 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     bv = base ** view
 
     if base < 5:
-
         cell_colors = {0:'black_x', 1:'magenta_x', 2:'cyan_x', 3:'yellow_x'}
 
-        bar_colors = [(0, 0, 0), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192), (255, 0, 0),
-                          (0, 255, 0), (0, 0, 255)]
-
     else:
-
         cell_colors = {0:'black_x', 1:'dark_grey_x', 2:'magenta_x', 3:'cyan_x', 4:'yellow_x', 5:'light_grey_x', 6:'red_x', 7:'green_x', 8:'blue_x'}
-
-        bar_colors = [(0, 0, 0), (32, 32, 32), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192),
-                      (255, 0, 0), (0, 255, 0), (0, 0, 255)]
 
     #window
     if analytics == 1:
@@ -1554,7 +1504,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
     #glove value scales
     tplus_scale = 2
-    tminus_scale = 8
+    tminus_scale = 16
 
     #record keeping
     journal = dict()
@@ -1608,7 +1558,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     tsp_portion = []
     placed = []
     glove_value = 0
-    rule_window_scale = 2
+    rule_window_scale = 4
 
     #chaos console
     input_box = 0
@@ -1621,146 +1571,33 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     #cell design
 
     cell_row_width = int(CELL_WIDTH / pixel_res)
-    cell_rows = int(HEIGHT / pixel_res)
-
-    if dimensions == 1:
-        d_rule, i_rule = rule_gen_1d(rule, base)
-
-    if dimensions == 2:
-        d_rule, i_rule = rule_gen_2d(rule, base)
-
-    # print("d_rule, i_rule")
-    # print(d_rule_2)
-    # print(i_rule_2)
+    cell_rows = int(HEIGHT / pixel_res) + 1
+    d_rule, i_rule = rule_gen(rule, base)
 
     print("")
     print('cells: width height')
     print((cell_row_width, cell_rows))
 
-    #cells - 1 dimensional
-    cells_1d_a = np.zeros((cell_rows, cell_row_width), dtype='int8')
+    cells_a = np.zeros((cell_rows, cell_row_width), dtype='int8')
 
     if start == 0:
 
-        if dimensions == 1:
-
-            cells_1d_a[0, int(cell_row_width / 2)] = 1
-
-        else:
-
-            cells_1d_a[int(cell_row_width / 2), int(cell_row_width / 2)] = 1
-
+        cells_a[0, int(cell_row_width / 2)] = 1
 
     else:
 
-        cells_1d_a[0] = rule_gen_1d_fold(start, base, cell_row_width)[1]
+        cells_a[0] = rule_gen_2(start, base, cell_row_width)[1]
 
     # print("")
     # print(cells_a)
 
-    if dimensions == 1:
+    for x in range(cell_rows - 1):
 
-        for x in range(cell_rows - 1):
-
-            cells_a = np.roll(cells_1d_a, 1, 0)
-            cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_1d_a[1])
-
-    # print("")
-    # print(cells_1d_a)
-
-
-    #cells - 2 dimensional
-
-    cells_2d_a = np.zeros((2, cell_rows, cell_row_width), dtype='int8')
-
-    # count = 0
-    # for x in range(2):
-    #
-    #     for y in range(cell_rows):
-    #
-    #         for z in range(cell_row_width):
-    #             cells_2d_a[x, y, z] = count
-    #
-    #             count += 1
+        cells_a = np.roll(cells_a, 1, 0)
+        cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
 
     print("")
-    print(cells_2d_a)
-
-    if start == 0:
-
-        cells_2d_a[0, int(cell_row_width / 2), int(cell_row_width / 2)] = 1
-
-    print("")
-    print(cells_2d_a)
-
-    def mitosis_2d(x, y, d_rule):
-
-        edge = '0'
-
-        try:
-
-            u = str(cells_2d_a[0, y + 1, x])
-
-
-        except:
-
-            u = edge
-
-
-
-        try:
-
-            d = str(cells_2d_a[0, y - 1, x])
-
-        except:
-
-            d = edge
-
-
-        try:
-
-            r = str(cells_2d_a[0, y, x + 1])
-
-        except:
-
-            r = edge
-
-
-
-        try:
-
-            l = str(cells_2d_a[0, y, x - 1])
-
-        except:
-
-            l = edge
-
-
-
-        cells_2d_a[1, x, y] = d_rule[(u, r, d, l)]
-
-
-
-    [[mitosis_2d(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
-
-    # print("")
-    # print("cells_2d_a")
-    # print(cells_2d_a)
-    #
-    # print("")
-    # print("do a barrel roll")
-
-    cells_2d_a = np.roll(cells_2d_a, 1, 0)
-
-    # print(cells_2d_a)
-    #
-    # print("")
-    # print("pop goes the weasel")
-
-    cells_2d_a[1] = np.zeros((cell_rows, cell_row_width), dtype='int8')
-
-    # print(cells_2d_a)
-
+    print(cells_a)
 
 
     #cells_rect init
@@ -1869,7 +1706,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
         # print(base ** view)
         # print(base - 1)
 
-        o_r = rule_gen_1d(0, base)[1]
+        o_r = rule_gen(0, base)[1]
 
         # print(o_r)
 
@@ -1941,175 +1778,141 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
         # print("")
         # print("running")
-        #
-        # print("")
-        # print("pre")
-        # print(cells_2d_a)
 
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
-        redraw_window(bar_colors, input_box, v_input, zero_count, step_show, triggers, dt)
-
-
+        redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
 
         #mitosis
-        if dimensions == 1:
+        for x in range(cell_vel):
 
-            for x in range(cell_vel):
+            cells_a = np.roll(cells_a, 1, 0)
+            cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
+            line = tuple(cells_a[0])
 
-                cells_a = np.roll(cells_1d_a, 1, 0)
-                cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_1d_a[1])
-                line = tuple(cells_a[0])
+            # #pixel class cells
+            # [cells_pixel.append(Cell(x * pixel_res, -pixel_res, cell_colors[line[x]])) for x in range(cell_row_width)]
 
-                # #pixel class cells
-                # [cells_pixel.append(Cell(x * pixel_res, -pixel_res, cell_colors[line[x]])) for x in range(cell_row_width)]
+            if line in page:
 
-                if line in page:
+                if r_i == 0 and list_count == 0:
 
-                    if r_i == 0 and list_count == 0:
+                    rand_count += 1
 
-                        rand_count += 1
+                    # print("duplicate")
 
-                        # print("duplicate")
-
-                        rand = random.randrange(0, base ** view - 1)
-
-                    else:
-                        iterate += 1
-
-                    # print(" ")
-                    # print("rand")
-                    # print(rand)
-
-                    # print(rand)
-                    # print(i_rule)
-                    # print(d_rule)
-
-                    # print(" ")
-                    # print("rule")
-                    # print(rule)
-
-                    if rule not in journal:
-                        journal[rule] = []
-                        journal[rule].append(page)
-
-                    else:
-                        journal[rule].append(page)
-
-                    page = []
-
-                    if randomizer == 1:
-
-                        if list_count == 0:
-
-                            # print("list_count == 0:")
-                            # print("randomizer")
-
-                            if base == 2:
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 3:
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 4:
-
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 3
-                                    d_rule[list(d_rule.keys())[rand]] = 3
-                                elif i_rule[rand] == 3:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 5:
-
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 3
-                                    d_rule[list(d_rule.keys())[rand]] = 3
-                                elif i_rule[rand] == 3:
-                                    i_rule[rand] = 4
-                                    d_rule[list(d_rule.keys())[rand]] = 4
-                                elif i_rule[rand] == 4:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 6:
-
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 3
-                                    d_rule[list(d_rule.keys())[rand]] = 3
-                                elif i_rule[rand] == 3:
-                                    i_rule[rand] = 4
-                                    d_rule[list(d_rule.keys())[rand]] = 4
-                                elif i_rule[rand] == 4:
-                                    i_rule[rand] = 5
-                                    d_rule[list(d_rule.keys())[rand]] = 5
-                                elif i_rule[rand] == 5:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                    # print("change")
-                    # print(i_rule)
-                    # print(d_rule)
+                    rand = random.randrange(0, base ** view - 1)
 
                 else:
-                    page.append(line)
+                    iterate += 1
 
-                step += 1
+                # print(" ")
+                # print("rand")
+                # print(rand)
 
-        if dimensions == 2:
+                # print(rand)
+                # print(i_rule)
+                # print(d_rule)
 
-            [[mitosis_2d(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
+                # print(" ")
+                # print("rule")
+                # print(rule)
 
-            # print("")
-            # print("cells_2d_a")
-            # print(cells_2d_a)
-            #
-            # print("")
-            # print("do a barrel roll")
+                if rule not in journal:
+                    journal[rule] = []
+                    journal[rule].append(page)
 
-            cells_2d_a = np.roll(cells_2d_a, 1, 0)
+                else:
+                    journal[rule].append(page)
 
-            # print(cells_2d_a)
-            #
-            # print("")
-            # print("pop goes the weasel")
+                page = []
 
-            cells_2d_a[1] = np.zeros((cell_rows, cell_row_width), dtype='int8')
+                if randomizer == 1:
 
-            # print("")
-            # print("post")
-            # print(cells_2d_a)
+                    if list_count == 0:
+
+                        # print("list_count == 0:")
+                        # print("randomizer")
+
+                        if base == 2:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 3:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 4:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 5:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 4
+                                d_rule[list(d_rule.keys())[rand]] = 4
+                            elif i_rule[rand] == 4:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 6:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 4
+                                d_rule[list(d_rule.keys())[rand]] = 4
+                            elif i_rule[rand] == 4:
+                                i_rule[rand] = 5
+                                d_rule[list(d_rule.keys())[rand]] = 5
+                            elif i_rule[rand] == 5:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                # print("change")
+                # print(i_rule)
+                # print(d_rule)
+
+            else:
+                page.append(line)
 
             step += 1
 
@@ -2123,13 +1926,13 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
                 # print('valid')
                 # print(rule_list[0])
 
-                d_rule, i_rule = rule_gen_1d(rule_list[0], base)
+                d_rule, i_rule = rule_gen(rule_list[0], base)
 
             else:
 
                 new_rule = rule_list[0] % max_rule
 
-                d_rule, i_rule = rule_gen_1d(new_rule, base)
+                d_rule, i_rule = rule_gen(new_rule, base)
 
             rule_list = rule_list[1:]
 
@@ -2372,7 +2175,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
                                         bv = base ** view
 
                                         step_size = int(base ** view / (base - 1) / magnify)
-                                        o_r = rule_gen_1d(0, base)[1]
+                                        o_r = rule_gen(0, base)[1]
                                         for x in range(int((base ** view) / step_size) + 1):
 
                                             if x > 0:
@@ -2387,28 +2190,18 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
                                         ir_height = base
 
                                         if base < 5:
-
                                             cell_colors = {0: 'black_x', 1: 'magenta_x', 2: 'cyan_x', 3: 'yellow_x'}
 
-                                            bar_colors = [(0, 0, 0), (255, 0, 255), (0, 255, 255), (255, 255, 0),
-                                                          (192, 192, 192), (255, 0, 0),
-                                                          (0, 255, 0), (0, 0, 255)]
-
                                         else:
-
                                             cell_colors = {0: 'black_x', 1: 'dark_grey_x', 2: 'magenta_x', 3: 'cyan_x',
                                                            4: 'yellow_x', 5: 'light_grey_x', 6: 'red_x', 7: 'green_x',
                                                            8: 'blue_x'}
-
-                                            bar_colors = [(0, 0, 0), (32, 32, 32), (255, 0, 255), (0, 255, 255),
-                                                          (255, 255, 0), (192, 192, 192),
-                                                          (255, 0, 0), (0, 255, 0), (0, 0, 255)]
 
                                         print("origin rule")
                                         print(o_r)
                                         print(origin_rule)
 
-                                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                                         if words_g > 0:
 
@@ -2614,7 +2407,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                                 try:
 
-                                    d_rule, i_rule = rule_gen_1d(int(v_input), base)
+                                    d_rule, i_rule = rule_gen(int(v_input), base)
 
                                 except:
 
@@ -2628,7 +2421,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                 elif event.key == pygame.K_PERIOD:
 
-                    d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                    d_rule, i_rule = rule_gen(origin_rule, base)
 
                     for letter in press:
 
@@ -3070,7 +2863,6 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
                                         i_rule[place % len(i_rule) - 1] = t[0] % base
                                         d_rule[list(d_rule.keys())[place % len(i_rule) - 1]] = t[0] % base
 
-
                                     else:
 
                                         continue
@@ -3091,7 +2883,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
                     # print("glove_value")
                     # print(glove_value)
 
-                    d_rule, i_rule = rule_gen_1d(glove_value, base)
+                    d_rule, i_rule = rule_gen(glove_value, base)
 
                     if rule not in journal:
                         journal[rule] = []
@@ -3120,7 +2912,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger0 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3140,7 +2932,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger1 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3160,7 +2952,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger2 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3180,7 +2972,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger3 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3200,7 +2992,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger4 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3220,7 +3012,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger5 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3240,7 +3032,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger6 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3260,7 +3052,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger7 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3280,7 +3072,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                         print("trigger8 == zero_out origin_rule")
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                         if over_flow == 0:
 
@@ -3302,7 +3094,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                     if trigger_0 == zero_out:
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                 if trigger_1 > 0:
 
@@ -3318,7 +3110,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                     if trigger_1 == zero_out:
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                 if trigger_2 > 0:
 
@@ -3334,7 +3126,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                     if trigger_2 == zero_out:
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                 if trigger_3 > 0:
 
@@ -3350,7 +3142,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                     if trigger_3 == zero_out:
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                 if trigger_4 > 0:
 
@@ -3366,7 +3158,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
                     if trigger_4 == zero_out:
 
-                        d_rule, i_rule = rule_gen_1d(origin_rule, base)
+                        d_rule, i_rule = rule_gen(origin_rule, base)
 
                 triggers = [trigger_1, trigger_2, trigger_3, trigger_4, trigger_0]
 
@@ -3519,7 +3311,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
         else:
 
-            j_num = len(os.listdir('journals'))
+            j_num = len(os.listdir('../journals'))
 
             filename = 'journals/journal_' + str(j_num)
 
@@ -4012,7 +3804,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(2, 5, 2, 1, 1, 2)
+Chaos_Window(3, 20, 1, 0)
 
 
 
