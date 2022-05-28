@@ -297,21 +297,21 @@ value = 3
 BLACK_PIXEL_3 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
 WHITE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'white-' + str(value) + '.png')).convert()
 M_GREEN_PIXEL_3 = pygame.image.load(os.path.join('assets', 'moss-' + str(value) + '.png')).convert()
-BLUE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
-PURPLE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
+BLUE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'cyan-' + str(value) + '.png')).convert()
+PURPLE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'magenta-' + str(value) + '.png')).convert()
 RED_PIXEL_3 = pygame.image.load(os.path.join('assets', 'maroon-' + str(value) + '.png')).convert()
 ORANGE_PIXEL_3 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
-YELLOW_PIXEL_3 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
+YELLOW_PIXEL_3 = pygame.image.load(os.path.join('assets', 'yellow-' + str(value) + '.png')).convert()
 
 value = 5
 BLACK_PIXEL_5 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
 WHITE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'white-' + str(value) + '.png')).convert()
 M_GREEN_PIXEL_5 = pygame.image.load(os.path.join('assets', 'moss-' + str(value) + '.png')).convert()
-BLUE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'cyan-d-' + str(value) + '.png')).convert()
-PURPLE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'magenta-d-' + str(value) + '.png')).convert()
+BLUE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'cyan-' + str(value) + '.png')).convert()
+PURPLE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'magenta-' + str(value) + '.png')).convert()
 RED_PIXEL_5 = pygame.image.load(os.path.join('assets', 'maroon-' + str(value) + '.png')).convert()
 ORANGE_PIXEL_5 = pygame.image.load(os.path.join('assets', 'orange-' + str(value) + '.png')).convert()
-YELLOW_PIXEL_5 = pygame.image.load(os.path.join('assets', 'yellow-d-' + str(value) + '.png')).convert()
+YELLOW_PIXEL_5 = pygame.image.load(os.path.join('assets', 'yellow-' + str(value) + '.png')).convert()
 
 value = 10
 BLACK_PIXEL_10 = pygame.image.load(os.path.join('assets', 'black-' + str(value) + '.png')).convert()
