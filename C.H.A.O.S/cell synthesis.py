@@ -235,11 +235,11 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
 
 
-j_name = 'journal_array-0'
+j_name = 'journal_expand'
 
-simple = 1
-full = 0
-reflect = 1
+simple = 0
+full = 1
+reflect = 0
 
 scale = 1
 shrink = 1

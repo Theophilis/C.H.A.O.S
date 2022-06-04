@@ -185,7 +185,7 @@ def viewer_1d(row, y, view, v_0, color_value):
 
     else:
 
-        if y - len(v_0) < 0:
+        if y - len(v_0) < -1:
 
             v_0.insert(0, '0')
 
@@ -238,7 +238,7 @@ pygame.display.set_caption("C.H.A.O.S")
 click = False
 
 
-def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
+def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     print("base")
     print(base)
@@ -341,7 +341,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         # WIN.blit(tsp_values, (CELL_WIDTH + 120, 170))
         # WIN.blit(tsp_view, (CELL_WIDTH + 120, 135))
 
-        WIN.blit(gv, (WIDTH - gv.get_width(), 90))
+        # WIN.blit(gv, (WIDTH - gv.get_width(), 90))
 
 
         #conosle inputs
@@ -735,7 +735,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     #active variables
     run = 1
     FPS = 120
-    rule = 2012577293263684576546122253534797258019201612892875700360998252923917409187612365349409
+    rule = 30
     start = 0
     step = 0
     step_show = 0
@@ -743,6 +743,13 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     origin_rule = 0
     bv = base ** view
     bbv = base ** base ** view
+    rule_window_scale = 6
+
+    #streams
+    stream_buffer = 5
+    stream_direction = deque(maxlen=stream_buffer)
+    stream_direction.append(0)
+    momentum = {0:0, 1:0, 2:0, 3:0}
 
     #record keeping
     journal = dict()
@@ -751,7 +758,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     press_vault = dict()
 
     #random
-    r_c = 0
     r_i = 0
     rand_count = 0
     iterate = 0
@@ -762,8 +768,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
     rule_models = []
     precursor = []
-    gv_mark = ()
-    clunk = 0
 
     ir_height = base
     bar_height = 40
@@ -779,23 +783,29 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
     #glove emthods
     characters_g = 0
-    words_g = 0
-    rules_g = 1
+    words_g = 2
+    rules_g = 0
     digits = 1
 
     #glove value scales
-    tplus_scale = 6
-    tminus_scale = 2
+    tplus_scale = 2
+    tminus_scale = 1
 
     #glove activations
-    zero_out = int(cell_vel * 4000 / pixel_res)
-    zero_count = int(cell_vel * 4000 / pixel_res)
+    zero_out = int(cell_vel * 4000)
+    zero_count = int(cell_vel * 4000)
     origin_threshold = 50
     over_flow = 0
 
     rule_pause = 128
     gvp_threshold = 128
     gv_pause = 0
+
+    su_threshold = 80
+    sd_threshold = 40
+    sr_threshold = 80
+    sl_threshold = 40
+    stutter_threshold = 64
 
     t0_threshold = 128
     t1_threshold = 80
@@ -823,11 +833,10 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     tsp_portion = []
     placed = []
     glove_value = 0
-    rule_window_scale = 4
 
     #sensor range
     relative_range = int((bbv) ** (1/11)) + 2
-    range_unit = int(128/relative_range)
+    range_unit = int(128/relative_range) + 1
 
     print("")
     print('relative range')
@@ -845,8 +854,8 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     max_rule = base ** base ** view
 
     #cell design
-    cell_row_width = int(CELL_WIDTH / pixel_res)
-    cell_rows = int(HEIGHT / pixel_res) + 1
+    cell_row_width = int(CELL_WIDTH)
+    cell_rows = int(HEIGHT) + 1
     d_rule, i_rule = rule_gen(rule, base)
 
     print("")
@@ -888,17 +897,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     # print("")
     # print('value_color')
     # print(cells_a)
-
-
-    #cells_rect init
-    cells_rect = dict()
-    for x in range(cell_row_width):
-
-        for y in range(cell_rows):
-
-            cell = pygame.Rect(x * pixel_res, y * pixel_res, pixel_res, pixel_res)
-
-            cells_rect[(y, x)] = cell
 
 
     if midi_inputs == 1:
@@ -1043,12 +1041,36 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
 
         #mitosis
-        for x in range(cell_vel):
+        for y in range(cell_vel):
+
+            if len(stream_direction) > 1:
+
+                cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
+
+                if 1 in stream_direction and 3 in stream_direction or 0 in stream_direction and 2 in stream_direction:
+
+                    momentum[stream_direction[step % stream_buffer % len(stream_direction)]] += 1
+
+                else:
+
+                    momentum[0] = 0
+                    momentum[2] = 0
+                    momentum[1] = 0
+                    momentum[3] = 0
+
 
             cells_a = np.roll(cells_a, 1, 0)
 
-            for y in range(cell_row_width):
-                cells_a[0, y] = value_color[d_rule[tuple(viewer_1d(cells_a[1], y, view, [], color_value))]]
+            for x in range(len(cells_a[0])):
+                cells_a[(0 + momentum[stream_direction[step % stream_buffer % len(stream_direction)]]) % (len(cells_a[0]) - 1), x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
+
+            if len(stream_direction) > 0:
+
+                cells_a = np.rot90(cells_a, 4 - stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
+
+                # cells_a = np.rot90(cells_a, 3, (0, 1))
+                # cells_a = np.rot90(cells_a, 2, (0, 1))
+                # cells_a = np.rot90(cells_a, 1, (0, 1))
 
 
             line = tuple(color_value[tuple(v)] for v in cells_a[0])
@@ -1209,6 +1231,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
             if event.type == pygame.QUIT:
                 run = 2
+
 
             #keyboard
             if event.type == pygame.KEYDOWN:
@@ -1632,6 +1655,11 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
                                         trigger_7 = 0
                                         trigger_8 = 0
 
+                                    if input_list[0] == 'dam':
+
+                                        stream_direction = deque(maxlen=stream_buffer)
+
+
 
                                     if input_list[0] == 'characters-g':
 
@@ -1742,7 +1770,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
                         input_box = 0
 
-                elif event.key == pygame.K_PERIOD:
+                if event.key == pygame.K_PERIOD:
 
                     d_rule, i_rule = rule_gen(origin_rule, base)
 
@@ -1757,6 +1785,35 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
                         press[letter] = 0
 
+                if event.key == pygame.K_UP:
+
+                    stream_direction.append(2)
+
+                    # print('up')
+                    # print(stream_direction)
+
+                if event.key == pygame.K_RIGHT:
+
+                    stream_direction.append(1)
+
+                    # print("right")
+                    # print(stream_direction)
+
+                if event.key == pygame.K_DOWN:
+
+                    stream_direction.append(0)
+
+                    # print("down")
+                    # print(stream_direction)
+
+                if event.key == pygame.K_LEFT:
+
+                    stream_direction.append(3)
+
+                    # print('left')
+                    # print(stream_direction)
+
+
             #midi
             if event.type in [pygame.midi.MIDIIN]:
 
@@ -1770,15 +1827,15 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
                     ev.append(int(l.split(':')[1]))
 
-                # print(" ")
-                # print("ev")
-                # print(ev)
-                # print(event)
 
                 #x axis
                 if ev[1] == 1:
 
                     ev_1 = ev[2]
+
+                    # print("")
+                    # print("ev_1")
+                    # print(ev_1)
 
                     if words_g > 0:
 
@@ -1804,10 +1861,59 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
                         gv_pause = 0
 
+                    if ev_1 > sr_threshold:
+
+                        stream_direction.append(3)
+
+                        if ev_7 > stutter_threshold:
+
+                            stream_direction.append(1)
+
+                        # print("right")
+                        # print(stream_direction)
+
+                    if ev_1 < sl_threshold:
+
+                        stream_direction.append(1)
+
+                        if ev_7 > stutter_threshold:
+
+                            stream_direction.append(3)
+
+                        # print("left")
+                        # print(stream_direction)
+
+
                 #y axis
                 if ev[1] == 2:
 
                     ev_2 = ev[2]
+
+                    # print("")
+                    # print("ev_2")
+                    # print(ev_2)
+
+                    if ev_2 > su_threshold:
+
+                        stream_direction.append(2)
+
+                        if ev_7 > stutter_threshold:
+
+                            stream_direction.append(0)
+
+                        # print("up")
+                        # print(stream_direction)
+
+                    if ev_2 < sd_threshold:
+
+                        stream_direction.append(0)
+
+                        if ev_7 > stutter_threshold:
+
+                            stream_direction.append(2)
+
+                        # print("down")
+                        # print(stream_direction)
 
                 #z axis
                 if ev[1] == 3:
@@ -3135,7 +3241,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(3, 1, 1, 1, 2)
+Chaos_Window(2, 2, 1, -1)
 
 
 

@@ -184,7 +184,7 @@ def viewer_1d(row, y, view, v_0):
 
     else:
 
-        if y - len(v_0) < 0:
+        if y - len(v_0) < -1:
 
             v_0.insert(0, '0')
 
@@ -225,7 +225,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 800, 800
+WIDTH, HEIGHT = 1600, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -244,6 +244,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     print("device_id")
     print(device_id)
     p_m_i = 0
+
 
     # color_x_size = pixel_res
     # BLACK_PIXEL = pygame.image.load(os.path.join('assets', 'black-' + str(color_x_size) + '.png')).convert()
@@ -322,6 +323,8 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
     def redraw_window(input_box, v_input, zero_count, step_show, triggers, dt):
 
+        mx, my = pygame.mouse.get_pos()
+
         #preparation
         zero_count = int(zero_count / cell_vel)
 
@@ -342,17 +345,45 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         # cell drawing
         [pygame.draw.rect(WIN, bar_colors[cells_a[cell]], cells_rect[cell]) for cell in cells_rect]
 
-        # #pixel class cells
-        # [cell.draw(WIN) for cell in cells_pixel]
-        # [cell.move(cell_vel * pixel_res) for cell in cells_pixel]
-
 
         #ui drawing
         if ui_on == 1:
 
-            [pygame.draw.rect(WIN, bar_colors[i_rule[rule_models.index(cell)]], cell) for cell in rule_models]
+            gv_track = 0
+            tracker = -1
 
-            [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[glove_value][x])], precursor[x]) for x in range(view)]
+            for cell in rule_models:
+
+                pygame.draw.rect(WIN, bar_colors[i_rule[rule_models.index(cell)]], cell)
+
+                if cell.collidepoint((mx, my)):
+
+                    tracker = gv_track
+
+                    if click:
+                        # print('clicked')
+
+                        place_change(gv_track)
+
+                if gv_track == tracker:
+
+                    # print("gv_track % 4")
+                    # print(gv_track % 4)
+
+                    pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (gv_track % 4) + x_offset + ui_scale / 2,
+                                                        1 * ui_scale + y_offset + ui_scale / 2  + ui_scale * int(gv_track / 4)),
+                                       ui_scale / 2)
+                    pygame.draw.circle(WIN, (255, 255, 255), (
+                        1 * ui_scale * (gv_track % 4) + x_offset + ui_scale / 2,
+                        1 * ui_scale + y_offset + ui_scale / 2  + ui_scale * int(gv_track / 4)), ui_scale / 2 - 1)
+
+                gv_track += 1
+
+            [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[tracker][x])], precursor[x]) for x in range(view)]
+
+            draw_text('Rule: ' + str(decimal(i_rule, base)), main_font, (255, 255, 255), WIN, CELL_WIDTH + 38, 10)
+            draw_text('RC: ' + str(list(rc_count.values())[:4]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 85)
+            draw_text('RC: ' + str(list(rc_count.values())[4:]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 130)
 
         # print('tsp-redraw')
         # print(ts_percentage)
@@ -395,7 +426,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
             WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
 
         WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
-        WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
+        # WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
 
         # WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
         # WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 90))
@@ -407,7 +438,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         # WIN.blit(tsp_values, (CELL_WIDTH + 120, 170))
         # WIN.blit(tsp_view, (CELL_WIDTH + 120, 135))
 
-        WIN.blit(gv, (WIDTH - gv.get_width(), 90))
+        # WIN.blit(gv, (WIDTH - gv.get_width(), 90))
 
 
         #conosle inputs
@@ -423,7 +454,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         if list_count != 0:
             draw_text(str(list_count), small_font, (255, 255, 255), WIN, 11, 33)
 
-        draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 80, 150)
+        draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 40, 50)
 
         pygame.display.update()
 
@@ -1468,7 +1499,8 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     #active variables
     run = 1
     FPS = 10
-    rule = 21621
+    rule = 30
+    d_rule, i_rule = rule_gen(rule, base)
     start = 0
     step = 0
     step_show = 0
@@ -1490,6 +1522,19 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     else:
 
         CELL_WIDTH = WIDTH
+
+    #chess
+    move_down = 0
+    move_up = 0
+    click = False
+    rc_count = {}
+    for k in d_rule:
+
+        rc_count[k] = 0
+
+    print("")
+    print("rc_count")
+    print(rc_count)
 
     #input augments
     echoing = 0
@@ -1571,8 +1616,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     #cell design
 
     cell_row_width = int(CELL_WIDTH / pixel_res)
-    cell_rows = int(HEIGHT / pixel_res) + 1
-    d_rule, i_rule = rule_gen(rule, base)
+    cell_rows = int(HEIGHT / pixel_res)
 
     print("")
     print('cells: width height')
@@ -1606,28 +1650,14 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
         for y in range(cell_rows):
 
-            cell = pygame.Rect(x * pixel_res, y * pixel_res, pixel_res, pixel_res)
+            cell = pygame.Rect(x * pixel_res, y * pixel_res, pixel_res - 1, pixel_res - 1)
 
             cells_rect[(y, x)] = cell
 
 
-    #cells_pixel init
-    cells_pixel = deque(maxlen=cell_rows * cell_row_width)
-    for y in range(cell_rows):
-
-        for x in range(cell_row_width):
-
-            # print(x, y)
-            # print(x * pixel_res, y * pixel_res)
-            # print(cell_colors[cells_a[y, x]])
-
-            # cell = Cell(x * pixel_res, y * pixel_res, cell_colors[cells_a[y, x]])
-            cells_pixel.append(cell)
-
-
     #ui
     ui_on = 1
-    ui_scale = 20
+    ui_scale = 40
 
     rule_models = []
     precursor = []
@@ -1639,7 +1669,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     bar_width = 20
 
     x_offset = CELL_WIDTH + 40
-    y_offset = 160 + ui_scale * ir_height
+    y_offset = 50
 
 
     if midi_inputs == 1:
@@ -1750,15 +1780,15 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         # y_offset = 20 + ui_scale + y
 
         [[rule_models.append(
-            pygame.Rect(1 * ui_scale * x + x_offset, 1 * ui_scale + 20 + ui_scale * y, ui_scale, ui_scale)) for x in
+            pygame.Rect(1 * ui_scale * x + x_offset, 1 * ui_scale + y_offset + ui_scale * y, ui_scale - 1, ui_scale - 1)) for x in
           range(len(ir_split[y]))] for y in range(ir_height)]
 
         # x_offset = CELL_WIDTH + 40
         # y_offset = 20 + ui_scale * (ir_height + 1)
 
         [precursor.append(
-            pygame.Rect(1 * ui_scale * x + x_offset, 1 * ui_scale + 20 + ui_scale * (ir_height + 1), ui_scale,
-                        ui_scale)) for x in range(view)]
+            pygame.Rect(1 * ui_scale * x + x_offset, 1 * ui_scale + y_offset + ui_scale * (ir_height + 1), ui_scale - 1,
+                        ui_scale - 1)) for x in range(view)]
 
         # print("")
         # print("rule_models")
@@ -1779,15 +1809,145 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         # print("")
         # print("running")
 
-        WIN.fill((0, 0, 0))
+        WIN.fill((32, 32, 32))
         dt = clock.tick(FPS)
         redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
+        click = False
 
         #mitosis
-        for x in range(cell_vel):
+        if move_down > 0:
 
             cells_a = np.roll(cells_a, 1, 0)
             cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
+            line = tuple(cells_a[0])
+
+            if line in page:
+
+                if r_i == 0 and list_count == 0:
+
+                    rand_count += 1
+
+                    # print("duplicate")
+
+                    rand = random.randrange(0, base ** view - 1)
+
+                else:
+                    iterate += 1
+
+                # print(" ")
+                # print("rand")
+                # print(rand)
+
+                # print(rand)
+                # print(i_rule)
+                # print(d_rule)
+
+                # print(" ")
+                # print("rule")
+                # print(rule)
+
+                if rule not in journal:
+                    journal[rule] = []
+                    journal[rule].append(page)
+
+                else:
+                    journal[rule].append(page)
+
+                page = []
+
+                if randomizer == 1:
+
+                    if list_count == 0:
+
+                        # print("list_count == 0:")
+                        # print("randomizer")
+
+                        if base == 2:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 3:
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 4:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 5:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 4
+                                d_rule[list(d_rule.keys())[rand]] = 4
+                            elif i_rule[rand] == 4:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                        if base == 6:
+
+                            if i_rule[rand] == 0:
+                                i_rule[rand] = 1
+                                d_rule[list(d_rule.keys())[rand]] = 1
+                            elif i_rule[rand] == 1:
+                                i_rule[rand] = 2
+                                d_rule[list(d_rule.keys())[rand]] = 2
+                            elif i_rule[rand] == 2:
+                                i_rule[rand] = 3
+                                d_rule[list(d_rule.keys())[rand]] = 3
+                            elif i_rule[rand] == 3:
+                                i_rule[rand] = 4
+                                d_rule[list(d_rule.keys())[rand]] = 4
+                            elif i_rule[rand] == 4:
+                                i_rule[rand] = 5
+                                d_rule[list(d_rule.keys())[rand]] = 5
+                            elif i_rule[rand] == 5:
+                                i_rule[rand] = 0
+                                d_rule[list(d_rule.keys())[rand]] = 0
+
+                # print("change")
+                # print(i_rule)
+                # print(d_rule)
+
+            else:
+                page.append(line)
+
+            step += 1
+            move_down -= 1
+        if move_up > 0:
+
+            cells_a = np.roll(cells_a, -1, 0)
+            cells_a[-1] = 0
             line = tuple(cells_a[0])
 
             # #pixel class cells
@@ -1915,7 +2075,23 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
                 page.append(line)
 
             step += 1
+            move_up -= 1
 
+        #stats
+        row_a = cells_a[0]
+
+        # print("")
+        # print("row_a")
+        # print(row_a)
+
+        for k in d_rule:
+            rc_count[k] = 0
+
+        for x in range(len(row_a)):
+
+            v_0 = tuple(viewer_1d(row_a, x, view, []))
+
+            rc_count[v_0] += 1
 
         #console rule inputs
         if list_count != 0:
@@ -1944,14 +2120,34 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
             current_digit = -1
 
+            #quit
             if event.type == pygame.QUIT:
                 run = 2
+
+            #click
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
 
             #keyboard
             if event.type == pygame.KEYDOWN:
 
                 if event.key == K_ESCAPE:
                     run = 2
+
+
+                if event.key == pygame.K_DOWN:
+
+                    # print("down")
+
+                    move_down += 1
+
+                if event.key == pygame.K_UP:
+
+                    # print("up")
+
+                    move_up += 1
+
 
                 if event.key == pygame.K_q:
                     v_input = input('q', base, page, input_box, v_input)
@@ -3804,7 +4000,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(3, 20, 1, 0)
+Chaos_Window(2, 40, 1, 1)
 
 
 
