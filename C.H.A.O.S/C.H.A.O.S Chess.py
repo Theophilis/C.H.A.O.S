@@ -186,7 +186,7 @@ def viewer_1d(row, y, view, v_0):
 
         if y - len(v_0) < -1:
 
-            v_0.insert(0, '0')
+            v_0.insert(0, '1')
 
         else:
 
@@ -356,15 +356,32 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
                 pygame.draw.rect(WIN, bar_colors[i_rule[rule_models.index(cell)]], cell)
 
+                #p1_move
                 if cell.collidepoint((mx, my)):
 
                     tracker = gv_track
 
-                    if click:
-                        # print('clicked')
+                    if click_l:
 
-                        place_change(gv_track)
+                        print('attack')
 
+                        p1_move[0] = ('a', gv_track)
+
+                    if click_r:
+
+                        print('defend')
+
+                        p1_move[0] = ('d', gv_track)
+
+                        for x in range(bv):
+
+                            shields[x] = 0
+
+                        shields[gv_track] = 2
+
+                        print(shields)
+
+                #pointer
                 if gv_track == tracker:
 
                     # print("gv_track % 4")
@@ -377,6 +394,31 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
                         1 * ui_scale * (gv_track % 4) + x_offset + ui_scale / 2,
                         1 * ui_scale + y_offset + ui_scale / 2  + ui_scale * int(gv_track / 4)), ui_scale / 2 - 1)
 
+                #shields
+                for x in range(bv):
+
+                    if shields[x] == 2:
+
+                        pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                                                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(
+                                                                x / 4)),
+                                           ui_scale / 2)
+                        pygame.draw.circle(WIN, (0, 255, 255), (
+                            1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(x / 4)), ui_scale / 2 - 1)
+
+                    if shields[x] == 1:
+
+                        pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                                                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(
+                                                                x / 4)),
+                                           ui_scale / 2)
+                        pygame.draw.circle(WIN, (255, 255, 0), (
+                            1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(x / 4)), ui_scale / 2 - 1)
+
+
+
                 gv_track += 1
 
             [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[tracker][x])], precursor[x]) for x in range(view)]
@@ -384,6 +426,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
             draw_text('Rule: ' + str(decimal(i_rule, base)), main_font, (255, 255, 255), WIN, CELL_WIDTH + 38, 10)
             draw_text('RC: ' + str(list(rc_count.values())[:4]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 85)
             draw_text('RC: ' + str(list(rc_count.values())[4:]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 130)
+            draw_text('P1: ' + str(p1_score) + ' P2: ' + str(p2_score), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 180)
 
         # print('tsp-redraw')
         # print(ts_percentage)
@@ -1524,13 +1567,36 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         CELL_WIDTH = WIDTH
 
     #chess
+    p1_score = 0
+    p2_score = 0
+
+    p1_history = []
+    p2_history = []
+
     move_down = 0
     move_up = 0
-    click = False
+
+    click_l = False
+    click_r = False
+
     rc_count = {}
     for k in d_rule:
 
         rc_count[k] = 0
+
+    shields = {}
+    pc_count = {}
+
+    for x in range(bv):
+
+        shields[x] = 0
+        pc_count[x] = 0
+
+    pcs = {}
+    age = 999999999999999999999999999999999999999999999999999999999999999
+    ripe = []
+    last_move = -1
+    p1_move = [0]
 
     print("")
     print("rc_count")
@@ -1812,14 +1878,45 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         WIN.fill((32, 32, 32))
         dt = clock.tick(FPS)
         redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
-        click = False
+        click_l = False
+        click_r = False
 
         #mitosis
         if move_down > 0:
 
+            p1_history.append(p1_move[0])
+            p2_history.append(p2_move)
+
+            if p1_move[0][0] == 'a':
+
+                if shields[p1_move[0][-1]] == 0:
+
+                    place_change(p1_move[0])
+
+                else:
+
+                    shields[p1_move[0][-1]] = 0
+
+            if p2_move[0] == 'a':
+
+                if shields[p2_move[-1]] == 0:
+
+                    place_change(p2_move[-1])
+
+                else:
+
+                    shields[p2_move[-1]] = 0
+
             cells_a = np.roll(cells_a, 1, 0)
             cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
             line = tuple(cells_a[0])
+
+            # score
+            for x in line:
+                if x == 0:
+                    p1_score += 1
+                else:
+                    p2_score += 1
 
             if line in page:
 
@@ -1944,9 +2041,58 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
             step += 1
             move_down -= 1
+
+            print("")
+            print("last move")
+            print(last_move)
+            print("rc_count")
+            print(rc_count)
+            print("optimal")
+            print(optimal)
+            print(optimals)
+            print("pc_count")
+            print(pc_count)
+            print("pcs")
+            print(pcs)
+            print('ripe')
+            print(ripe)
+
+            print("shields")
+            print(shields)
+
+            print("")
+            print('p1_move')
+            print(p1_move)
+            print("p2_move")
+            print(p2_move)
+
+            print("history")
+            print(p1_history)
+            print(p2_history)
+
+            for x in range(bv):
+
+                pc_count[x] += 1
+                shields[x] -= 1
+
+            # last_move = p2_move
+            # pc_count[p1_move[0]] = 0
+            # pc_count[p2_move] = 0
+
         if move_up > 0:
 
+            p1_history = p1_history[:-1]
+            p2_history = p2_history[:-1]
+
             cells_a = np.roll(cells_a, -1, 0)
+
+            # score
+            for x in cells_a[-1]:
+                if x == 0:
+                    p1_score -= 1
+                else:
+                    p2_score -= 1
+
             cells_a[-1] = 0
             line = tuple(cells_a[0])
 
@@ -2077,13 +2223,14 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
             step += 1
             move_up -= 1
 
-        #stats
+            for x in range(bv):
+
+                pc_count[x] -= 1
+
+        #chess
         row_a = cells_a[0]
 
-        # print("")
-        # print("row_a")
-        # print(row_a)
-
+        ##stats
         for k in d_rule:
             rc_count[k] = 0
 
@@ -2093,7 +2240,95 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
             rc_count[v_0] += 1
 
+        ##p2 bot
+        p2_move = -1
+        optimal = 0
+        optimals = []
+
+        ###value
+        for r in rc_count:
+
+            if list(rc_count.keys()).index(r) == last_move:
+
+                continue
+
+            if rc_count[r] > optimal:
+
+                optimal = rc_count[r]
+
+        for r in rc_count:
+
+            if list(rc_count.keys()).index(r) == last_move:
+
+                continue
+
+            if rc_count[r] == optimal:
+
+                optimals.append(list(rc_count.keys()).index(r))
+
+        if len(optimals) == 1:
+
+            if i_rule[optimals[0]] == 0:
+
+                p2_move = ('a', optimals[0])
+
+            else:
+
+                p2_move = ('d', optimals[0])
+
+        ###place change
+        else:
+
+            pcs = {}
+            age = 999999999999999999999999999999999999999999999999999999999999999
+            ripe = []
+
+
+            for o in optimals:
+
+                pcs[o] = pc_count[o]
+
+            for p in pcs.items():
+
+                if p[-1] < age:
+
+                    age = p[-1]
+
+            for p in pcs.items():
+
+                if p[-1] == age:
+
+                    ripe.append(p)
+
+            if len(ripe) == 1:
+
+                if i_rule[ripe[0][0]] == 0:
+
+                    p2_move = ('a', ripe[0][0])
+
+                else:
+
+                    p2_move = ('d', ripe[0][0])
+
+            #agression
+            # else:
+            #
+            #     cell_count = 0
+            #
+            #     for i in i_rule:
+            #
+            #         if i == 1:
+            #
+            #             cell_count += 1
+            #
+            #     for r in ripe:
+            #
+            #         if cell_count >= int(len(i_rule) / 2) and i_rule:
+
+
+
         #console rule inputs
+
         if list_count != 0:
 
             if rule_list[0] < max_rule:
@@ -2127,7 +2362,9 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
             #click
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    click = True
+                    click_l = True
+                if event.button == 3:
+                    click_r = True
 
             #keyboard
             if event.type == pygame.KEYDOWN:
@@ -4000,7 +4237,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(2, 40, 1, 1)
+Chaos_Window(2, 50, 1, 1)
 
 
 

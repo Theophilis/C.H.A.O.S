@@ -2333,7 +2333,7 @@ def main(device_id=None):
 
     del midin
 
-    filename = '../cell-journal'
+    filename = 'cell-journal'
     outfile = open(filename, 'wb')
     pickle.dump(journal, outfile)
     outfile.close
