@@ -346,87 +346,88 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         [pygame.draw.rect(WIN, bar_colors[cells_a[cell]], cells_rect[cell]) for cell in cells_rect]
 
 
-        #ui drawing
-        if ui_on == 1:
+        gv_track = 0
+        tracker = -1
 
-            gv_track = 0
-            tracker = -1
+        for cell in rule_models:
 
-            for cell in rule_models:
+            pygame.draw.rect(WIN, bar_colors[i_rule[rule_models.index(cell)]], cell)
 
-                pygame.draw.rect(WIN, bar_colors[i_rule[rule_models.index(cell)]], cell)
+            #p1_move
+            if cell.collidepoint((mx, my)):
 
-                #p1_move
-                if cell.collidepoint((mx, my)):
+                tracker = gv_track
 
-                    tracker = gv_track
+                if click_l:
 
-                    if click_l:
+                    print('attack')
 
-                        print('attack')
+                    p1_move[0] = ('a', gv_track)
 
-                        p1_move[0] = ('a', gv_track)
+                if click_r and i_rule[gv_track] == 0:
 
-                    if click_r:
+                    print('defend')
 
-                        print('defend')
+                    p1_move[0] = ('d', gv_track)
 
-                        p1_move[0] = ('d', gv_track)
+                    # for x in range(bv):
+                    #
+                    #     shields[x] = 0
 
-                        for x in range(bv):
-
-                            shields[x] = 0
-
+                    if shields[gv_track] < 2:
                         shields[gv_track] = 2
 
-                        print(shields)
+                    elif shields[gv_track] == 2:
+                        shields[gv_track] = 0
 
-                #pointer
-                if gv_track == tracker:
+                    print(shields)
 
-                    # print("gv_track % 4")
-                    # print(gv_track % 4)
+            #pointer
+            if gv_track == tracker:
 
-                    pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (gv_track % 4) + x_offset + ui_scale / 2,
-                                                        1 * ui_scale + y_offset + ui_scale / 2  + ui_scale * int(gv_track / 4)),
+                # print("gv_track % 4")
+                # print(gv_track % 4)
+
+                pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (gv_track % 4) + x_offset + ui_scale / 2,
+                                                    1 * ui_scale + y_offset + ui_scale / 2  + ui_scale * int(gv_track / 4)),
+                                   ui_scale / 2)
+                pygame.draw.circle(WIN, (255, 255, 255), (
+                    1 * ui_scale * (gv_track % 4) + x_offset + ui_scale / 2,
+                    1 * ui_scale + y_offset + ui_scale / 2  + ui_scale * int(gv_track / 4)), ui_scale / 2 - 1)
+
+            #shields
+            for x in range(bv):
+
+                if shields[x] == 2:
+
+                    pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                                                        1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(
+                                                            x / 4)),
                                        ui_scale / 2)
-                    pygame.draw.circle(WIN, (255, 255, 255), (
-                        1 * ui_scale * (gv_track % 4) + x_offset + ui_scale / 2,
-                        1 * ui_scale + y_offset + ui_scale / 2  + ui_scale * int(gv_track / 4)), ui_scale / 2 - 1)
+                    pygame.draw.circle(WIN, (0, 255, 255), (
+                        1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                        1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(x / 4)), ui_scale / 2 - 1)
 
-                #shields
-                for x in range(bv):
+                if shields[x] == 1:
 
-                    if shields[x] == 2:
-
-                        pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
-                                                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(
-                                                                x / 4)),
-                                           ui_scale / 2)
-                        pygame.draw.circle(WIN, (0, 255, 255), (
-                            1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
-                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(x / 4)), ui_scale / 2 - 1)
-
-                    if shields[x] == 1:
-
-                        pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
-                                                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(
-                                                                x / 4)),
-                                           ui_scale / 2)
-                        pygame.draw.circle(WIN, (255, 255, 0), (
-                            1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
-                            1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(x / 4)), ui_scale / 2 - 1)
+                    pygame.draw.circle(WIN, (0, 0, 0), (1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                                                        1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(
+                                                            x / 4)),
+                                       ui_scale / 2)
+                    pygame.draw.circle(WIN, (255, 255, 0), (
+                        1 * ui_scale * (x % 4) + x_offset + ui_scale / 2,
+                        1 * ui_scale + y_offset + ui_scale / 2 + ui_scale * int(x / 4)), ui_scale / 2 - 1)
 
 
 
-                gv_track += 1
+            gv_track += 1
 
-            [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[tracker][x])], precursor[x]) for x in range(view)]
+        [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[tracker][x])], precursor[x]) for x in range(view)]
 
-            draw_text('Rule: ' + str(decimal(i_rule, base)), main_font, (255, 255, 255), WIN, CELL_WIDTH + 38, 10)
-            draw_text('RC: ' + str(list(rc_count.values())[:4]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 85)
-            draw_text('RC: ' + str(list(rc_count.values())[4:]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 130)
-            draw_text('P1: ' + str(p1_score) + ' P2: ' + str(p2_score), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 180)
+        draw_text('Rule: ' + str(decimal(i_rule, base)), main_font, (255, 255, 255), WIN, CELL_WIDTH + 38, 10)
+        draw_text('RC: ' + str(list(rc_count.values())[:4]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 85)
+        draw_text('RC: ' + str(list(rc_count.values())[4:]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 130)
+        draw_text('P1: ' + str(p1_score) + ' P2: ' + str(p2_score), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 180)
 
         # print('tsp-redraw')
         # print(ts_percentage)
@@ -1543,6 +1544,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     run = 1
     FPS = 10
     rule = 30
+    ai = 1
     d_rule, i_rule = rule_gen(rule, base)
     start = 0
     step = 0
@@ -1586,16 +1588,35 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
     shields = {}
     pc_count = {}
+    stagnation = {}
 
     for x in range(bv):
 
         shields[x] = 0
         pc_count[x] = 0
+        stagnation[x] = 0
 
-    pcs = {}
-    age = 999999999999999999999999999999999999999999999999999999999999999
-    ripe = []
-    last_move = -1
+    if ai == 1:
+
+        last_move = -1
+
+        #agression
+        agression = 0
+        momentum = 0
+        ad = {0:'d', 1:'a'}
+        attack = []
+        defend = []
+        committed = []
+        stance = 0
+
+        #popularity
+        cool_kids = []
+        cool_score = 0
+
+        #age
+        age = 999999999999999999999999999999999999999999999999999999999999999
+        fresh = []
+
     p1_move = [0]
 
     print("")
@@ -1884,14 +1905,68 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         #mitosis
         if move_down > 0:
 
+            print("")
+            print("last move")
+            print(last_move)
+            print("rc_count")
+            print(rc_count)
+
+            print("")
+            print("optimal")
+            print(optimal)
+            print(optimals)
+
+            print("")
+            print("agression")
+            print(agression)
+            print(momentum)
+            print('aggravated')
+            print(attack)
+            print(defend)
+            print(committed)
+
+            print("")
+            print("popularity")
+            print(pc_count)
+            print('popular')
+            print(cool_score)
+            print(cool_kids)
+
+            print("")
+            print("age")
+            print(stagnation)
+            print(age)
+            print(fresh)
+
+            print("shields")
+            print(shields)
+
+            print("")
+            print('p1_move')
+            print(p1_move)
+            print("p2_move")
+            print(p2_move)
+
+            last_move = p2_move[-1]
+
             p1_history.append(p1_move[0])
             p2_history.append(p2_move)
 
+            pc_count[p1_move[0][-1]] += 1
+            pc_count[p2_move[-1]] += 1
+
+            stagnation[p1_move[0][-1]] = 0
+            stagnation[p2_move[-1]] = 0
+
+            if p2_move[0] == 'd':
+
+                shields[p2_move[-1]] = 2
+
             if p1_move[0][0] == 'a':
 
-                if shields[p1_move[0][-1]] == 0:
+                if shields[p1_move[0][-1]] == 0 and i_rule[p1_move[0][-1]] == 1:
 
-                    place_change(p1_move[0])
+                    place_change(p1_move[0][-1])
 
                 else:
 
@@ -1906,6 +1981,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
                 else:
 
                     shields[p2_move[-1]] = 0
+
 
             cells_a = np.roll(cells_a, 1, 0)
             cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
@@ -2042,29 +2118,18 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
             step += 1
             move_down -= 1
 
-            print("")
-            print("last move")
-            print(last_move)
-            print("rc_count")
-            print(rc_count)
-            print("optimal")
-            print(optimal)
-            print(optimals)
-            print("pc_count")
-            print(pc_count)
-            print("pcs")
-            print(pcs)
-            print('ripe')
-            print(ripe)
+            momentum = 0
+            for i in i_rule:
 
-            print("shields")
-            print(shields)
+                if i == 1:
+                    momentum += 1
 
-            print("")
-            print('p1_move')
-            print(p1_move)
-            print("p2_move")
-            print(p2_move)
+            if momentum < 4:
+                agression = 1
+
+            if momentum > 4:
+                agression = 0
+
 
             print("history")
             print(p1_history)
@@ -2072,8 +2137,10 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
             for x in range(bv):
 
-                pc_count[x] += 1
-                shields[x] -= 1
+                stagnation[x] += 1
+
+                if shields[x] > 0:
+                    shields[x] -= 1
 
             # last_move = p2_move
             # pc_count[p1_move[0]] = 0
@@ -2241,89 +2308,119 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
             rc_count[v_0] += 1
 
         ##p2 bot
-        p2_move = -1
-        optimal = 0
-        optimals = []
+        if ai == 1:
 
-        ###value
-        for r in rc_count:
+            p2_move = -1
+            optimal = 0
+            optimals = []
 
-            if list(rc_count.keys()).index(r) == last_move:
+            ###value
+            for r in rc_count:
 
-                continue
+                if list(rc_count.keys()).index(r) == last_move:
 
-            if rc_count[r] > optimal:
+                    continue
 
-                optimal = rc_count[r]
+                if rc_count[r] > optimal:
 
-        for r in rc_count:
+                    optimal = rc_count[r]
 
-            if list(rc_count.keys()).index(r) == last_move:
+            for r in rc_count:
 
-                continue
+                if list(rc_count.keys()).index(r) == last_move:
 
-            if rc_count[r] == optimal:
+                    continue
 
-                optimals.append(list(rc_count.keys()).index(r))
+                if rc_count[r] == optimal:
 
-        if len(optimals) == 1:
+                    optimals.append(list(rc_count.keys()).index(r))
 
-            if i_rule[optimals[0]] == 0:
+            if len(optimals) == 1:
 
-                p2_move = ('a', optimals[0])
+                if i_rule[optimals[0]] == 0:
 
-            else:
-
-                p2_move = ('d', optimals[0])
-
-        ###place change
-        else:
-
-            pcs = {}
-            age = 999999999999999999999999999999999999999999999999999999999999999
-            ripe = []
-
-
-            for o in optimals:
-
-                pcs[o] = pc_count[o]
-
-            for p in pcs.items():
-
-                if p[-1] < age:
-
-                    age = p[-1]
-
-            for p in pcs.items():
-
-                if p[-1] == age:
-
-                    ripe.append(p)
-
-            if len(ripe) == 1:
-
-                if i_rule[ripe[0][0]] == 0:
-
-                    p2_move = ('a', ripe[0][0])
+                    p2_move = ('a', optimals[0])
 
                 else:
 
-                    p2_move = ('d', ripe[0][0])
+                    p2_move = ('d', optimals[0])
 
-            #agression
-            # else:
-            #
-            #     cell_count = 0
-            #
-            #     for i in i_rule:
-            #
-            #         if i == 1:
-            #
-            #             cell_count += 1
-            #
-            #     for r in ripe:
-            #
-            #         if cell_count >= int(len(i_rule) / 2) and i_rule:
+            ###agression
+            if p2_move == -1:
+
+                attack = []
+                defend = []
+                committed = []
+                stance = 0
+
+
+                for o in optimals:
+
+                    if i_rule[o] == 0:
+
+                        attack.append(o)
+
+                    else:
+
+                        defend.append(o)
+
+                if agression == 0 and len(defend) > 0:
+
+                    committed = defend
+                    stance = 0
+
+                else:
+
+                    committed = attack
+                    stance = 1
+
+                if len(committed) == 1:
+
+                    p2_move = [ad[agression], committed[0]]
+
+            ###popularity
+            elif p2_move == -1:
+
+                cool_kids = []
+                cool_score = 0
+
+                for c in committed:
+
+                    if pc_count[c] > cool_score:
+
+                        cool_score = pc_count[c]
+
+                for c in committed:
+
+                    if pc_count[c] == cool_score:
+
+                        cool_kids.append(c)
+
+                if len(cool_kids) == 1:
+
+                    p2_move = [ad[stance], cool_kids[0]]
+
+            ###age
+            elif p2_move == -1:
+
+                age = 99999
+                fresh = []
+
+                for c in cool_kids:
+
+                    if stagnation[c] < age:
+
+                        age = stagnation[c]
+
+                for c in cool_kids:
+
+                    if stagnation[c] == age:
+
+                        fresh.append(c)
+
+                if len(fresh) == 1:
+
+                    p2_move = [ad[stance], fresh[0]]
 
 
 
