@@ -424,10 +424,22 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
         [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[tracker][x])], precursor[x]) for x in range(view)]
 
-        draw_text('Rule: ' + str(decimal(i_rule, base)), main_font, (255, 255, 255), WIN, CELL_WIDTH + 38, 10)
-        draw_text('RC: ' + str(list(rc_count.values())[:4]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 85)
-        draw_text('RC: ' + str(list(rc_count.values())[4:]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 130)
-        draw_text('P1: ' + str(p1_score) + ' P2: ' + str(p2_score), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 180)
+        # draw_text('Rule: ' + str(decimal(i_rule, base)), main_font, (255, 255, 255), WIN, CELL_WIDTH + 38, 10)
+        # draw_text('RC: ' + str(list(rc_count.values())[:4]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 85)
+        # draw_text('RC: ' + str(list(rc_count.values())[4:]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 130)
+        # draw_text('P1: ' + str(int(p1_score / cell_row_width)) + ' P2: ' + str(int(p2_score / cell_row_width)), main_font, (255, 255, 255), WIN, CELL_WIDTH + 235, 180)
+
+        # for x in d_label[0]:
+        #
+        #     draw_text(str(x), main_font, (255, 255, 255), WIN, CELL_WIDTH + 80 + 90 * d_label[0].index(x), 330)
+        #
+        # for y in d_label[1]:
+        #
+        #     draw_text(str(y), main_font, (255, 255, 255), WIN, CELL_WIDTH + 10, 380 + 40 * d_label[1].index(y))
+        #
+        # for x in range(len(theory_board[:, 0, 0])):
+        #
+        #     draw_text(str(theory_board.tolist()[x]), main_font, (255, 255, 255), WIN, CELL_WIDTH + 30, 380 + 40 * x)
 
         # print('tsp-redraw')
         # print(ts_percentage)
@@ -1543,8 +1555,8 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     #active variables
     run = 1
     FPS = 10
-    rule = 30
-    ai = 1
+    rule = 21621
+    ai = 2
     d_rule, i_rule = rule_gen(rule, base)
     start = 0
     step = 0
@@ -1575,6 +1587,9 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
     p1_history = []
     p2_history = []
 
+    ad = {0: 'a', 1: 'd', 2: 'a', 3: 'd', 4: 'a', 5: 'd'}
+    rv = 0
+
     move_down = 0
     move_up = 0
 
@@ -1603,7 +1618,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         #agression
         agression = 0
         momentum = 0
-        ad = {0:'d', 1:'a'}
         attack = []
         defend = []
         committed = []
@@ -1617,11 +1631,22 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         age = 999999999999999999999999999999999999999999999999999999999999999
         fresh = []
 
-    p1_move = [0]
+    p1_move = ('a', 0)
+    p2_move = ('a', 0)
 
     print("")
     print("rc_count")
     print(rc_count)
+
+    theory_board = np.zeros((base ** view, base ** view, 2), dtype='uint8')
+
+    print("###theory_board###")
+    print(theory_board)
+
+    dominant_x = []
+    dominant_y = []
+    d_label = ([], [])
+
 
     #input augments
     echoing = 0
@@ -1737,7 +1762,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
         for y in range(cell_rows):
 
-            cell = pygame.Rect(x * pixel_res, y * pixel_res, pixel_res - 1, pixel_res - 1)
+            cell = pygame.Rect(x * pixel_res, y * pixel_res, pixel_res, pixel_res)
 
             cells_rect[(y, x)] = cell
 
@@ -1901,76 +1926,77 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
         click_l = False
         click_r = False
+        move_down = 1
 
         #mitosis
         if move_down > 0:
 
-            print("")
-            print("last move")
-            print(last_move)
-            print("rc_count")
-            print(rc_count)
+            # print("")
+            # print("last move")
+            # print(last_move)
+            # print("rc_count")
+            # print(rc_count)
+            #
+            # print("")
+            # print("optimal")
+            # print(optimal)
+            # print(optimals)
+            #
+            # print("")
+            # print("agression")
+            # print(agression)
+            # print(momentum)
+            # print('aggravated')
+            # print(attack)
+            # print(defend)
+            # print(committed)
+            #
+            # print("")
+            # print("popularity")
+            # print(pc_count)
+            # print('popular')
+            # print(cool_score)
+            # print(cool_kids)
+            #
+            # print("")
+            # print("age")
+            # print(stagnation)
+            # print(age)
+            # print(fresh)
 
-            print("")
-            print("optimal")
-            print(optimal)
-            print(optimals)
-
-            print("")
-            print("agression")
-            print(agression)
-            print(momentum)
-            print('aggravated')
-            print(attack)
-            print(defend)
-            print(committed)
-
-            print("")
-            print("popularity")
-            print(pc_count)
-            print('popular')
-            print(cool_score)
-            print(cool_kids)
-
-            print("")
-            print("age")
-            print(stagnation)
-            print(age)
-            print(fresh)
-
-            print("shields")
-            print(shields)
-
-            print("")
-            print('p1_move')
-            print(p1_move)
-            print("p2_move")
-            print(p2_move)
+            # print("shields")
+            # print(shields)
+            #
+            # print("")
+            # print('p1_move')
+            # print(p1_move)
+            # print("p2_move")
+            # print(p2_move)
 
             last_move = p2_move[-1]
 
             p1_history.append(p1_move[0])
             p2_history.append(p2_move)
 
-            pc_count[p1_move[0][-1]] += 1
+            pc_count[p1_move[-1]] += 1
             pc_count[p2_move[-1]] += 1
 
-            stagnation[p1_move[0][-1]] = 0
+            stagnation[p1_move[-1]] = 0
             stagnation[p2_move[-1]] = 0
 
             if p2_move[0] == 'd':
 
                 shields[p2_move[-1]] = 2
 
-            if p1_move[0][0] == 'a':
+            if p1_move[0] == 'a':
 
-                if shields[p1_move[0][-1]] == 0 and i_rule[p1_move[0][-1]] == 1:
+                if shields[p1_move[-1]] == 0 and i_rule[p1_move[-1]] == 1:
 
-                    place_change(p1_move[0][-1])
+                    place_change(p1_move[-1])
 
                 else:
 
-                    shields[p1_move[0][-1]] = 0
+                    shields[p1_move[-1]] = 0
 
             if p2_move[0] == 'a':
 
@@ -1982,10 +2008,11 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
 
                     shields[p2_move[-1]] = 0
 
+            for x in range(cell_vel):
 
-            cells_a = np.roll(cells_a, 1, 0)
-            cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
-            line = tuple(cells_a[0])
+                cells_a = np.roll(cells_a, 1, 0)
+                cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
+                line = tuple(cells_a[0])
 
             # score
             for x in line:
@@ -2131,9 +2158,9 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
                 agression = 0
 
 
-            print("history")
-            print(p1_history)
-            print(p2_history)
+            # print("history")
+            # print(p1_history)
+            # print(p2_history)
 
             for x in range(bv):
 
@@ -2298,6 +2325,8 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
         row_a = cells_a[0]
 
         ##stats
+
+
         for k in d_rule:
             rc_count[k] = 0
 
@@ -2306,6 +2335,368 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
             v_0 = tuple(viewer_1d(row_a, x, view, []))
 
             rc_count[v_0] += 1
+
+        #base scores
+        p1_bs = 0
+        p2_bs = 0
+
+        # print("")
+        # print(i_rule)
+        # print(list(rc_count.values()))
+
+        for x in range(len(i_rule)):
+            if i_rule[x] == 0:
+                p1_bs += list(rc_count.values())[x]
+            else:
+                p2_bs += list(rc_count.values())[x]
+
+        theory_board = np.zeros((base ** view, base**view, 2), dtype='uint8')
+
+        for x in range(base ** view):
+
+            for y in range(base ** view):
+
+                #theory scores
+                p1_ts = p1_bs
+                p2_ts = p2_bs
+
+                if i_rule[-(x + 1)] == 1:
+
+                    p1_ts += list(rc_count.values())[-(x + 1)]
+                    p2_ts -= list(rc_count.values())[-(x + 1)]
+
+                if i_rule[-(y + 1)] == 0:
+
+                    p1_ts -= list(rc_count.values())[-(y + 1)]
+                    p2_ts += list(rc_count.values())[-(y + 1)]
+
+                if x == y:
+
+                    p1_ts = p1_bs
+                    p2_ts = p2_bs
+
+                # print('')
+                # print("theory score")
+                # print((x - 1, y -1))
+                # print(p1_ts)
+                # print(p2_ts)
+                # print(theory_board)
+
+                theory_board[y, x, 0] = p1_ts
+                theory_board[y, x, 1] = p2_ts
+
+
+        # print("")
+        # print('rc_count')
+        # print(list(rc_count.values()))
+        #
+        # print("base score")
+        # print(p1_bs)
+        # print(p2_bs)
+        #
+        # print("theory_board")
+        # print(theory_board)
+
+        def IEDS(theory_board, s_w, d_label=(), simple=0, label=0):
+
+            # print("")
+            # print("IEDS")
+            # print(theory_board)
+
+            dominant_x = []
+            eliminate_x = []
+
+            dominant_y = []
+            eliminate_y = []
+
+            for x in range(len(theory_board[0, :, 0])):
+
+                for y in range(len(theory_board[0, :, 0])):
+
+                    # print("")
+                    # print("x, y")
+                    # print((x, y))
+
+                    if s_w == 's':
+
+                        status = []
+
+                        # print("")
+
+                        for z in range(base ** view):
+
+                            # print("z")
+                            # print(theory_board[z + 1, x + 1, 0], theory_board[z + 1, y + 1, 0])
+
+                            if theory_board[z + 1, x + 1, 0] > theory_board[z + 1, y + 1, 0]:
+
+                                # print('greater')
+
+                                status.append('g')
+
+
+                        # print('status')
+
+                        if len(status) == base ** view:
+
+                            if y not in eliminate_x and x != y:
+
+                                # print("elimiate")
+
+                                eliminate_x.append(y)
+
+                    if s_w == 'w':
+
+                        status_x = []
+
+                        # print("")
+
+                        for z in range(len(theory_board[:, 0, 0])):
+
+                            # print("z")
+                            # print("x compare")
+                            # print(theory_board[z, x, 0], theory_board[z, y, 0])
+
+                            if theory_board[z, x, 0] == theory_board[z, y, 0]:
+
+                                # print("equal_x")
+                                status_x.append('e')
+
+                            if theory_board[z, x, 0] > theory_board[z, y, 0]:
+
+                                # print('greater_x')
+                                status_x.append('g')
+
+
+                        # print('status_x')
+                        # print(len(status_x))
+                        # print(len(theory_board[0, :, 0]))
+
+                        if len(status_x) == len(theory_board[:, 0, 0]) and 'g' in status_x:
+
+                            if y not in eliminate_x and x != y:
+
+                                # print("elimiate_x")
+
+                                eliminate_x.append(y)
+
+            for x in range(len(theory_board[0, :, 0])):
+
+                if x not in eliminate_x:
+
+                    dominant_x.append(x)
+
+
+            # print("")
+            # print("dominant")
+            # print(dominant_x)
+            # print('eliminate')
+            # print(eliminate_x)
+
+            theory_board_1 = np.zeros((len(theory_board[:, 0, 0]), len(dominant_x), 2), dtype='uint8')
+
+            for d in dominant_x:
+
+                # print("")
+                # print("d")
+                # print(d)
+                # print(theory_board[ :, d, :])
+
+                theory_board_1[:, dominant_x.index(d), :] = theory_board[:, d, :]
+
+            # print("")
+            # print("theory_board_1")
+            # print(theory_board_1)
+
+
+            dominant_y = []
+            eliminate_y = []
+
+            for x in range(len(theory_board_1[:, 0, 0])):
+
+                for y in range(len(theory_board_1[:, 0, 0])):
+
+                    # print("")
+                    # print("x, y")
+                    # print((x, y))
+
+                    if s_w == 's':
+
+                        status = []
+
+                        # print("")
+
+                        for z in range(base ** view):
+
+                            # print("z")
+                            # print(theory_board[z + 1, x + 1, 0], theory_board[z + 1, y + 1, 0])
+
+                            if theory_board[z + 1, x + 1, 0] > theory_board[z + 1, y + 1, 0]:
+                                # print('greater')
+
+                                status.append('g')
+
+                        # print('status')
+
+                        if len(status) == base ** view:
+
+                            if y not in eliminate_x and x != y:
+                                # print("elimiate")
+
+                                eliminate_x.append(y)
+
+                    if s_w == 'w':
+
+                        status_y = []
+
+                        # print("")
+
+                        greater = 0
+
+                        for z in range(len(dominant_x)):
+
+                            # print('y compare')
+                            # print(z)
+                            # print(theory_board_1[x, z, 1], theory_board_1[y, z, 1])
+
+                            if theory_board_1[x, z, 1] == theory_board_1[y, z, 1]:
+
+                                # print("equal_y")
+
+                                status_y.append('e')
+
+                            if theory_board_1[x, z, 1] > theory_board_1[y, z, 1]:
+                                # print('greater_y')
+                                status_y.append('g')
+
+                                greater += 1
+
+                        # print('status_y')
+                        # print(len(status_y))
+
+                        if len(status_y) == len(dominant_x) and 'g' in status_y:
+
+                            if y not in eliminate_y and x != y:
+
+                                # print('eliminate_y')
+
+                                eliminate_y.append(y)
+
+            for x in range(len(theory_board_1[:, 0, 0])):
+
+                if x not in eliminate_y:
+                    dominant_y.append(x)
+
+            # print("")
+            # print("dominant_y")
+            # print(dominant_y)
+            # print('eliminate_y')
+            # print(eliminate_y)
+
+            theory_board_2 = np.zeros((len(dominant_y), len(dominant_x), 2), dtype='uint8')
+
+            # print("theory_board_2")
+            # print(theory_board_2)
+
+            for d in dominant_y:
+
+                # print("")
+                # print("d")
+                # print(d)
+                # print(theory_board_1[d, :, :])
+
+                theory_board_2[dominant_y.index(d), :, :] = theory_board_1[d, :, :]
+
+            # print("")
+            # print("theory_board_2")
+            # print(theory_board_2)
+            #
+            # print(len(theory_board[:, 0, 0]))
+            # print(len(theory_board_2[:, 0, 0]))
+            # print(len(theory_board[0, :, 0]))
+            # print(len(theory_board_2[0, :, 0]))
+
+            if len(theory_board[:, 0, 0]) == len(theory_board_2[:, 0, 0]) and len(theory_board[0, :, 0]) == len(theory_board_2[0, :, 0]):
+
+                # print("simple")
+
+                simple = 1
+
+
+            values = []
+
+            for y in range(len(theory_board_2[:, 0, 0])):
+
+                for x in range(len(theory_board_2[0, :, 0])):
+
+                    # print(theory_board_2[y, x])
+                    # print(theory_board_2[y, x, 0])
+                    # print(theory_board_2[y, x, 1])
+
+                    if theory_board_2[y, x, 0] not in values:
+
+                        values.append(theory_board_2[y, x, 0])
+
+                    if theory_board_2[y, x, 1] not in values:
+
+                        values.append(theory_board_2[y, x, 1])
+
+            values = sorted(values)
+
+            # print("")
+            # print("values")
+            # print(values)
+            #
+            # print("theory_board_2")
+            # print(theory_board_2)
+
+            for y in range(len(theory_board_2[:, 0, 0])):
+
+                for x in range(len(theory_board_2[0, :, 0])):
+
+                    theory_board_2[y, x, 0] = values.index(theory_board_2[y, x, 0])
+                    theory_board_2[y, x, 1] = values.index(theory_board_2[y, x, 1])
+
+            # print("")
+            # print("theory_boards 1")
+            # print(theory_board)
+            # print(theory_board_2)
+
+            if len(theory_board_2[:, 0, 0]) == 0:
+
+                theory_board_2 = theory_board
+
+            # print("theory_boards 2")
+            # print(theory_board)
+            # print(theory_board_2)
+
+            if label == 0:
+
+                label = 1
+
+                d_label = (dominant_x, dominant_y)
+
+            if simple == 0:
+
+                theory_board_2, dominant_x, dominant_y, d_label = IEDS(theory_board_2, s_w, d_label, simple, label)
+
+                return theory_board_2, dominant_x, dominant_y, d_label
+
+            else:
+
+                return theory_board_2, dominant_x, dominant_y, d_label
+
+
+
+
+
+
+        theory_board, dominant_x, dominant_y, d_label = IEDS(theory_board, 'w')
+
+
+
+
+
 
         ##p2 bot
         if ai == 1:
@@ -2421,6 +2812,39 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=-1):
                 if len(fresh) == 1:
 
                     p2_move = [ad[stance], fresh[0]]
+
+        if ai >= 2:
+
+            rv_1 = random.choice(d_label[0])
+            rv_2 = random.choice(d_label[1])
+            rv_3 = random.choice(range(2))
+
+            if ai == 3:
+
+                if rv_3 == 1:
+
+                    # print("random")
+                    # print(rv_3)
+
+                    rv_1 = random.choice(range(8))
+                    rv_2 = random.choice(range(8))
+
+                    # print(rv_1)
+                    # print(rv_2)
+
+            # print(d_label[0])
+            # print(d_label[1])
+            # print(rv_1)
+            # print(rv_2)
+
+            p1_move = (ad[i_rule[rv_1]], rv_1)
+            p2_move = (ad[i_rule[rv_2]], rv_2)
+
+
+
+
+        # print("p2_move")
+        # print(p2_move)
 
 
 
@@ -4334,7 +4758,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(2, 50, 1, 1)
+Chaos_Window(5, 2, 1, 1, 2)
 
 
 
