@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 8001
+length = 501
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -1204,10 +1204,10 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'scarfs'
+path = 'journals'
 
 
-journaling = 0
+journaling = 1
 leveling = 0
 
 size = length
@@ -1228,7 +1228,7 @@ canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, dens
 
 if journaling != 0:
 
-    infile = open("journals/streams/april/4-25-22/journal_4-25-22-0-5", "rb")
+    infile = open("journals/journal_termbling-anatomical-evicoration", "rb")
     journal = pickle.load(infile)
     infile.close
 
@@ -1236,7 +1236,7 @@ if journaling != 0:
 
     print(len(list(journal.keys())))
 
-    for k in list(journal.keys())[2136:]:
+    for k in list(journal.keys()):
 
         print('')
         print(list(journal.keys()).index(k))
