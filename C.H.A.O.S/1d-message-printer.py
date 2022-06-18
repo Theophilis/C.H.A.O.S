@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 501
+length = 8001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -18,7 +18,7 @@ rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 3
+base = 5
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -1204,21 +1204,21 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-path = 'journals'
+path = 'scarfs/pentary'
 
 
-journaling = 1
-leveling = 0
+journaling = 0
+leveling = 1
 
 size = length
-l_size = 401
-x_space = 150
-y_space = 400
+l_size = 801
+x_space = 160
+y_space = 20
 
-offset_size = 60
-density = 12
-x_o = 120
-y_o = 720
+offset_size = 300
+density = 150
+x_o = 200
+y_o = 100
 
 # message = ' - -this-building ---will-burn - -  -----theft ------is -------a -----mercy'
 
@@ -1228,49 +1228,50 @@ canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, dens
 
 if journaling != 0:
 
-    infile = open("journals/journal_termbling-anatomical-evicoration", "rb")
+    infile = open("journals/journal_iae", "rb")
     journal = pickle.load(infile)
     infile.close
 
     journal = dict(sorted(journal.items(), key=lambda x:len(x[1][0]), reverse=True))
 
     print(len(list(journal.keys())))
+    # print(journal.keys())
 
-    for k in list(journal.keys()):
+    for k in list(journal.keys())[8202:]:
 
         print('')
         print(list(journal.keys()).index(k))
-        print(k[0])
+        print(k)
         jk = journal[k]
-        print(len(jk[0]))
+        print(len(jk))
 
-        if list(journal.keys()).index(k) == 10:
-
-            base = 0
-
-            for v in k[0]:
-
-                if int(v) > base:
-
-                    base = int(v)
-
-            base += 1
-
-            if base == 2:
-
-                path = 'scarfs/binary'
-
-            if base == 3:
-                path = 'scarfs/ternary'
-
-            if base == 4:
-                path = 'scarfs/quaternary'
-
-            if base == 5:
-                path = 'scarfs/pentary'
-
-            if base == 6:
-                path = 'scarfs/hexenary'
+        # if list(journal.keys()).index(k) == 10:
+        #
+        #     base = 0
+        #
+        #     for v in str(k):
+        #
+        #         if int(v) > base:
+        #
+        #             base = int(v)
+        #
+        #     base += 1
+        #
+        #     if base == 2:
+        #
+        #         path = 'scarfs/binary'
+        #
+        #     if base == 3:
+        #         path = 'scarfs/ternary'
+        #
+        #     if base == 4:
+        #         path = 'scarfs/quaternary'
+        #
+        #     if base == 5:
+        #         path = 'scarfs/pentary'
+        #
+        #     if base == 6:
+        #         path = 'scarfs/hexenary'
 
 
 
@@ -1278,7 +1279,7 @@ if journaling != 0:
         # print(base)
         # print(path)
 
-        map(canvas, message, length, width, k[0], base, start, direction, path, 0, 1)
+        map(canvas, message, length, width, k, base, start, direction, path, 0, 1)
 
 #folders to level
 ##pentary lvl-3
@@ -1286,11 +1287,11 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('plates/this building will burn, theft is a mercy/lvl-3')
+    lvl = os.listdir('scarfs/pentary/lvl-4')
 
     print(len(lvl))
 
-    for l in lvl:
+    for l in lvl[78:]:
 
         print(" ")
         print(lvl.index(l))
@@ -1300,7 +1301,7 @@ elif leveling != 0:
 
         try:
 
-            l = int(l[19:-80])
+            l = int(l[19:-5])
 
         except:
 

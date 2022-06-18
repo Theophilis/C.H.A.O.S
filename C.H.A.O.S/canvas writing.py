@@ -4,16 +4,16 @@ from matplotlib import colors as c
 
 plt.ioff()
 
-size = 8001
+size = 2001
 
-l_size = 401
-x_space = 150
-y_space = 400
+l_size = 901
+x_space = 50
+y_space = 50
 
-offset_size = 72
-density = 12
-x_o = 120
-y_o = 720
+offset_size = 3
+density = 50
+x_o = 300
+y_o = 50
 
 def draw_a(size, canvas, corner):
 
@@ -1126,7 +1126,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas
 
 
-message = '-this-building ---will-burn - - -  -----theft ------is -------a -----mercy'
+message = 'zu zu'
 
 canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o)
 

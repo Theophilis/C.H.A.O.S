@@ -743,13 +743,15 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     origin_rule = 0
     bv = base ** view
     bbv = base ** base ** view
-    rule_window_scale = 6
+    rule_window_scale = 4
 
     #streams
-    stream_buffer = 5
+    stream_buffer = 8
     stream_direction = deque(maxlen=stream_buffer)
     stream_direction.append(0)
     momentum = {0:0, 1:0, 2:0, 3:0}
+    momentum_step = 3
+    momentum_scale_scale = 3
 
     #record keeping
     journal = dict()
@@ -835,15 +837,17 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     glove_value = 0
 
     #sensor range
-    relative_range = int((bbv) ** (1/11)) + 2
-    range_unit = int(128/relative_range) + 1
+    if rules_g == 1:
 
-    print("")
-    print('relative range')
-    print(relative_range)
-    print("range_unit")
-    print(range_unit)
-    print(int(128/range_unit))
+        relative_range = int((bbv) ** (1/11)) + 2
+        range_unit = int(128/relative_range) + 1
+
+        print("")
+        print('relative range')
+        print(relative_range)
+        print("range_unit")
+        print(range_unit)
+        print(int(128/range_unit))
 
     #chaos console
     input_box = 0
@@ -1049,7 +1053,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 if 1 in stream_direction and 3 in stream_direction or 0 in stream_direction and 2 in stream_direction:
 
-                    momentum[stream_direction[step % stream_buffer % len(stream_direction)]] += 1
+                    momentum[stream_direction[step % stream_buffer % len(stream_direction)]] += int(ev_3 / momentum_scale_scale) + 1
 
                 else:
 
@@ -1074,9 +1078,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
             line = tuple(color_value[tuple(v)] for v in cells_a[0])
-
-            # #pixel class cells
-            # [cells_pixel.append(Cell(x * pixel_res, -pixel_res, cell_colors[line[x]])) for x in range(cell_row_width)]
 
             if line in page:
 
@@ -1103,7 +1104,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 # print("rule")
                 # print(rule)
 
+                rule = decimal(i_rule, base)
+
                 if rule not in journal:
+
+                    # print("")
+                    # print("new rule")
+                    # print(rule)
+
                     journal[rule] = []
                     journal[rule].append(page)
 
