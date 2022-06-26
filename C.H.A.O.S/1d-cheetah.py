@@ -245,6 +245,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     print("device_id")
     print(device_id)
     p_m_i = 0
+    ts_0 = time.time()
 
     #window
     if analytics == 1:
@@ -269,7 +270,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         color_value = {v:k for k, v in value_color.items()}
 
 
-    def redraw_window(input_box, v_input, zero_count, step_show, triggers, dt):
+    def redraw_window(input_box, v_input, zero_count, step_show, triggers, dt, timer):
 
         #preparation
         zero_count = int(zero_count / cell_vel)
@@ -308,6 +309,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
         rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
+        time_label = lable_font.render(str(int(timer/60)), 1, (255, 255, 255))
 
 
         #glove labels
@@ -328,8 +330,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
             WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
 
-        WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
-        WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
+        # WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
+        # WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
+        WIN.blit(time_label, (WIDTH - time_label.get_width() - 20, 10))
 
         # WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
         # WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 90))
@@ -357,7 +360,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         if list_count != 0:
             draw_text(str(list_count), small_font, (255, 255, 255), WIN, 11, 33)
 
-        draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 80, 150)
+        draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 40, 80)
 
         pygame.display.update()
 
@@ -1040,9 +1043,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         # print("")
         # print("running")
 
+        ts_1 = time.time()
+        timer = ts_1 - ts_0
+
+        # print("")
+        # print("timer")
+        # print(timer)
+        # print(type(timer))
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
-        redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
+        redraw_window(input_box, v_input, zero_count, step_show, triggers, dt, timer)
 
         #mitosis
         for y in range(cell_vel):
@@ -2776,6 +2786,7 @@ pygame.init()
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
 small_font = pygame.font.SysFont("leelawadeeuisemilight", 24)
 main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
+lable_font = pygame.font.SysFont("leelawadeeuisemilight", 48)
 TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
 

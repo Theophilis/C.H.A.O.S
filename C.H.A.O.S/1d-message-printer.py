@@ -10,7 +10,7 @@ np.set_printoptions(linewidth=np.inf)
 plt.ioff()
 
 
-length = 8001
+length = 2001
 #number of times given rule is applied and number of initial rows generated
 width = length
 #number of cells in a row
@@ -1287,11 +1287,11 @@ if journaling != 0:
 
 elif leveling != 0:
 
-    lvl = os.listdir('scarfs/pentary/lvl-4')
+    lvl = os.listdir('scarfs/pentary/lvl-6')
 
     print(len(lvl))
 
-    for l in lvl[78:]:
+    for l in lvl:
 
         print(" ")
         print(lvl.index(l))
