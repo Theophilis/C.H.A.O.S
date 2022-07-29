@@ -290,7 +290,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     else:
 
-        value_color = {0:black, 1:grey_0, 2:magenta, 3:cyan, 4:yellow, 5:grey_5,
+        value_color = {0:black, 1:grey_0, 2:magenta, 3:cyan, 4:yellow, 5:grey_1,
                       6:red, 7:green, 8:blue}
         color_value = {v:k for k, v in value_color.items()}
 
@@ -780,7 +780,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #active variables
     run = 1
     FPS = 120
-    rule = 30
+    rule = 0
     start = 0
     pause = 0
     step = 0
@@ -1177,7 +1177,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     y_diff = brush_corner[0] + brush_width - int(brush_width / 2)
 
                 cells_a = np.rot90(cells_a, v, (0, 1))
-
 
                 for g in range(int(ev_3 / 4) + 1):
 
@@ -3457,7 +3456,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(6, 1, 0, 2)
+Chaos_Window(9, 1, 0, 2)
 
 
 

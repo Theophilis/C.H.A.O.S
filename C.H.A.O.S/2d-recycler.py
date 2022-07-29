@@ -8,7 +8,7 @@ import os
 import pickle
 import sys
 import pygame.midi
-import time
+from time import time
 from collections import deque
 
 sys.setrecursionlimit(999999999)
@@ -188,17 +188,10 @@ def rule_gen_2d(rule, base=2, width=0):
 
         x = len(int_rule) - x - 1
 
-        key = tuple(base_x(x, base)[-view:])
+        key = base_x(x, base)[-view:].rjust(4, '0')
 
-        if len(key) < view:
+        key = [int(k) for k in key]
 
-            diff = view - len(key)
-            key = list(key)
-
-            for y in range(diff):
-                key.insert(0, str(0))
-
-        key = "".join(key)
 
         rules[tuple(key)] = int_rule[-x - 1]
 
@@ -258,6 +251,71 @@ def Color_cells_1d(d_rule, cell_row_width, row_0):
     return row_1
 
 
+def diagonals(length, width):
+
+    diagonal_paths = dict()
+
+    diagonal_num = length + width - 2
+    elbow = int((length + width)/2)
+
+
+    for x in range(elbow):
+
+        left = []
+        right = []
+        coord_model = []
+
+        x += 1
+
+        for y in range(x):
+            left.append(y)
+            right.insert(0, y)
+
+        for z in range(len(left)):
+
+            coord_model.append((left[z], right[z]))
+
+        # print(coord_model)
+        diagonal_paths[x - 1] = coord_model
+
+
+
+    for x in range(elbow - 1):
+
+        left = []
+        right = []
+        coord_model = []
+
+        x += 1
+
+        for y in range(x):
+            left.append(length - y - 1)
+            right.insert(0, width - y - 1)
+
+        for z in range(len(left)):
+
+            coord_model.append((left[z], right[z]))
+
+        # print(coord_model)
+        diagonal_paths[diagonal_num - x + 1] = list(reversed(coord_model))
+
+    diagonal_paths = dict(sorted(diagonal_paths.items(), key=lambda x:x[0]))
+
+    diagonal_coords = []
+
+    for d in diagonal_paths:
+
+        # print("")
+        # print(d)
+        # print(diagonal_paths[d])
+
+        for i in diagonal_paths[d]:
+
+            diagonal_coords.append(i)
+
+    return diagonal_coords, diagonal_paths
+
+
 #####game#####
 
 pygame.init()
@@ -265,7 +323,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 600, 300
+WIDTH, HEIGHT = 200, 200
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -277,7 +335,20 @@ pygame.display.set_caption("C.H.A.O.S")
 click = False
 
 
+
 def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1):
+
+
+    #performance trackers
+
+    redraw_performance = [0, 0]
+    texture_performance = [0, 0]
+
+    mitosis_perf = [0, 0]
+    try_perf = [0, 0]
+
+    input_perf = [0, 0]
+
 
     print("dimensions")
     print(dimensions)
@@ -374,11 +445,17 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
         # cell drawing
         if dimensions == 2:
 
-            # print("")
-            # print("redraw")
-            # print(cells_2d_a)
+            if performance == 1:
 
-            WIN.blit(pygame.surfarray.make_surface(cells_2d_a[:, :, 0]), (0, 0))
+                time_1 = time()
+
+
+            WIN.blit(pygame.surfarray.make_surface(cells_2d_b), (0, 0))
+
+            if performance == 1:
+
+                texture_performance[0] += time() - time_1
+                texture_performance[1] += 1
 
 
         #ui drawing
@@ -1504,6 +1581,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     clock = pygame.time.Clock()
     origin_rule = 0
     bv = base ** view
+    performance = 1
 
     #colors
     if base < 5:
@@ -1525,6 +1603,9 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     else:
 
         CELL_WIDTH = WIDTH
+
+    diagonal_coords, diagonal_paths = diagonals(HEIGHT, CELL_WIDTH)
+
 
     #input augments
     echoing = 0
@@ -1614,9 +1695,9 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     if dimensions == 2:
         d_rule, i_rule = rule_gen_2d(rule, base)
 
-    # print("d_rule, i_rule")
-    # print(d_rule_2)
-    # print(i_rule_2)
+    print("d_rule, i_rule")
+    print(d_rule)
+    print(i_rule)
 
     print("")
     print('cells: width height')
@@ -1624,139 +1705,305 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
 
     #cells - 2 dimensional
-    cells_2d_a = np.zeros((cell_rows, cell_row_width, 2, 3), dtype='uint8')
+    cells_2d_a = np.zeros((cell_rows, cell_row_width), dtype='uint8')
+    cells_2d_b = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
+    memory = np.zeros((3, CELL_WIDTH + 2), dtype='uint8')
 
-    # count = 0
-    # for x in range(2):
-    #
-    #     for y in range(cell_rows):
-    #
-    #         for z in range(cell_row_width):
-    #             cells_2d_a[x, y, z] = count
-    #
-    #             count += 1
-
-    print("")
-    print("c2da")
-    print(cells_2d_a)
 
     if start == 0:
 
-        cells_2d_a[int(cell_rows / 2), int(cell_row_width / 2), 0] = value_color[1]
+        cells_2d_a[int(cell_rows / 2), int(cell_row_width / 2)] = 1
 
-    print("")
-    print('started')
-    print(value_color[1])
-    print(cells_2d_a)
+    # print("")
+    # print('started')
+    # print(value_color[1])
+    # print(cells_2d_a)
 
-    def mitosis_2d_try(x, y, d_rule):
-
-        edge = (0, 0, 0)
-
-        try:
-
-            u = tuple(cells_2d_a[y + 1, x, 0])
+    def mitosis_2d(cells_2d_a, d_rule):
 
 
-        except:
+        def mitosis_2d_try(x, y, d_rule):
 
-            u = edge
+            if performance == 1:
 
+                time_try = time()
 
+            edge = 0
 
-        try:
+            try:
 
-            d = tuple(cells_2d_a[y - 1, x, 0])
-
-        except:
-
-            d = edge
+                u = cells_2d_a[0, y + 1, x]
 
 
-        try:
+            except:
 
-            r = tuple(cells_2d_a[y, x + 1, 0])
-
-        except:
-
-            r = edge
+                u = edge
 
 
 
-        try:
+            try:
 
-            l = tuple(cells_2d_a[y, x - 1, 0])
+                d = cells_2d_a[0, y - 1, x]
 
-        except:
+            except:
 
-            l = edge
-
-
-        cells_2d_a[y, x, 1] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
-
-    def mitosis_2d_if(x, y, d_rule):
-
-        edge = (0, 0, 0)
-
-        if y < cell_rows - 1:
-
-            u = tuple(cells_2d_a[y + 1, x, 0])
+                d = edge
 
 
-        else:
+            try:
 
-            u = edge
+                r = cells_2d_a[0, y, x + 1]
+
+            except:
+
+                r = edge
 
 
 
-        if y > 0:
+            try:
 
-            d = tuple(cells_2d_a[y - 1, x, 0])
+                l = cells_2d_a[0, y, x - 1]
 
-        else:
+            except:
 
-            d = edge
-
-
-        if x < cell_row_width - 1:
-
-            r = tuple(cells_2d_a[y, x + 1, 0])
-
-        else:
-
-            r = edge
+                l = edge
 
 
-
-        if x > 0:
-
-            l = tuple(cells_2d_a[y, x - 1, 0])
-
-        else:
-
-            l = edge
+            cells_2d_a[1, y, x] = d_rule[(u, r, d, l)]
+            cells_2d_b[y, x] = value_color[d_rule[(u, r, d, l)]]
 
 
-        cells_2d_a[y, x, 1] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+            if performance == 1:
+
+                try_perf[0] += time() - time_try
+                try_perf[1] += 1
+
+        def mitosis_2d_if(x, y, d_rule):
+
+            edge = (0, 0, 0)
+
+            if y < cell_rows - 1:
+
+                u = tuple(cells_2d_a[y + 1, x, 0])
+
+
+            else:
+
+                u = edge
 
 
 
-    [[mitosis_2d_try(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
+            if y > 0:
 
-    print("")
-    print("cells_2d_a")
-    print(cells_2d_a)
+                d = tuple(cells_2d_a[y - 1, x, 0])
 
-    print("")
-    print("do a barrel roll")
+            else:
 
-    cells_2d_a = np.roll(cells_2d_a, 1, 2)
+                d = edge
 
-    print(cells_2d_a)
+
+            if x < cell_row_width - 1:
+
+                r = tuple(cells_2d_a[y, x + 1, 0])
+
+            else:
+
+                r = edge
+
+
+
+            if x > 0:
+
+                l = tuple(cells_2d_a[y, x - 1, 0])
+
+            else:
+
+                l = edge
+
+
+            cells_2d_a[y, x, 1] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+
+
+        [[mitosis_2d_try(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
+
+    # for d in diagonal_coords:
+    #     cells_2d_a[d] = diagonal_coords.index(d) + 1
+
+    def mitosis_diag(cells_2d_a, memory, d_rule):
+
+        memory[0] = 0
+
+        for c in diagonal_paths[0]:
+            memory[1, diagonal_paths[0].index(c) + 1] = cells_2d_a[c]
+
+        for c in diagonal_paths[1]:
+            memory[2, diagonal_paths[1].index(c) + 1] = cells_2d_a[c]
+
+        cells_2d_a[diagonal_paths[0][0]] = d_rule[memory[0, 0], memory[2, 1], memory[2, 2], memory[0, 1]]
+        cells_2d_b[diagonal_paths[0][0]] = value_color[cells_2d_a[diagonal_paths[0][0]]]
+
+        # print('front_half')
+        for d in list(diagonal_paths.keys())[1:int(len(diagonal_paths.keys())/2) - 1]:
+
+            memory = np.roll(memory, -1, 0)
+            memory[2, + len(diagonal_paths[d])] = 0
+
+            for c in diagonal_paths[d + 1]:
+                memory[2, diagonal_paths[d + 1].index(c) + 1] = cells_2d_a[c]
+
+            for c in diagonal_paths[d]:
+
+                cells_2d_a[c] = d_rule[memory[0, 0 + diagonal_paths[d].index(c)], memory[2, 1 + diagonal_paths[d].index(c)],
+                           memory[2, 2 + diagonal_paths[d].index(c)], memory[0, 1  + diagonal_paths[d].index(c)]]
+                cells_2d_b[c] = value_color[cells_2d_a[c]]
+
+
+        # print("back_half")
+        for d in list(diagonal_paths.keys())[int(len(diagonal_paths.keys())/2) - 1:-1]:
+
+            memory = np.roll(memory, -1, 0)
+            memory[2, list(diagonal_paths.keys()).index(d) - int(len(diagonal_paths.keys()) / 2) + 1] = 0
+            memory[2, list(diagonal_paths.keys()).index(d) - int(len(diagonal_paths.keys()) / 2) + 1 + len(
+                diagonal_paths[d])] = 0
+
+            for c in diagonal_paths[d + 1]:
+                memory[2, diagonal_paths[d + 1].index(c) + 1 + list(diagonal_paths.keys()).index(d) - int(len(diagonal_paths.keys())/2) + 1] = cells_2d_a[c]
+
+            for c in diagonal_paths[d]:
+
+                cells_2d_a[c] = d_rule[memory[0, 0 + diagonal_paths[d].index(c) + list(diagonal_paths.keys()).index(d) - int(len(diagonal_paths.keys())/2)],
+                                  memory[2, 1 + diagonal_paths[d].index(c) + list(diagonal_paths.keys()).index(d) - int(len(diagonal_paths.keys())/2)],
+                                  memory[2, 2 + diagonal_paths[d].index(c) + list(diagonal_paths.keys()).index(d) - int(len(diagonal_paths.keys())/2)],
+                                  memory[0, 1 + diagonal_paths[d].index(c) + list(diagonal_paths.keys()).index(d) - int(len(diagonal_paths.keys())/2)]]
+                cells_2d_b[c] = value_color[cells_2d_a[c]]
+
+
+
+
+    mitosis_diag(cells_2d_a, memory, d_rule)
+
+
+
+
+    def mitosis_2d_b(cells_2d_a, d_rule):
+
+        cells_2d_b = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
+
+        def mitosis_2d_try(cells_2d_a, x, y, d_rule):
+
+            edge = (0, 0, 0)
+
+            try:
+
+                u = tuple(cells_2d_a[y + 1, x])
+
+
+            except:
+
+                u = edge
+
+
+
+            try:
+
+                d = tuple(cells_2d_a[y - 1, x])
+
+            except:
+
+                d = edge
+
+
+            try:
+
+                r = tuple(cells_2d_a[y, x + 1])
+
+            except:
+
+                r = edge
+
+
+
+            try:
+
+                l = tuple(cells_2d_a[y, x - 1])
+
+            except:
+
+                l = edge
+
+
+            cells_2d_b[y, x] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+
+        def mitosis_2d_if(x, y, d_rule):
+
+            edge = (0, 0, 0)
+
+            if y < cell_rows - 1:
+
+                u = tuple(cells_2d_a[y + 1, x, 0])
+
+
+            else:
+
+                u = edge
+
+
+
+            if y > 0:
+
+                d = tuple(cells_2d_a[y - 1, x, 0])
+
+            else:
+
+                d = edge
+
+
+            if x < cell_row_width - 1:
+
+                r = tuple(cells_2d_a[y, x + 1, 0])
+
+            else:
+
+                r = edge
+
+
+
+            if x > 0:
+
+                l = tuple(cells_2d_a[y, x - 1, 0])
+
+            else:
+
+                l = edge
+
+
+            cells_2d_a[y, x, 1] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+
+
+
+        [[mitosis_2d_try(cells_2d_a, x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
+
+        return cells_2d_b
+
+    # mitosis_2d(cells_2d_a, d_rule)
+
+    # cells_2d_b = mitosis_2d_b(cells_2d_b, d_rule)
+
+    # print("")
+    # print("cells_2d_a")
+    # print(cells_2d_a)
+    #
+    # print("")
+    # print("do a barrel roll")
+    #
+    # cells_2d_a = np.roll(cells_2d_a, 1, 2)
+    #
+    # print(cells_2d_a)
 
 
 
     #cells_rect init
+
     cells_rect = dict()
     for x in range(cell_row_width):
 
@@ -1929,6 +2176,7 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
     print(len(i_rule))
 
 
+
     #main loop
     while run == 1:
 
@@ -1939,24 +2187,46 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
         # print("pre")
         # print(cells_2d_a)
 
+        # print(i_rule)
+
+
+
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
+
+        time_0 = time()
+
         redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
+
+        redraw_performance[0] += time() - time_0
+        redraw_performance[1] += 1
 
         #mitosis
 
+        print("")
+        print("cells")
+        print(cells_2d_a)
+
+
         if dimensions == 2:
 
-            [[mitosis_2d_try(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
+            if performance == 1:
 
-            # print("")
-            # print("cells_2d_a")
-            # print(cells_2d_a)
-            #
-            # print("")
-            # print("do a barrel roll")
+                time_mitosis = time()
 
-            cells_2d_a = np.roll(cells_2d_a, 1, 2)
+            mitosis_diag(cells_2d_a, memory, d_rule)
+            # cells_2d_a = np.roll(cells_2d_a, 1, 0)
+
+            if performance == 1:
+
+                mitosis_perf[0] += time() - time_mitosis
+                mitosis_perf[1] += 1
+
+
+
+
+
+            # cells_2d_b = mitosis_2d_b(cells_2d_b, d_rule)
 
 
             step += 1
@@ -1985,6 +2255,9 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
 
 
         #inputs
+
+        time_input = time()
+
         for event in pygame.event.get():
 
             current_digit = -1
@@ -3357,6 +3630,9 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
                     for m_e in midi_evs:
                         event_post(m_e)
 
+        input_perf[0] += time() - time_input
+        input_perf[1] += 1
+
 
     #journal write
     if write == 1:
@@ -3376,6 +3652,29 @@ def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1)
         outfile.close
 
         # print(len(journal))
+
+    print("")
+    print("performance")
+    print("")
+    print("redraw")
+    print(redraw_performance)
+    print(round(redraw_performance[0]/redraw_performance[1], 6))
+    print("texture")
+    print(texture_performance)
+    print(round(texture_performance[0]/texture_performance[1], 6))
+    print("")
+    print("mitosis")
+    print(mitosis_perf)
+    print(round(mitosis_perf[0]/mitosis_perf[1], 6))
+    print("try")
+    print(try_perf)
+    print(round(try_perf[0]/try_perf[1], 6))
+    print("")
+    print("inputs")
+    print(input_perf)
+    print(round(input_perf[0]/input_perf[1], 6))
+
+
 
 
 # menus
@@ -3860,7 +4159,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(2, 2, 1, 1, 1, 2)
+Chaos_Window(2, 5, 1, 1, 0, -1)
 
 
 

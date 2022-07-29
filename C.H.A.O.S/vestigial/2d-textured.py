@@ -8,7 +8,7 @@ import os
 import pickle
 import sys
 import pygame.midi
-from time import time
+import time
 from collections import deque
 
 sys.setrecursionlimit(999999999)
@@ -190,9 +190,6 @@ def rule_gen_2d(rule, base=2, width=0):
 
         key = tuple(base_x(x, base)[-view:])
 
-        print("tuple key")
-        print(key)
-
         if len(key) < view:
 
             diff = view - len(key)
@@ -202,8 +199,6 @@ def rule_gen_2d(rule, base=2, width=0):
                 key.insert(0, str(0))
 
         key = "".join(key)
-
-
 
         rules[tuple(key)] = int_rule[-x - 1]
 
@@ -270,7 +265,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 400, 200
+WIDTH, HEIGHT = 400, 100
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -282,18 +277,10 @@ pygame.display.set_caption("C.H.A.O.S")
 click = False
 
 
-def Chaos_Window(base, pixel_res, analytics, device_id=-1):
+def Chaos_Window(dimensions, base, pixel_res, cell_vel, analytics, device_id=-1):
 
-    # performance trackers
-
-    redraw_performance = [0, 0]
-    texture_performance = [0, 0]
-
-    mitosis_perf = [0, 0]
-    try_perf = [0, 0]
-
-    input_perf = [0, 0]
-
+    print("dimensions")
+    print(dimensions)
     print("base")
     print(base)
     print("device_id")
@@ -376,73 +363,43 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     #         self.y += vel
 
 
-    def redraw_window(bar_colors, input_box, v_input, zero_count, step_show, triggers, dt):
-
-        click = False
-
-        mx, my = pygame.mouse.get_pos()
+    def redraw_window(input_box, v_input, zero_count, step_show, triggers, dt):
 
         #preparation
-        zero_count = int(zero_count)
+        zero_count = int(zero_count / cell_vel)
 
-        triggers = [int(t) for t in triggers][0:base - 1]
+        triggers = [int(t / cell_vel) for t in triggers][0:base - 1]
 
 
         # cell drawing
+        if dimensions == 2:
 
-        time_0 = time()
+            # print("")
+            # print("redraw")
+            # print(cells_2d_a)
 
-        [pygame.draw.rect(WIN, bar_colors[cells_2d_a[0, cell[1], cell[0]]], cells_rect[cell]) for cell in cells_rect]
-
-        texture_performance[0] += time() - time_0
-        texture_performance[1] += 1
-
-        # [pygame.draw.rect(WIN, bar_colors[cells_2d_b[cell[1], cell[0]]], cells_rect[cell]) for cell in
-        #  cells_rect]
-
+            WIN.blit(pygame.surfarray.make_surface(cells_2d_a[:, :, 0]), (0, 0))
 
 
         #ui drawing
         if ui_on == 1:
 
-            # [pygame.draw.rect(WIN, bar_colors[i_rule[rule_models.index(cell)]], cell) for cell in rule_models]
+            [pygame.draw.rect(WIN, value_color[i_rule[rule_models.index(cell)]], cell) for cell in rule_models]
 
-            [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[glove_value][x])], precursor[x]) for x in range(view)]
+            if rules_g != 1:
+                [pygame.draw.rect(WIN, value_color[int(list(d_rule.keys())[glove_value][x])], precursor[x]) for x in range(view)]
 
 
-        for cell in rule_models:
-
-            pygame.draw.rect(WIN, bar_colors[i_rule[rule_models.index(cell)]], cell)
-
-            #p1_move
-            if cell.collidepoint((mx, my)):
-
-                if click:
-
-                    place_change(rule_models.index(cell))
-
-                [pygame.draw.rect(WIN, bar_colors[int(list(d_rule.keys())[rule_models.index(cell)][x])], precursor[x]) for x in
-                 range(view)]
-
-        # print('tsp-redraw')
-        # print(ts_percentage)
-        # print(len(ts_percentage))
-
-        # print("triggers-redraw")
-        # print(triggers)
-        # print(len(triggers))
-
-        bar_colors = bar_colors[1:]
-
-        [pygame.draw.rect(WIN, bar_colors[x], pygame.Rect(x_offset + (bar_width * x) * 2, (y_offset + y_offset/2 - bar_height * triggers[x] / zero_out * 4) + bar_height/2 - 60, bar_width, bar_height * triggers[x] / zero_out * 4)) for x in range(len(ts_percentage) - 1)]
-
+        #bar drawings
+        [pygame.draw.rect(WIN, value_color[x + 1], pygame.Rect(x_offset + (bar_width * x) * 2, (
+                    y_offset + y_offset / 2 - bar_height * triggers[x] / zero_out * 4) + bar_height / 2 - 60, bar_width,
+                                                               bar_height * triggers[x] / zero_out * 4)) for x in
+         range(len(ts_percentage) - 1)]
 
         #vanilla labels
         rule_label_0_b = main_font.render(f"RUL3: {i_rule[0:int((base ** view) / 2)]}", 1, (255, 255, 255))
         rule_label_1_b = main_font.render(f"          {i_rule[int((base ** view) / 2):int((base ** view))]}", 1,
                                           (255, 255, 255))
-
-        rule_value = main_font.render(str(decimal(i_rule, base)), 1, (255, 255, 255))
 
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
         rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
@@ -468,7 +425,6 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
         WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
         WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
-        # WIN.blit(rule_value, (WIDTH - rule_value.get_width(), 200))
 
         # WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
         # WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 90))
@@ -480,7 +436,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
         # WIN.blit(tsp_values, (CELL_WIDTH + 120, 170))
         # WIN.blit(tsp_view, (CELL_WIDTH + 120, 135))
 
-        # WIN.blit(gv, (WIDTH - gv.get_width(), 90))
+        WIN.blit(gv, (WIDTH - gv.get_width(), 90))
 
 
         #conosle inputs
@@ -1548,21 +1504,18 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     clock = pygame.time.Clock()
     origin_rule = 0
     bv = base ** view
-    pause = 0
 
+    #colors
     if base < 5:
 
-        cell_colors = {0:'black_x', 1:'magenta_x', 2:'cyan_x', 3:'yellow_x'}
-
-        bar_colors = [(32, 32, 32), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192), (255, 0, 0),
-                          (0, 255, 0), (0, 0, 255)]
+        value_color = {0:(0, 0, 0), 1:(255, 0, 255), 2:(0, 255, 255), 3:(255, 255, 0)}
+        color_value = {v:k for k, v in value_color.items()}
 
     else:
 
-        cell_colors = {0:'black_x', 1:'dark_grey_x', 2:'magenta_x', 3:'cyan_x', 4:'yellow_x', 5:'light_grey_x', 6:'red_x', 7:'green_x', 8:'blue_x'}
-
-        bar_colors = [(0, 0, 0), (32, 32, 32), (255, 0, 255), (0, 255, 255), (255, 255, 0), (192, 192, 192),
-                      (255, 0, 0), (0, 255, 0), (0, 0, 255)]
+        value_color = {0:(0, 0, 0), 1:(32, 32, 32), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0), 5:(192, 192, 192),
+                      6:(255, 0, 0), 7:(0, 255, 0), 8:(0, 0, 255)}
+        color_value = {v:k for k, v in value_color.items()}
 
     #window
     if analytics == 1:
@@ -1605,8 +1558,8 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     iterate = 0
 
     #glove activations
-    zero_out = int(4000 / pixel_res)
-    zero_count = int(4000 / pixel_res)
+    zero_out = int(cell_vel * 4000 / pixel_res)
+    zero_count = int(cell_vel * 4000 / pixel_res)
     origin_threshold = 50
     over_flow = 0
 
@@ -1640,7 +1593,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     tsp_portion = []
     placed = []
     glove_value = 0
-    rule_window_scale = 1
+    rule_window_scale = 2
 
     #chaos console
     input_box = 0
@@ -1655,8 +1608,11 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     cell_row_width = int(CELL_WIDTH / pixel_res)
     cell_rows = int(HEIGHT / pixel_res)
 
+    if dimensions == 1:
+        d_rule, i_rule = rule_gen_1d(rule, base)
 
-    d_rule, i_rule = rule_gen_2d(rule, base)
+    if dimensions == 2:
+        d_rule, i_rule = rule_gen_2d(rule, base)
 
     # print("d_rule, i_rule")
     # print(d_rule_2)
@@ -1668,140 +1624,234 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
 
     #cells - 2 dimensional
+    cells_2d_a = np.zeros((cell_rows, cell_row_width, 2, 3), dtype='uint8')
+    # cells_2d_b = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
 
-    cells_2d_a = np.zeros((2, cell_rows, cell_row_width), dtype='int8')
 
     if start == 0:
 
-        cells_2d_a[0, int(cell_row_width / 2), int(cell_row_width / 2)] = 1
+        cells_2d_a[int(cell_rows / 2), int(cell_row_width / 2), 0] = value_color[1]
+        # cells_2d_b[int(cell_rows / 2), int(cell_row_width / 2)] = value_color[1]
 
-    def mitosis_2d_a(x, y, d_rule):
+    # print("")
+    # print('started')
+    # print(value_color[1])
+    # print(cells_2d_a)
 
-        time_try = time()
+    def mitosis_2d(cells_2d_a, d_rule):
 
-        edge = '0'
+        def mitosis_2d_try(x, y, d_rule):
 
-        try:
+            edge = (0, 0, 0)
 
-            u = str(cells_2d_a[0, y + 1, x])
+            try:
 
-
-        except:
-
-            u = edge
-
-
-
-        try:
-
-            d = str(cells_2d_a[0, y - 1, x])
-
-        except:
-
-            d = edge
+                u = tuple(cells_2d_a[y + 1, x, 0])
 
 
-        try:
+            except:
 
-            r = str(cells_2d_a[0, y, x + 1])
-
-        except:
-
-            r = edge
+                u = edge
 
 
 
-        try:
+            try:
 
-            l = str(cells_2d_a[0, y, x - 1])
+                d = tuple(cells_2d_a[y - 1, x, 0])
 
-        except:
+            except:
 
-            l = edge
+                d = edge
 
 
+            try:
 
-        cells_2d_a[1, y, x] = d_rule[(u, r, d, l)]
+                r = tuple(cells_2d_a[y, x + 1, 0])
 
-        try_perf[0] += time() - time_try
-        try_perf[1] += 1
+            except:
 
-    [[mitosis_2d_a(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
-
-    cells_2d_a = np.roll(cells_2d_a, 1, 0)
-
-    cells_2d_a[1] = np.zeros((cell_rows, cell_row_width), dtype='int8')
+                r = edge
 
 
 
-    # cells_2d_b = np.zeros((cell_rows, cell_row_width), dtype='int8')
-    #
-    # if start == 0:
-    #     cells_2d_b[int(cell_row_width / 2), int(cell_row_width / 2)] = 1
-    #
+            try:
+
+                l = tuple(cells_2d_a[y, x - 1, 0])
+
+            except:
+
+                l = edge
+
+
+            cells_2d_a[y, x, 1] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+
+        def mitosis_2d_if(x, y, d_rule):
+
+            edge = (0, 0, 0)
+
+            if y < cell_rows - 1:
+
+                u = tuple(cells_2d_a[y + 1, x, 0])
+
+
+            else:
+
+                u = edge
+
+
+
+            if y > 0:
+
+                d = tuple(cells_2d_a[y - 1, x, 0])
+
+            else:
+
+                d = edge
+
+
+            if x < cell_row_width - 1:
+
+                r = tuple(cells_2d_a[y, x + 1, 0])
+
+            else:
+
+                r = edge
+
+
+
+            if x > 0:
+
+                l = tuple(cells_2d_a[y, x - 1, 0])
+
+            else:
+
+                l = edge
+
+
+            cells_2d_a[y, x, 1] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+
+
+
+        [[mitosis_2d_try(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
+
+    def mitosis_2d_b(cells_2d_a, d_rule):
+
+        cells_2d_b = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
+
+        def mitosis_2d_try(cells_2d_a, x, y, d_rule):
+
+            edge = (0, 0, 0)
+
+            try:
+
+                u = tuple(cells_2d_a[y + 1, x])
+
+
+            except:
+
+                u = edge
+
+
+
+            try:
+
+                d = tuple(cells_2d_a[y - 1, x])
+
+            except:
+
+                d = edge
+
+
+            try:
+
+                r = tuple(cells_2d_a[y, x + 1])
+
+            except:
+
+                r = edge
+
+
+
+            try:
+
+                l = tuple(cells_2d_a[y, x - 1])
+
+            except:
+
+                l = edge
+
+
+            cells_2d_b[y, x] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+
+        def mitosis_2d_if(x, y, d_rule):
+
+            edge = (0, 0, 0)
+
+            if y < cell_rows - 1:
+
+                u = tuple(cells_2d_a[y + 1, x, 0])
+
+
+            else:
+
+                u = edge
+
+
+
+            if y > 0:
+
+                d = tuple(cells_2d_a[y - 1, x, 0])
+
+            else:
+
+                d = edge
+
+
+            if x < cell_row_width - 1:
+
+                r = tuple(cells_2d_a[y, x + 1, 0])
+
+            else:
+
+                r = edge
+
+
+
+            if x > 0:
+
+                l = tuple(cells_2d_a[y, x - 1, 0])
+
+            else:
+
+                l = edge
+
+
+            cells_2d_a[y, x, 1] = value_color[d_rule[(str(color_value[u]), str(color_value[r]), str(color_value[d]), str(color_value[l]))]]
+
+
+
+        [[mitosis_2d_try(cells_2d_a, x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
+
+        return cells_2d_b
+
+    mitosis_2d(cells_2d_a, d_rule)
+
+    # cells_2d_b = mitosis_2d_b(cells_2d_b, d_rule)
+
+    # print("")
+    # print("cells_2d_a")
+    # print(cells_2d_a)
     #
     # print("")
-    # print("cells_2d_b")
-    # print(cells_2d_b)
+    # print("do a barrel roll")
     #
-    # def mitosis_2d_b(cells_2d_b, d_rule):
+    # cells_2d_a = np.roll(cells_2d_a, 1, 2)
     #
-    #     cells_2d_b_0 = np.zeros((cell_rows, cell_row_width), dtype='int8')
-    #
-    #     def mitosis_2d(cells_2d_b, x, y, d_rule):
-    #
-    #         edge = '0'
-    #
-    #         try:
-    #
-    #             u = str(cells_2d_b[0, y + 1, x])
-    #
-    #
-    #         except:
-    #
-    #             u = edge
-    #
-    #         try:
-    #
-    #             d = str(cells_2d_b[0, y - 1, x])
-    #
-    #         except:
-    #
-    #             d = edge
-    #
-    #         try:
-    #
-    #             r = str(cells_2d_b[0, y, x + 1])
-    #
-    #         except:
-    #
-    #             r = edge
-    #
-    #         try:
-    #
-    #             l = str(cells_2d_b[0, y, x - 1])
-    #
-    #         except:
-    #
-    #             l = edge
-    #
-    #         cells_2d_b_0[y, x] = d_rule[(u, r, d, l)]
-    #
-    #     [[mitosis_2d(cells_2d_b, x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
-    #
-    #     return cells_2d_b_0
-    #
-    # cells_2d_b = mitosis_2d_b(cells_2d_b, d_rule)
-    #
-    # print("step")
-    # print(cells_2d_b)
-
-
+    # print(cells_2d_a)
 
 
 
     #cells_rect init
-
 
     cells_rect = dict()
     for x in range(cell_row_width):
@@ -1985,37 +2035,22 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
         # print("pre")
         # print(cells_2d_a)
 
+        # print(i_rule)
+
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
-
-        time_1 = time()
-
-        redraw_window(bar_colors, input_box, v_input, zero_count, step_show, triggers, dt)
-
-        redraw_performance[0] += time() - time_1
-        redraw_performance[1] += 1
-
-        click = False
-
+        redraw_window(input_box, v_input, zero_count, step_show, triggers, dt)
 
         #mitosis
 
-        if pause == 0:
+        if dimensions == 2:
 
-            time_mitosis = time()
+            mitosis_2d(cells_2d_a, d_rule)
 
-            [[mitosis_2d_a(x, y, d_rule) for x in range(cell_row_width)] for y in range(cell_rows)]
-
-            cells_2d_a = np.roll(cells_2d_a, 1, 0)
-
-            mitosis_perf[0] += time() - time_mitosis
-            mitosis_perf[1] += 1
-
-            # cells_2d_a[1] = np.zeros((cell_rows, cell_row_width), dtype='int8')
+            cells_2d_a = np.roll(cells_2d_a, 1, 2)
 
             # cells_2d_b = mitosis_2d_b(cells_2d_b, d_rule)
-            #
-            # print(cells_2d_b)
+
 
             step += 1
 
@@ -2043,9 +2078,6 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
 
         #inputs
-
-        time_input = time()
-
         for event in pygame.event.get():
 
             current_digit = -1
@@ -2053,32 +2085,11 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
             if event.type == pygame.QUIT:
                 run = 2
 
-            if event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-
             #keyboard
             if event.type == pygame.KEYDOWN:
 
                 if event.key == K_ESCAPE:
                     run = 2
-
-                if event.key == pygame.K_RETURN:
-
-                    if pause == 0:
-                        pause = 1
-                    else:
-                        pause = 0
-
-                if event.key == pygame.K_F10:
-
-                    cells_2d_a[0] = np.zeros((cell_rows, cell_row_width), dtype='int8')
-
-                if event.key == pygame.K_F1:
-
-                    cells_2d_a[0, int(cell_rows / 2), int(cell_row_width / 2)] = 1
-
 
                 if event.key == pygame.K_q:
                     v_input = input('q', base, page, input_box, v_input)
@@ -2658,7 +2669,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_0 += int(tplus_scale)
+                                trigger_0 += int(cell_vel * tplus_scale)
 
                             current_digit = 0
 
@@ -2687,7 +2698,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_1 += int(tplus_scale)
+                                trigger_1 += int(cell_vel * tplus_scale)
 
                         if ev[2] < t5_threshold:
 
@@ -2697,7 +2708,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_5 += int(tplus_scale)
+                                trigger_5 += int(cell_vel * tplus_scale)
 
                             current_digit = 1
 
@@ -2716,7 +2727,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_2 += int(tplus_scale)
+                                trigger_2 += int(cell_vel * tplus_scale)
 
                             current_digit = 2
 
@@ -2728,7 +2739,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_6 += int(tplus_scale)
+                                trigger_6 += int(cell_vel * tplus_scale)
 
                             current_digit = 1
 
@@ -2757,7 +2768,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_3 += int(tplus_scale)
+                                trigger_3 += int(cell_vel * tplus_scale)
 
                             current_digit = 3
 
@@ -2769,7 +2780,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_7 += int(tplus_scale)
+                                trigger_7 += int(cell_vel * tplus_scale)
 
                             current_digit = 1
 
@@ -2788,7 +2799,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_4 += int(tplus_scale)
+                                trigger_4 += int(cell_vel * tplus_scale)
 
                             current_digit = 4
 
@@ -2800,7 +2811,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                             else:
 
-                                trigger_8 += int(tplus_scale)
+                                trigger_8 += int(cell_vel * tplus_scale)
 
                             current_digit = 1
 
@@ -3038,7 +3049,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_0 > 0:
 
-                    trigger_0 -= int(tminus_scale)
+                    trigger_0 -= int(cell_vel * tminus_scale)
 
                     if trigger_0 > zero_out:
                         trigger_0 = zero_out
@@ -3058,7 +3069,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_1 > 0:
 
-                    trigger_1 -= int(tminus_scale)
+                    trigger_1 -= int(cell_vel * tminus_scale)
 
                     if trigger_1 > zero_out:
                         trigger_1 = zero_out
@@ -3078,7 +3089,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_2 > 0:
 
-                    trigger_2 -= int(tminus_scale)
+                    trigger_2 -= int(cell_vel * tminus_scale)
 
                     if trigger_2 > zero_out:
                         trigger_2 = zero_out
@@ -3098,7 +3109,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_3 > 0:
 
-                    trigger_3 -= int(tminus_scale)
+                    trigger_3 -= int(cell_vel * tminus_scale)
 
                     if trigger_3 > zero_out:
                         trigger_3 = zero_out
@@ -3118,7 +3129,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_4 > 0:
 
-                    trigger_4 -= int(tminus_scale)
+                    trigger_4 -= int(cell_vel * tminus_scale)
 
                     if trigger_4 > zero_out:
                         trigger_4 = zero_out
@@ -3138,7 +3149,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_5 > 0:
 
-                    trigger_5 -= int(tminus_scale)
+                    trigger_5 -= int(cell_vel * tminus_scale)
 
                     if trigger_5 > zero_out:
                         trigger_5 = zero_out
@@ -3158,7 +3169,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_6 > 0:
 
-                    trigger_6 -= int(tminus_scale)
+                    trigger_6 -= int(cell_vel * tminus_scale)
 
                     if trigger_6 > zero_out:
                         trigger_6 = zero_out
@@ -3178,7 +3189,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_7 > 0:
 
-                    trigger_7 -= int(tminus_scale)
+                    trigger_7 -= int(cell_vel * tminus_scale)
 
                     if trigger_7 > zero_out:
                         trigger_7 = zero_out
@@ -3198,7 +3209,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_8 > 0:
 
-                    trigger_8 -= int(tminus_scale)
+                    trigger_8 -= int(cell_vel * tminus_scale)
 
                     if trigger_8 > zero_out:
                         trigger_8 = zero_out
@@ -3220,7 +3231,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_0 > 0:
 
-                    trigger_0 -= 1
+                    trigger_0 -= int(cell_vel/2)
 
                     if trigger_0 > zero_out:
 
@@ -3236,7 +3247,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_1 > 0:
 
-                    trigger_1 -= 1
+                    trigger_1 -= int(cell_vel/2)
 
                     if trigger_1 > zero_out:
 
@@ -3252,7 +3263,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_2 > 0:
 
-                    trigger_2 -= 1
+                    trigger_2 -= int(cell_vel / 2)
 
                     if trigger_2 > zero_out:
 
@@ -3268,7 +3279,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_3 > 0:
 
-                    trigger_3 -= 1
+                    trigger_3 -= int(cell_vel / 2)
 
                     if trigger_3 > zero_out:
 
@@ -3284,7 +3295,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
                 if trigger_4 > 0:
 
-                    trigger_4 -= 1
+                    trigger_4 -= int(cell_vel / 2)
 
                     if trigger_4 > zero_out:
 
@@ -3439,9 +3450,6 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
                     for m_e in midi_evs:
                         event_post(m_e)
 
-        input_perf[0] += time() - time_input
-        input_perf[1] += 1
-
 
     #journal write
     if write == 1:
@@ -3452,7 +3460,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
         else:
 
-            j_num = len(os.listdir('journals'))
+            j_num = len(os.listdir('../journals'))
 
             filename = 'journals/journal_' + str(j_num)
 
@@ -3461,29 +3469,6 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
         outfile.close
 
         # print(len(journal))
-
-
-    print("")
-    print("performance")
-    print("")
-    print("redraw")
-    print(redraw_performance)
-    print(round(redraw_performance[0]/redraw_performance[1], 6))
-    print("texture")
-    print(texture_performance)
-    print(round(texture_performance[0]/texture_performance[1], 6))
-    print("")
-    print("mitosis")
-    print(mitosis_perf)
-    print(round(mitosis_perf[0]/mitosis_perf[1], 6))
-    print("try")
-    print(try_perf)
-    print(round(try_perf[0]/try_perf[1], 6))
-    print("")
-    print("inputs")
-    print(input_perf)
-    print(round(input_perf[0]/input_perf[1], 6))
-
 
 
 # menus
@@ -3968,7 +3953,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(5, 1, 1, -1)
+Chaos_Window(2, 5, 1, 1, 1, 2)
 
 
 

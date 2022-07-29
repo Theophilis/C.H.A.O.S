@@ -2,6 +2,9 @@ import numpy as np
 
 view = 3
 
+length = 10
+width = 10
+
 def base_x(n, b):
 
     e = n // b
@@ -81,32 +84,91 @@ def rule_gen_10(rule, base, length):
     return rules, int_rule
 
 
-array = np.zeros((3, 3, 3), dtype='uint8')
+array = np.zeros((length, width), dtype='uint8')
 
 print("")
 print("array")
 print(array)
 
-coords = []
+print("")
 
-for x in range(27):
+def diagonals(length, width):
 
-    coords.append(tuple(reversed(rule_gen_10(x, 3, 3)[1])))
+    diagonal_paths = dict()
+
+    diagonal_num = length + width - 2
+    elbow = int((length + width)/2)
+
+
+    for x in range(elbow):
+
+        left = []
+        right = []
+        coord_model = []
+
+        x += 1
+
+        for y in range(x):
+            left.append(y)
+            right.insert(0, y)
+
+        for z in range(len(left)):
+
+            coord_model.append((left[z], right[z]))
+
+        # print(coord_model)
+        diagonal_paths[x - 1] = coord_model
+
+
+
+    for x in range(elbow - 1):
+
+        left = []
+        right = []
+        coord_model = []
+
+        x += 1
+
+        for y in range(x):
+            left.append(length - y - 1)
+            right.insert(0, width - y - 1)
+
+        for z in range(len(left)):
+
+            coord_model.append((left[z], right[z]))
+
+        # print(coord_model)
+        diagonal_paths[diagonal_num - x + 1] = list(reversed(coord_model))
+
+    diagonal_paths = dict(sorted(diagonal_paths.items(), key=lambda x:x[0]))
+
+    diagonal_coords = []
+
+    for d in diagonal_paths:
+
+        # print("")
+        # print(d)
+        # print(diagonal_paths[d])
+
+        for i in diagonal_paths[d]:
+
+            diagonal_coords.append(i)
+
+    return diagonal_coords
+
+diagonal_coords = diagonals(length, width)
+
+
+for d in diagonal_coords:
+
+    array[d] = diagonal_coords.index(d)
 
 print("")
-print("coords")
-print(coords)
-
-
-for c in coords:
-
-    array[c] = coords.index(c)
-
-
-print("")
-print("c_array")
+print("array")
 print(array)
 
 
 
-print(array[slice(0, -1), 0, 0])
+
+
+
