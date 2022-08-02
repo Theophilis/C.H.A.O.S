@@ -2,8 +2,8 @@ import numpy as np
 
 view = 3
 
-length = 10
-width = 10
+length = 3
+width = 3
 
 def base_x(n, b):
 
@@ -138,7 +138,7 @@ def diagonals(length, width):
             coord_model.append((left[z], right[z]))
 
         # print(coord_model)
-        diagonal_paths[diagonal_num - x + 1] = list(reversed(coord_model))
+        diagonal_paths[diagonal_num - x + 1] = tuple(reversed(coord_model))
 
     diagonal_paths = dict(sorted(diagonal_paths.items(), key=lambda x:x[0]))
 
@@ -152,20 +152,26 @@ def diagonals(length, width):
 
         for i in diagonal_paths[d]:
 
-            diagonal_coords.append(i)
+            diagonal_coords.append((d, i))
 
-    return diagonal_coords
+    return tuple(diagonal_coords), diagonal_paths
 
-diagonal_coords = diagonals(length, width)
+diagonal_coords, diagonal_paths = diagonals(length, width)
 
 
 for d in diagonal_coords:
 
-    array[d] = diagonal_coords.index(d)
+    array[d[1]] = diagonal_coords.index(d)
 
 print("")
 print("array")
 print(array)
+
+print("")
+print('diagonal')
+print(diagonal_coords)
+print("")
+print(diagonal_paths)
 
 
 
