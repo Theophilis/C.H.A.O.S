@@ -1228,7 +1228,7 @@ canvas = canvas_write(message, size, l_size, x_space, y_space, offset_size, dens
 
 if journaling != 0:
 
-    infile = open("journals/journal_iae", "rb")
+    infile = open("journals/history/journal_iae", "rb")
     journal = pickle.load(infile)
     infile.close
 

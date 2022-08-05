@@ -231,7 +231,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 400, 400
+WIDTH, HEIGHT = 800, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -774,7 +774,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     model.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
-    probability_model = keras.Sequential([model, keras.layers.Softmax()])
+
+
+
+    encoder = keras.models.Sequential([keras.layers.Dense(bv, input_shape=[4, 12])])
+    decoder = keras.models.Sequential([keras.layers.Dense(12, input_shape=[4, bv])])
+    autoencoder = keras.models.Sequential([encoder, decoder])
+
+    autoencoder.compile(loss="mse", optimizer=keras.optimizers.SGD(learning_rate=1.5))
+
+    probability_model = keras.Sequential([encoder, keras.layers.Softmax()])
 
 
     #face capture
@@ -867,7 +876,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     tsp_portion = []
     placed = []
     glove_value = 0
-    evs = np.zeros((1, 1, 11))
+    evs = np.zeros((1, 4, 12))
+
 
     #sensor range
     if rules_g == 1:
@@ -2144,7 +2154,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                             current_digit = 1
 
-                evs[0, 0] = [ev_1/127.0, ev_2/127.0, ev_3/127.0, ev_4/127.0, ev_5/127.0, ev_6/127.0, ev_7/127.0, ev_8/127.0, ev_9/127.0, ev_10/127.0, ev_11/127.0]
+                evs = np.roll(evs, 1, 1)
+                evs[0, 0] = [ev_1/127.0, ev_2/127.0, ev_3/127.0, ev_4/127.0, ev_5/127.0, ev_6/127.0, ev_7/127.0, ev_8/127.0, ev_9/127.0, ev_10/127.0, ev_11/127.0, 0]
 
 
 
@@ -2787,11 +2798,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     for m_e in midi_evs:
                         event_post(m_e)
 
+
         #ai
         if ai > 0:
 
             #attention detection
-            attention[0] = 0
             # get frame
             ret, frame = cap.read()
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -2799,17 +2810,30 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             faces = face_cascade.detectMultiScale(gray, 1.5, 3)
 
             if len(faces) > 0:
-                attention[0] = 1
+                evs[0, 0, -1] = 1
 
-            model.fit(evs, attention, epochs=1, verbose=0)
+            print("")
+            print("evs")
+            print(evs)
 
-            probability_model = keras.Sequential([model, keras.layers.Softmax()])
-            prediction_single = probability_model.predict(evs)
+            autoencoder.fit(evs, evs, epochs=1, verbose=0)
+            prediction = probability_model.predict(evs)
 
-            if attention[0] > 0:
-                place_change(int(prediction_single[0][-1] * bv * 2))
-            else:
-                place_change(int(prediction_single[0][0] * bv * 2))
+            print("")
+            print("prediction")
+            print(prediction)
+
+            try:
+
+                for x in range(bv):
+
+                    i_rule[x] = int(prediction[0][0][x] * 100) % base
+                    d_rule[list(d_rule.keys())[x]] = int(prediction[0][0][x] * 100) % base
+
+            except:
+
+                d_rule, i_rule = rule_gen(origin_rule, base)
+
 
 
     #journal write
@@ -3318,7 +3342,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(5, 1, 0, 2)
+Chaos_Window(5, 1, 1, 2)
 
 
 

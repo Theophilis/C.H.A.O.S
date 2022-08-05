@@ -18,7 +18,7 @@ rule = 21621
 #number who's x_base transformation gives the rules dictionary its values
 view = 3
 #size of the view window that scans a row for rule application
-base = 5
+base = 3
 #numerical base of the rule set. number of colors each cell can be
 start = int(width/2)
 #position for a row 0 cell value 1
@@ -235,13 +235,22 @@ def Color_cells(d_rule, cell_row_width, row_0):
 
 
 
-j_name = 'journal_expand'
 
-simple = 0
-full = 1
-reflect = 0
 
+####everything needed to develope journal patterns takes place here####
+
+#name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
+j_name = 'journal_waiting-for-god-3'
+
+#number of colors
+base = 3
+
+#0=no reflection 1=reflected image across the top
+reflect = 1
+
+#increase the number of cells in each rule call (multiplicative)
 scale = 1
+#decrease the number of cells in each rule call (divisive)
 shrink = 1
 
 split = 0

@@ -190,8 +190,8 @@ def rule_gen_2d(rule, base=2, width=0):
 
         key = tuple(base_x(x, base)[-view:])
 
-        print("tuple key")
-        print(key)
+        # print("tuple key")
+        # print(key)
 
         if len(key) < view:
 
@@ -297,6 +297,8 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
     mitosis_perf_b = [0, 0]
 
+    mitosis_perf_c = [0, 0]
+
 
     input_perf = [0, 0]
 
@@ -382,7 +384,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     #         self.y += vel
 
 
-    def redraw_window(cells_2d_b, bar_colors, input_box, v_input, zero_count, step_show, triggers, dt):
+    def redraw_window(bar_colors, input_box, v_input, zero_count, step_show, triggers, dt):
 
         click = False
 
@@ -399,7 +401,10 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
         time_0 = time()
 
         # [pygame.draw.rect(WIN, bar_colors[cells_2d_a[0, cell[1] + 1, cell[0] + 1]], cells_rect[cell]) for cell in cells_rect]
-        [pygame.draw.rect(WIN, bar_colors[cells_2d_b[cell[1], cell[0]]], cells_rect[cell]) for cell in cells_rect]
+
+        # [pygame.draw.rect(WIN, bar_colors[cells_2d_b[cell[1], cell[0]]], cells_rect_b[cell]) for cell in cells_rect_b]
+
+        [pygame.draw.rect(WIN, bar_colors[cells_2d_c[cell]], cells_rect_c[cell]) for cell in cells_rect_c]
 
         texture_performance[0] += time() - time_0
         texture_performance[1] += 1
@@ -1662,6 +1667,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
     cell_row_width = int(CELL_WIDTH / pixel_res)
     cell_rows = int(HEIGHT / pixel_res)
+    lw = cell_rows * cell_row_width
 
 
     d_rule, i_rule = rule_gen_2d(rule, base)
@@ -1678,13 +1684,23 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     #cells - 2 dimensional
 
     cells_2d_a = np.zeros((2, cell_rows + 2, cell_row_width + 2), dtype='uint8')
+
+
     cells_2d_b = np.zeros((cell_rows, cell_row_width), dtype='uint8')
     memory = np.zeros((3, cell_row_width + 2), dtype='uint8')
+
+
+    cells_2d_c = np.zeros((lw), dtype='uint8')
+    memory_c = np.zeros((cell_row_width * 3), dtype='uint8')
+
+    # for x in range(lw):
+    #     cells_2d_c[x] = x % base
 
     if start == 0:
 
         cells_2d_a[0, int(cell_row_width / 2), int(cell_row_width / 2)] = 1
         cells_2d_b[int(cell_rows/2), int(cell_row_width/2)] = 1
+        cells_2d_c[int(lw / 2) + int(cell_row_width/2)] = 1
 
     def mitosis_2d_a(x, y, d_rule):
 
@@ -1745,8 +1761,80 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
             cells_2d_a[-1, x] = d_rule[(memory[0, 1 + x], memory[1, 2 + x], memory[2, 1 + x], memory[1, 0 + x])]
 
-
     mitosis_mem_a(cells_2d_b, memory, d_rule)
+
+    def mitosis_flat(cells_2d_c, memory, d_rule):
+
+        # print("")
+        # print('flat')
+        # print(cells_2d_c)
+        # print(memory)
+
+        first = cells_2d_c[:cell_row_width]
+
+        memory[cell_row_width:cell_row_width * 2] = cells_2d_c[-cell_row_width:]
+        memory[-cell_row_width:] = first
+
+        # print("first last")
+        # print(first)
+        # print(last)
+        # print(memory)
+
+        for y in range(1, cell_rows):
+
+            # print("")
+            # print("y")
+            # print(y)
+            # print(y*cell_row_width)
+            # print(y * cell_row_width + cell_row_width)
+
+            memory = np.roll(memory, -cell_row_width, 0)
+            memory[-cell_row_width:] = cells_2d_c[y * cell_row_width:y * cell_row_width + cell_row_width]
+
+            # print(memory)
+
+            for x in range(cell_row_width):
+
+                # print('x')
+                # print(x)
+
+                u = memory[x]
+                d = memory[-cell_row_width + x]
+                r = memory[(cell_row_width + x + 1) % (cell_row_width * 2)]
+                l = memory[cell_row_width:cell_row_width * 2][x - 1]
+
+                # print(u, r, d, l)
+
+                cells_2d_c[(y - 1) * cell_row_width + x] = d_rule[(u, r, d, l)]
+
+            # print("")
+            # print("69")
+            # print(cells_2d_c)
+
+        # print("memory")
+        # print(memory)
+
+        memory = np.roll(memory, -cell_row_width, 0)
+        memory[-cell_row_width:] = first
+
+        for x in range(cell_row_width):
+
+            u = memory[x]
+            d = memory[-cell_row_width + x]
+            r = memory[(cell_row_width + x + 1) % (cell_row_width * 2)]
+            l = memory[cell_row_width:cell_row_width * 2][x - 1]
+
+            cells_2d_c[(cell_rows - 1) * cell_row_width + x] = d_rule[(u, r, d, l)]
+
+        # print(memory)
+        # print(cells_2d_c)
+
+
+    mitosis_flat(cells_2d_c, memory_c, d_rule)
+
+
+
+
 
 
     # cells_2d_b = np.zeros((cell_rows, cell_row_width), dtype='int8')
@@ -1818,14 +1906,17 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     #cells_rect init
 
 
-    cells_rect = dict()
+    cells_rect_b = dict()
+    cells_rect_c = dict()
     for x in range(cell_row_width):
 
         for y in range(cell_rows):
 
             cell = pygame.Rect(x * pixel_res, y * pixel_res, pixel_res, pixel_res)
 
-            cells_rect[(y, x)] = cell
+            cells_rect_b[(y, x)] = cell
+            cells_rect_c[x * cell_rows + y] = cell
+
 
 
     #cells_pixel init
@@ -2005,7 +2096,7 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
 
         time_1 = time()
 
-        redraw_window(cells_2d_b, bar_colors, input_box, v_input, zero_count, step_show, triggers, dt)
+        redraw_window(bar_colors, input_box, v_input, zero_count, step_show, triggers, dt)
 
         redraw_performance[0] += time() - time_1
         redraw_performance[1] += 1
@@ -2026,18 +2117,20 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
             # mitosis_perf_a[1] += 1
 
 
+            # time_mitosis = time()
+            #
+            # mitosis_mem_a(cells_2d_b, memory, d_rule)
+            #
+            # mitosis_perf_b[0] += time() - time_mitosis
+            # mitosis_perf_b[1] += 1
+
+
             time_mitosis = time()
 
-            mitosis_mem_a(cells_2d_b, memory, d_rule)
+            mitosis_flat(cells_2d_c, memory_c, d_rule)
 
-            mitosis_perf_b[0] += time() - time_mitosis
-            mitosis_perf_b[1] += 1
-
-            # cells_2d_a[1] = np.zeros((cell_rows, cell_row_width), dtype='int8')
-
-            # cells_2d_b = mitosis_2d_b(cells_2d_b, d_rule)
-            #
-            # print(cells_2d_b)
+            mitosis_perf_c[0] += time() - time_mitosis
+            mitosis_perf_c[1] += 1
 
             step += 1
 
@@ -3498,10 +3591,15 @@ def Chaos_Window(base, pixel_res, analytics, device_id=-1):
     # print(mitosis_perf_a)
     # print(round(mitosis_perf_a[0]/mitosis_perf_a[1], 9))
 
+    # print("")
+    # print("mitosis_b")
+    # print(mitosis_perf_b)
+    # print(round(mitosis_perf_b[0]/mitosis_perf_b[1], 9))
+
     print("")
-    print("mitosis_b")
-    print(mitosis_perf_b)
-    print(round(mitosis_perf_b[0]/mitosis_perf_b[1], 9))
+    print("mitosis_c")
+    print(mitosis_perf_c)
+    print(round(mitosis_perf_c[0]/mitosis_perf_c[1], 9))
 
     print("")
     print("inputs")
