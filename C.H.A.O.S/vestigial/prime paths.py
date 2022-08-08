@@ -1744,7 +1744,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     pickle.dump(cellexicon, outfile)
     outfile.close()
 
-    filename = 'polar maps/polar_paths-16'
+    filename = '../polar maps/polar_paths-16'
     outfile = open(filename, 'wb')
     pickle.dump(polar_paths, outfile)
     outfile.close()

@@ -18,7 +18,7 @@ infile = open('2d-fences/full-fence_spiral_' + str(size), 'rb')
 full_fence = pickle.load(infile)
 infile.close()
 
-infile = open('2d-fences/full-fence_spiral_9', 'rb')
+infile = open('vestigial/2d-fences/full-fence_spiral_9', 'rb')
 origin = pickle.load(infile)
 infile.close()
 

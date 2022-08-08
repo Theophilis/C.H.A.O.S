@@ -623,7 +623,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_u_i, polar_
 
         # plt.show()
 
-        path = '../cell translation'
+        path = 'cell translation'
 
         file = str(message) + str('-') + str(level)
         path_name = os.path.join(path, file)
@@ -902,7 +902,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
         pos += 1
 
 
-    path = '../cell translation'
+    path = 'cell translation'
 
     cMap = colors.ListedColormap(['k', 'm'])
 
@@ -990,7 +990,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     pickle.dump(p_d, outfile)
     outfile.close()
 
-    filename = '../cellexicon/cellexicon'
+    filename = 'cellexicon/cellexicon'
     outfile = open(filename, 'wb')
     pickle.dump(cellexicon, outfile)
     outfile.close()
@@ -1013,7 +1013,7 @@ infile = open("../polar maps/polar_d-16", "rb")
 polar_d = pickle.load(infile)
 infile.close
 
-infile = open("../cellexicon/cellexicon", "rb")
+infile = open("cellexicon/cellexicon", "rb")
 cellexicon = pickle.load(infile)
 infile.close
 

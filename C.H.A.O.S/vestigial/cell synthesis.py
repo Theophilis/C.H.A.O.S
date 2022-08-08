@@ -262,7 +262,7 @@ infile = open("journals/" + j_name, "rb")
 journal = pickle.load(infile)
 infile.close
 
-path = 'synthesis'
+path = '../synthesis'
 
 print(len(list(journal.keys())))
 

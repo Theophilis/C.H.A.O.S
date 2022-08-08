@@ -276,19 +276,19 @@ def stream(front, back, front_row, back_row, max_steps, roam):
     # print('back')
     # print(back_row)
 
-    infile = open("../organized-rules/roamers-2-3", "rb")
+    infile = open("organized-rules/roamers-2-3", "rb")
     roamers = pickle.load(infile)
     infile.close
 
-    infile = open("../organized-rules/right_roam-2-3", "rb")
+    infile = open("organized-rules/right_roam-2-3", "rb")
     right_roam = pickle.load(infile)
     infile.close
 
-    infile = open("../organized-rules/left_roam-2-3", "rb")
+    infile = open("organized-rules/left_roam-2-3", "rb")
     left_roam = pickle.load(infile)
     infile.close
 
-    infile = open("../organized-rules/no_roam-2-3", "rb")
+    infile = open("organized-rules/no_roam-2-3", "rb")
     no_roam = pickle.load(infile)
     infile.close
 
@@ -1149,7 +1149,7 @@ def fold(message, base, view, length, max_steps, scale, level, polar_paths, pola
 
         # plt.show()
 
-        path = '../cell translation'
+        path = 'cell translation'
 
         file = str(message) + str('-') + str(level)
         path_name = os.path.join(path, file)
@@ -1580,7 +1580,7 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
 
         album.append(mural)
 
-    path = '../cell translation'
+    path = 'cell translation'
 
     cMap = colors.ListedColormap([black, cyan, magenta, yellow, blue, green, red])
 
