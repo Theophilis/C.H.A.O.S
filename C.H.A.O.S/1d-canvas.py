@@ -1178,7 +1178,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 cells_a = np.rot90(cells_a, v, (0, 1))
 
-                for g in range(int(ev_3 / 4) + 1):
+                for g in range(int(ev_3 / 4) + 2):
 
                     for x in range(brush_width):
 

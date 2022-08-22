@@ -226,7 +226,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 800, 800
+WIDTH, HEIGHT = 1200, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -3260,7 +3260,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(5, 1, 0, 2)
+Chaos_Window(5, 1, 1, 1)
 
 
 
