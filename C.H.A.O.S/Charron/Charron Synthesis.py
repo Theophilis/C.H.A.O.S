@@ -240,10 +240,10 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_'
+j_name = 'journal_waiting-for-god-4'
 
 #number of colors
-base = 5
+base = 4
 
 ###color bank###
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
@@ -251,9 +251,9 @@ base = 5
 #https://color.adobe.com/create/color-wheel
 black = (0, 0, 0)
 white = (1, 1, 1)
-red   = (1, 0, 0)
+red = (1, 0, 0)
 green = (0, 1, 0)
-blue  = (0, 0, 1)
+blue = (0, 0, 1)
 magenta = (1, 0, 1)
 cyan = (0, 1, 1)
 yellow = (1, 1, 0)
@@ -269,9 +269,10 @@ turquoise = (0, .8, .8)
 light_grey = (.8, .8, .8)
 moss = (.2, .4, .2)
 orange = (1, .5, .1)
+orange_red = (1, .5, .1)
 
 #corresponding to the number of colors indicated above. Order of colors matters, change to get new variations of a design.
-color_list_0 = [black, grey, cyan, yellow]
+color_list_0 = [black, cyan, magenta, green]
 color_list_1 = [cyan, yellow, grey]
 color_list_2 = [blue, magenta, cyan, red]
 color_list_3 = [red_d, white, orange, cyan, magenta]
@@ -284,13 +285,13 @@ reflect = 1
 
 ##length adjustment. length = length * scale / shrink
 #increase the number of cells in each rule call (multiplicative)
-scale_l = 3
+scale_l = 1
 #decrease the number of cells in each rule call (divisive)
 shrink_l = 2
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
-scale_w = 2
+scale_w = 3
 #(divisive)
 shrink_w = 1
 
@@ -496,7 +497,7 @@ def synthesize(j_name, width, split, s_f, color_list):
         synthesis = []
         frame = []
 
-        journal_key = list(journal.keys())[1:]
+        journal_key = list(journal.keys())[1:-30]
 
         print("")
         print('journal_key')
@@ -668,7 +669,7 @@ def synthesize(j_name, width, split, s_f, color_list):
         plt.close()
 
 
-synthesize(j_name, width, split, 1, color_list_3)
+synthesize(j_name, width, split, 1, color_list_0)
 
 
 
