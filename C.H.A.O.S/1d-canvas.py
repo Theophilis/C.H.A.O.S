@@ -811,7 +811,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #painter
     brush_height_scale = int(CELL_HEIGHT / 127)
     brush_width_scale = int(CELL_HEIGHT / 127)
-    brush_scale = 4
+    brush_scale = 8
     brush_min = 2
 
     brush_width = CELL_HEIGHT
