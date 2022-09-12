@@ -4,11 +4,9 @@ import numpy as np
 import pygame
 import sys
 import pygame.midi
-import time
-from collections import deque
-import csv
-from subprocess import Popen, PIPE
-from sys import argv
+from struct import *
+import socket
+from sys import byteorder
 
 sys.setrecursionlimit(999999999)
 
@@ -237,390 +235,40 @@ pygame.display.set_caption("C.H.A.O.S")
 click = False
 
 
-def Chaos_Window(base, cell_vel, analytics, device_id=-1):
+def Chaos_Window(device_id=-1):
 
     print("base")
     print(base)
     print("device_id")
     print(device_id)
     p_m_i = 0
-    ts_0 = time.time()
-
-    #window
-    if analytics == 1:
-
-        CELL_WIDTH = HEIGHT
-
-    else:
-
-        CELL_WIDTH = WIDTH
-
-
-    #colors
-    if base < 5:
-
-        value_color = {0:(0, 0, 0), 1:(255, 0, 255), 2:(0, 255, 255), 3:(255, 255, 0)}
-        color_value = {v:k for k, v in value_color.items()}
-
-    else:
-
-        value_color = {0:(0, 0, 0), 1:(32, 32, 32), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0), 5:(192, 192, 192),
-                      6:(255, 0, 0), 7:(0, 255, 0), 8:(0, 0, 255)}
-        color_value = {v:k for k, v in value_color.items()}
-
-
-
-
-    def input(letter, base, page, input_box, v_input):
-
-        if echoing == 1:
-
-            echo = 0
-
-        echo = 1
-
-        if input_box == 1:
-            v_input += letter
-
-        bv = base ** view
-
-        if letter not in press:
-            press[letter] = 0
-        else:
-            press[letter] += 1
-
-        if echoing == 1:
-
-            if press[letter] % 1 ==0:
-
-                echo = 1
-
-
-        place = int((letter_values[letter] + ((press[letter] % (int(bv / len(letter_values)) + 1)) * int(
-            (bv / int(bv / len(letter_values) + 1))))) % bv)
-
-        # print(' ')
-        # print("place")
-        # print(place)
-        # print(letter_values[letter])
-        # print((press[letter] % (int(bv / len(letter_values)) + 1)))
-        # print((bv / int(bv / len(letter_values) + 1)))
-        # print(bv)
-
-        if i_rule[place] == 0:
-
-            i_rule[place] = 1
-            d_rule[list(d_rule.keys())[place]] = 1
-
-            if echo % 2 == 0:
-
-                # print('len(i_rule)')
-                # print(len(i_rule))
-                # print('int(place + len(i_rule)/2 % len(i_rule)) - 1')
-                # print(int((place + len(i_rule)/2) % len(i_rule)) - 1)
-                # print('list(d_rule.keys()))')
-                # print(len(list(d_rule.keys())))
-
-                i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 1
-                d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 1
-
-        elif i_rule[place] == 1:
-
-            # print("i_rule_1")
-            # print(i_rule)
-
-            if base == 2:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 2
-                d_rule[list(d_rule.keys())[place]] = 2
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 2:
-
-                    # print('len(i_rule)')
-                    # print(len(i_rule))
-                    # print('int(place + len(i_rule)/2 % len(i_rule)) - 1')
-                    # print(int(place + len(i_rule)/2 % len(i_rule)) - 1)
-                    # print('list(d_rule.keys()))')
-                    # print(len(list(d_rule.keys())))
-
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 2
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 2
-
-                # print("i_rule_2")
-                # print(i_rule)
-
-        elif i_rule[place] == 2:
-
-            if base == 3:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 3
-                d_rule[list(d_rule.keys())[place]] = 3
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 3:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 3
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 3
-
-        elif i_rule[place] == 3:
-
-            if base == 4:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 4
-                d_rule[list(d_rule.keys())[place]] = 4
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 4:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 4
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 4
-
-        elif i_rule[place] == 4:
-
-            if base == 5:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 5
-                d_rule[list(d_rule.keys())[place]] = 5
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 5:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 5
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 5
-
-        else:
-
-            i_rule[place] = 0
-            d_rule[list(d_rule.keys())[place]] = 0
-
-            if echo % 2 == 0:
-
-                print('echo')
-
-                i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-
-        if rule not in journal:
-            journal[rule] = []
-            journal[rule].append(page)
-
-        else:
-            journal[rule].append(page)
-
-        return v_input
-
-
-
 
     #active variables
     run = 1
-    FPS = 120
-    rule = 30
-    start = 0
-    step = 0
-    step_show = 0
-    clock = pygame.time.Clock()
-    origin_rule = 0
-    bv = base ** view
-    bbv = base ** base ** view
-    rule_window_scale = 4
-
-    #streams
-    stream_buffer = 8
-    stream_direction = deque(maxlen=stream_buffer)
-    stream_direction.append(0)
-    momentum = {0:0, 1:0, 2:0, 3:0}
-    momentum_step = 3
-    momentum_scale_scale = 3
-
-    #record keeping
-    journal = dict()
-    page = []
-    press = dict()
-    press_vault = dict()
-
-    #random
-    r_i = 0
-    rand_count = 0
-    iterate = 0
-
-    #ui
-    ui_on = 1
-    ui_scale = 20
-
-    rule_models = []
-    precursor = []
-
-    ir_height = base
-    bar_height = 40
-    bar_width = 20
-
-    x_offset = CELL_WIDTH + 40
-    y_offset = 160 + ui_scale * ir_height
+    evs = []
 
     #input augments
-    echoing = 0
-    randomizer = 0
     midi_inputs = 1
 
-    #glove emthods
-    characters_g = 0
-    words_g = 2
-    rules_g = 0
-    digits = 1
+    #server
+    PORT = 21621
+    SERVER = "127.0.0.1"
+    ADDR = (SERVER, PORT)
+    FORMAT = 'utf-8'
 
-    #glove value scales
-    tplus_scale = 2
-    tminus_scale = 1
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(ADDR)
 
-    #glove activations
-    zero_out = int(cell_vel * 4000)
-    zero_count = int(cell_vel * 4000)
-    origin_threshold = 50
-    over_flow = 0
+    def send_s(msg):
+        message = msg.encode(FORMAT)
+        client.send(message)
+        print(client.recv(2048).decode(FORMAT))
 
-    rule_pause = 128
-    gvp_threshold = 128
-    gv_pause = 0
+    def send_b(msg):
+        client.send(msg)
+        print(client.recv(2048).decode(FORMAT))
 
-    su_threshold = 80
-    sd_threshold = 40
-    sr_threshold = 80
-    sl_threshold = 40
-    stutter_threshold = 64
-
-    t0_threshold = 128
-    t1_threshold = 80
-    t2_threshold = 80
-    t3_threshold = 80
-    t4_threshold = 80
-    t5_threshold = 40
-    t6_threshold = 40
-    t7_threshold = 40
-    t8_threshold = 40
-    thresholds = [t0_threshold, t1_threshold, t2_threshold, t3_threshold, t4_threshold, t5_threshold, t6_threshold, t7_threshold, t8_threshold]
-
-    trigger_0 = 0
-    trigger_1 = 0
-    trigger_2 = 0
-    trigger_3 = 0
-    trigger_4 = 0
-    trigger_5 = 0
-    trigger_6 = 0
-    trigger_7 = 0
-    trigger_8 = 0
-
-    triggers = []
-    ts_percentage = []
-    tsp_portion = []
-    placed = []
-    glove_value = 0
-
-    #sensor range
-    if rules_g == 1:
-
-        relative_range = int((bbv) ** (1/11)) + 2
-        range_unit = int(128/relative_range) + 1
-
-        print("")
-        print('relative range')
-        print(relative_range)
-        print("range_unit")
-        print(range_unit)
-        print(int(128/range_unit))
-
-    #chaos console
-    input_box = 0
-    list_count = 0
-    v_input = ''
-    write = 0
-    j_name = ''
-    max_rule = base ** base ** view
-
-    #cell design
-    cell_row_width = int(CELL_WIDTH)
-    cell_rows = int(HEIGHT) + 1
-    d_rule, i_rule = rule_gen(rule, base)
-
-    print("")
-    print("d_rule")
-    print(d_rule)
-
-    print("")
-    print('cells: width height')
-    print((cell_row_width, cell_rows))
-
-    cells_a = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
-
-    if start == 0:
-
-        cells_a[0, int(cell_row_width / 2)] = value_color[1]
-
-    else:
-
-        #fix this
-
-        cells_a[0] = rule_gen_2(start, base, cell_row_width)[1]
-
-    # print("")
-    # print(cells_a)
-
-    # print("")
-    # print("genisis")
-    # print(cells_a)
-
-    for x in range(cell_rows - 1):
-
-        cells_a = np.roll(cells_a, 1, 0)
-        # cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
-
-        for y in range(cell_row_width):
-
-            cells_a[0, y] = value_color[d_rule[tuple(viewer_1d(cells_a[1], y, view, [], color_value))]]
-
-    # print("")
-    # print('value_color')
-    # print(cells_a)
-
+    send_s("Obi Wan Kenobi")
 
     if midi_inputs == 1:
 
@@ -657,6 +305,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         ev_9 = 0
         ev_10 = 0
         ev_11 = 0
+        ev_12 = 0
 
         if device_id > 0:
 
@@ -674,385 +323,22 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     for m_e in midi_evs:
                         event_post(m_e)
 
-    if origin_rule == 0:
-
-        magnify = 4
-        colors = 1
-        step_size = int(base ** view / (base - 1) / magnify)
-
-        # print("")
-        # print("step_size")
-        # print(step_size)
-        # print(base ** view)
-        # print(base - 1)
-
-        o_r = rule_gen(0, base)[1]
-
-        # print(o_r)
-
-        for x in range(int((base ** view) / step_size) + 1):
-
-            # print("step_size * x")
-            # print(step_size * x)
-            # print("current place")
-            # print(-((step_size * x + 1) % bv))
-
-            if x > 0:
-
-                o_r[-((step_size * x + 1) % bv)] = x % colors + 1
-
-            else:
-
-                o_r[-((step_size * x + 1) % bv)] = 1
-
-
-        o_r[-1] = 1
-
-        origin_rule = decimal(o_r, base)
-
-        print("")
-        print("origin rule")
-        print(o_r)
-        print(origin_rule)
-
-    if ui_on == 1:
-
-        clunk = 0
-        rule_models = []
-        precursor = []
-
-        ir_split = []
-
-        [ir_split.append(i_rule[x * int(len(i_rule) / ir_height):(x + 1) * int(len(i_rule) / ir_height)]) for x in
-         range(ir_height)]
-
-        # x_offset = CELL_WIDTH + 40
-        # y_offset = 20 + ui_scale + y
-
-        [[rule_models.append(
-            pygame.Rect(1 * ui_scale * x + x_offset, 1 * ui_scale + 20 + ui_scale * y, ui_scale, ui_scale)) for x in
-          range(len(ir_split[y]))] for y in range(ir_height)]
-
-        # x_offset = CELL_WIDTH + 40
-        # y_offset = 20 + ui_scale * (ir_height + 1)
-
-        [precursor.append(
-            pygame.Rect(1 * ui_scale * x + x_offset, 1 * ui_scale + 20 + ui_scale * (ir_height + 1), ui_scale,
-                        ui_scale)) for x in range(view)]
-
-        # print("")
-        # print("rule_models")
-        # print(len(rule_models))
-        # print(rule_models)
-
-    print(" ")
-    print("d_rule")
-    print(d_rule)
-    print("i_rule")
-    print(i_rule)
-    print(len(i_rule))
-    evs = []
-
 
     #main loop
     while run == 1:
 
-        file = open("glove data/data.csv", 'w')
-        author = csv.writer(file)
-        author.writerow(evs)
-
-
         #inputs
         for event in pygame.event.get():
 
-            current_digit = -1
-
+            #quit
             if event.type == pygame.QUIT:
                 run = 2
-
 
             #keyboard
             if event.type == pygame.KEYDOWN:
 
                 if event.key == K_ESCAPE:
                     run = 2
-
-                if event.key == pygame.K_q:
-                    v_input = input('q', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_w:
-                    v_input = input('w', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_e:
-                    v_input = input('e', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_r:
-                    v_input = input('r', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_t:
-                    v_input = input('t', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_y:
-                    v_input = input('y', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_u:
-                    v_input = input('u', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_i:
-                    v_input = input('i', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_o:
-                    v_input = input('o', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_p:
-                    v_input = input('p', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_a:
-                    v_input = input('a', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_s:
-                    v_input = input('s', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_d:
-                    v_input = input('d', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_f:
-                    v_input = input('f', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_g:
-                    v_input = input('g', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_h:
-                    v_input = input('h', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_j:
-                    v_input = input('j', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_k:
-                    v_input = input('k', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_l:
-                    v_input = input('l', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_z:
-                    v_input = input('z', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_x:
-                    v_input = input('x', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_c:
-                    v_input = input('c', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_v:
-                    v_input = input('v', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_b:
-                    v_input = input('b', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_n:
-                    v_input = input('n', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_m:
-                    v_input = input('m', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_SPACE:
-                    v_input = input(' ', base, page, input_box, v_input)
-                    page = []
-
-                if event.key == pygame.K_0:
-
-                    v = 0
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_1:
-
-                    v = 1
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_2:
-
-                    v = 2
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_3:
-
-                    v = 3
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_4:
-
-                    v = 4
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_5:
-
-                    v = 5
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_6:
-
-                    v = 6
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_7:
-
-                    v = 7
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_8:
-
-                    v = 8
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_9:
-
-                    v = 9
-
-                    if input_box == 1:
-                        v_input += str(v)
-
-                if event.key == pygame.K_BACKSPACE:
-                    v_input = v_input[0:-1]
-
-                if event.key == pygame.K_MINUS:
-                    # print("underscore")
-
-                    v_input += "-"
-
-                #console commands
-                if event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-
-                    if input_box == 0:
-
-                        input_box = 1
-
-                    else:
-
-                        if len(v_input) != 0:
-
-                            input_list = v_input.split()
-
-                            # print(" ")
-                            # print("input_list")
-                            # print(input_list)
-                            # print(len(input_list))
-                            # print(len(input_list[0]))
-
-                            if len(input_list) > 1:
-
-                                continue
-
-                            elif v_input == 'write':
-
-                                write = 1
-
-                            elif input_list[0] == 'invalid':
-
-                                v_input = ''
-
-                            else:
-
-                                try:
-
-                                    d_rule, i_rule = rule_gen(int(v_input), base)
-
-                                except:
-
-                                    v_input = 'invalid'
-
-                                    continue
-
-                            v_input = ''
-
-                        input_box = 0
-
-                if event.key == pygame.K_PERIOD:
-
-                    d_rule, i_rule = rule_gen(origin_rule, base)
-
-                    for letter in press:
-
-                        if letter in press_vault:
-
-                            press_vault[letter] += press[letter]
-
-                        else:
-                            press_vault[letter] = press[letter]
-
-                        press[letter] = 0
-
-                if event.key == pygame.K_UP:
-
-                    stream_direction.append(2)
-
-                    # print('up')
-                    # print(stream_direction)
-
-                if event.key == pygame.K_RIGHT:
-
-                    stream_direction.append(1)
-
-                    # print("right")
-                    # print(stream_direction)
-
-                if event.key == pygame.K_DOWN:
-
-                    stream_direction.append(0)
-
-                    # print("down")
-                    # print(stream_direction)
-
-                if event.key == pygame.K_LEFT:
-
-                    stream_direction.append(3)
-
-                    # print('left')
-                    # print(stream_direction)
-
 
             #midi
             if event.type in [pygame.midi.MIDIIN]:
@@ -1073,87 +359,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     ev_1 = ev[2]
 
-                    # print("")
-                    # print("ev_1")
-                    # print(ev_1)
-
-                    if words_g > 0:
-
-                        if ev[2] > rule_pause:
-
-                            words_g = 3
-
-                        else:
-
-                            words_g = 2
-
-                    # print("")
-                    # print("ev_1")
-                    # print(ev_1)
-
-                    if ev_1 > gvp_threshold:
-
-                        # print("gv_pause")
-
-                        gv_pause = 1
-
-                    else:
-
-                        gv_pause = 0
-
-                    if ev_1 > sr_threshold:
-
-                        stream_direction.append(3)
-
-                        if ev_7 > stutter_threshold:
-
-                            stream_direction.append(1)
-
-                        # print("right")
-                        # print(stream_direction)
-
-                    if ev_1 < sl_threshold:
-
-                        stream_direction.append(1)
-
-                        if ev_7 > stutter_threshold:
-
-                            stream_direction.append(3)
-
-                        # print("left")
-                        # print(stream_direction)
-
 
                 #y axis
                 if ev[1] == 2:
 
                     ev_2 = ev[2]
-
-                    # print("")
-                    # print("ev_2")
-                    # print(ev_2)
-
-                    if ev_2 > su_threshold:
-
-                        stream_direction.append(2)
-
-                        if ev_7 > stutter_threshold:
-
-                            stream_direction.append(0)
-
-                        # print("up")
-                        # print(stream_direction)
-
-                    if ev_2 < sd_threshold:
-
-                        stream_direction.append(0)
-
-                        if ev_7 > stutter_threshold:
-
-                            stream_direction.append(2)
-
-                        # print("down")
-                        # print(stream_direction)
 
                 #z axis
                 if ev[1] == 3:
@@ -1180,165 +390,37 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     ev_7 = ev[2]
 
-                    if words_g != 3:
-
-                        if ev[2] > t0_threshold:
-
-                            if trigger_0 < 0:
-
-                                trigger_0 = 0
-
-                            else:
-
-                                trigger_0 += int(cell_vel * tplus_scale)
-
-                            current_digit = 0
-
-                    # if words_g > 0:
-                    #
-                    #     if ev[2] > rule_pause:
-                    #
-                    #         words_g = 3
-                    #
-                    #     else:
-                    #
-                    #         words_g = 2
-
                 #pointer
                 if ev[1] == 8:
 
                     ev_8 = ev[2]
-
-                    if words_g != 3:
-
-                        if ev[2] > t1_threshold:
-
-                            if trigger_1 < 0:
-
-                                trigger_1 = 0
-
-                            else:
-
-                                trigger_1 += int(cell_vel * tplus_scale)
-
-                        if ev[2] < t5_threshold:
-
-                            if trigger_5 < 0:
-
-                                trigger_5 = 0
-
-                            else:
-
-                                trigger_5 += int(cell_vel * tplus_scale)
-
-                            current_digit = 1
 
                 #middle
                 if ev[1] == 9:
 
                     ev_9 = ev[2]
 
-                    if words_g != 3:
-
-                        if ev[2] > t2_threshold:
-
-                            if trigger_2 < 0:
-
-                                trigger_2 = 0
-
-                            else:
-
-                                trigger_2 += int(cell_vel * tplus_scale)
-
-                            current_digit = 2
-
-                        if ev[2] < t6_threshold:
-
-                            if trigger_6 < 0:
-
-                                trigger_6 = 0
-
-                            else:
-
-                                trigger_6 += int(cell_vel * tplus_scale)
-
-                            current_digit = 1
-
-                    # if ev[2] > origin_threshold:
-                    #
-                    #     if zero_count > 0:
-                    #
-                    #         zero_count -= int(cell_vel/5)
-                    #
-                    #     if zero_count < 0:
-                    #
-                    #         zero_count = 1
-
                 #ring
                 if ev[1] == 10:
 
                     ev_10 = ev[2]
-
-                    if words_g != 3:
-
-                        if ev[2] > t3_threshold:
-
-                            if trigger_3 < 0:
-
-                                trigger_3 = 0
-
-                            else:
-
-                                trigger_3 += int(cell_vel * tplus_scale)
-
-                            current_digit = 3
-
-                        if ev[2] < t7_threshold:
-
-                            if trigger_7 < 0:
-
-                                trigger_7 = 0
-
-                            else:
-
-                                trigger_7 += int(cell_vel * tplus_scale)
-
-                            current_digit = 1
 
                 #pinky
                 if ev[1] == 11:
 
                     ev_11 = ev[2]
 
-                    if words_g != 3:
+                #elbow
+                if ev[1] == 12:
 
-                        if ev[2] > t4_threshold:
+                    ev_12 = ev[2]
 
-                            if trigger_4 < 0:
+                evs = [ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11, ev_12]
 
-                                trigger_4 = 0
+        send_b(pack('llllllllllll', ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11, ev_12))
 
-                            else:
-
-                                trigger_4 += int(cell_vel * tplus_scale)
-
-                            current_digit = 4
-
-                        if ev[2] < t8_threshold:
-
-                            if trigger_8 < 0:
-
-                                trigger_8 = 0
-
-                            else:
-
-                                trigger_8 += int(cell_vel * tplus_scale)
-
-                            current_digit = 1
-
-                evs = [ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11]
-
-                print(evs)
+        # print()
+        # print(evs)
 
 
         #midi clean up
@@ -1358,14 +440,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     for m_e in midi_evs:
                         event_post(m_e)
 
-        input = ' '.join(argv[1:])
-        if not input: input = "no arguments given"
-        cproc = Popen("C:\Users\edwar\.vscode\chaos\chaos engine\main.obj", stdin=PIPE, stdout=PIPE)
-        out, err = cproc.communicate(input)
-        print
-        "output:", out
-        print
-        "errors:", err
 
 
 
@@ -1853,7 +927,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(5, 1, 1, 2)
+Chaos_Window(2)
 
 
 
