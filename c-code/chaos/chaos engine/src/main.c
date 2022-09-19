@@ -107,11 +107,87 @@ void key_input (int *a_rule, int *key_counter, int val, int bv, int base) {
     //printf("\n");
 }
 
-void value_color(int *board, uint8_t *pixels, int lw){
+void value_color(int *board,  int *colors, uint8_t *pixels, int lw){
+
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
+
+    // printf("\n");
+    // for (int i=0; i<lw; i++) {
+    //     printf("%i ", *(colors + i));
+    // }
+    // printf("\n");
+
+    // for (int i=0; i<lw; i++) {
+    //     printf("  %i", *(board + i));
+    // }
+    // printf("\n");
 
     for (int i=0; i<lw; i++) {
         // printf("%i  ", *(board + i));
-        //ARGB
+        //RGBA
+
+        r = 0;
+        g = 0;
+        b = 0;
+
+        //red
+        if (*(colors + i) < 255) {
+            // printf("red\n");
+            r = *(colors + i);
+        }
+        //green
+        else if (*(colors + i) < 510) {
+            // printf("green\n");
+            g = *(colors + i) - 255;
+        }
+        //blue
+        else if (*(colors + i) < 765) {
+            // printf("blue\n");
+            b = *(colors + i) - 510;
+        }
+        //magenta
+        else if (*(colors + i) < 1020) {
+            // printf("green\n");
+            g = *(colors + i) - 765;
+            b = *(colors + i) - 765;
+        }
+        //cyan
+        else if (*(colors + i) < 1275) {
+            // printf("blue\n");
+            r = *(colors + i) - 1020;
+            g = *(colors + i) - 1020;
+        }
+        //yellow
+        else if (*(colors + i) < 1530) {
+            // printf("blue\n");
+            r = *(colors + i) - 1275;
+            g = *(colors + i) - 1275;
+        }
+        //black
+        else {
+            // printf("black\n");
+            r = *(colors + i) - 1530;
+            g = r;
+            b = r;
+        }
+        
+
+        if (*(board + i) == 0){
+            if (*(colors + i) > 0) {
+            *(colors + i) -= 1;
+            }
+        }
+        else {
+            *(colors + i) += 1;
+        }
+
+
+        // printf("%i %i\n", c, *(colors + i));
+        
+
+        // printf("rgb: %i %i %i\n", r, g, b);
 
         if (*(board + i) == 0) {
             // printf("zero\n");
@@ -121,7 +197,7 @@ void value_color(int *board, uint8_t *pixels, int lw){
             *(pixels + (i * 4) + 3) = 0;
         }
 
-        if (*(board + i) == 1) {
+        if (*(board + i) == 2) {
             // printf("one\n");
             *(pixels + (i * 4)) = 255;
             *(pixels + (i * 4) + 1) = 0;
@@ -129,7 +205,7 @@ void value_color(int *board, uint8_t *pixels, int lw){
             *(pixels + (i * 4) + 3) = 255;
         }
 
-        if (*(board + i) == 2) {
+        if (*(board + i) == 3) {
             // printf("two\n");
             *(pixels + (i * 4)) = 255;
             *(pixels + (i * 4) + 1) = 255;
@@ -137,12 +213,20 @@ void value_color(int *board, uint8_t *pixels, int lw){
             *(pixels + (i * 4) + 3) = 255;
         }
 
-        if (*(board + i) == 3) {
+        if (*(board + i) == 4) {
             // printf("three\n");
-            *(pixels + (i * 4)) = 255;
+            *(pixels + (i * 4)) = 0;
             *(pixels + (i * 4) + 1) = 255;
             *(pixels + (i * 4) + 2) = 255;
-            *(pixels + (i * 4) + 3) = 0;
+            *(pixels + (i * 4) + 3) = 255;
+        }
+
+        if (*(board + i) == 1) {
+            // printf("four\n");
+            *(pixels + (i * 4)) = r;
+            *(pixels + (i * 4) + 1) = g;
+            *(pixels + (i * 4) + 2) = b;
+            *(pixels + (i * 4) + 3) = 255;
         }
         
 
@@ -158,34 +242,72 @@ int main(int argc, char *argv[]) {
     //--------------------START--------------------//
 
         //standard
-    int base = 4;
+    printf("standard\n");
+    int base = 2;
     int view = 5;
-    int b_length = 1001;
-    int b_width = 1001;
+    int b_length = 1003;
+    int b_width = 1003;
+    int c_length = 800;
+    int c_width = 400;
     int gv = 0;
+    int glove = 2;
+    int rule_value = 0;
+
 
         //calculated
+    printf("calculated\n");
     float bv_0 = pow(base, view);
     int bv = bv_0;
     int lw = b_length * b_width;
     int ww = 2 * b_width;
 
         //arrays
+    printf("arrays\n");
     int *a_rule = malloc((bv * sizeof(int)));
     int *chaos_board = malloc((lw * sizeof(int)));
+    int *chaos_colors = malloc((lw * sizeof(int)));
     int *key_counter = malloc((27 * sizeof(int)));
     int *glove_values = malloc(12 * sizeof(long));
     //x=0, y=1, z=2, pitch=3, yaw=4, roll=5, thumb=6, pointer=7, middle=8, ring=9, pinky=10, elbow=11
 
         //glove methods
-
-    int thumb_trigger = 64;
+    printf("glove methods\n");
+    int thumb_trigger = 16;
     int index_trigger = 64;
     int middle_trigger = 64;
     int ring_trigger = 64;
     int pinky_trigger = 64;
+    int last_value = 0;
 
+            //colors
+    printf("colors\n");
+    float drain_level = 60;
+    float c_max = drain_level * 5;
+    float step_up = .05;
+    float step_down = .03;
 
+    float window_scale = 5;
+    float window_max = bv / window_scale;
+    float window = 0;
+    int place = 0;
+    int skip_scale = 16;
+
+    float c_ratio = 0;
+    float c_total = 0;
+    float c_0 = 0;
+    float c_1 = 0;
+    float c_2 = 0;
+    float c_3 = 0;
+    float c_4 = 0;
+
+    int ci_0 = 0;
+    int ci_1 = 0;
+    int ci_2 = 0;
+    int ci_3 = 0;
+    int ci_4 = 0;
+    
+
+        //zero out
     for (int i=0; i<27; i++) {
         *(key_counter + i) = 0;
     }
@@ -200,9 +322,11 @@ int main(int argc, char *argv[]) {
     *(a_rule + 8) = 1;
     *(a_rule + 15) = 1;
     
-    //board init
+        //board init
+    printf("board init\n");
     for (int i=0; i<lw; i++) {
         *(chaos_board + i) = 0;
+        *(chaos_colors + i) = 0;
     }
     *(chaos_board + (lw/2)) = 1;
 
@@ -211,12 +335,17 @@ int main(int argc, char *argv[]) {
     //----------------sdl shit----------------//
     
     //init
+    printf("sdl init\n");
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window *win;
     SDL_Renderer *rend;
     SDL_Texture *texture;
+    SDL_Window *win1;
+    SDL_Renderer *rend1;
+    SDL_Texture *texture1;
 
     //define
+        //window_1
     win = SDL_CreateWindow("C.H.A.O.S.", 
                 SDL_WINDOWPOS_CENTERED, 
                 SDL_WINDOWPOS_CENTERED, 
@@ -232,7 +361,23 @@ int main(int argc, char *argv[]) {
                     b_length, 
                     b_width);
 
-    SDL_ShowCursor(false);
+    // SDL_ShowCursor(false);
+
+        //window_2
+    win1 = SDL_CreateWindow("C.H.A.O.S.", 
+                SDL_WINDOWPOS_CENTERED, 
+                SDL_WINDOWPOS_CENTERED, 
+                c_width, c_length, 
+                SDL_WINDOW_SHOWN);
+
+    rend1 = SDL_CreateRenderer(win, 
+                            -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    texture1 = SDL_CreateTexture(rend, 
+                    SDL_PIXELFORMAT_ARGB8888, 
+                    SDL_TEXTUREACCESS_STREAMING, 
+                    c_length, 
+                    c_width);
 
 
     //pixels
@@ -240,7 +385,7 @@ int main(int argc, char *argv[]) {
     uint8_t *pixels = malloc((pitch * sizeof(uint8_t)));
 
     SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch);
-    value_color(chaos_board, pixels, lw);
+    value_color(chaos_board, chaos_colors, pixels, lw);
     SDL_UnlockTexture(texture);
 
     SDL_RenderClear(rend);
@@ -414,10 +559,22 @@ int main(int argc, char *argv[]) {
     //----------------Server----------------//
 
     int res, sendRes;
+    WSADATA wsaData; //config data
+    SOCKET listener;
+    struct sockaddr_in address;
+    SOCKET client;
+    struct sockaddr_in clientAddr;
+    int clientAddrlen;
+    char *welcome = "Embrace Chaos";
+    char recvbuf[BUFFLEN];
+    int recvbuflen = BUFFLEN;
+
+    //server
+    if (glove > 1) {
+    
 
 
         //init
-    WSADATA wsaData; //config data
     res = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
     if (res) {
@@ -428,7 +585,6 @@ int main(int argc, char *argv[]) {
 
         //setup
             //construct socket
-    SOCKET listener;
     listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (listener == INVALID_SOCKET) {
@@ -439,7 +595,6 @@ int main(int argc, char *argv[]) {
 
 
             //bind
-    struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(ADDRESS);
     address.sin_port = htons(PORT);
@@ -466,9 +621,6 @@ int main(int argc, char *argv[]) {
 
         //handle a client
             //accept
-    SOCKET client;
-    struct sockaddr_in clientAddr;
-    int clientAddrlen;
     client = accept(listener, NULL, NULL);
     if (client == INVALID_SOCKET) {
         printf("Could not accept: %d\n", WSAGetLastError());
@@ -482,7 +634,6 @@ int main(int argc, char *argv[]) {
     printf("Client connected at %s:%d\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
 
             //send welcome message
-    char *welcome = "Embrace Chaos";
     sendRes = send(client, welcome, strlen(welcome), 0);
     if (sendRes != strlen(welcome)) {
         printf("Error sending: %d\n", WSAGetLastError());
@@ -491,9 +642,8 @@ int main(int argc, char *argv[]) {
     }
 
             //receive messages
-    char recvbuf[BUFFLEN];
-    int recvbuflen = BUFFLEN;
 
+    }
     /*
     do {
         res = recv(client, recvbuf, recvbuflen, 0);
@@ -557,7 +707,7 @@ int main(int argc, char *argv[]) {
         //render
             //thank you Sanette
         SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch);
-        value_color(chaos_board, pixels, lw);
+        value_color(chaos_board, chaos_colors, pixels, lw);
         SDL_UnlockTexture(texture);
 
         SDL_RenderClear(rend);
@@ -588,6 +738,7 @@ int main(int argc, char *argv[]) {
                     case SDL_SCANCODE_RETURN:
                         for (int i=0; i<lw; i++) {
                             *(chaos_board + i) = 0;
+                            *(chaos_colors + i) = 0;
                             }
                             *(chaos_board + (lw/2)) = 1;
                         break;
@@ -744,46 +895,256 @@ int main(int argc, char *argv[]) {
         }
         
 
-        //glove values
+        //glove
+        if (glove > 0) {
+            //glove values
+
         res += 1;
         gv=0;
         do {
-        res = recv(client, recvbuf, recvbuflen, 0);
-        if (res > 0) {
-            recvbuf[res] = "\0";
-            // printf("\nMessage received: %s\n", recvbuf);
-            // printf("len %zi\n", sizeof(recvbuf));
+            res = recv(client, recvbuf, recvbuflen, 0);
+            if (res > 0) {
+                recvbuf[res] = "\0";
+                // printf("\nMessage received: %s\n", recvbuf);
+                // printf("len %zi\n", sizeof(recvbuf));
 
-            for (int i=0; i<12; i++) {
-                uint32_t myInt1 = recvbuf[0 + (i*4)] + 
-                                 (recvbuf[1 + (i*4)] << 8) + 
-                                 (recvbuf[2 + (i*4)] << 16) + 
-                                 (recvbuf[3 + (i*4)] << 24);
+                for (int i=0; i<12; i++) {
+                    uint32_t myInt1 = recvbuf[0 + (i*4)] + 
+                                    (recvbuf[1 + (i*4)] << 8) + 
+                                    (recvbuf[2 + (i*4)] << 16) + 
+                                    (recvbuf[3 + (i*4)] << 24);
 
-                *(glove_values + i) = myInt1;
-                } 
-                //printf("\n");
+                    *(glove_values + i) = myInt1;
+                    } 
+                    //printf("\n");
 
-            for (int i=0; i<12; i++) {
-                //printf("%zi ", *(glove_values + i));
-                gv += *(glove_values + i);
-                } 
-                //printf("\n");
+                for (int i=0; i<12; i++) {
+                    // printf("%zi ", *(glove_values + i));
+                    gv += *(glove_values + i);
+                    } 
+                    // printf("\n");
 
-            //echo message
-            sendRes = send(client, recvbuf, res, 0);
+                //echo message
+                // printf("[DEBUG0] ### sendRes value = %d\n", sendRes);
+                sendRes = send(client, recvbuf, res, 0);
                 if (sendRes != res) {
                     printf("Error sending: %d\n", WSAGetLastError());
                     shutdown(client, SD_BOTH);
                     closesocket(client);
                     break;
                     }
+                // printf("[DEBUG0] ### Respond value is: %d\n", res);
                 res=0;
+            }
+        } while (res > 0);
+
+
+            //glove methods
+        if (glove == 1) {
+        if (*(glove_values + 7) > index_trigger) {
+            if (c_1 < drain_level) {
+                c_1 += step_up;
+            } else {
+                c_1 = 0;
+                c_0 = 0;
+                for (int i=0; i<bv; i++) {
+                    if (*(a_rule + i) == 1) {
+                        *(a_rule + i) = 0;
+                    }
                 }
-            } while (res > 0);
+            }
+        } else {
+            if (c_1 > 0) {
+                c_1 -= step_down;
+            }
+        }
+
+        if (*(glove_values + 8) > middle_trigger) {
+            if (c_2 < drain_level) {
+                c_2 += step_up;
+            } else {
+                c_2 = 0;
+                c_0 = 0;
+                for (int i=0; i<bv; i++) {
+                    if (*(a_rule + i) == 2) {
+                        *(a_rule + i) = 0;
+                    }
+                }
+            }
+        } else {
+            if (c_2 > 0) {
+                c_2 -= step_down;
+            }
+        }
+
+        if (*(glove_values + 9) > ring_trigger) {
+            if (c_3 < drain_level) {
+                c_3 += step_up;
+            } else {
+                c_3 = 0;
+                c_0 = 0;
+                for (int i=0; i<bv; i++) {
+                    if (*(a_rule + i) == 3) {
+                        *(a_rule + i) = 0;
+                    }
+                }
+            }
+        } else {
+            if (c_3 > 0) {
+                c_3 -= step_down;
+            }
+        }
+
+        if (*(glove_values + 10) > pinky_trigger) {
+            if (c_4 < drain_level) {
+                c_4 += step_up;
+            } else {
+                c_4 = 0;
+                c_0 = 0;
+                for (int i=0; i<bv; i++) {
+                    if (*(a_rule + i) == 4) {
+                        *(a_rule + i) = 0;
+                    }
+                }
+            }
+        } else {
+            if (c_4 > 0) {
+                c_4 -= step_down;
+            }
+        }
+
+        if (c_0 < c_1) {
+            c_0 = c_1;
+        }
+
+        if (c_0 < c_2) {
+            c_0 = c_2;
+        }
+
+        if (c_0 < c_3) {
+            c_0 = c_3;
+        }
+
+        if (c_0 < c_4) {
+            c_0 = c_4;
+        }
+
+        if (c_0 > 0) {
+            c_0 -= step_down;
+        }
+
+        c_total = c_0 + c_1 + c_2 + c_3 + c_4;
+        c_ratio = c_total / c_max;
+        window = c_ratio * window_max;
+
+        printf("\n%f\t%f\t%f\t%f\t%f\t%f\t%f\n", c_0, c_1, c_2, c_3, c_4, c_ratio, window);
+
+        place = 0;
+        if (c_total < 1) {
+            c_total = 1;
+        }
+        ci_0 = (c_0/c_total) * window;
+        ci_1 = (c_1/c_total) * window;
+        ci_2 = (c_2/c_total) * window;
+        ci_3 = (c_3/c_total) * window;
+        ci_4 = (c_4/c_total) * window;
+
+        if(ci_0 > drain_level) {
+            ci_0 = drain_level;
+        }
+        if(ci_1 > drain_level) {
+            ci_1 = drain_level;
+        }
+        if(ci_2 > drain_level) {
+            ci_2 = drain_level;
+        }
+        if(ci_3 > drain_level) {
+            ci_3 = drain_level;
+        }
+        if(ci_4 > drain_level) {
+            ci_4 = drain_level;
+        }
+
+        printf("\n%i\t%i\t%i\t%i\t%i\n", ci_0, ci_1, ci_2, ci_3, ci_4);
+
+        for (int i=0; i<ci_0; i++) {
+            *(a_rule + (gv + place)) = 0;
+            place += *(glove_values + 6)/skip_scale;
+        }
+
+        for (int i=0; i<ci_1; i++) {
+            *(a_rule + (gv + place)) = 1;
+            place += *(glove_values + 6)/skip_scale;
+        }
+
+        if (base > 2) {
+        for (int i=0; i<ci_2; i++) {
+            *(a_rule + (gv + place)) = 2;
+            place += *(glove_values + 6)/skip_scale;
+        }}
+
+        if (base > 3) {
+        for (int i=0; i<ci_3; i++) {
+            *(a_rule + (gv + place)) = 3;
+            place += *(glove_values + 6)/skip_scale;
+        }}
+
+        if (base > 4) {
+        for (int i=0; i<ci_4; i++) {
+            *(a_rule + (gv + place)) = 4;
+            place += *(glove_values + 6)/skip_scale;
+        }}}
+        
+        else if (glove == 2) {
+            
+
+            // for (int i=0; i<12; i++) {
+            //     printf("%i ", *(glove_values + i)/64);
+            // }printf("\n");
+
+        
+
+            rule_value = ((*(glove_values + 6)/64) + 
+                          (*(glove_values + 7)/64) * 2 + 
+                          (*(glove_values + 8)/64) * 4 + 
+                          (*(glove_values + 9)/64) * 8 +
+                          (*(glove_values + 10)/64) * 16);
+
+            // printf("%i\n", rule_value);
+
+            
+
+            // printf("\n\n%i %i\n", last_value, (rule_value % bv));
+
+            if (rule_value % bv != last_value) {
+                // printf("different\n");
+                if (*(a_rule + (rule_value % bv)) == 0) {
+                    *(a_rule + (rule_value % bv)) = 1;
+                } else {
+                    *(a_rule + (rule_value % bv)) = 0;
+                }} else {
+                    // printf("same\n");
+                }
+            last_value = (rule_value % bv);
+            // for (int i=0; i<bv; i++) {
+            //     printf("%i ", *(a_rule + i));
+            // } printf("\n\n");
 
 
-        //glove methods
+            if (*(glove_values + 3)/64 == 1) {
+
+                for (int i=0; i<lw; i++) {
+                    *(chaos_board + i) = 0;
+                    *(chaos_colors + i) = 0;
+                }
+            }
+            
+        }
+
+        }
+        
+        *(chaos_board + (lw/2)) = 1;
+
         
     }
 

@@ -4,6 +4,7 @@
         "cmath": "c",
         "render_internal.h": "c",
         "portmidi.h": "c",
-        "tinyosc.h": "c"
+        "tinyosc.h": "c",
+        "ws2tcpip.h": "c"
     }
 }
