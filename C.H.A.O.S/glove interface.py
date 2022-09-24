@@ -203,6 +203,7 @@ def viewer_1d(row, y, view, v_0, color_value):
         return v_0
 
 
+
 def Color_cells_1d(d_rule, cell_row_width, row_0):
 
     # print("")

@@ -107,87 +107,126 @@ void key_input (int *a_rule, int *key_counter, int val, int bv, int base) {
     //printf("\n");
 }
 
-void value_color(int *board,  int *colors, uint8_t *pixels, int lw){
+void value_color(int *board,  int *colors, uint8_t *pixels, int lw, int color_step, int color_on){
 
-    uint8_t r = 0;
-    uint8_t g = 0;
-    uint8_t b = 0;
 
-    // printf("\n");
-    // for (int i=0; i<lw; i++) {
-    //     printf("%i ", *(colors + i));
-    // }
-    // printf("\n");
+    uint8_t rgb[3] = {0, 0, 0};
+    int layer_size = 255;
 
     // for (int i=0; i<lw; i++) {
-    //     printf("  %i", *(board + i));
+    //     *(board + i) = 1;
     // }
+
     // printf("\n");
+    // for (int i=0; i<3; i++) {
+    //     printf("%i ", *(rgb + i));
+    // } printf("\n");
+
+    
+
+    for (int i=0; i<lw; i++) {
+
+        // printf("\n\nnew board %i = %i\n", i, *(board + i));
+        // printf("colors %i\n ", *(colors + i));
+        //RGBA
+
+        *(rgb) = 0;
+        *(rgb + 1) = 0;
+        *(rgb + 2) = 0;
+
+        if (color_on > 0) {
+            //red
+            if (*(colors + i) < layer_size) {
+                // printf("red\n");
+                *(rgb) = *(colors + i);
+            }
+            //red green
+            else if (*(colors + i) < layer_size * 2) {
+                // printf("red green\n");
+                *(rgb) = 255;
+                *(rgb + 1) = (*(colors + i) - layer_size) % 255;
+            }
+            //green
+            else if (*(colors + i) < layer_size * 3) {
+                // printf("green\n");
+                *(rgb) = 255 - (*(colors + i) - (layer_size * 2)) % 255;
+                *(rgb + 1) = 255;
+            }
+            //green blue
+            else if (*(colors + i) < layer_size * 4) {
+                // printf("green blue\n");
+                *(rgb + 1) = 255;
+                *(rgb + 2) = (*(colors + i) - (layer_size * 3)) % 255;
+            }
+            //blue
+            else if (*(colors + i) < layer_size * 5) {
+                // printf("blue\n");
+                *(rgb + 1) =  255 - (*(colors + i) - (layer_size * 4)) % 255;
+                *(rgb + 2) = 255;
+            }
+            //blue red
+            else if (*(colors + i) < layer_size * 6) {
+                // printf("blue red\n");
+                *(rgb + 2) = 255;
+                *(rgb) = (*(colors + i) - (layer_size * 5)) % 255;
+            }
+            //white
+            else if (*(colors + i) < layer_size * 7) {
+                // printf("white\n");
+                *(rgb) = 255;
+                *(rgb + 2) = 255;
+                *(rgb + 1) = (*(colors + i) - (layer_size * 2)) % 255;
+            }
+            //black
+            else if (*(colors + i) < layer_size * 8) {
+                // printf("black\n");
+                *(rgb) = 255 - *(colors + i) - (layer_size * 7);
+                *(rgb + 1) = 255 - *(colors + i) - (layer_size * 7);
+                *(rgb + 2) = 255 - *(colors + i) - (layer_size * 7);
+            }
+            
+            // for (int i=0; i<3; i++) {
+            //     printf("%i ", *(rgb + i));
+            // } 
+            // printf("\ncolor_step %i\n", color_step);
+
+        } else {
+            *(rgb) = *(colors + i) % 255;
+            *(rgb + 1) = *(colors + i) % 255;
+            *(rgb + 2) = *(colors + i) % 255;
+
+            color_step = 1;
+        }
+
+        if (*(board + i) == 0){
+            if (*(colors + i) > 0) {
+            *(colors + i) -= color_step;
+            }
+        }
+        else {
+            *(colors + i) = *(colors + i) + 1;
+            // printf("\ncolors %i\n", *(colors + i));
+            *(colors + i) = *(colors + i) % (layer_size * 10);
+            // printf("colors %i\n\n", *(colors + i));
+        }
+
+
+        *(pixels + (i * 4)) = *(rgb + 2);
+        *(pixels + (i * 4) + 1) = *(rgb + 1);
+        *(pixels + (i * 4) + 2) = *(rgb);
+        *(pixels + (i * 4) + 3) = 255;
+
+        
+
+
+    }
+}
+
+void value_color_s(int *board, uint8_t *pixels, int lw){   
 
     for (int i=0; i<lw; i++) {
         // printf("%i  ", *(board + i));
         //RGBA
-
-        r = 0;
-        g = 0;
-        b = 0;
-
-        //red
-        if (*(colors + i) < 255) {
-            // printf("red\n");
-            r = *(colors + i);
-        }
-        //green
-        else if (*(colors + i) < 510) {
-            // printf("green\n");
-            g = *(colors + i) - 255;
-        }
-        //blue
-        else if (*(colors + i) < 765) {
-            // printf("blue\n");
-            b = *(colors + i) - 510;
-        }
-        //magenta
-        else if (*(colors + i) < 1020) {
-            // printf("green\n");
-            g = *(colors + i) - 765;
-            b = *(colors + i) - 765;
-        }
-        //cyan
-        else if (*(colors + i) < 1275) {
-            // printf("blue\n");
-            r = *(colors + i) - 1020;
-            g = *(colors + i) - 1020;
-        }
-        //yellow
-        else if (*(colors + i) < 1530) {
-            // printf("blue\n");
-            r = *(colors + i) - 1275;
-            g = *(colors + i) - 1275;
-        }
-        //black
-        else {
-            // printf("black\n");
-            r = *(colors + i) - 1530;
-            g = r;
-            b = r;
-        }
-        
-
-        if (*(board + i) == 0){
-            if (*(colors + i) > 0) {
-            *(colors + i) -= 1;
-            }
-        }
-        else {
-            *(colors + i) += 1;
-        }
-
-
-        // printf("%i %i\n", c, *(colors + i));
-        
-
-        // printf("rgb: %i %i %i\n", r, g, b);
 
         if (*(board + i) == 0) {
             // printf("zero\n");
@@ -197,7 +236,7 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw){
             *(pixels + (i * 4) + 3) = 0;
         }
 
-        if (*(board + i) == 2) {
+        else if (*(board + i) == 2) {
             // printf("one\n");
             *(pixels + (i * 4)) = 255;
             *(pixels + (i * 4) + 1) = 0;
@@ -205,7 +244,7 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw){
             *(pixels + (i * 4) + 3) = 255;
         }
 
-        if (*(board + i) == 3) {
+        else if (*(board + i) == 3) {
             // printf("two\n");
             *(pixels + (i * 4)) = 255;
             *(pixels + (i * 4) + 1) = 255;
@@ -213,7 +252,7 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw){
             *(pixels + (i * 4) + 3) = 255;
         }
 
-        if (*(board + i) == 4) {
+        else if (*(board + i) == 4) {
             // printf("three\n");
             *(pixels + (i * 4)) = 0;
             *(pixels + (i * 4) + 1) = 255;
@@ -221,11 +260,11 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw){
             *(pixels + (i * 4) + 3) = 255;
         }
 
-        if (*(board + i) == 1) {
+        else if (*(board + i) == 1) {
             // printf("four\n");
-            *(pixels + (i * 4)) = r;
-            *(pixels + (i * 4) + 1) = g;
-            *(pixels + (i * 4) + 2) = b;
+            *(pixels + (i * 4)) = 128;
+            *(pixels + (i * 4) + 1) = 128;
+            *(pixels + (i * 4) + 2) = 128;
             *(pixels + (i * 4) + 3) = 255;
         }
         
@@ -233,6 +272,7 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw){
 
     }
 }
+
 
 int main(int argc, char *argv[]) {
     
@@ -245,27 +285,43 @@ int main(int argc, char *argv[]) {
     printf("standard\n");
     int base = 2;
     int view = 5;
-    int b_length = 1003;
-    int b_width = 1003;
+
+    int b_length = 1001;
+    int b_width = 1001;
+    int bb_length = 64;
+    int bb_width = 64;
+    int s_length = 512;
+    int s_width = 256;
     int c_length = 800;
     int c_width = 400;
+
     int gv = 0;
     int glove = 2;
     int rule_value = 0;
+    int character_size = 64;
+    int color_on = 1;
+    int brush_stroke = 9;
+
 
 
         //calculated
     printf("calculated\n");
     float bv_0 = pow(base, view);
     int bv = bv_0;
+    int lw_bb = bb_length * bb_width;
+    int ww_bb = bb_width * 2;
     int lw = b_length * b_width;
     int ww = 2 * b_width;
+    int pinpoint = (lw/2);
+    int lw_s = s_length * s_width;
 
         //arrays
     printf("arrays\n");
     int *a_rule = malloc((bv * sizeof(int)));
+    int *brush_board = malloc((lw_bb * sizeof(int)));
     int *chaos_board = malloc((lw * sizeof(int)));
     int *chaos_colors = malloc((lw * sizeof(int)));
+    int *side_board = malloc((s_length * s_width) * sizeof(int));
     int *key_counter = malloc((27 * sizeof(int)));
     int *glove_values = malloc(12 * sizeof(long));
     //x=0, y=1, z=2, pitch=3, yaw=4, roll=5, thumb=6, pointer=7, middle=8, ring=9, pinky=10, elbow=11
@@ -285,6 +341,7 @@ int main(int argc, char *argv[]) {
     float c_max = drain_level * 5;
     float step_up = .05;
     float step_down = .03;
+    int color_step = 1;
 
     float window_scale = 5;
     float window_max = bv / window_scale;
@@ -327,8 +384,24 @@ int main(int argc, char *argv[]) {
     for (int i=0; i<lw; i++) {
         *(chaos_board + i) = 0;
         *(chaos_colors + i) = 0;
+        *(brush_board + i % lw_bb) = 0;
     }
-    *(chaos_board + (lw/2)) = 1;
+    *(chaos_board + pinpoint) = 1;
+    *(brush_board + lw_bb/2) = 1;
+    *(brush_board + bb_length * 4 + bb_width/2) = 1;
+
+        //side board init
+    for (int i=0; i<(s_length * s_width)/2; i++) {
+        *(side_board + i) = 0;
+        *(side_board + i + (s_length * s_width)/2) = 0;
+
+    }   
+
+    for (int i=0; i<12; i++) {
+        *(glove_values + i) = 0;
+    }
+
+
 
     //--------------------END--------------------//
     
@@ -337,12 +410,14 @@ int main(int argc, char *argv[]) {
     //init
     printf("sdl init\n");
     SDL_Init(SDL_INIT_VIDEO);
+    //main
     SDL_Window *win;
     SDL_Renderer *rend;
     SDL_Texture *texture;
-    SDL_Window *win1;
-    SDL_Renderer *rend1;
-    SDL_Texture *texture1;
+    //side
+    SDL_Window *win_s;
+    SDL_Renderer *rend_s;
+    SDL_Texture *texture_s;
 
     //define
         //window_1
@@ -364,33 +439,123 @@ int main(int argc, char *argv[]) {
     // SDL_ShowCursor(false);
 
         //window_2
-    win1 = SDL_CreateWindow("C.H.A.O.S.", 
+    win_s = SDL_CreateWindow("C.H.A.O.S. side", 
                 SDL_WINDOWPOS_CENTERED, 
                 SDL_WINDOWPOS_CENTERED, 
-                c_width, c_length, 
+                s_width, s_length, 
                 SDL_WINDOW_SHOWN);
 
-    rend1 = SDL_CreateRenderer(win, 
+    rend_s = SDL_CreateRenderer(win_s, 
                             -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-    texture1 = SDL_CreateTexture(rend, 
+    texture_s = SDL_CreateTexture(rend_s, 
                     SDL_PIXELFORMAT_ARGB8888, 
                     SDL_TEXTUREACCESS_STREAMING, 
-                    c_length, 
-                    c_width);
+                    s_width, 
+                    s_length);
 
 
     //pixels
     int pitch = lw * 4;
     uint8_t *pixels = malloc((pitch * sizeof(uint8_t)));
 
+    int pitch_s = lw_s * 4;
+    uint8_t *pixels_s = malloc((pitch * sizeof(uint8_t)));
+
+        //main
     SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch);
-    value_color(chaos_board, chaos_colors, pixels, lw);
+    value_color(chaos_board, chaos_colors, pixels, lw, color_step, 0);
     SDL_UnlockTexture(texture);
 
     SDL_RenderClear(rend);
     SDL_RenderCopy(rend, texture, NULL, NULL);
     SDL_RenderPresent(rend);
+
+        //side
+
+    int x_s = 0;
+    int y_s = 0;
+    for (int i=0; i<(bv); i++) {
+        
+        y_s = (i/4) * character_size * s_width;
+        x_s = i%4 * character_size;
+
+        // printf("%i %i\n", y_s, x_s);
+
+        for (int o=0; o<character_size; o++) {
+            *(side_board + ((x_s + o) + (y_s + (1 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (2 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (3 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (4 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (5 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (6 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (7 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (8 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (9 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (10 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (11 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (12 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (13 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (14 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (15 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (16 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (17 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (18 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (19 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (20 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (21 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (22 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (23 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (24 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (25 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (26 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (27 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (28 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (29 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (30 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (31 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (32 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (33 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (34 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (35 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (36 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (37 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (38 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (39 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (40 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (41 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (42 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (43 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (44 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (45 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (46 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (47 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (48 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (49 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (50 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (51 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (52 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (53 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (54 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (55 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (56 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (57 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (58 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (59 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (60 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (61 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (62 * s_width)))) = i%4 + 1;
+            *(side_board + ((x_s + o) + (y_s + (63 * s_width)))) = i%4 + 1;
+
+        }
+    }
+    SDL_LockTexture(texture_s, NULL, (void **)&pixels_s, &pitch_s);
+    value_color_s(side_board, pixels_s, lw_s);
+    SDL_UnlockTexture(texture_s);
+
+    SDL_RenderClear(rend_s);
+    SDL_RenderCopy(rend_s, texture_s, NULL, NULL);
+    SDL_RenderPresent(rend_s);
     
 
    //rule organizer//
@@ -701,18 +866,109 @@ int main(int argc, char *argv[]) {
     while (!should_quit) {
 
         //chaomize
-        chaomize(chaos_board, a_rule, lw, ww, b_width, base);
+        chaomize(brush_board, a_rule, lw_bb, ww_bb, bb_width, base);
+
+        for (int l=0; l<bb_length; l++) {
+            for (int w=0; w<bb_width; w++) {
+                *(chaos_board + 
+                (((b_length - (l + (*(glove_values + 1) % 128) * brush_stroke) % b_length) * b_width) + 
+                (w + (*(glove_values) % 128) * brush_stroke)) % lw) = 
+                *(brush_board + ((l * (bb_width)) + w) % lw_bb);
+        }}
 
 
         //render
             //thank you Sanette
+            //main render
         SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch);
-        value_color(chaos_board, chaos_colors, pixels, lw);
+        value_color(chaos_board, chaos_colors, pixels, lw, color_step, color_on);
         SDL_UnlockTexture(texture);
 
         SDL_RenderClear(rend);
         SDL_RenderCopy(rend, texture, NULL, NULL);
         SDL_RenderPresent(rend);
+            //side render
+    for (int i=0; i<(bv); i++) {
+        
+        y_s = (i/4) * character_size * s_width;
+        x_s = i%4 * character_size;
+
+        // printf("%i %i\n", y_s, x_s);
+
+        for (int o=0; o<character_size; o++) {
+            *(side_board + ((x_s + o) + (y_s + (1 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (2 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (3 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (4 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (5 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (6 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (7 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (8 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (9 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (10 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (11 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (12 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (13 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (14 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (15 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (16 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (17 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (18 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (19 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (20 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (21 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (22 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (23 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (24 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (25 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (26 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (27 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (28 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (29 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (30 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (31 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (32 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (33 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (34 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (35 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (36 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (37 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (38 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (39 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (40 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (41 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (42 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (43 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (44 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (45 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (46 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (47 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (48 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (49 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (50 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (51 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (52 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (53 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (54 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (55 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (56 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (57 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (58 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (59 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (60 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (61 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (62 * s_width)))) = *(a_rule + i);
+            *(side_board + ((x_s + o) + (y_s + (63 * s_width)))) = *(a_rule + i);
+
+        }
+    }
+        SDL_LockTexture(texture_s, NULL, (void **)&pixels_s, &pitch_s);
+        value_color_s(side_board, pixels_s, (s_length * s_width));
+        SDL_UnlockTexture(texture_s);
+
+        SDL_RenderClear(rend_s);
+        SDL_RenderCopy(rend_s, texture_s, NULL, NULL);
+        SDL_RenderPresent(rend_s);
 
 
         //events
@@ -899,251 +1155,262 @@ int main(int argc, char *argv[]) {
         if (glove > 0) {
             //glove values
 
-        res += 1;
-        gv=0;
-        do {
-            res = recv(client, recvbuf, recvbuflen, 0);
-            if (res > 0) {
-                recvbuf[res] = "\0";
-                // printf("\nMessage received: %s\n", recvbuf);
-                // printf("len %zi\n", sizeof(recvbuf));
+            res += 1;
+            gv=0;
+            do {
+                res = recv(client, recvbuf, recvbuflen, 0);
+                if (res > 0) {
+                    recvbuf[res] = "\0";
+                    // printf("\nMessage received: %s\n", recvbuf);
+                    // printf("len %zi\n", sizeof(recvbuf));
 
-                for (int i=0; i<12; i++) {
-                    uint32_t myInt1 = recvbuf[0 + (i*4)] + 
-                                    (recvbuf[1 + (i*4)] << 8) + 
-                                    (recvbuf[2 + (i*4)] << 16) + 
-                                    (recvbuf[3 + (i*4)] << 24);
+                    for (int i=0; i<12; i++) {
+                        uint32_t myInt1 = recvbuf[0 + (i*4)] + 
+                                        (recvbuf[1 + (i*4)] << 8) + 
+                                        (recvbuf[2 + (i*4)] << 16) + 
+                                        (recvbuf[3 + (i*4)] << 24);
 
-                    *(glove_values + i) = myInt1;
-                    } 
-                    //printf("\n");
+                        *(glove_values + i) = myInt1;
+                        } 
+                        //printf("\n");
 
-                for (int i=0; i<12; i++) {
-                    // printf("%zi ", *(glove_values + i));
-                    gv += *(glove_values + i);
-                    } 
-                    // printf("\n");
+                    for (int i=0; i<12; i++) {
+                        // printf("%zi ", *(glove_values + i));
+                        gv += *(glove_values + i);
+                        } 
+                        // printf("\n");
 
-                //echo message
-                // printf("[DEBUG0] ### sendRes value = %d\n", sendRes);
-                sendRes = send(client, recvbuf, res, 0);
-                if (sendRes != res) {
-                    printf("Error sending: %d\n", WSAGetLastError());
-                    shutdown(client, SD_BOTH);
-                    closesocket(client);
-                    break;
-                    }
-                // printf("[DEBUG0] ### Respond value is: %d\n", res);
-                res=0;
-            }
-        } while (res > 0);
-
-
-            //glove methods
-        if (glove == 1) {
-        if (*(glove_values + 7) > index_trigger) {
-            if (c_1 < drain_level) {
-                c_1 += step_up;
-            } else {
-                c_1 = 0;
-                c_0 = 0;
-                for (int i=0; i<bv; i++) {
-                    if (*(a_rule + i) == 1) {
-                        *(a_rule + i) = 0;
-                    }
+                    //echo message
+                    // printf("[DEBUG0] ### sendRes value = %d\n", sendRes);
+                    sendRes = send(client, recvbuf, res, 0);
+                    if (sendRes != res) {
+                        printf("Error sending: %d\n", WSAGetLastError());
+                        shutdown(client, SD_BOTH);
+                        closesocket(client);
+                        break;
+                        }
+                    // printf("[DEBUG0] ### Respond value is: %d\n", res);
+                    res=0;
                 }
-            }
-        } else {
-            if (c_1 > 0) {
-                c_1 -= step_down;
-            }
-        }
+            } while (res > 0);
 
-        if (*(glove_values + 8) > middle_trigger) {
-            if (c_2 < drain_level) {
-                c_2 += step_up;
-            } else {
-                c_2 = 0;
-                c_0 = 0;
-                for (int i=0; i<bv; i++) {
-                    if (*(a_rule + i) == 2) {
-                        *(a_rule + i) = 0;
-                    }
-                }
-            }
-        } else {
-            if (c_2 > 0) {
-                c_2 -= step_down;
-            }
-        }
 
-        if (*(glove_values + 9) > ring_trigger) {
-            if (c_3 < drain_level) {
-                c_3 += step_up;
-            } else {
-                c_3 = 0;
-                c_0 = 0;
-                for (int i=0; i<bv; i++) {
-                    if (*(a_rule + i) == 3) {
-                        *(a_rule + i) = 0;
-                    }
-                }
-            }
-        } else {
-            if (c_3 > 0) {
-                c_3 -= step_down;
-            }
-        }
-
-        if (*(glove_values + 10) > pinky_trigger) {
-            if (c_4 < drain_level) {
-                c_4 += step_up;
-            } else {
-                c_4 = 0;
-                c_0 = 0;
-                for (int i=0; i<bv; i++) {
-                    if (*(a_rule + i) == 4) {
-                        *(a_rule + i) = 0;
-                    }
-                }
-            }
-        } else {
-            if (c_4 > 0) {
-                c_4 -= step_down;
-            }
-        }
-
-        if (c_0 < c_1) {
-            c_0 = c_1;
-        }
-
-        if (c_0 < c_2) {
-            c_0 = c_2;
-        }
-
-        if (c_0 < c_3) {
-            c_0 = c_3;
-        }
-
-        if (c_0 < c_4) {
-            c_0 = c_4;
-        }
-
-        if (c_0 > 0) {
-            c_0 -= step_down;
-        }
-
-        c_total = c_0 + c_1 + c_2 + c_3 + c_4;
-        c_ratio = c_total / c_max;
-        window = c_ratio * window_max;
-
-        printf("\n%f\t%f\t%f\t%f\t%f\t%f\t%f\n", c_0, c_1, c_2, c_3, c_4, c_ratio, window);
-
-        place = 0;
-        if (c_total < 1) {
-            c_total = 1;
-        }
-        ci_0 = (c_0/c_total) * window;
-        ci_1 = (c_1/c_total) * window;
-        ci_2 = (c_2/c_total) * window;
-        ci_3 = (c_3/c_total) * window;
-        ci_4 = (c_4/c_total) * window;
-
-        if(ci_0 > drain_level) {
-            ci_0 = drain_level;
-        }
-        if(ci_1 > drain_level) {
-            ci_1 = drain_level;
-        }
-        if(ci_2 > drain_level) {
-            ci_2 = drain_level;
-        }
-        if(ci_3 > drain_level) {
-            ci_3 = drain_level;
-        }
-        if(ci_4 > drain_level) {
-            ci_4 = drain_level;
-        }
-
-        printf("\n%i\t%i\t%i\t%i\t%i\n", ci_0, ci_1, ci_2, ci_3, ci_4);
-
-        for (int i=0; i<ci_0; i++) {
-            *(a_rule + (gv + place)) = 0;
-            place += *(glove_values + 6)/skip_scale;
-        }
-
-        for (int i=0; i<ci_1; i++) {
-            *(a_rule + (gv + place)) = 1;
-            place += *(glove_values + 6)/skip_scale;
-        }
-
-        if (base > 2) {
-        for (int i=0; i<ci_2; i++) {
-            *(a_rule + (gv + place)) = 2;
-            place += *(glove_values + 6)/skip_scale;
-        }}
-
-        if (base > 3) {
-        for (int i=0; i<ci_3; i++) {
-            *(a_rule + (gv + place)) = 3;
-            place += *(glove_values + 6)/skip_scale;
-        }}
-
-        if (base > 4) {
-        for (int i=0; i<ci_4; i++) {
-            *(a_rule + (gv + place)) = 4;
-            place += *(glove_values + 6)/skip_scale;
-        }}}
-        
-        else if (glove == 2) {
-            
-
-            // for (int i=0; i<12; i++) {
-            //     printf("%i ", *(glove_values + i)/64);
-            // }printf("\n");
-
-        
-
-            rule_value = ((*(glove_values + 6)/64) + 
-                          (*(glove_values + 7)/64) * 2 + 
-                          (*(glove_values + 8)/64) * 4 + 
-                          (*(glove_values + 9)/64) * 8 +
-                          (*(glove_values + 10)/64) * 16);
-
-            // printf("%i\n", rule_value);
-
-            
-
-            // printf("\n\n%i %i\n", last_value, (rule_value % bv));
-
-            if (rule_value % bv != last_value) {
-                // printf("different\n");
-                if (*(a_rule + (rule_value % bv)) == 0) {
-                    *(a_rule + (rule_value % bv)) = 1;
+                //glove methods
+            if (glove == 1) {
+            if (*(glove_values + 7) > index_trigger) {
+                if (c_1 < drain_level) {
+                    c_1 += step_up;
                 } else {
-                    *(a_rule + (rule_value % bv)) = 0;
-                }} else {
-                    // printf("same\n");
+                    c_1 = 0;
+                    c_0 = 0;
+                    for (int i=0; i<bv; i++) {
+                        if (*(a_rule + i) == 1) {
+                            *(a_rule + i) = 0;
+                        }
+                    }
                 }
-            last_value = (rule_value % bv);
-            // for (int i=0; i<bv; i++) {
-            //     printf("%i ", *(a_rule + i));
-            // } printf("\n\n");
-
-
-            if (*(glove_values + 3)/64 == 1) {
-
-                for (int i=0; i<lw; i++) {
-                    *(chaos_board + i) = 0;
-                    *(chaos_colors + i) = 0;
+            } else {
+                if (c_1 > 0) {
+                    c_1 -= step_down;
                 }
             }
+
+            if (*(glove_values + 8) > middle_trigger) {
+                if (c_2 < drain_level) {
+                    c_2 += step_up;
+                } else {
+                    c_2 = 0;
+                    c_0 = 0;
+                    for (int i=0; i<bv; i++) {
+                        if (*(a_rule + i) == 2) {
+                            *(a_rule + i) = 0;
+                        }
+                    }
+                }
+            } else {
+                if (c_2 > 0) {
+                    c_2 -= step_down;
+                }
+            }
+
+            if (*(glove_values + 9) > ring_trigger) {
+                if (c_3 < drain_level) {
+                    c_3 += step_up;
+                } else {
+                    c_3 = 0;
+                    c_0 = 0;
+                    for (int i=0; i<bv; i++) {
+                        if (*(a_rule + i) == 3) {
+                            *(a_rule + i) = 0;
+                        }
+                    }
+                }
+            } else {
+                if (c_3 > 0) {
+                    c_3 -= step_down;
+                }
+            }
+
+            if (*(glove_values + 10) > pinky_trigger) {
+                if (c_4 < drain_level) {
+                    c_4 += step_up;
+                } else {
+                    c_4 = 0;
+                    c_0 = 0;
+                    for (int i=0; i<bv; i++) {
+                        if (*(a_rule + i) == 4) {
+                            *(a_rule + i) = 0;
+                        }
+                    }
+                }
+            } else {
+                if (c_4 > 0) {
+                    c_4 -= step_down;
+                }
+            }
+
+            if (c_0 < c_1) {
+                c_0 = c_1;
+            }
+
+            if (c_0 < c_2) {
+                c_0 = c_2;
+            }
+
+            if (c_0 < c_3) {
+                c_0 = c_3;
+            }
+
+            if (c_0 < c_4) {
+                c_0 = c_4;
+            }
+
+            if (c_0 > 0) {
+                c_0 -= step_down;
+            }
+
+            c_total = c_0 + c_1 + c_2 + c_3 + c_4;
+            c_ratio = c_total / c_max;
+            window = c_ratio * window_max;
+
+            printf("\n%f\t%f\t%f\t%f\t%f\t%f\t%f\n", c_0, c_1, c_2, c_3, c_4, c_ratio, window);
+
+            place = 0;
+            if (c_total < 1) {
+                c_total = 1;
+            }
+            ci_0 = (c_0/c_total) * window;
+            ci_1 = (c_1/c_total) * window;
+            ci_2 = (c_2/c_total) * window;
+            ci_3 = (c_3/c_total) * window;
+            ci_4 = (c_4/c_total) * window;
+
+            if(ci_0 > drain_level) {
+                ci_0 = drain_level;
+            }
+            if(ci_1 > drain_level) {
+                ci_1 = drain_level;
+            }
+            if(ci_2 > drain_level) {
+                ci_2 = drain_level;
+            }
+            if(ci_3 > drain_level) {
+                ci_3 = drain_level;
+            }
+            if(ci_4 > drain_level) {
+                ci_4 = drain_level;
+            }
+
+            printf("\n%i\t%i\t%i\t%i\t%i\n", ci_0, ci_1, ci_2, ci_3, ci_4);
+
+            for (int i=0; i<ci_0; i++) {
+                *(a_rule + (gv + place)) = 0;
+                place += *(glove_values + 6)/skip_scale;
+            }
+
+            for (int i=0; i<ci_1; i++) {
+                *(a_rule + (gv + place)) = 1;
+                place += *(glove_values + 6)/skip_scale;
+            }
+
+            if (base > 2) {
+            for (int i=0; i<ci_2; i++) {
+                *(a_rule + (gv + place)) = 2;
+                place += *(glove_values + 6)/skip_scale;
+            }}
+
+            if (base > 3) {
+            for (int i=0; i<ci_3; i++) {
+                *(a_rule + (gv + place)) = 3;
+                place += *(glove_values + 6)/skip_scale;
+            }}
+
+            if (base > 4) {
+            for (int i=0; i<ci_4; i++) {
+                *(a_rule + (gv + place)) = 4;
+                place += *(glove_values + 6)/skip_scale;
+            }}}
             
-        }
+            else if (glove == 2) {
+                
+
+                // for (int i=0; i<12; i++) {
+                //     printf("%i ", *(glove_values + i)/64);
+                // }printf("\n");
+
+            
+
+                rule_value = ((*(glove_values + 6)/64) + 
+                            (*(glove_values + 7)/64) * 2 + 
+                            (*(glove_values + 8)/64) * 4 + 
+                            (*(glove_values + 9)/64) * 8 +
+                            (*(glove_values + 10)/64) * 16);
+
+                // printf("%i\n", rule_value);
+
+                
+
+                // printf("\n\n%i %i\n", last_value, (rule_value % bv));
+
+                if (rule_value % bv != last_value) {
+                    // printf("different\n");
+                    if (*(a_rule + (rule_value % bv)) == 0) {
+                        *(a_rule + (rule_value % bv)) = 1;
+                    } else {
+                        *(a_rule + (rule_value % bv)) = 0;
+                    }} else {
+                        // printf("same\n");
+                    }
+                last_value = (rule_value % bv);
+                // for (int i=0; i<bv; i++) {
+                //     printf("%i ", *(a_rule + i));
+                // } printf("\n\n");
+
+
+                if (*(glove_values + 3)/64 == 1) {
+
+                    for (int i=0; i<lw; i++) {
+                        *(chaos_board + i) = 0;
+                        *(chaos_colors + i) = 0;
+                        *(brush_board + i%lw_bb) = 0;
+                    }
+
+                    color_on += 1;
+                    color_on = color_on % 2;
+
+                    // printf("color_on %i\n", color_on);
+                }
+
+            // color_step = (*(glove_values + 1) / 8) + 1;
+                
+            }
 
         }
         
-        *(chaos_board + (lw/2)) = 1;
+        *(chaos_board + pinpoint) = 1;
+        *(brush_board + lw_bb/2) = 1;
+        *(brush_board + bb_length * 4 + bb_width/2) = 1;
+        
 
         
     }
