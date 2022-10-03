@@ -3260,7 +3260,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(5, 1, 1, 1)
+Chaos_Window(5, 1, 1, 2)
 
 
 

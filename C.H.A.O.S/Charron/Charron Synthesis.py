@@ -240,10 +240,10 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_waiting-for-god-4'
+j_name = 'journal_bookmarks-3'
 
 #number of colors
-base = 4
+base = 3
 
 ###color bank###
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
@@ -273,13 +273,13 @@ orange_red = (1, .5, .1)
 
 #corresponding to the number of colors indicated above. Order of colors matters, change to get new variations of a design.
 color_list_0 = [black, cyan, magenta, green]
-color_list_1 = [cyan, yellow, grey]
+color_list_1 = [black, magenta, cyan]
 color_list_2 = [blue, magenta, cyan, red]
 color_list_3 = [red_d, white, orange, cyan, magenta]
 
 
 #0=no reflection 1=reflected image across the top
-reflect = 1
+reflect = 0
 
 ###dimensions
 
@@ -497,7 +497,7 @@ def synthesize(j_name, width, split, s_f, color_list):
         synthesis = []
         frame = []
 
-        journal_key = list(journal.keys())[1:-30]
+        journal_key = list(journal.keys())[46:184]
 
         print("")
         print('journal_key')

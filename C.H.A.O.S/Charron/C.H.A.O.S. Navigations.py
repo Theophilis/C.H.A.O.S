@@ -1508,6 +1508,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
     page = []
     press = dict()
     press_vault = dict()
+    bookmarks = []
 
     # infile = open("cell-journal", "rb")
     # journal = pickle.load(infile)
@@ -2252,6 +2253,13 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
                     if input_box == 1:
                         v_input += str(v)
+
+                    else:
+                        bookmarks.append(len(list(journal.keys())))
+                        print("")
+                        print("bookmarks")
+                        print(bookmarks)
+
 
                 if event.key == pygame.K_1:
 

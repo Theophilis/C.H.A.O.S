@@ -240,7 +240,7 @@ Contributions:
 * All contributions are welcome. I have never published on GitHub before, so please be patient, explain your changes thoroughly, and be ready for some questions about implementation. Thank you for choosing to spend your time here, this project has had a profound impact on my life, and I want is to share the experience with as many people as possible.
 
 Contact:
-* you can reach me at edwardccmaclean@gmail.com
+* you can reach me at chaotomata@gmail.com
 
 License:
 * This project is protected under the GNU General Public License v3.0
