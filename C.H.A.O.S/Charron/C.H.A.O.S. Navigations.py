@@ -1478,6 +1478,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
     origin_rule = -1
     bv = base ** view
     bbv = base ** base ** view
+    pause = 0
 
     #window
     if analytics == 1:
@@ -1508,7 +1509,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
     page = []
     press = dict()
     press_vault = dict()
-    bookmarks = []
+    bookmarks = [0]
 
     # infile = open("cell-journal", "rb")
     # journal = pickle.load(infile)
@@ -1951,164 +1952,160 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
             list_count -= 1
 
-        for r in range(cell_rows):
+        if pause == 0:
 
-            if len(cells[r]) == 0:
+            for r in range(cell_rows):
 
-                # if step == 0:
-                #
-                #     print('crw')
-                #     print(cell_row_width)
-                #
-                #     for i in range(cell_row_width):
-                #
-                #         mitosis_cell_list(i, r, color, row, pixel_res)
+                if len(cells[r]) == 0:
+
+                    # if step == 0:
+                    #
+                    #     print('crw')
+                    #     print(cell_row_width)
+                    #
+                    #     for i in range(cell_row_width):
+                    #
+                    #         mitosis_cell_list(i, r, color, row, pixel_res)
 
 
 
-                color, row = Color_cells(color, d_rule, cell_row_width, base, row)
+                    color, row = Color_cells(color, d_rule, cell_row_width, base, row)
 
-                row_l = np.ndarray.tolist(row)[0]
-                line = tuple(row_l)
+                    row_l = np.ndarray.tolist(row)[0]
+                    line = tuple(row_l)
 
-                if line in page:
-
-                    if r_i == 0 and list_count == 0:
-
-                        rand_count += 1
-
-                        # print("duplicate")
-
-                        rand = random.randrange(0, base ** view - 1)
-
-                    else:
-                        iterate += 1
-
-                    # print(" ")
-                    # print("rand")
-                    # print(rand)
-
-                    # print(rand)
-                    # print(i_rule)
-                    # print(d_rule)
-
-                    # print(" ")
+                    # print()
                     # print("rule")
                     # print(rule)
+                    # print("line")
+                    # print(line)
 
-                    if rule not in journal:
-                        journal[rule] = []
-                        journal[rule].append(page)
+                    if line in page:
+
+                        if r_i == 0 and list_count == 0:
+
+                            rand_count += 1
+
+                            # print("duplicate")
+
+                            rand = random.randrange(0, base ** view - 1)
+
+                        else:
+                            iterate += 1
+
+                        if rule not in journal:
+                            journal[rule] = []
+                            journal[rule].append(page)
+
+                        else:
+                            journal[rule].append(page)
+
+                        page = []
+
+
+                        if randomizer == 1:
+
+                            if list_count == 0:
+
+                                # print("list_count == 0:")
+                                # print("randomizer")
+
+                                if base == 2:
+                                    if i_rule[rand] == 0:
+                                        i_rule[rand] = 1
+                                        d_rule[list(d_rule.keys())[rand]] = 1
+                                    elif i_rule[rand] == 1:
+                                        i_rule[rand] = 0
+                                        d_rule[list(d_rule.keys())[rand]] = 0
+
+                                if base == 3:
+                                    if i_rule[rand] == 0:
+                                        i_rule[rand] = 1
+                                        d_rule[list(d_rule.keys())[rand]] = 1
+                                    elif i_rule[rand] == 1:
+                                        i_rule[rand] = 2
+                                        d_rule[list(d_rule.keys())[rand]] = 2
+                                    elif i_rule[rand] == 2:
+                                        i_rule[rand] = 0
+                                        d_rule[list(d_rule.keys())[rand]] = 0
+
+                                if base == 4:
+
+                                    if i_rule[rand] == 0:
+                                        i_rule[rand] = 1
+                                        d_rule[list(d_rule.keys())[rand]] = 1
+                                    elif i_rule[rand] == 1:
+                                        i_rule[rand] = 2
+                                        d_rule[list(d_rule.keys())[rand]] = 2
+                                    elif i_rule[rand] == 2:
+                                        i_rule[rand] = 3
+                                        d_rule[list(d_rule.keys())[rand]] = 3
+                                    elif i_rule[rand] == 3:
+                                        i_rule[rand] = 0
+                                        d_rule[list(d_rule.keys())[rand]] = 0
+
+                                if base == 5:
+
+                                    if i_rule[rand] == 0:
+                                        i_rule[rand] = 1
+                                        d_rule[list(d_rule.keys())[rand]] = 1
+                                    elif i_rule[rand] == 1:
+                                        i_rule[rand] = 2
+                                        d_rule[list(d_rule.keys())[rand]] = 2
+                                    elif i_rule[rand] == 2:
+                                        i_rule[rand] = 3
+                                        d_rule[list(d_rule.keys())[rand]] = 3
+                                    elif i_rule[rand] == 3:
+                                        i_rule[rand] = 4
+                                        d_rule[list(d_rule.keys())[rand]] = 4
+                                    elif i_rule[rand] == 4:
+                                        i_rule[rand] = 0
+                                        d_rule[list(d_rule.keys())[rand]] = 0
+
+                                if base == 6:
+
+                                    if i_rule[rand] == 0:
+                                        i_rule[rand] = 1
+                                        d_rule[list(d_rule.keys())[rand]] = 1
+                                    elif i_rule[rand] == 1:
+                                        i_rule[rand] = 2
+                                        d_rule[list(d_rule.keys())[rand]] = 2
+                                    elif i_rule[rand] == 2:
+                                        i_rule[rand] = 3
+                                        d_rule[list(d_rule.keys())[rand]] = 3
+                                    elif i_rule[rand] == 3:
+                                        i_rule[rand] = 4
+                                        d_rule[list(d_rule.keys())[rand]] = 4
+                                    elif i_rule[rand] == 4:
+                                        i_rule[rand] = 5
+                                        d_rule[list(d_rule.keys())[rand]] = 5
+                                    elif i_rule[rand] == 5:
+                                        i_rule[rand] = 0
+                                        d_rule[list(d_rule.keys())[rand]] = 0
+
+                        # print("change")
+                        # print(i_rule)
+                        # print(d_rule)
 
                     else:
-                        journal[rule].append(page)
+                        page.append(line)
 
-                    page = []
+                    step += 1
 
+                    for i in range(cell_row_width):
+                        mitosis_cell_list(i, r, color, row, pixel_res)
 
-                    if randomizer == 1:
+                    # cells.appendleft(tuple(mitosis(i, r, color, row, pixel_res) for i in range(cell_row_width)))
+                    # print(cells[0])
+                    # print("")
+                    # print("len(cells)")
+                    # print(len(cells))
+                    # print(len(cells[0]))
 
-                        if list_count == 0:
-
-                            # print("list_count == 0:")
-                            # print("randomizer")
-
-                            if base == 2:
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 3:
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 4:
-
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 3
-                                    d_rule[list(d_rule.keys())[rand]] = 3
-                                elif i_rule[rand] == 3:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 5:
-
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 3
-                                    d_rule[list(d_rule.keys())[rand]] = 3
-                                elif i_rule[rand] == 3:
-                                    i_rule[rand] = 4
-                                    d_rule[list(d_rule.keys())[rand]] = 4
-                                elif i_rule[rand] == 4:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                            if base == 6:
-
-                                if i_rule[rand] == 0:
-                                    i_rule[rand] = 1
-                                    d_rule[list(d_rule.keys())[rand]] = 1
-                                elif i_rule[rand] == 1:
-                                    i_rule[rand] = 2
-                                    d_rule[list(d_rule.keys())[rand]] = 2
-                                elif i_rule[rand] == 2:
-                                    i_rule[rand] = 3
-                                    d_rule[list(d_rule.keys())[rand]] = 3
-                                elif i_rule[rand] == 3:
-                                    i_rule[rand] = 4
-                                    d_rule[list(d_rule.keys())[rand]] = 4
-                                elif i_rule[rand] == 4:
-                                    i_rule[rand] = 5
-                                    d_rule[list(d_rule.keys())[rand]] = 5
-                                elif i_rule[rand] == 5:
-                                    i_rule[rand] = 0
-                                    d_rule[list(d_rule.keys())[rand]] = 0
-
-                    # print("change")
-                    # print(i_rule)
-                    # print(d_rule)
-
-                else:
-                    page.append(line)
-
-                step += 1
-
-                for i in range(cell_row_width):
-                    mitosis_cell_list(i, r, color, row, pixel_res)
-
-                # cells.appendleft(tuple(mitosis(i, r, color, row, pixel_res) for i in range(cell_row_width)))
-                # print(cells[0])
-                # print("")
-                # print("len(cells)")
-                # print(len(cells))
-                # print(len(cells[0]))
-
-        rule = str()
-        for ir in i_rule:
-            rule += str(ir)
-        rule = (rule, datetime.now())
+            rule = str()
+            for ir in i_rule:
+                rule += str(ir)
+            rule = (rule, datetime.now())
 
 
         # keyboard inputs
@@ -2246,6 +2243,15 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
                 if event.key == pygame.K_SPACE:
                     v_input = input(' ', base, page, input_box, v_input)
                     page = []
+
+                if event.key == pygame.K_RETURN:
+
+                    pause += 1
+                    pause = pause % 2
+
+                    print("")
+                    print("pause")
+                    print(pause)
 
                 if event.key == pygame.K_0:
 
@@ -2620,7 +2626,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
             if event.type in [pygame.midi.MIDIIN]:
 
-                print(event)
+                # print(event)
 
                 clean_e = str(event)[21:-3]
                 list_e = clean_e.split(',')
@@ -2868,19 +2874,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
                         glove_value = glove_value % (base ** view)
 
-                    if rule not in journal:
-
-                        # print("############## not in ##############")
-
-                        journal[rule] = []
-                        journal[rule].append(page)
-
-                    else:
-
-                        # print("else")
-
-                        journal[rule].append(page)
-
                     if current_digit != - 1:
 
                         i_rule[glove_value] = current_digit
@@ -2912,21 +2905,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
                     # print("")
                     # print("rule")
                     # print(rule)
-
-                    if rule not in journal:
-
-                        # print("############## not in ##############")
-
-                        journal[rule] = []
-                        journal[rule].append(page)
-
-                    else:
-
-                        # print("else")
-
-                        journal[rule].append(page)
-
-                    # print(len(journal))
 
                     if words_g == 2:
 
@@ -3067,13 +3045,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
                     # print(glove_value)
 
                     d_rule, i_rule = rule_gen(glove_value, base)
-
-                    if rule not in journal:
-                        journal[rule] = []
-                        journal[rule].append(page)
-
-                    else:
-                        journal[rule].append(page)
 
 
         # if zero_count < zero_out:
@@ -3530,6 +3501,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
                 triggers.append(t_sum)
 
+        #pmi poll
         if device_id > 0:
 
             if midi_inputs == 1:
@@ -3551,14 +3523,17 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
         #
         #     map(lambda c, cv=cell_vel:c.move(cv), r)
 
-        for r in range(cell_rows):
-            for cell in cells[r][:]:
-                cell.move(cell_vel)
-                if cell.y + cell.get_height() > HEIGHT:
-                    cells[r].remove(cell)
+        if pause == 0:
+            for r in range(cell_rows):
+                for cell in cells[r][:]:
+                    cell.move(cell_vel)
+                    if cell.y + cell.get_height() > HEIGHT:
+                        cells[r].remove(cell)
 
 
     if write == 1:
+
+        journal['bookmarks'] = bookmarks
 
         if len(j_name) > 0:
 

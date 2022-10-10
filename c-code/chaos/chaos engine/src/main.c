@@ -294,6 +294,7 @@ int main(int argc, char *argv[]) {
     int s_width = 256;
     int c_length = b_length;
     int c_width = b_length;
+    int board_growth = 0;
 
     int gv = 0;
     int glove = 3;
@@ -344,7 +345,7 @@ int main(int argc, char *argv[]) {
     float step_up = .05;
     float step_down = .03;
     int color_step = 1;
-    int color_step_scale = 12;
+    int color_step_scale = 8;
 
     float window_scale = 5;
     float window_max = bv / window_scale;
@@ -1489,6 +1490,11 @@ int main(int argc, char *argv[]) {
                 
                 //color_step
                 color_step = (*(glove_values + 2) / color_step_scale) + 1;
+
+                //board_growth
+                board_growth = *(glove_values) + *(glove_values + 1) * 128;
+                
+                printf("\n\n%i", board_growth);
                 
             }
 
