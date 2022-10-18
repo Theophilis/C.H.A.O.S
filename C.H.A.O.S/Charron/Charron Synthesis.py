@@ -240,10 +240,10 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_no-marks-5'
+j_name = 'journal_oatmeal-3'
 
 #number of colors
-base = 5
+base = 3
 
 ###color bank###
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
@@ -263,23 +263,23 @@ yellow_d = (.8, .8, 0)
 cyan_d = (0, .8, .8)
 red_d = (.8, 0, 0)
 
-grey = (.2, .2, .2)
+grey = (.1, .1, .1)
 purple = (.6, 0, .6)
 turquoise = (0, .8, .8)
 light_grey = (.8, .8, .8)
 moss = (.2, .4, .2)
 orange = (1, .5, .1)
-orange_red = (1, .5, .1)
+
 
 #corresponding to the number of colors indicated above. Order of colors matters, change to get new variations of a design.
-color_list_0 = [black, grey, cyan, magenta, yellow]
-color_list_1 = [black, magenta, cyan]
+color_list_0 = [cyan, white, yellow, grey, black]
+color_list_1 = [red, yellow, orange]
 color_list_2 = [blue, magenta, cyan, red]
 color_list_3 = [black, grey, cyan, magenta, yellow]
 
 
 #0=no reflection 1=reflected image across the top
-reflect = 0
+reflect = 1
 
 ###dimensions
 
@@ -287,11 +287,11 @@ reflect = 0
 #increase the number of cells in each rule call (multiplicative)
 scale_l = 1
 #decrease the number of cells in each rule call (divisive)
-shrink_l = 1
+shrink_l = 2
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
-scale_w = 1
+scale_w = 2
 #(divisive)
 shrink_w = 1
 
@@ -320,15 +320,17 @@ try:
     bookmarks = journal['bookmarks']
 
 except:
+    #dont touch
     bookmarks = [0]
+
+bookmarks = [0]
+
+
 
 #choose which bookmarked segments you want to stitch together. numbers must be separated by commas.
 bookmark_choices = []
 
-# journal_len = int(len(list(journal.keys()))/2)
-# print(journal_len)
-#
-# journals = dict(list(journal.items())[:journal_len])
+center_seed = 1
 
 
 def synthesize(j_name, width, split, s_f, color_list):
@@ -645,7 +647,9 @@ def synthesize(j_name, width, split, s_f, color_list):
                 width = int(width * scale_w /shrink_w)
 
                 row = [0 for x in range(width)]
-                row[int(len(row) / 2)] = 1
+                if center_seed == 1:
+                    for y in range(base):
+                        row[int(len(row) / 2) + y - base] = y
 
                 synthesis.append(row)
 
@@ -778,8 +782,9 @@ def synthesize(j_name, width, split, s_f, color_list):
                         width = int(width * scale_w / shrink_w)
 
                         row = [0 for x in range(width)]
-                        for y in range(base):
-                            row[int(len(row) / 2) + y - base] = y
+                        if center_seed == 1:
+                            for y in range(base):
+                                row[int(len(row) / 2) + y - base] = y
 
                         synthesis.append(row)
 
@@ -904,8 +909,10 @@ def synthesize(j_name, width, split, s_f, color_list):
                     width = int(width * scale_w / shrink_w)
 
                     row = [0 for x in range(width)]
-                    for y in range(base):
-                        row[int(len(row) / 2) + y - base] = y
+
+                    if center_seed == 1:
+                        for y in range(base):
+                            row[int(len(row) / 2) + y - base] = y
 
                     synthesis.append(row)
 
@@ -975,7 +982,7 @@ def synthesize(j_name, width, split, s_f, color_list):
 
 
 
-synthesize(j_name, width, split, 1, color_list_0)
+synthesize(j_name, width, split, 1, color_list_1)
 
 
 

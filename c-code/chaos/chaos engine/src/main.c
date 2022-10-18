@@ -63,6 +63,8 @@ void chaomize(int *chaos_board, int *a_rule, int lw, int ww, int b_width, int ba
         *(row_0 + i) = *(b_memory + i);
         }
 
+
+    //curdl
     for (int i=0; i<lw-b_width; i++) {
         int o = i%b_width;
         //Center, Up, Right, Down, Left: neighbors
@@ -84,6 +86,31 @@ void chaomize(int *chaos_board, int *a_rule, int lw, int ww, int b_width, int ba
                                         (*(row_0 + i) * *(base_scale + 1)) + 
                                         (*(b_memory + (i+b_width-1)%b_width) * *(base_scale + 0)));
         }
+
+    
+    //symmetry test
+    //curld
+    // for (int i=0; i<lw-b_width; i++) {
+    //     int o = i%b_width;
+    //     //Center, Up, Right, Down, Left: neighbors
+    //     *(chaos_board + i) = *(a_rule + 
+    //                     (*(b_memory + o) * *(base_scale + 4)) + 
+    //                     (*(b_memory + b_width + o) * *(base_scale + 3)) + 
+    //                     (*(b_memory + (((i + 1)/ b_width - i/ b_width) * (b_width)) + ((o+1) % b_width)) * *(base_scale + 2)) +
+    //                     (*(b_memory + ((o/(abs(o-1)+1) * (b_width))) + (o+b_width-1)%b_width) * *(base_scale + 0)) +
+    //                     (*(chaos_board + b_width + i) * *(base_scale + 1)));
+    //     *(b_memory + b_width + o) = *(b_memory + o);
+    //     *(b_memory + o) = *(chaos_board + b_width + i);
+    //     }
+
+    // for (int i=0; i<b_width; i++) {
+    //     *(chaos_board + i + lw - b_width) = *(a_rule +
+    //                                     (*(b_memory + i) * *(base_scale + 4)) + 
+    //                                     (*(b_memory + b_width + i) * *(base_scale + 3)) + 
+    //                                     (*(b_memory + (i + 1)%b_width) * *(base_scale + 2)) +  
+    //                                     (*(b_memory + (i+b_width-1)%b_width) * *(base_scale + 0)) + 
+    //                                     (*(row_0 + i) * *(base_scale + 1)));
+    //     }
 
     free(b_memory);
     free(row_0);
@@ -222,7 +249,37 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw, int color_st
     }
 }
 
-void value_color_s(int *board, uint8_t *pixels, int lw){   
+
+void value_color_board(int *board, uint8_t *pixels, int lw){
+
+
+    uint8_t rgb[3] = {0, 0, 0};
+    int layer_size = 255;  
+
+    for (int i=0; i<lw; i++) {
+
+        // printf("\n\nnew board %i = %i\n", i, *(board + i));
+        // printf("colors %i\n ", *(colors + i));
+        //RGBA
+
+        *(rgb) = 0;
+        *(rgb + 1) = 0;
+        *(rgb + 2) = 0;
+
+
+        *(pixels + (i * 4)) = *(rgb + 2);
+        *(pixels + (i * 4) + 1) = *(rgb + 1);
+        *(pixels + (i * 4) + 2) = *(rgb);
+        *(pixels + (i * 4) + 3) = 255;
+
+        
+
+
+    }
+}
+
+
+void value_color_s(int *board, uint8_t *pixels, int lw, int shade){   
 
     for (int i=0; i<lw; i++) {
         // printf("%i  ", *(board + i));
@@ -262,9 +319,9 @@ void value_color_s(int *board, uint8_t *pixels, int lw){
 
         else if (*(board + i) == 1) {
             // printf("four\n");
-            *(pixels + (i * 4)) = 128;
-            *(pixels + (i * 4) + 1) = 128;
-            *(pixels + (i * 4) + 2) = 128;
+            *(pixels + (i * 4)) = shade;
+            *(pixels + (i * 4) + 1) = shade;
+            *(pixels + (i * 4) + 2) = shade;
             *(pixels + (i * 4) + 3) = 255;
         }
         
@@ -296,8 +353,12 @@ int main(int argc, char *argv[]) {
     int c_width = b_length;
     int board_growth = 0;
 
-    int gv = 0;
-    int glove = 3;
+    //-----menus-----
+    int layers = 0;
+    int glove = 0;
+    int current_size = 32;
+    int round_size = 8;
+    int energy_scale = 4;
     int rule_value = 0;
     int character_size = 64;
     int color_on = 1;
@@ -305,10 +366,24 @@ int main(int argc, char *argv[]) {
     int layer_size = 255;
     int bb_convert = 0;
 
+    //-----controls-----
+    int pause = 0;
+    int score_1 = 0; 
+    int score_2 = 0;
+    int energy_1 = 0; 
+    int energy_2 = 0;
+    int current_1 = 0;
+    int current_2 = 0;
+
+    //shades
+    int board_shade = 255;
+    int side_shade = 127;
+
 
 
         //calculated
     printf("calculated\n");
+    int gv = 0;
     float bv_0 = pow(base, view);
     int bv = bv_0;
     int lw_bb = bb_length * bb_width;
@@ -317,6 +392,9 @@ int main(int argc, char *argv[]) {
     int ww = 2 * b_width;
     int pinpoint = (lw/2);
     int lw_s = s_length * s_width;
+
+    energy_1 = current_size * (lw/energy_scale); 
+    energy_2 = current_size * (lw/energy_scale);
 
         //arrays
     printf("arrays\n");
@@ -377,11 +455,10 @@ int main(int argc, char *argv[]) {
         *(a_rule + i) = 0;
     }
 
-    *(a_rule + 1) = 1;
-    *(a_rule + 2) = 1;
-    *(a_rule + 4) = 1;
-    *(a_rule + 8) = 1;
-    *(a_rule + 15) = 1;
+    for (int i=0; i<bv/2; i++) {
+        *(a_rule + i + bv/2) = 1;
+    }
+
     
         //board init
     printf("board init\n");
@@ -390,6 +467,18 @@ int main(int argc, char *argv[]) {
         *(chaos_colors + i) = 0;
         *(brush_board + i) = 0;
     }
+    for (int i=0; i<b_width/2; i++) {
+        for (int o=0; o<b_length/2; o++) {
+            *(chaos_board + o + (i*b_width)) = 1;
+            *(chaos_board + o + (i*b_width) + (lw/2)) = 1;
+        }
+    }
+
+    *(chaos_board + (lw/4)) = 0;
+    *(chaos_board + (lw/4) + b_width/2) = 1;
+    *(chaos_board + (lw/2) + (lw/4)) = 0;
+    *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
+
     *(chaos_board + pinpoint) = 1;
     *(brush_board + lw_bb/2) = 1;
 
@@ -553,7 +642,7 @@ int main(int argc, char *argv[]) {
         }
     }
     SDL_LockTexture(texture_s, NULL, (void **)&pixels_s, &pitch_s);
-    value_color_s(side_board, pixels_s, lw_s);
+    value_color_s(side_board, pixels_s, lw_s, side_shade);
     SDL_UnlockTexture(texture_s);
 
     SDL_RenderClear(rend_s);
@@ -869,19 +958,28 @@ int main(int argc, char *argv[]) {
     while (!should_quit) {
 
         //board to brush
-        for (int l=0; l<bb_length; l++) {
-            for (int w=0; w<bb_width; w++) {
-                *(brush_board + ((l * (bb_width)) + w) % lw_bb) = *(chaos_board + 
-                (((b_length - (l + (*(glove_values + 1) % 128) * brush_stroke) % b_length) * b_width) + 
-                (w + (*(glove_values) % 128) * brush_stroke)) % lw);
-        }} 
-
+        if (glove > 0) {
+            printf("running");
+            for (int l=0; l<bb_length; l++) {
+                for (int w=0; w<bb_width; w++) {
+                    *(brush_board + ((l * (bb_width)) + w) % lw_bb) = *(chaos_board + 
+                    (((b_length - (l + (*(glove_values + 1) % 128) * brush_stroke) % b_length) * b_width) + 
+                    (w + (*(glove_values) % 128) * brush_stroke)) % lw);
+        }}}
         if (glove == 2) {
         *(brush_board + lw_bb/2) = 1; 
         }
 
+
         //chaomize
+        if (pause == 0) {
+        if (glove == 0) {
+        chaomize(chaos_board, a_rule, lw_bb, ww_bb, bb_width, base);
+        }
+        if (glove > 0) {
         chaomize(brush_board, a_rule, lw_bb, ww_bb, bb_width, base);
+        }}
+
 
         //brush to board
         if (glove == 2) {
@@ -941,7 +1039,13 @@ int main(int argc, char *argv[]) {
             //thank you Sanette
             //main render
         SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch);
-        value_color(chaos_board, chaos_colors, pixels, lw, color_step, color_on);
+
+        if (pause == 0) {
+        if (layers == 0) {
+            value_color_s(chaos_board, pixels, lw, board_shade);}
+        if (layers == 1) {
+            value_color(chaos_board, chaos_colors, pixels, lw, color_step, color_on);}}
+
         SDL_UnlockTexture(texture);
 
         SDL_RenderClear(rend);
@@ -1024,7 +1128,7 @@ int main(int argc, char *argv[]) {
             }
         }
         SDL_LockTexture(texture_s, NULL, (void **)&pixels_s, &pitch_s);
-        value_color_s(side_board, pixels_s, (s_length * s_width));
+        value_color_s(side_board, pixels_s, (s_length * s_width), side_shade);
         SDL_UnlockTexture(texture_s);
 
         SDL_RenderClear(rend_s);
@@ -1042,7 +1146,24 @@ int main(int argc, char *argv[]) {
 
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT) {
-                    printf("Click!\n");
+
+                    // printf("Click!\n");
+
+                    int mx, my, mxy;
+                    Uint32 buttons;
+
+                    buttons =   SDL_GetMouseState(&mx, &my);
+
+                    mxy = mx/(s_width/4) + my/(s_length/8) * 4;
+
+                    // printf("\n\nmouse state %i %i %i", mx, my, mxy);
+
+                    *(a_rule + mxy) += 1;
+                    *(a_rule + mxy) = *(a_rule + mxy) % base;
+                    
+
+
+                    
                 }
                 break;
             
@@ -1053,17 +1174,90 @@ int main(int argc, char *argv[]) {
                         break;
 
                     case SDL_SCANCODE_RETURN:
+                    
+                        //board clear
                         for (int i=0; i<lw; i++) {
                             *(chaos_board + i) = 0;
                             *(chaos_colors + i) = 0;
                             }
-                            *(chaos_board + (lw/2)) = 1;
+                        for (int i=0; i<b_width/2; i++) {
+                            for (int o=0; o<b_length/2; o++) {
+                                *(chaos_board + o + (i*b_width)) = 1;
+                                *(chaos_board + o + (i*b_width) + (lw/2)) = 1;
+                            }
+                        }
+
+                        *(chaos_board + (lw/4)) = 0;
+                        *(chaos_board + (lw/4) + b_width/2) = 1;
+                        *(chaos_board + (lw/2) + (lw/4)) = 0;
+                        *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
+                        
+                        break;
+                    
+
+                    //----------turn----------//
+                    case SDL_SCANCODE_TAB:
+                        pause += 1;
+                        pause = pause % 2;
+
+                        score_1 = 0;
+                        score_2 = 0;
+
+                        //-----pause-----//
+                        if (pause == 0) {
+                            for (int i=0; i<lw; i++) {
+                                if (*(chaos_board + i) == 0) {
+                                    score_1 += 1;
+                                } else {
+                                    score_2 += 1;
+                                }
+                            }
+                            energy_1 = energy_1 - score_1;
+                            energy_2 = energy_2 - score_2;
+                            
+                            current_1 = energy_1/(lw/energy_scale);
+                            current_2 = energy_2/(lw/energy_scale);
+
+                        printf("\ncurrent %i %i", current_1, current_2);
+
+                        //board clear
+                        if (current_1 % round_size == 0 || current_2 % round_size == 0) {
+                            printf("board");
+                            
+                            if (current_1 % (round_size * 2) == 0 || current_2 % (round_size * 2) == 0) {
+                                printf("rule");
+
+                                for (int i=0; i<bv/2; i++) {
+                                    *(a_rule + i) = 0;
+                                }
+                                for (int i=0; i<bv/2; i++) {
+                                    *(a_rule + i + bv/2) = 1;
+                                }
+                            }
+
+                            for (int i=0; i<lw; i++) {
+                                *(chaos_board + i) = 0;
+                                *(chaos_colors + i) = 0;
+                                }
+                            for (int i=0; i<b_width/2; i++) {
+                                for (int o=0; o<b_length/2; o++) {
+                                    *(chaos_board + o + (i*b_width)) = 1;
+                                    *(chaos_board + o + (i*b_width) + (lw/2)) = 1;
+                                }
+                            }
+
+                            *(chaos_board + (lw/4)) = 0;
+                            *(chaos_board + (lw/4) + b_width/2) = 1;
+                            *(chaos_board + (lw/2) + (lw/4)) = 0;
+                            *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
+                            }
+
+                        } else {
+
+                            printf("\n\npause");
+                        }
                         break;
 
-                    case SDL_SCANCODE_DOWN:
-                        c_lever -=1;
-                        printf("%i\n", c_lever);
-                        break;
                     case SDL_SCANCODE_UP:
                         c_lever += 1;
                         printf("%i\n", c_lever);
@@ -1210,6 +1404,7 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
+
         
 
         //glove
@@ -1499,12 +1694,15 @@ int main(int argc, char *argv[]) {
             }
 
         }
-        
-        int pin_y = lw - (((((*(glove_values + 1) * b_width/128) % b_width) * b_width) % lw) - 1);
-        int pin_x = (*(glove_values) * b_width/128) % b_width;
-        int pin_test = (pin_x + pin_y) % lw;
 
-        // printf("\npin_test %i %i %i", pin_test, pin_y, pin_x);
+        int pin_test;
+        int pin_x;
+        int pin_y;
+        
+        if (glove > 0) {
+        pin_y = lw - (((((*(glove_values + 1) * b_width/128) % b_width) * b_width) % lw) - 1);
+        pin_x = (*(glove_values) * b_width/128) % b_width;
+        pin_test = (pin_x + pin_y) % lw;
 
         if (*(chaos_board + pin_test) == 0) {
             *(chaos_board + pin_test) = 1;
@@ -1512,6 +1710,8 @@ int main(int argc, char *argv[]) {
         else {
             *(chaos_board + pin_test) = 0;
         }
+
+        } 
         
 
         

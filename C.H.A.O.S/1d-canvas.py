@@ -1370,6 +1370,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     else:
                         pause = 0
 
+                if event.key == pygame.K_TAB:
+                    cells_a = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
+
                 if event.key == pygame.K_q:
                     v_input = input('q', base, page, input_box, v_input)
                     page = []

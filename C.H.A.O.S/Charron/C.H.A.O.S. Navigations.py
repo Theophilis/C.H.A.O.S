@@ -1557,7 +1557,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
     tsp_portion = []
     placed = []
     glove_value = 0
-    rule_window_scale = 2
+    rule_window_scale = 4
 
     #chaos console
     input_box = 0
@@ -4031,10 +4031,10 @@ def input_main(device_id=None):
 # input_main()
 
 
-menu()
+# menu()
 
 
-# Chaos_Window(5, 2, 10, 0, 2)
+Chaos_Window(3, 2, 5, 0, -1)
 
 
 
