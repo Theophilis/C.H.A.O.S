@@ -338,27 +338,30 @@ int main(int argc, char *argv[]) {
 
     //--------------------START--------------------//
 
-        //standard
+    //standard
     printf("standard\n");
     int base = 2;
     int view = 5;
-
+        //board
     int b_length = 1001;
     int b_width = 1001;
+        //brush board
     int bb_length = b_length;
     int bb_width = b_length;
+        //side
     int s_length = 512;
     int s_width = 256;
+        //colors
     int c_length = b_length;
     int c_width = b_length;
     int board_growth = 0;
 
     //-----menus-----
-    int layers = 0;
     int glove = 0;
-    int current_size = 32;
-    int round_size = 8;
-    int energy_scale = 4;
+    int cata = 1;
+    int layers = 0;
+
+    //glove
     int rule_value = 0;
     int character_size = 64;
     int color_on = 1;
@@ -366,7 +369,15 @@ int main(int argc, char *argv[]) {
     int layer_size = 255;
     int bb_convert = 0;
 
-    //-----controls-----
+    int pin_test;
+    int pin_x;
+    int pin_y;
+
+    //-----cata-----
+    int current_size = 128;
+    int round_size = 32;
+    int energy_scale = 8;
+
     int pause = 0;
     int score_1 = 0; 
     int score_2 = 0;
@@ -1200,61 +1211,64 @@ int main(int argc, char *argv[]) {
                         pause += 1;
                         pause = pause % 2;
 
-                        score_1 = 0;
-                        score_2 = 0;
+                        if (cata > 0) {
+                            score_1 = 0;
+                            score_2 = 0;
 
-                        //-----pause-----//
-                        if (pause == 0) {
-                            for (int i=0; i<lw; i++) {
-                                if (*(chaos_board + i) == 0) {
-                                    score_1 += 1;
-                                } else {
-                                    score_2 += 1;
+                            //-----pause-----//
+                            if (pause == 0) {
+                                for (int i=0; i<lw; i++) {
+                                    if (*(chaos_board + i) == 0) {
+                                        score_1 += 1;
+                                    } else {
+                                        score_2 += 1;
+                                    }
                                 }
+                                energy_1 = energy_1 - score_1;
+                                energy_2 = energy_2 - score_2;
+                                
+                                current_1 = energy_1/(lw/energy_scale);
+                                current_2 = energy_2/(lw/energy_scale);
+
+                            printf("\np1\tp2");
+                            printf("\n%i\t%i", current_1, current_2);
+
+                            //board clear
+                            if (current_1 % round_size == 0 || current_2 % round_size == 0) {
+                                printf("board");
+                                
+                                if (current_1 % (round_size * 2) == 0 || current_2 % (round_size * 2) == 0) {
+                                    printf("rule");
+
+                                    for (int i=0; i<bv/2; i++) {
+                                        *(a_rule + i) = 0;
+                                    }
+                                    for (int i=0; i<bv/2; i++) {
+                                        *(a_rule + i + bv/2) = 1;
+                                    }
+                                }
+
+                                for (int i=0; i<lw; i++) {
+                                    *(chaos_board + i) = 0;
+                                    *(chaos_colors + i) = 0;
+                                    }
+                                for (int i=0; i<b_width/2; i++) {
+                                    for (int o=0; o<b_length/2; o++) {
+                                        *(chaos_board + o + (i*b_width)) = 1;
+                                        *(chaos_board + o + (i*b_width) + (lw/2)) = 1;
+                                    }
+                                }
+
+                                *(chaos_board + (lw/4)) = 0;
+                                *(chaos_board + (lw/4) + b_width/2) = 1;
+                                *(chaos_board + (lw/2) + (lw/4)) = 0;
+                                *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
+                                }
+
+                            } else {
+
+                                printf("\n\npause");
                             }
-                            energy_1 = energy_1 - score_1;
-                            energy_2 = energy_2 - score_2;
-                            
-                            current_1 = energy_1/(lw/energy_scale);
-                            current_2 = energy_2/(lw/energy_scale);
-
-                        printf("\ncurrent %i %i", current_1, current_2);
-
-                        //board clear
-                        if (current_1 % round_size == 0 || current_2 % round_size == 0) {
-                            printf("board");
-                            
-                            if (current_1 % (round_size * 2) == 0 || current_2 % (round_size * 2) == 0) {
-                                printf("rule");
-
-                                for (int i=0; i<bv/2; i++) {
-                                    *(a_rule + i) = 0;
-                                }
-                                for (int i=0; i<bv/2; i++) {
-                                    *(a_rule + i + bv/2) = 1;
-                                }
-                            }
-
-                            for (int i=0; i<lw; i++) {
-                                *(chaos_board + i) = 0;
-                                *(chaos_colors + i) = 0;
-                                }
-                            for (int i=0; i<b_width/2; i++) {
-                                for (int o=0; o<b_length/2; o++) {
-                                    *(chaos_board + o + (i*b_width)) = 1;
-                                    *(chaos_board + o + (i*b_width) + (lw/2)) = 1;
-                                }
-                            }
-
-                            *(chaos_board + (lw/4)) = 0;
-                            *(chaos_board + (lw/4) + b_width/2) = 1;
-                            *(chaos_board + (lw/2) + (lw/4)) = 0;
-                            *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
-                            }
-
-                        } else {
-
-                            printf("\n\npause");
                         }
                         break;
 
@@ -1694,10 +1708,6 @@ int main(int argc, char *argv[]) {
             }
 
         }
-
-        int pin_test;
-        int pin_x;
-        int pin_y;
         
         if (glove > 0) {
         pin_y = lw - (((((*(glove_values + 1) * b_width/128) % b_width) * b_width) % lw) - 1);
