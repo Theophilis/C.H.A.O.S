@@ -45,6 +45,10 @@ The status of the game (paused or not) and scores will be displayed.
 
 Controls
 
+Escape
+Closes game window. 
+Only works from the game and rule boards.
+
 Tab
 Pauses or unpauses the game. 
 Changes to the ca rule will not affect the game board while it is paused.
@@ -64,13 +68,13 @@ Each turn has two phases action and reaction.
 -Action phase
 	A turns action phase begins when the game is paused.
 	Each player gets two moves per turn.
-		A move can be an attack defend or reset.
-		An attack is when a player changes a tile on their opponents side of the board to their color.
-		A defense is when a player changes one of their tiles to their color.
+		A move can be a strike, block or meditate.
+		A strike is when a player changes a tile on their opponents side of the board to their color.
+		A block is when a player changes one of their tiles to their color.
 			Players may only defend one tile per turn.
-		A reset is when a player who's is currently losing opts to reset the board at the begining of a reaction phase.
-			This counts as a move and limits them to a single attack/defend move during the action phase.
-		On the first turn each player must attack with their two moves. 
+		A meditation is when a player who's is currently losing opts to reset the board at the begining of a reaction phase.
+			This counts as a move and limits them to a single strike/block move during the action phase.
+		On the first turn each player must strike with their two moves. 
 	p2 goes first becasue they start with a point disadvantage.
 -Reaction phase
 	A turns reaction phase begins when the game is unpaused. 
@@ -78,7 +82,8 @@ Each turn has two phases action and reaction.
 	If the game board resolves to a static state the next turn may begin. 
 	If the game board finds an infinite loop or generates a pattern that will take longer than a minute to settle
 		the losing player is given the ability to pause the game in a favorable board state.
-	If a player has opted to a reset on that turn and they choose not to, their opponent gains an extra move in the next turn.
+	If a player has opted to meditate during the action phase and they change their mind, 
+		their opponent gains an extra move in the next turn.
 
 Scores
 Each player starts with 64 health points. 
