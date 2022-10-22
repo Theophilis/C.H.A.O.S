@@ -225,17 +225,19 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw, int color_st
             color_step = 1;
         }
 
-        // if (*(board + i) == 0){
-        //     if (*(colors + i) > 0) {
-        //     *(colors + i) -= color_step;
-        //     }
-        // }
-        // else {
-        //     *(colors + i) = *(colors + i) + 1;
-        //     // printf("\ncolors %i\n", *(colors + i));
-        //     *(colors + i) = *(colors + i) % (layer_size * 10);
-        //     // printf("colors %i\n\n", *(colors + i));
-        // }
+        if (*(board + i) == 0){
+            if (*(colors + i) > 0) {
+            *(colors + i) -= color_step;
+            } else {
+                *(colors + i) = layer_size * 10;
+            }
+        }
+        else {
+            *(colors + i) = *(colors + i) + color_step;
+            // printf("\ncolors %i\n", *(colors + i));
+            *(colors + i) = *(colors + i) % (layer_size * 10);
+            // printf("colors %i\n\n", *(colors + i));
+        }
 
 
         *(pixels + (i * 4)) = *(rgb + 2);
@@ -248,36 +250,6 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw, int color_st
 
     }
 }
-
-
-void value_color_board(int *board, uint8_t *pixels, int lw){
-
-
-    uint8_t rgb[3] = {0, 0, 0};
-    int layer_size = 255;  
-
-    for (int i=0; i<lw; i++) {
-
-        // printf("\n\nnew board %i = %i\n", i, *(board + i));
-        // printf("colors %i\n ", *(colors + i));
-        //RGBA
-
-        *(rgb) = 0;
-        *(rgb + 1) = 0;
-        *(rgb + 2) = 0;
-
-
-        *(pixels + (i * 4)) = *(rgb + 2);
-        *(pixels + (i * 4) + 1) = *(rgb + 1);
-        *(pixels + (i * 4) + 2) = *(rgb);
-        *(pixels + (i * 4) + 3) = 255;
-
-        
-
-
-    }
-}
-
 
 void value_color_s(int *board, uint8_t *pixels, int lw, int shade){   
 
@@ -374,9 +346,9 @@ int main(int argc, char *argv[]) {
     int pin_y;
 
     //-----cata-----
-    int current_size = 128;
-    int round_size = 32;
-    int energy_scale = 8;
+    int current_size = 64;
+    int round_size = 16;
+    int energy_scale = 4;
 
     int pause = 0;
     int score_1 = 0; 
@@ -1224,8 +1196,8 @@ int main(int argc, char *argv[]) {
                                         score_2 += 1;
                                     }
                                 }
-                                energy_1 = energy_1 - score_1;
-                                energy_2 = energy_2 - score_2;
+                                energy_1 = energy_1 - score_2;
+                                energy_2 = energy_2 - score_1;
                                 
                                 current_1 = energy_1/(lw/energy_scale);
                                 current_2 = energy_2/(lw/energy_scale);
@@ -1235,10 +1207,10 @@ int main(int argc, char *argv[]) {
 
                             //board clear
                             if (current_1 % round_size == 0 || current_2 % round_size == 0) {
-                                printf("board");
+                                printf("\tboard");
                                 
                                 if (current_1 % (round_size * 2) == 0 || current_2 % (round_size * 2) == 0) {
-                                    printf("rule");
+                                    printf("\trule");
 
                                     for (int i=0; i<bv/2; i++) {
                                         *(a_rule + i) = 0;
