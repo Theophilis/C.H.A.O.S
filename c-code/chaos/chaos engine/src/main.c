@@ -315,8 +315,8 @@ int main(int argc, char *argv[]) {
     int base = 2;
     int view = 5;
         //board
-    int b_length = 1001;
-    int b_width = 1001;
+    int b_length =601;
+    int b_width = 601;
         //brush board
     int bb_length = b_length;
     int bb_width = b_length;
@@ -331,15 +331,20 @@ int main(int argc, char *argv[]) {
     //-----menus-----
     int glove = 0;
     int cata = 1;
-    int layers = 0;
+    int layers = 1;
 
     //glove
     int rule_value = 0;
     int character_size = 64;
-    int color_on = 1;
     int brush_stroke = 9;
     int layer_size = 255;
     int bb_convert = 0;
+
+    //layers
+    int color_on = 1;
+    int color_step = 8;
+    int color_step_scale = 8;
+
 
     int pin_test;
     int pin_x;
@@ -405,8 +410,6 @@ int main(int argc, char *argv[]) {
     float c_max = drain_level * 5;
     float step_up = .05;
     float step_down = .03;
-    int color_step = 1;
-    int color_step_scale = 8;
 
     float window_scale = 5;
     float window_max = bv / window_scale;
@@ -1174,6 +1177,11 @@ int main(int argc, char *argv[]) {
                         *(chaos_board + (lw/4) + b_width/2) = 1;
                         *(chaos_board + (lw/2) + (lw/4)) = 0;
                         *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
+
+                        if (layers > 0) {
+                            color_on += 1;
+                            color_on = color_on % 2;
+                        }
                         
                         break;
                     
@@ -1245,8 +1253,8 @@ int main(int argc, char *argv[]) {
                         break;
 
                     case SDL_SCANCODE_UP:
-                        c_lever += 1;
-                        printf("%i\n", c_lever);
+                        layers += 1;
+                        layers = layers % 2;
                         break;
 
                     case SDL_SCANCODE_Q:

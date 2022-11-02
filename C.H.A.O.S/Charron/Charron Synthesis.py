@@ -240,10 +240,10 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_oatmeal-3'
+j_name = 'journal_dance'
 
 #number of colors
-base = 3
+base = 9
 
 ###color bank###
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
@@ -276,6 +276,7 @@ color_list_0 = [cyan, white, yellow, grey, black]
 color_list_1 = [red, yellow, orange]
 color_list_2 = [blue, magenta, cyan, red]
 color_list_3 = [black, grey, cyan, magenta, yellow]
+color_list_9 = [black, grey, cyan, magenta, yellow, light_grey, red, blue, green]
 
 
 #0=no reflection 1=reflected image across the top
@@ -291,7 +292,7 @@ shrink_l = 2
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
-scale_w = 2
+scale_w = 1
 #(divisive)
 shrink_w = 1
 
@@ -301,9 +302,8 @@ shrink_w = 1
 #0=one image per journal. 2+ will develope multiple of equal number of key strokes, but different lengths due to differences in the time between them.
 split = 0
 
+s_f = 1
 
-#keep this at zero
-width = 0
 
 infile = open("journals/" + j_name, "rb")
 journal = pickle.load(infile)
@@ -323,7 +323,8 @@ except:
     #dont touch
     bookmarks = [0]
 
-bookmarks = [0]
+#full print overide
+# bookmarks = [0]
 
 
 
@@ -333,7 +334,7 @@ bookmark_choices = []
 center_seed = 1
 
 
-def synthesize(j_name, width, split, s_f, color_list):
+def synthesize(j_name, split, s_f, color_list, width=0):
 
     cMap = c.ListedColormap(color_list)
 
@@ -907,6 +908,9 @@ def synthesize(j_name, width, split, s_f, color_list):
                     print(width)
 
                     width = int(width * scale_w / shrink_w)
+                    print("shrink")
+                    print(width)
+
 
                     row = [0 for x in range(width)]
 
@@ -982,7 +986,7 @@ def synthesize(j_name, width, split, s_f, color_list):
 
 
 
-synthesize(j_name, width, split, 1, color_list_1)
+synthesize(j_name,split, 1, color_list_9)
 
 
 

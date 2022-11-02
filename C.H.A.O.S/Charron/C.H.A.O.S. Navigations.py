@@ -213,8 +213,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-# WIDTH, HEIGHT = 1600, 800
+# WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
+WIDTH, HEIGHT = 1200, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -1265,12 +1265,12 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
                 d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
 
 
-        if rule not in journal:
-            journal[rule] = []
-            journal[rule].append(page)
-
-        else:
-            journal[rule].append(page)
+        # if rule not in journal:
+        #     journal[rule] = []
+        #     journal[rule].append(page)
+        #
+        # else:
+        #     journal[rule].append(page)
 
         return v_input
 
@@ -1510,6 +1510,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
     press = dict()
     press_vault = dict()
     bookmarks = [0]
+    rule_point = list()
 
     # infile = open("cell-journal", "rb")
     # journal = pickle.load(infile)
@@ -1952,6 +1953,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
             list_count -= 1
 
+        #mitosis
         if pause == 0:
 
             for r in range(cell_rows):
@@ -1992,15 +1994,6 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
                         else:
                             iterate += 1
-
-                        if rule not in journal:
-                            journal[rule] = []
-                            journal[rule].append(page)
-
-                        else:
-                            journal[rule].append(page)
-
-                        page = []
 
 
                         if randomizer == 1:
@@ -2106,6 +2099,30 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
             for ir in i_rule:
                 rule += str(ir)
             rule = (rule, datetime.now())
+
+            if i_rule != rule_point:
+                print()
+                print()
+                print("align")
+                print("i_rule & rule_point")
+                print(i_rule)
+                print(rule_point)
+                rule_point = i_rule[::]
+                print()
+                print("i_rule & rule_point")
+                print(i_rule)
+                print(rule_point)
+
+                if rule not in journal:
+                    journal[rule] = []
+                    journal[rule].append(page)
+
+                else:
+                    journal[rule].append(page)
+
+                page = []
+
+
 
 
         # keyboard inputs
@@ -4034,7 +4051,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(3, 2, 5, 0, -1)
+Chaos_Window(3, 2, 5, 1, -1)
 
 
 

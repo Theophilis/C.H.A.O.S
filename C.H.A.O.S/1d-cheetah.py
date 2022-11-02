@@ -810,7 +810,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     sd_threshold = 40
     sr_threshold = 80
     sl_threshold = 40
-    stutter_threshold = 64
+    stutter_threshold = 128
 
     t0_threshold = 128
     t1_threshold = 80
