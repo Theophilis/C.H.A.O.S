@@ -240,7 +240,7 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_dance'
+j_name = 'journal_akimbo'
 
 #number of colors
 base = 9
@@ -263,7 +263,22 @@ yellow_d = (.8, .8, 0)
 cyan_d = (0, .8, .8)
 red_d = (.8, 0, 0)
 
-grey = (.1, .1, .1)
+
+grey_scale = 1
+
+grey = (.01*grey_scale, .01*grey_scale, .01*grey_scale)
+grey1 = (.02*grey_scale, .02*grey_scale, .02*grey_scale)
+grey2 = (.03*grey_scale, .03*grey_scale, .03*grey_scale)
+grey3 = (.04*grey_scale, .04*grey_scale, .04*grey_scale)
+grey4 = (.05*grey_scale, .05*grey_scale, .05*grey_scale)
+grey5 = (.06*grey_scale, .06*grey_scale, .06*grey_scale)
+grey6 = (.07*grey_scale, .07*grey_scale, .07*grey_scale)
+grey7 = (.08*grey_scale, .08*grey_scale, .08*grey_scale)
+grey8 = (.09*grey_scale, .09*grey_scale, .09*grey_scale)
+
+
+
+
 purple = (.6, 0, .6)
 turquoise = (0, .8, .8)
 light_grey = (.8, .8, .8)
@@ -277,6 +292,7 @@ color_list_1 = [red, yellow, orange]
 color_list_2 = [blue, magenta, cyan, red]
 color_list_3 = [black, grey, cyan, magenta, yellow]
 color_list_9 = [black, grey, cyan, magenta, yellow, light_grey, red, blue, green]
+color_list_10 = [black, cyan, grey, grey2, grey3, red, grey5, grey6, grey7, grey8]
 
 
 #0=no reflection 1=reflected image across the top
@@ -288,7 +304,7 @@ reflect = 1
 #increase the number of cells in each rule call (multiplicative)
 scale_l = 1
 #decrease the number of cells in each rule call (divisive)
-shrink_l = 2
+shrink_l = 4
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
@@ -692,8 +708,8 @@ def synthesize(j_name, split, s_f, color_list, width=0):
                 # print("synthesis")
                 # print(synthesis)
 
-                file = str(base) + '-' + j_name + '_length' + str(scale_l) + '-' + str(shrink_l) + '_width' + str(
-                    scale_w) + '-' + str(shrink_w) + '_Colors-' + str(color_list_label)
+                file = j_name + '_' + str(scale_l) + '-' + str(shrink_l) + '_' + str(
+                    scale_w) + '-' + str(shrink_w) + '_C-' + str(color_list_label)
                 path_name = os.path.join(path, file)
 
                 ax = plt.gca()
@@ -981,12 +997,81 @@ def synthesize(j_name, split, s_f, color_list, width=0):
 
 
 
+length = 250
+width = 3500
+def rule_book(rule_book, color_list, length, width):
+
+    cMap = c.ListedColormap(color_list)
+
+    color_list_label = []
+    for color in color_list:
+
+        color_list_label.append((int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)))
+
+    canvas = []
+    row = [0 for x in range(width)]
+    if center_seed == 1:
+        for y in range(base):
+            row[int(len(row) / 2) + y - base] = y
+
+    canvas.append(row)
+
+    rule_book = rule_book[1:3] + rule_book[5:10]
+    print(len(rule_book))
+
+    for rule in rule_book:
+        d_rule, i_rule = rule_gen(rule, base, width, 1)
+
+        #build
+        for x in range(length):
+            row = Color_cells(d_rule, width, canvas[-1])[0]
+            canvas.append(row)
+
+        # print("")
+        # print("synthesis")
+        # print(synthesis)
+
+    canvas2 = canvas[::]
+
+    for row in list(reversed(canvas2)):
+        canvas.append(row)
+
+
+
+    file = str(length) + '-' + str(width) + '_' + str(color_list_label) + '-' + str(center_seed)
+    path_name = os.path.join(path, file)
+
+    ax = plt.gca()
+    ax.set_aspect(1)
+
+    plt.margins(0, None)
+
+    plt.pcolormesh(canvas, cmap=cMap)
+
+    # hide x-axis
+    ax.get_xaxis().set_visible(False)
+
+    # hide y-axis
+    ax.get_yaxis().set_visible(False)
+
+    print("")
+    print("printing")
+
+    # plt.show()
+    plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
+    plt.close()
+
+
+
+
+# rule_book(journal['rule_book'], color_list_10, length, width)
 
 
 
 
 
-synthesize(j_name,split, 1, color_list_9)
+
+synthesize(j_name,split, 1, color_list_10)
 
 
 
