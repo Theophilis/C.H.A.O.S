@@ -304,7 +304,7 @@ reflect = 1
 #increase the number of cells in each rule call (multiplicative)
 scale_l = 1
 #decrease the number of cells in each rule call (divisive)
-shrink_l = 4
+shrink_l = 1
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
