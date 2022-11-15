@@ -225,8 +225,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-# WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 1600, 800
+WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
+# WIDTH, HEIGHT = 400, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -265,7 +265,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     else:
 
-        value_color = {0:(0, 0, 0), 1:(32, 32, 32), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0), 5:(192, 192, 192),
+        value_color = {0:(0, 0, 0), 1:(32, 32, 32), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0), 5:(255, 255, 255),
                       6:(255, 0, 0), 7:(0, 255, 0), 8:(0, 0, 255)}
         color_value = {v:k for k, v in value_color.items()}
 
@@ -292,7 +292,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
         rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
         time_label = lable_font.render(str(int(timer/60)), 1, (255, 255, 255))
-        step_length = main_font.render(f"5T3P: {step- step_0}", 1, (255, 255, 255))
+        step_length = main_font.render(f"5T3P: {step - step_0}", 1, (255, 255, 255))
 
 
 
@@ -305,7 +305,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         # WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
         # WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
         WIN.blit(time_label, (WIDTH - time_label.get_width() - 20, 10))
-        # WIN.blit(step_length, (WIDTH - step_length.get_width() - 20, 20))
+        WIN.blit(step_length, (WIDTH - step_length.get_width() - 20, 70))
 
         # WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
         # WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 90))
@@ -769,12 +769,23 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     g_char = 0
     g_rule = 0
     g_words = 0
-    g_brush = 1
+    g_brush = 2
+
+    entropy = 2000
+
+    gv_x1 = 0
+    gv_y1 = 1
+    gv_x2 = 3
+    gv_y2 = 4
+    gv_size = 12
 
     zero_out = 3200
     zero_full = zero_out*9
+
     high_trigger = 80
     low_trigger = 40
+    mid_trigger = 63
+
     left_triggers = [0 for x in range(8)]
     right_triggers = [0 for x in range(8)]
 
@@ -798,6 +809,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_height = 100
     brush_scale_h = int(canvas_rows / 127)
     brush_scale_w = int(canvas_row_width / 127)
+    brush_scale = 1
 
     cell_row_width = brush_width
     cell_rows = brush_height
@@ -992,29 +1004,71 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         #mitosis
         if pause == 0:
 
-            brush_height_scale = 2
-            brush_width_scale = 2
+            brush_height_scale = brush_scale
+            brush_width_scale = brush_scale
 
-            brush_height = 4 + (glove_values[2] * brush_height_scale)
-            brush_width = 4 + (glove_values[2] * brush_width_scale)
+            brush_height = 4 + (glove_values[gv_size] * brush_height_scale)
+            brush_width = 4 + (glove_values[gv_size] * brush_width_scale)
+
+            if g_brush == 1:
+                brush_x = (glove_values[gv_x1] * brush_scale_w)
+                brush_y = (glove_values[gv_y1] * brush_scale_h)
+
+            if g_brush == 2:
+                brush_x = (glove_values[gv_x2]) + (glove_values[gv_x1] * int(canvas_row_width/127))
+                brush_y = (glove_values[gv_y2]) + (glove_values[gv_y1] * int(canvas_rows/127))
 
             cells_a = np.zeros((brush_height, brush_width, 3), dtype='uint8')
 
+            #entropy
+            # if entropy > 0:
+            #     if step > entropy:
+            #         # print('step')
+            #         # print(step)
+            #         for y in range(canvas_rows):
+            #             # print('y')
+            #             for x in range(canvas_row_width):
+            #                 # print("y, x, z")
+            #                 # print(y, x, z)
+            #                 # print(canvas[y, x, z])
+            #                 nv = (color_value[tuple(canvas[y, x])] - 1)
+            #                 # print()
+            #                 # print('nv')
+            #                 # print(nv)
+            #                 if nv < 0:
+            #                     # print('short')
+            #                     nv = 0
+            #
+            #
+            #                 canvas[y, x] = value_color[nv]
+            #
+            #         step = 0
+
+            #canvas to brush
+
             for y in range(brush_height):
                 for x in range(brush_width):
-                    cells_a[y, x] = canvas[(y - (glove_values[12] * brush_scale_h)) % canvas_rows, (x + (glove_values[11] * brush_scale_w)) % canvas_row_width]
+                    cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
 
+            #brush_step
+            cell_vel = brush_height
             for y in range(cell_vel):
 
-                if len(stream_direction) > 1:
+                cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
 
-                    cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
-                    #
 
                 cells_a = np.roll(cells_a, 1, 0)
 
-                for x in range(len(cells_a[0])):
-                    cells_a[(0 + momentum[stream_direction[step % stream_buffer % len(stream_direction)]]) % (len(cells_a[0]) - 1), x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
+                if g_brush == 1:
+                    for x in range(len(cells_a[0])):
+                        cells_a[(0 + momentum[stream_direction[step % stream_buffer % len(stream_direction)]]) % (len(cells_a[0]) - 1), x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
+
+                if g_brush == 2:
+
+                    for x in range(len(cells_a[0])):
+                        cells_a[(0 + momentum[stream_direction[step % stream_buffer % len(stream_direction)]]) % (
+                                    len(cells_a[0]) - 1), x] = value_color[
+                            d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
 
                 if len(stream_direction) > 0:
 
@@ -1184,9 +1238,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     page = []
 
+            #brush to canvas
             for y in range(brush_height):
                 for x in range(brush_width):
-                    canvas[(y - (glove_values[12] * brush_scale_h)) % canvas_rows, (x + (glove_values[11] * brush_scale_w)) % canvas_row_width] = cells_a[y, x]
+                    canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width] = cells_a[y, x]
+
 
 
         #console rule inputs
@@ -1888,7 +1944,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                                 d_rule[list(d_rule.keys())[place]] = left_palette[x]
                                 scan = 1
 
-            if g_brush > 0:
+            if g_brush == 1:
+
+                gv_x = 11
+                gv_y = 12
 
                 #stream direction
                 if glove_values[0] > high_trigger:
@@ -1900,6 +1959,151 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     stream_direction.append(2)
                 elif glove_values[1] < low_trigger:
                     stream_direction.append(0)
+
+
+                char_size = int(bv / rule_window_scale)
+
+                # trigger detection
+                for x in range(4):
+
+                    if glove_values[7 + x] > high_trigger:
+
+                        # print("R-high" + str(x))
+                        right_triggers[x] += t_plus
+                        right_triggers[x + 4] -= t_minus
+
+                    elif glove_values[7 + x] < low_trigger:
+
+                        # print('R-low' + str(x))
+                        right_triggers[x + 4] += t_plus
+                        right_triggers[x] -= t_minus
+
+                    if gloves == 2:
+
+                        if glove_values[18 + x] > high_trigger:
+
+                            # print("L-high" + str(x))
+                            left_triggers[x] += t_plus
+                            left_triggers[x + 4] -= t_minus
+
+                        elif glove_values[18 + x] < low_trigger:
+
+                            # print('L-low' + str(x))
+                            left_triggers[x + 4] += t_plus
+                            left_triggers[x] -= t_minus
+
+                # trigger zero
+                for x in range(8):
+
+                    if right_triggers[x] < 0 or right_triggers[x] > zero_out:
+                        right_triggers[x] = 0
+
+                    if gloves == 2:
+                        if left_triggers[x] < 0 or left_triggers[x] > zero_out:
+                            left_triggers[x] = 0
+
+                # sorted
+                right_sorted = [right_triggers.index(x) for x in sorted(right_triggers[::], reverse=True)]
+                if gloves == 2:
+                    left_sorted = [left_triggers.index(x) for x in sorted(left_triggers[::], reverse=True)]
+
+                # t_sums
+                t_sums = [right_triggers[right_sorted[0]]]
+                if gloves == 2:
+                    t_sums = [left_triggers[left_sorted[0]], right_triggers[right_sorted[0]]]
+
+                for x in range(8):
+                    t_sums[0] += right_triggers[x]
+                    if gloves == 2:
+                        t_sums[1] += left_triggers[x]
+
+                # percentages
+                right_percentages = [right_triggers[x] / t_sums[0] for x in range(8)]
+                if gloves == 2:
+                    left_percentages = [left_triggers[x] / t_sums[1] for x in range(8)]
+
+                # char
+                right_char = [int(right_percentages[x] * int(char_size * (t_sums[0] / zero_full))) for x in
+                              range(8)]
+                if gloves == 2:
+                    left_char = [int(left_percentages[x] * int(char_size * (t_sums[1] / zero_full))) for x in
+                                 range(8)]
+
+                right_used = []
+                left_used = []
+
+                right_palette = []
+                left_palette = []
+
+                # palettes
+                for x in range(8):
+                    if right_sorted[x] not in right_used:
+                        for y in range(right_char[right_sorted[x]]):
+                            right_palette.append(right_sorted[x])
+                        right_used.append(right_sorted[x])
+                    if gloves == 2:
+                        if left_sorted[x] not in left_used:
+                            for y in range(left_char[left_sorted[x]]):
+                                left_palette.append(left_sorted[x])
+                            left_used.append(left_sorted[x])
+
+                # paint
+                for x in range(len(right_palette)):
+
+                    steps = 0
+                    scan = 0
+
+                    place = (glove_sums[0] + x + steps) % bv - 1
+
+                    while scan == 0:
+
+                        if i_rule[place] != right_palette[x]:
+                            i_rule[place] = right_palette[x]
+                            d_rule[list(d_rule.keys())[place]] = right_palette[x]
+                            scan = 1
+                        else:
+                            steps += 1
+
+                        if steps == int(bv / rule_window_scale):
+                            i_rule[place] = right_palette[x]
+                            d_rule[list(d_rule.keys())[place]] = right_palette[x]
+                            scan = 1
+                if gloves == 2:
+                    for x in range(len(left_palette)):
+
+                        steps = 0
+                        scan = 0
+
+                        place = (glove_sums[1] + x + steps) % bv - 1
+
+                        while scan == 0:
+
+                            if i_rule[place] != left_palette[x]:
+                                i_rule[place] = left_palette[x]
+                                d_rule[list(d_rule.keys())[place]] = left_palette[x]
+                                scan = 1
+                            else:
+                                steps += 1
+
+                            if steps == int(bv / rule_window_scale):
+                                i_rule[place] = left_palette[x]
+                                d_rule[list(d_rule.keys())[place]] = left_palette[x]
+                                scan = 1
+
+            if g_brush == 2:
+
+                gv_x = 3
+                gv_y = 4
+
+                #stream direction
+                if glove_values[18] < mid_trigger:
+                    stream_direction.append(0)
+                if glove_values[19] < mid_trigger:
+                    stream_direction.append(1)
+                if glove_values[20] < mid_trigger:
+                    stream_direction.append(2)
+                if glove_values[21] < mid_trigger:
+                    stream_direction.append(3)
 
 
                 char_size = int(bv / rule_window_scale)
@@ -2555,7 +2759,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(9, 2, 0, 1)
+Chaos_Window(9, 1, 0, 1)
 
 
 
