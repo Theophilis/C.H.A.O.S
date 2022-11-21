@@ -315,8 +315,8 @@ int main(int argc, char *argv[]) {
     int base = 2;
     int view = 5;
         //board
-    int b_length =601;
-    int b_width = 601;
+    int b_length =801;
+    int b_width = 801;
         //brush board
     int bb_length = b_length;
     int bb_width = b_length;
@@ -329,7 +329,7 @@ int main(int argc, char *argv[]) {
     int board_growth = 0;
 
     //-----menus-----
-    int glove = 0;
+    int glove = 3;
     int cata = 1;
     int layers = 1;
 

@@ -356,63 +356,63 @@ def Chaos_Window(device_id=-1):
 
 
                 #x axis
-                if ev[1] == 1:
+                if ev[1] == 0:
 
                     ev_1 = ev[2]
 
 
                 #y axis
-                if ev[1] == 2:
+                if ev[1] == 1:
 
                     ev_2 = ev[2]
 
                 #z axis
-                if ev[1] == 3:
+                if ev[1] == 2:
 
                     ev_3 = ev[2]
 
                 #pitch
-                if ev[1] == 4:
+                if ev[1] == 3:
 
                     ev_4 = ev[2]
 
                 #yaw
-                if ev[1] == 5:
+                if ev[1] == 4:
 
                     ev_5 = ev[2]
 
                 #roll
-                if ev[1] == 6:
+                if ev[1] == 5:
 
                     ev_6 = ev[2]
 
                 #thumb
-                if ev[1] == 7:
+                if ev[1] == 6:
 
                     ev_7 = ev[2]
 
                 #pointer
-                if ev[1] == 8:
+                if ev[1] == 7:
 
                     ev_8 = ev[2]
 
                 #middle
-                if ev[1] == 9:
+                if ev[1] == 8:
 
                     ev_9 = ev[2]
 
                 #ring
-                if ev[1] == 10:
+                if ev[1] == 9:
 
                     ev_10 = ev[2]
 
                 #pinky
-                if ev[1] == 11:
+                if ev[1] == 10:
 
                     ev_11 = ev[2]
 
                 #elbow
-                if ev[1] == 12:
+                if ev[1] == 11:
 
                     ev_12 = ev[2]
 
@@ -928,7 +928,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(2)
+Chaos_Window(1)
 
 
 
