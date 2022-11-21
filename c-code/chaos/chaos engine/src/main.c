@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
     //layers
     int color_on = 1;
     int color_step = 8;
-    int color_step_scale = 8;
+    int color_step_scale = 4;
 
 
     int pin_test;
