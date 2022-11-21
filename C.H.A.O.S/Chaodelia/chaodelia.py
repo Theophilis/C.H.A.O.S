@@ -1004,7 +1004,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         #mitosis
         if pause == 0:
 
-            cell_vel = int(glove_values[gv_size]/8)
+            cell_vel = glove_values[1 + number_of_sensors]
             brush_height_scale = brush_scale
             brush_width_scale = brush_scale
 
