@@ -1099,178 +1099,22 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
 
     def input(letter, base, page, input_box, v_input):
 
-        if echoing == 1:
-
-            echo = 0
-
-        echo = 1
-
         if input_box == 1:
             v_input += letter
-
-        bv = base ** view
 
         if letter not in press:
             press[letter] = 0
         else:
             press[letter] += 1
 
-        if echoing == 1:
+        place = (letter_values[letter] + (space * 26)) % bv
 
-            if press[letter] % 1 ==0:
-
-                echo = 1
-
-
-        place = int((letter_values[letter] + ((press[letter] % (int(bv / len(letter_values)) + 1)) * int(
-            (bv / int(bv / len(letter_values) + 1))))) % bv)
-
-        # print(' ')
-        # print("place")
+        # print('')
         # print(place)
-        # print(letter_values[letter])
-        # print((press[letter] % (int(bv / len(letter_values)) + 1)))
-        # print((bv / int(bv / len(letter_values) + 1)))
-        # print(bv)
 
-        if i_rule[place] == 0:
+        i_rule[place] = (i_rule[place] + 1) % base
+        d_rule[list(d_rule.keys())[place]] = i_rule[place]
 
-            i_rule[place] = 1
-            d_rule[list(d_rule.keys())[place]] = 1
-
-            if echo % 2 == 0:
-
-                # print('len(i_rule)')
-                # print(len(i_rule))
-                # print('int(place + len(i_rule)/2 % len(i_rule)) - 1')
-                # print(int((place + len(i_rule)/2) % len(i_rule)) - 1)
-                # print('list(d_rule.keys()))')
-                # print(len(list(d_rule.keys())))
-
-                i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 1
-                d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 1
-
-        elif i_rule[place] == 1:
-
-            # print("i_rule_1")
-            # print(i_rule)
-
-            if base == 2:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 2
-                d_rule[list(d_rule.keys())[place]] = 2
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 2:
-
-                    # print('len(i_rule)')
-                    # print(len(i_rule))
-                    # print('int(place + len(i_rule)/2 % len(i_rule)) - 1')
-                    # print(int(place + len(i_rule)/2 % len(i_rule)) - 1)
-                    # print('list(d_rule.keys()))')
-                    # print(len(list(d_rule.keys())))
-
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 2
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 2
-
-                # print("i_rule_2")
-                # print(i_rule)
-
-        elif i_rule[place] == 2:
-
-            if base == 3:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 3
-                d_rule[list(d_rule.keys())[place]] = 3
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 3:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 3
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 3
-
-        elif i_rule[place] == 3:
-
-            if base == 4:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 4
-                d_rule[list(d_rule.keys())[place]] = 4
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 4:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 4
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 4
-
-        elif i_rule[place] == 4:
-
-            if base == 5:
-                i_rule[place] = 0
-                d_rule[list(d_rule.keys())[place]] = 0
-
-            else:
-                i_rule[place] = 5
-                d_rule[list(d_rule.keys())[place]] = 5
-
-            if echo % 2 == 0:
-
-                # print('echo')
-
-                if base == 5:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-                else:
-                    i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 5
-                    d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 5
-
-        else:
-
-            i_rule[place] = 0
-            d_rule[list(d_rule.keys())[place]] = 0
-
-            if echo % 2 == 0:
-
-                print('echo')
-
-                i_rule[int((place + len(i_rule)/2) % len(i_rule)) - 1] = 0
-                d_rule[list(d_rule.keys())[int((place + len(i_rule)/2) % len(i_rule)) - 1]] = 0
-
-
-        # if rule not in journal:
-        #     journal[rule] = []
-        #     journal[rule].append(page)
-        #
-        # else:
-        #     journal[rule].append(page)
 
         return v_input
 
@@ -1474,6 +1318,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
     rule = 21621
     step = 0
     step_show = 0
+    space = 0
     clock = pygame.time.Clock()
     origin_rule = -1
     bv = base ** view
@@ -1583,7 +1428,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
     gv_mark = ()
     clunk = 0
 
-    ir_height = base
+    ir_height = base * int(base/2)
     bar_height = 800
     bar_width = 20
 
@@ -2101,17 +1946,17 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
             rule = (rule, datetime.now())
 
             if i_rule != rule_point:
-                print()
-                print()
-                print("align")
-                print("i_rule & rule_point")
-                print(i_rule)
-                print(rule_point)
+                # print()
+                # print()
+                # print("align")
+                # print("i_rule & rule_point")
+                # print(i_rule)
+                # print(rule_point)
                 rule_point = i_rule[::]
-                print()
-                print("i_rule & rule_point")
-                print(i_rule)
-                print(rule_point)
+                # print()
+                # print("i_rule & rule_point")
+                # print(i_rule)
+                # print(rule_point)
 
                 if rule not in journal:
                     journal[rule] = []
@@ -2258,8 +2103,7 @@ def Chaos_Window(base, pixel_res, cell_vel, analytics, device_id=None):
                     page = []
 
                 if event.key == pygame.K_SPACE:
-                    v_input = input(' ', base, page, input_box, v_input)
-                    page = []
+                    space += 1
 
                 if event.key == pygame.K_RETURN:
 
@@ -4051,7 +3895,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(3, 2, 5, 1, -1)
+Chaos_Window(5, 2, 5, 1, -1)
 
 
 

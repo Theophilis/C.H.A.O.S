@@ -1051,7 +1051,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
 
             #brush_step
-            cell_vel = brush_height
+            cell_vel = 8
             for y in range(cell_vel):
 
                 cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))

@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from matplotlib import colors as c
-import pandas as pd
 import pickle
 
 

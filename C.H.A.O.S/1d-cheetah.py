@@ -738,7 +738,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #active variables
     run = 1
     FPS = 120
-    rule = 30
+    rule = 2161
     start = 0
     step = 0
     step_show = 0
@@ -3260,7 +3260,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(5, 1, 1, 2)
+Chaos_Window(3, 1, 1, -1)
 
 
 
