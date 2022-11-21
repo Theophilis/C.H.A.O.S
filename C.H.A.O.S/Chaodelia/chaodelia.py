@@ -771,13 +771,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     g_words = 0
     g_brush = 2
 
-    entropy = 2000
+    number_of_sensors = 11
 
     gv_x1 = 0
     gv_y1 = 1
     gv_x2 = 3
     gv_y2 = 4
-    gv_size = 12
+    gv_size = 11
 
     zero_out = 3200
     zero_full = zero_out*9
@@ -882,7 +882,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             pygame.midi.get_device_info(input_id)
             p_m_i = pygame.midi.Input(device_id)
 
-        glove_values = [x for x in range(gloves * 11)]
+        glove_values = [x for x in range(gloves * number_of_sensors)]
         glove_sums = [x for x in range(gloves)]
 
         print("")
@@ -1004,6 +1004,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         #mitosis
         if pause == 0:
 
+            cell_vel = int(glove_values[gv_size]/8)
             brush_height_scale = brush_scale
             brush_width_scale = brush_scale
 
@@ -1051,7 +1052,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
 
             #brush_step
-            cell_vel = 8
             for y in range(cell_vel):
 
                 cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
@@ -1737,14 +1737,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 if ev[0] == 176:
                     # print('right')
                     # print(ev)
-                    glove_values[ev[1]-1] = ev[2]
+                    glove_values[ev[1]] = ev[2]
 
                 if gloves == 2:
 
                     if ev[0] == 177:
                         # print('left')
                         # print(ev)
-                        glove_values[ev[1] + 10] = ev[2]
+                        glove_values[ev[1] + number_of_sensors] = ev[2]
 
 
         #glove application
@@ -1755,14 +1755,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             for x in range(gloves):
                 glove_sums[x] = 0
 
-            for x in range(11):
+            for x in range(number_of_sensors):
 
                 #right
                 glove_sums[0] += glove_values[x]
 
                 if gloves == 2:
                     #left
-                    glove_sums[1] += glove_values[x + 11]
+                    glove_sums[1] += glove_values[x + number_of_sensors]
 
             # print(glove_sums)
 
@@ -1807,13 +1807,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     if gloves == 2:
 
-                        if glove_values[18 + x] > high_trigger:
+                        if glove_values[7 + x + number_of_sensors] > high_trigger:
 
                             # print("L-high" + str(x))
                             left_triggers[x] += t_plus
                             left_triggers[x + 4] -= t_minus
 
-                        elif glove_values[18 + x] < low_trigger:
+                        elif glove_values[7 + x + number_of_sensors] < low_trigger:
 
                             # print('L-low' + str(x))
                             left_triggers[x + 4] += t_plus
@@ -1980,13 +1980,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     if gloves == 2:
 
-                        if glove_values[18 + x] > high_trigger:
+                        if glove_values[7 + x + number_of_sensors] > high_trigger:
 
                             # print("L-high" + str(x))
                             left_triggers[x] += t_plus
                             left_triggers[x + 4] -= t_minus
 
-                        elif glove_values[18 + x] < low_trigger:
+                        elif glove_values[7 + x + number_of_sensors] < low_trigger:
 
                             # print('L-low' + str(x))
                             left_triggers[x + 4] += t_plus
@@ -2096,13 +2096,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 gv_y = 4
 
                 #stream direction
-                if glove_values[18] < mid_trigger:
+                if glove_values[7 + number_of_sensors] < mid_trigger:
                     stream_direction.append(0)
-                if glove_values[19] < mid_trigger:
+                if glove_values[8 + number_of_sensors] < mid_trigger:
                     stream_direction.append(1)
-                if glove_values[20] < mid_trigger:
+                if glove_values[9 + number_of_sensors] < mid_trigger:
                     stream_direction.append(2)
-                if glove_values[21] < mid_trigger:
+                if glove_values[10 + number_of_sensors] < mid_trigger:
                     stream_direction.append(3)
 
 
@@ -2125,13 +2125,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     if gloves == 2:
 
-                        if glove_values[18 + x] > high_trigger:
+                        if glove_values[7 + x + number_of_sensors] > high_trigger:
 
                             # print("L-high" + str(x))
                             left_triggers[x] += t_plus
                             left_triggers[x + 4] -= t_minus
 
-                        elif glove_values[18 + x] < low_trigger:
+                        elif glove_values[7 + x + number_of_sensors] < low_trigger:
 
                             # print('L-low' + str(x))
                             left_triggers[x + 4] += t_plus
