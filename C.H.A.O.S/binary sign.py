@@ -562,21 +562,17 @@ def Chaos_Window(device_id=-1):
 
             #position
             if evs[6] > 64:
-                if evs[7] < 64:
-                    if evs[0] > 80:
-                        mouse.move(int(evs[2]/mouse_scale), 0, absolute=False, duration=0)
-                    if evs[0] < 40:
-                        mouse.move(-int(evs[2]/mouse_scale), 0, absolute=False, duration=0)
-                    if evs[1] > 80:
-                        mouse.move(0, -int(evs[2]/mouse_scale), absolute=False, duration=0)
-                    if evs[1] < 40:
-                        mouse.move(0, int(evs[2]/mouse_scale), absolute=False, duration=0)
-
-                else:
-                    mouse.on_button()
+                if evs[0] > 80:
+                    mouse.move(int(evs[2]/mouse_scale), 0, absolute=False, duration=0)
+                if evs[0] < 40:
+                    mouse.move(-int(evs[2]/mouse_scale), 0, absolute=False, duration=0)
+                if evs[1] > 80:
+                    mouse.move(0, -int(evs[2]/mouse_scale), absolute=False, duration=0)
+                if evs[1] < 40:
+                    mouse.move(0, int(evs[2]/mouse_scale), absolute=False, duration=0)
 
             #left
-            elif evs[7] > 64 and l_brake == 0:
+            if evs[7] > 64 and l_brake == 0:
                 print()
                 print('left')
                 mouse.click('left')
@@ -586,7 +582,7 @@ def Chaos_Window(device_id=-1):
                 #
 
             #right
-            elif evs[8] > 64 and r_brake == 0:
+            if evs[8] > 64 and r_brake == 0:
                 print()
                 print('right')
                 mouse.click('right')
