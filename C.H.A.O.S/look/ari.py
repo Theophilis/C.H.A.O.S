@@ -15,6 +15,7 @@ import pygame
 import sys
 import pygame.midi
 from gtts import gTTS
+from pygame import mixer
 
 
 sys.setrecursionlimit(999999999)
@@ -282,6 +283,7 @@ def Chaos_Window(device_id=-1):
 
     #tts
     phrase = ''
+    mixer.init()
 
     # #server
     # PORT = 21621
@@ -501,8 +503,11 @@ def Chaos_Window(device_id=-1):
                     print('spoken')
                     audio = gTTS(text=phrase, lang='en', slow=False)
 
-                    audio.save(phrase + '.mp3')
-                    audio.stream()
+                    audio.save('i-' + phrase + '.mp3')
+
+                    path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\look\i-' + phrase + '.mp3'
+                    mixer.music.load(path)
+                    mixer.music.play()
 
                     phrase = ''
             elif evs[0] < 64 and x_brake == 1:
@@ -525,7 +530,10 @@ def Chaos_Window(device_id=-1):
                     audio = gTTS(text=phrase, lang='en', slow=False)
 
                     audio.save(phrase + '.mp3')
-                    audio.stream()
+
+                    path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\look\i-' + phrase + '.mp3'
+                    mixer.music.load(path)
+                    mixer.music.play()
 
                     phrase = ''
 
