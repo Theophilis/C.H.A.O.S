@@ -1,5 +1,6 @@
 import pynput
 from pynput.keyboard import Key, Controller
+import mouse
 
 keyboard = Controller()
 
@@ -232,14 +233,29 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 100, 100
+WIDTH, HEIGHT = 500, 100
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+
+#numerical
 letter_values = {' ': 0, 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11,
                  'l': 12, 'm': 13,
                  'n': 14, 'o': 15, 'p': 16, 'q': 17, 'r': 18, 's': 19, 't': 20, 'u': 21, 'v': 22, 'w': 23, 'x': 24,
                  'y': 25, 'z': 26, '.': 27, ',':28, '"':29, '(':30, ')':31}
 
+#frequency
+letter_values = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+                 's': 4, 'c': 5, 'd': 6, 'm': 7,
+                 'g': 8, 'f': 9, 'w': 10, 'v': 11,
+                 'z': 12, 'q': 13, ',': 14, '"': 15,
+                 '/': 16, '.': 17, ';': 18, 'j': 19,
+                 'x': 20, 'k': 21, 'y': 22, 'b': 23,
+                 'h': 24, 'p': 25, 'u': 26, 'l': 27,
+                 'n':28, 'o':29, 'r':30, 'e':31}
+
+
 value_letter = {v:k for k, v in letter_values.items()}
+
+value_color = {0:(0, 0, 0), 1:(127, 127, 127)}
 
 pygame.display.set_caption("C.H.A.O.S")
 
@@ -257,9 +273,12 @@ def Chaos_Window(device_id=-1):
     #active variables
     run = 1
     evs = [0 for x in range(12)]
+    indicators = np.zeros((500, 100, 3), dtype='uint8')
 
     #input augments
     midi_inputs = 1
+    typing_mouse = 0
+    mouse_scale = 16
 
     # #server
     # PORT = 21621
@@ -318,8 +337,12 @@ def Chaos_Window(device_id=-1):
         ev_11 = 0
         ev_12 = 0
 
+        mode_brake = 0
         x_brake = 0
         y_brake = 0
+        z_brake = 0
+        l_brake = 0
+        r_brake = 0
 
         if device_id > 0:
 
@@ -340,6 +363,9 @@ def Chaos_Window(device_id=-1):
 
     #main loop
     while run == 1:
+
+        WIN.blit(pygame.surfarray.make_surface(indicators), (0, 0))
+        pygame.display.update()
 
         #inputs
         for event in pygame.event.get():
@@ -431,52 +457,143 @@ def Chaos_Window(device_id=-1):
 
                 evs = [ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11, ev_12]
 
-        # send_b(pack('llllllllllll', ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11, ev_12))
+        #typing
+        if typing_mouse == 0:
 
-        # print()
-        # print(evs)
+            value = (int(evs[6]/64) * 2 ** 0) + (int(evs[7]/64) * 2 ** 1) + (int(evs[8]/64) * 2 ** 2) + (int(evs[9]/64) * 2 ** 3) + (int(evs[10]/64) * 2 ** 4)
 
-        value = (int(evs[6]/64) * 2 ** 0) + (int(evs[7]/64) * 2 ** 1) + (int(evs[8]/64) * 2 ** 2) + (int(evs[9]/64) * 2 ** 3) + (int(evs[10]/64) * 2 ** 4)
+            for x in range(5):
+                for y in range(100):
+                    for z in range(100):
+                        # print()
+                        # print(x)
+                        # print(evs[6 + x])
+                        # print(value_color[evs[6 + x]])
+                        # print(type(value_color[evs[6 + x]]))
+                        color = value_color[int(evs[6 + x]/64)]
+                        # print(color)
+                        indicators[y - (x*100) - 100, z] = color
 
+            #letter input
+            if evs[0] > 64 and x_brake == 0:
 
-        if evs[0] > 64 and x_brake == 0:
+                # print()
+                # print(value)
+                # print(value_letter[value])
 
-            print()
-            print(value)
-            print(value_letter[value])
+                keyboard.press(value_letter[value])
+                keyboard.release(value_letter[value])
 
-            keyboard.press(value_letter[value])
-            keyboard.release(value_letter[value])
+                x_brake = 1
+            elif evs[0] < 64 and x_brake == 1:
 
-            x_brake = 1
+                # print()
+                # print(value)
+                # print(value_letter[value])
 
-        elif evs[0] < 64 and x_brake == 1:
+                keyboard.press(value_letter[value])
+                keyboard.release(value_letter[value])
 
-            print()
-            print(value)
-            print(value_letter[value])
-            
-            keyboard.press(value_letter[value])
-            keyboard.release(value_letter[value])
+                x_brake = 0
 
-            x_brake = 0
+            #backspace
+            if evs[1] > 64 and y_brake == 0:
 
-        if evs[1] > 64 and y_brake == 0:
+                keyboard.press(pynput.keyboard.Key.backspace)
+                keyboard.release(pynput.keyboard.Key.backspace)
 
-            keyboard.press(pynput.keyboard.Key.backspace)
-            keyboard.release(pynput.keyboard.Key.backspace)
+                y_brake = 1
+            elif evs[1] < 64 and y_brake == 1:
 
-            y_brake = 1
+                keyboard.press(pynput.keyboard.Key.backspace)
+                keyboard.release(pynput.keyboard.Key.backspace)
 
-        elif evs[1] < 64 and y_brake == 1:
+                y_brake = 0
 
-            keyboard.press(pynput.keyboard.Key.backspace)
-            keyboard.release(pynput.keyboard.Key.backspace)
+            #mode
+            if evs[2] > 64 and value == 16 and mode_brake == 0:
 
-            y_brake = 0
+                print()
+                print('mode change')
+                typing_mouse = (typing_mouse + 1) % 2
+                mode_brake = 1
+                print(typing_mouse)
+            elif evs[2] < 64 and mode_brake == 1:
+                 mode_brake = 0
+                 #
 
+            #enter
+            elif evs[2] > 64 and value == 0 and z_brake == 0:
+                keyboard.press(pynput.keyboard.Key.enter)
+                keyboard.release(pynput.keyboard.Key.enter)
 
+                z_brake = 1
+            elif evs[2] < 64 and value == 0 and z_brake == 1:
+                z_brake = 0
+                #
 
+        #mouse
+        if typing_mouse == 1:
+
+            value = (int(evs[6]/64) * 2 ** 0) + (int(evs[7]/64) * 2 ** 1) + (int(evs[8]/64) * 2 ** 2) + (int(evs[9]/64) * 2 ** 3) + (int(evs[10]/64) * 2 ** 4)
+            for x in range(5):
+                for y in range(100):
+                    for z in range(100):
+                        # print()
+                        # print(x)
+                        # print(evs[6 + x])
+                        # print(value_color[evs[6 + x]])
+                        # print(type(value_color[evs[6 + x]]))
+                        color = value_color[int(evs[6 + x]/64)]
+                        # print(color)
+                        indicators[y - (x*100) - 100, z] = color
+
+            #mode
+            if evs[2] > 64 and value == 16 and mode_brake == 0:
+
+                print()
+                print('mode change')
+                typing_mouse = (typing_mouse + 1) % 2
+                mode_brake = 1
+                print(typing_mouse)
+            elif evs[2] < 64 and mode_brake == 1:
+                mode_brake = 0
+                #
+
+            #position
+            if evs[6] > 64:
+                if evs[7] < 64:
+                    if evs[0] > 80:
+                        mouse.move(int(evs[2]/mouse_scale), 0, absolute=False, duration=0)
+                    if evs[0] < 40:
+                        mouse.move(-int(evs[2]/mouse_scale), 0, absolute=False, duration=0)
+                    if evs[1] > 80:
+                        mouse.move(0, -int(evs[2]/mouse_scale), absolute=False, duration=0)
+                    if evs[1] < 40:
+                        mouse.move(0, int(evs[2]/mouse_scale), absolute=False, duration=0)
+
+                else:
+                    mouse.on_button()
+
+            #left
+            elif evs[7] > 64 and l_brake == 0:
+                print()
+                print('left')
+                mouse.click('left')
+                l_brake = 1
+            elif evs[7] < 64 and l_brake == 1:
+                l_brake = 0
+                #
+
+            #right
+            elif evs[8] > 64 and r_brake == 0:
+                print()
+                print('right')
+                mouse.click('right')
+                r_brake = 1
+            elif evs[8] < 64 and r_brake == 1:
+                r_brake = 0
+                #
 
 
         #midi clean up
