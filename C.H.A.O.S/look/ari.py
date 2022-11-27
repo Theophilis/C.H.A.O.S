@@ -1,7 +1,12 @@
 import pynput
 from pynput.keyboard import Key, Controller
 import mouse
-import pyttsx3
+import numpy as np
+import pygame
+import sys
+import pygame.midi
+from gtts import gTTS
+from pygame import mixer
 
 keyboard = Controller()
 
@@ -10,12 +15,7 @@ keyboard = Controller()
 
 # C.H.A.O.S
 
-import numpy as np
-import pygame
-import sys
-import pygame.midi
-from gtts import gTTS
-from pygame import mixer
+
 
 
 sys.setrecursionlimit(999999999)
@@ -529,7 +529,7 @@ def Chaos_Window(device_id=-1):
                     print('spoken')
                     audio = gTTS(text=phrase, lang='en', slow=False)
 
-                    audio.save(phrase + '.mp3')
+                    audio.save('i-' + phrase + '.mp3')
 
                     path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\look\i-' + phrase + '.mp3'
                     mixer.music.load(path)

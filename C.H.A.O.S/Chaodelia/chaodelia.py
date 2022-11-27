@@ -10,6 +10,13 @@ import sys
 import pygame.midi
 import time
 from collections import deque
+from gtts import gTTS
+from pygame import mixer
+import pynput
+from pynput.keyboard import Key, Controller
+import mouse
+
+keyboard = Controller()
 
 sys.setrecursionlimit(999999999)
 
@@ -269,6 +276,24 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                       6:(255, 0, 0), 7:(0, 255, 0), 8:(0, 0, 255)}
         color_value = {v:k for k, v in value_color.items()}
 
+    # numerical
+    letter_values = {' ': 0, 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11,
+                     'l': 12, 'm': 13,
+                     'n': 14, 'o': 15, 'p': 16, 'q': 17, 'r': 18, 's': 19, 't': 20, 'u': 21, 'v': 22, 'w': 23, 'x': 24,
+                     'y': 25, 'z': 26, '.': 27, ',': 28, '"': 29, '(': 30, ')': 31}
+
+    # frequency
+    letter_values = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+                     's': 4, 'c': 5, 'd': 6, 'm': 7,
+                     'g': 8, 'f': 9, 'w': 10, 'v': 11,
+                     'z': 12, 'q': 13, ',': 14, '"': 15,
+                     '/': 16, '.': 17, ';': 18, 'j': 19,
+                     'x': 20, 'k': 21, 'y': 22, 'b': 23,
+                     'h': 24, 'p': 25, 'u': 26, 'l': 27,
+                     'n': 28, 'o': 29, 'r': 30, 'e': 31}
+
+    value_letter = {v: k for k, v in letter_values.items()}
+
 
     def redraw_window(input_box, v_input, zero_count, step_show, triggers, dt, timer):
 
@@ -293,6 +318,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         rand_count_l = main_font.render(f"C0UNT: {rand_count}", 1, (255, 255, 255))
         time_label = lable_font.render(str(int(timer/60)), 1, (255, 255, 255))
         step_length = main_font.render(f"5T3P: {step - step_0}", 1, (255, 255, 255))
+        phrase_label = main_font.render(f"P8R453: {phrase}", 1, (255, 255, 255))
+
 
 
 
@@ -306,6 +333,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         # WIN.blit(rand_count_l, (WIDTH - rand_count_l.get_width(), 50))
         WIN.blit(time_label, (WIDTH - time_label.get_width() - 20, 10))
         WIN.blit(step_length, (WIDTH - step_length.get_width() - 20, 70))
+        WIN.blit(phrase_label, (int(WIDTH/2) - phrase_label.get_width(), 40))
 
         # WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
         # WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 90))
@@ -723,13 +751,24 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     bbv = base ** base ** view
     rule_window_scale = 2
 
+    #input augments
+    echoing = 0
+    randomizer = 0
+    midi_inputs = 1
+    gloves = 2
+    typing_mouse = 0
+    mouse_scale = 16
+
+    #tts
+    ari = 1
+    phrase = ''
+    mixer.init()
+
     #streams
     stream_buffer = 2
     stream_direction = deque(maxlen=stream_buffer)
     stream_direction.append(0)
     momentum = {0:0, 1:0, 2:0, 3:0}
-    momentum_step = 1
-    momentum_scale_scale = 1
 
     #record keeping
     journal = dict()
@@ -759,12 +798,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_offset = CELL_WIDTH + 40
     y_offset = 160 + ui_scale * ir_height
 
-    #input augments
-    echoing = 0
-    randomizer = 0
-    midi_inputs = 1
-    gloves = 2
-
     #glove emthods
     g_char = 0
     g_rule = 0
@@ -790,8 +823,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     right_triggers = [0 for x in range(8)]
 
 
-    t_plus = 2
-    t_minus = 1
+    t_plus = 4
+    t_minus = 2
 
     #chaos console
     input_box = 0
@@ -888,6 +921,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         print("")
         print("glove_values")
         print(glove_values)
+
+        mode_brake = 0
+        x_brake = 0
+        y_brake = 0
+        z_brake = 0
+        l_brake = 0
+        r_brake = 0
 
         if device_id > 0:
 
@@ -1004,7 +1044,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         #mitosis
         if pause == 0:
 
-            cell_vel = glove_values[1 + number_of_sensors]
+            cell_vel = len(cells_a)
             brush_height_scale = brush_scale
             brush_width_scale = brush_scale
 
@@ -1243,6 +1283,205 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 for x in range(brush_width):
                     canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width] = cells_a[y, x]
 
+        if ari > 0:
+
+            typing_mouse = 0
+
+            # typing
+            if typing_mouse == 0:
+
+                value = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (int(glove_values[8] / 64) * 2 ** 2) + (
+                            int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
+
+                for x in range(5):
+                    for y in range(100):
+                        for z in range(100):
+                            # print()
+                            # print(x)
+                            # print(evs[6 + x])
+                            # print(value_color[evs[6 + x]])
+                            # print(type(value_color[evs[6 + x]]))
+                            color = value_color[int(glove_values[6 + x] / 64)]
+                            # print(color)
+                            canvas[y - (x * 100) - 100, z] = color
+
+                # letter input
+                if glove_values[0] > 64 and x_brake == 0:
+
+                    # print()
+                    # print(value)
+                    # print(value_letter[value])
+
+                    keyboard.press(value_letter[value])
+                    keyboard.release(value_letter[value])
+
+                    phrase += value_letter[value]
+
+                    print()
+                    print('phrase')
+                    print(phrase)
+
+                    x_brake = 1
+
+                    if value == 17:
+                        print('spoken')
+                        audio = gTTS(text=phrase, lang='en', slow=False)
+
+                        audio.save('i-' + phrase + '.mp3')
+
+                        path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
+                        mixer.music.load(path)
+                        mixer.music.play()
+
+                        phrase = ''
+
+
+                elif glove_values[0] < 64 and x_brake == 1:
+
+                    # print()
+                    # print(value)
+                    # print(value_letter[value])
+
+                    keyboard.press(value_letter[value])
+                    keyboard.release(value_letter[value])
+
+                    phrase += value_letter[value]
+
+                    print()
+                    print('phrase')
+                    print(phrase)
+
+                    if value == 17:
+                        print('spoken')
+                        audio = gTTS(text=phrase, lang='en', slow=False)
+
+                        audio.save('i-' + phrase + '.mp3')
+
+                        path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
+                        mixer.music.load(path)
+                        mixer.music.play()
+
+                        phrase = ''
+
+
+                    x_brake = 0
+
+                # backspace
+                if glove_values[1] > 64 and value == 16 and y_brake == 0:
+
+                    keyboard.press(pynput.keyboard.Key.backspace)
+                    keyboard.release(pynput.keyboard.Key.backspace)
+
+                    phrase = phrase[:-1]
+
+                    print()
+                    print('phrase')
+                    print(phrase)
+
+                    y_brake = 1
+
+                elif glove_values[1] < 64 and value == 16 and y_brake == 1:
+
+                    keyboard.press(pynput.keyboard.Key.backspace)
+                    keyboard.release(pynput.keyboard.Key.backspace)
+
+                    phrase = phrase[:-1]
+
+                    print()
+                    print('phrase')
+                    print(phrase)
+
+                    y_brake = 0
+
+                # mode
+                if glove_values[2] > 64 and value == 16 and mode_brake == 0:
+
+                    print()
+                    print('mode change')
+                    typing_mouse = (typing_mouse + 1) % 2
+                    mode_brake = 1
+                    print(typing_mouse)
+
+                    for y in range(canvas_rows):
+                        for x in range(canvas_row_width):
+                            canvas[y, x] = 0
+
+                elif glove_values[2] < 64 and mode_brake == 1:
+                    mode_brake = 0
+                    #
+
+                # enter
+                elif glove_values[2] > 64 and value == 0 and z_brake == 0:
+                    keyboard.press(pynput.keyboard.Key.enter)
+                    keyboard.release(pynput.keyboard.Key.enter)
+
+                    z_brake = 1
+                elif glove_values[2] < 64 and value == 0 and z_brake == 1:
+                    z_brake = 0
+                    #
+            typing_mouse = 0
+
+            # mouse
+            if typing_mouse == 1:
+                print('mouse')
+
+                value = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + \
+                        (int(glove_values[8] / 64) * 2 ** 2) + (
+                            int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
+                for x in range(5):
+                    for y in range(100):
+                        for z in range(100):
+                            # print()
+                            # print(x)
+                            # print(evs[6 + x])
+                            # print(value_color[evs[6 + x]])
+                            # print(type(value_color[evs[6 + x]]))
+                            color = value_color[int(glove_values[6 + x] / 64)]
+                            # print(color)
+                            canvas[y - (x * 100) - 100, z] = color
+
+                # mode
+                if glove_values[2] > 64 and value == 16 and mode_brake == 0:
+
+                    print()
+                    print('mode change')
+                    typing_mouse = (typing_mouse + 1) % 2
+                    mode_brake = 1
+                    print(typing_mouse)
+                elif glove_values[2] < 64 and mode_brake == 1:
+                    mode_brake = 0
+                    #
+
+                # position
+                if glove_values[6] > 64:
+                    if glove_values[0] > 80:
+                        mouse.move(int(glove_values[2] / mouse_scale), 0, absolute=False, duration=0)
+                    if glove_values[0] < 40:
+                        mouse.move(-int(glove_values[2] / mouse_scale), 0, absolute=False, duration=0)
+                    if glove_values[1] > 80:
+                        mouse.move(0, -int(glove_values[2] / mouse_scale), absolute=False, duration=0)
+                    if glove_values[1] < 40:
+                        mouse.move(0, int(glove_values[2] / mouse_scale), absolute=False, duration=0)
+
+                # left
+                if glove_values[7] > 64 and l_brake == 0:
+                    print()
+                    print('left')
+                    mouse.click('left')
+                    l_brake = 1
+                elif glove_values[7] < 64 and l_brake == 1:
+                    l_brake = 0
+                    #
+
+                # right
+                if glove_values[8] > 64 and r_brake == 0:
+                    print()
+                    print('right')
+                    mouse.click('right')
+                    r_brake = 1
+                elif glove_values[8] < 64 and r_brake == 1:
+                    r_brake = 0
+                    #
 
 
         #console rule inputs
