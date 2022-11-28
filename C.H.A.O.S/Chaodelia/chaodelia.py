@@ -749,7 +749,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     origin_rule = 0
     bv = base ** view
     bbv = base ** base ** view
-    rule_window_scale = 2
+    rule_window_scale = 4
 
     #input augments
     echoing = 0
@@ -761,7 +761,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #tts
     ari = 1
-    phrase = ''
+    phrase = ' '
     mixer.init()
 
     #streams
@@ -1042,9 +1042,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         redraw_window(input_box, v_input, 0, step_show, 0, dt, timer)
 
         #mitosis
+        pause = 0
         if pause == 0:
 
-            cell_vel = len(cells_a)
             brush_height_scale = brush_scale
             brush_width_scale = brush_scale
 
@@ -1091,7 +1091,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 for x in range(brush_width):
                     cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
 
+
             #brush_step
+            cell_vel = len(cells_a)
             for y in range(cell_vel):
 
                 cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
@@ -1324,16 +1326,21 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     x_brake = 1
 
                     if value == 17:
-                        print('spoken')
-                        audio = gTTS(text=phrase, lang='en', slow=False)
 
-                        audio.save('i-' + phrase + '.mp3')
+                        try:
+                            print('spoken')
+                            audio = gTTS(text=phrase, lang='en', slow=False)
 
-                        path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
-                        mixer.music.load(path)
-                        mixer.music.play()
+                            audio.save('i-' + phrase + '.mp3')
 
-                        phrase = ''
+                            path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
+                            mixer.music.load(path)
+                            mixer.music.play()
+
+                            phrase = ' '
+
+                        except:
+                            continue
 
 
                 elif glove_values[0] < 64 and x_brake == 1:
@@ -1352,16 +1359,21 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     print(phrase)
 
                     if value == 17:
-                        print('spoken')
-                        audio = gTTS(text=phrase, lang='en', slow=False)
 
-                        audio.save('i-' + phrase + '.mp3')
+                        try:
+                            print('spoken')
+                            audio = gTTS(text=phrase, lang='en', slow=False)
 
-                        path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
-                        mixer.music.load(path)
-                        mixer.music.play()
+                            audio.save('i-' + phrase + '.mp3')
 
-                        phrase = ''
+                            path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
+                            mixer.music.load(path)
+                            mixer.music.play()
+
+                            phrase = ' '
+
+                        except:
+                            continue
 
 
                     x_brake = 0
@@ -1394,7 +1406,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     y_brake = 0
 
                 # mode
-                if glove_values[2] > 64 and value == 16 and mode_brake == 0:
+                if glove_values[2] > 64 and value == 18 and mode_brake == 0:
 
                     print()
                     print('mode change')
