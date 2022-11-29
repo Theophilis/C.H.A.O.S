@@ -1285,6 +1285,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 for x in range(brush_width):
                     canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width] = cells_a[y, x]
 
+        #tts
         if ari > 0:
 
             typing_mouse = 0
@@ -1325,7 +1326,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     x_brake = 1
 
-                    if value == 17:
+                    if value == 17 and len(phrase) > 1:
 
                         try:
                             print('spoken')
@@ -1340,9 +1341,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             phrase = ' '
 
                         except:
-                            continue
-
-
+                            phrase = ' '
                 elif glove_values[0] < 64 and x_brake == 1:
 
                     # print()
@@ -1358,7 +1357,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     print('phrase')
                     print(phrase)
 
-                    if value == 17:
+                    if value == 17 and len(phrase) > 1:
 
                         try:
                             print('spoken')
@@ -1373,7 +1372,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             phrase = ' '
 
                         except:
-                            continue
+                            phrase = ' '
 
 
                     x_brake = 0
