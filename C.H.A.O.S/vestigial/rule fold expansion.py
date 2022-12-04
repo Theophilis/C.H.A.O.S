@@ -1447,17 +1447,17 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     pickle.dump(cellexicon, outfile)
     outfile.close()
 
-    filename = '../polar maps/polar_paths-16'
+    filename = 'polar maps/polar_paths-16'
     outfile = open(filename, 'wb')
     pickle.dump(polar_paths, outfile)
     outfile.close()
 
 
-infile = open("../polar maps/polar_u-16", "rb")
+infile = open("polar maps/polar_u-16", "rb")
 polar_u_i = pickle.load(infile)
 infile.close
 
-infile = open("../polar maps/polar_d-16", "rb")
+infile = open("polar maps/polar_d-16", "rb")
 polar_d = pickle.load(infile)
 infile.close
 
@@ -1465,7 +1465,7 @@ infile = open("cellexicon/cellexicon", "rb")
 cellexicon = pickle.load(infile)
 infile.close
 
-infile = open("../polar maps/polar_paths-16", "rb")
+infile = open("polar maps/polar_paths-16", "rb")
 polar_paths = pickle.load(infile)
 infile.close
 

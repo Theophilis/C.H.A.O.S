@@ -46,7 +46,7 @@ direction = 0
 # w: white
 
 
-infile = open("../polar maps/polar_u-16", "rb")
+infile = open("polar maps/polar_u-16", "rb")
 polar_u_i = pickle.load(infile)
 infile.close
 

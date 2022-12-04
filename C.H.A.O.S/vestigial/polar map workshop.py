@@ -8,11 +8,11 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib import colors
 
-infile = open("../polar maps/polar_u-16", "rb")
+infile = open("polar maps/polar_u-16", "rb")
 polar_u_i = pickle.load(infile)
 infile.close
 
-infile = open("../polar maps/polar_d-16", "rb")
+infile = open("polar maps/polar_d-16", "rb")
 polar_d = pickle.load(infile)
 infile.close
 
@@ -67,7 +67,7 @@ infile.close
 #
 #         break
 
-filename = '../polar maps/polar_d-16'
+filename = 'polar maps/polar_d-16'
 outfile = open(filename, 'wb')
 pickle.dump(polar_d, outfile)
 outfile.close()
@@ -88,7 +88,7 @@ for p in polar_d:
 
 print(len(polar_u_c))
 
-filename = '../polar maps/polar_u_c-16'
+filename = 'polar maps/polar_u_c-16'
 outfile = open(filename, 'wb')
 pickle.dump(polar_u_c, outfile)
 outfile.close()

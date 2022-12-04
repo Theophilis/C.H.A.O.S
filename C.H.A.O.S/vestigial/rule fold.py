@@ -1005,11 +1005,11 @@ def paint(cellexicon, cell_key, message, base, view, length, max_steps, depth, p
     #     print(polar_d[p])
 
 
-infile = open("../polar maps/polar_u-16", "rb")
+infile = open("polar maps/polar_u-16", "rb")
 polar_u_i = pickle.load(infile)
 infile.close
 
-infile = open("../polar maps/polar_d-16", "rb")
+infile = open("polar maps/polar_d-16", "rb")
 polar_d = pickle.load(infile)
 infile.close
 

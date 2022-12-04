@@ -590,59 +590,59 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
 
             clunk = 0
 
-            for v in goal_row:
-
-                v = int(v)
-
-                x_offset = CELL_WIDTH + 50
-                y_offset = 200 + color_x_size * (ir_height + 3)
-
-                # print(1 * color_x_size * clunk + x_offset)
-                # print( 1 * color_x_size + y_offset)
-
-                if v == 0:
-
-                    cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
-                    pygame.draw.rect(WIN, (255, 255, 255), cell)
-
-                    # print('black')
-
-                if v == 1:
-
-                    cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
-                    pygame.draw.rect(WIN, (32, 32, 32), cell)
-
-                    # print("white")
-
-                if v == 2:
-
-                    cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
-                    pygame.draw.rect(WIN, (0, 255, 255), cell)
-
-                    # print("blue")
-
-                if v == 3:
-
-                    cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
-                    pygame.draw.rect(WIN, (255, 255, 0), cell)
-
-                    # print("yellow")
-
-                if v == 4:
-
-                    cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
-                    pygame.draw.rect(WIN, (255, 0, 255), cell)
-
-                    # print("purple")
-
-                if v == 5:
-
-                    cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
-                    pygame.draw.rect(WIN, (0, 0, 255), cell)
-
-                    # print("green")
-
-                clunk += 1
+            # for v in goal_row:
+            #
+            #     v = int(v)
+            #
+            #     x_offset = CELL_WIDTH + 50
+            #     y_offset = 200 + color_x_size * (ir_height + 3)
+            #
+            #     # print(1 * color_x_size * clunk + x_offset)
+            #     # print( 1 * color_x_size + y_offset)
+            #
+            #     if v == 0:
+            #
+            #         cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
+            #         pygame.draw.rect(WIN, (255, 255, 255), cell)
+            #
+            #         # print('black')
+            #
+            #     if v == 1:
+            #
+            #         cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
+            #         pygame.draw.rect(WIN, (32, 32, 32), cell)
+            #
+            #         # print("white")
+            #
+            #     if v == 2:
+            #
+            #         cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
+            #         pygame.draw.rect(WIN, (0, 255, 255), cell)
+            #
+            #         # print("blue")
+            #
+            #     if v == 3:
+            #
+            #         cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
+            #         pygame.draw.rect(WIN, (255, 255, 0), cell)
+            #
+            #         # print("yellow")
+            #
+            #     if v == 4:
+            #
+            #         cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
+            #         pygame.draw.rect(WIN, (255, 0, 255), cell)
+            #
+            #         # print("purple")
+            #
+            #     if v == 5:
+            #
+            #         cell = pygame.Rect(1 * color_x_size * clunk + x_offset, 1 * color_x_size + y_offset, pixel_res, pixel_res)
+            #         pygame.draw.rect(WIN, (0, 0, 255), cell)
+            #
+            #         # print("green")
+            #
+            #     clunk += 1
 
 
         bar_colors = [(32, 32, 32), (0, 255, 255), (255, 255, 0), (255, 0, 255)]
@@ -1524,7 +1524,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     #active variables
     run = 1
     FPS = 60
-    rule = 4
+    rule = 90
     step = -1
     step_show = 0
     clock = pygame.time.Clock()
@@ -1622,7 +1622,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
     move_down = 0
     move_up = 0
 
-    start = 2
+    start = 2048
     goal = 4
     goal_row = rule_gen_fold(goal, base, cell_row_width)[1]
 

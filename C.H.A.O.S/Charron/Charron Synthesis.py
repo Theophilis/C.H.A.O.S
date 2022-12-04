@@ -239,7 +239,7 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_akimbo'
+j_name = 'journal_fire'
 
 #number of colors
 base = 9
@@ -303,7 +303,7 @@ reflect = 1
 #increase the number of cells in each rule call (multiplicative)
 scale_l = 1
 #decrease the number of cells in each rule call (divisive)
-shrink_l = 1
+shrink_l = 2
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
@@ -1070,7 +1070,7 @@ def rule_book(rule_book, color_list, length, width):
 
 
 
-synthesize(j_name,split, 1, color_list_10)
+synthesize(j_name,split, 1, color_list_9)
 
 
 
