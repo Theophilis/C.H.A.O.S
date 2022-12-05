@@ -360,7 +360,6 @@ def Chaos_Window(device_id=-1):
 
                     ev_1 = ev[2]
 
-
                 #y axis
                 if ev[1] == 1:
 
@@ -416,7 +415,6 @@ def Chaos_Window(device_id=-1):
 
                     ev_12 = ev[2]
 
-                evs = [ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11, ev_12]
 
         send_b(pack('llllllllllll', ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11, ev_12))
 

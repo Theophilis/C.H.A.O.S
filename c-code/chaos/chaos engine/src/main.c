@@ -251,6 +251,157 @@ void value_color(int *board,  int *colors, uint8_t *pixels, int lw, int color_st
     }
 }
 
+void value_color_b(int *board,  int *colors, uint8_t *pixels, int lw, int color_step, int color_on, int bb_size, int brush_x, int brush_y, int b_length){
+
+    // printf("\n\nbrush_values %i\t%i\t%i", bb_size, brush_x, brush_y);
+
+    uint8_t rgb[3] = {0, 0, 0};
+    int layer_size = 255;
+    int lw_x = 0;
+    int lw_y = 0;
+
+
+    // for (int i=0; i<lw; i++) {
+    //     *(board + i) = 1;
+    // }
+
+    // printf("\n");
+    // for (int i=0; i<3; i++) {
+    //     printf("%i ", *(rgb + i));
+    // } printf("\n");
+
+    
+
+    for (int i=0; i<lw; i++) {
+
+        // printf("\n\nnew board %i = %i\n", i, *(board + i));
+        // printf("colors %i\n ", *(colors + i));
+        //RGBA
+
+        *(rgb) = 0;
+        *(rgb + 1) = 0;
+        *(rgb + 2) = 0;
+
+        lw_x = i % b_length;
+        lw_y = i / b_length;
+
+        //pixel map
+        if (color_on > 0) {
+            //red
+            if (*(colors + i) < layer_size) {
+                // printf("red\n");
+                *(rgb) = *(colors + i);
+            }
+            //red green
+            else if (*(colors + i) < layer_size * 2) {
+                // printf("red green\n");
+                *(rgb) = 255;
+                *(rgb + 1) = (*(colors + i) - layer_size) % 255;
+            }
+            //green
+            else if (*(colors + i) < layer_size * 3) {
+                // printf("green\n");
+                *(rgb) = 255 - (*(colors + i) - (layer_size * 2)) % 255;
+                *(rgb + 1) = 255;
+            }
+            //green blue
+            else if (*(colors + i) < layer_size * 4) {
+                // printf("green blue\n");
+                *(rgb + 1) = 255;
+                *(rgb + 2) = (*(colors + i) - (layer_size * 3)) % 255;
+            }
+            //blue
+            else if (*(colors + i) < layer_size * 5) {
+                // printf("blue\n");
+                *(rgb + 1) =  255 - (*(colors + i) - (layer_size * 4)) % 255;
+                *(rgb + 2) = 255;
+            }
+            //blue red
+            else if (*(colors + i) < layer_size * 6) {
+                // printf("blue red\n");
+                *(rgb + 2) = 255;
+                *(rgb) = (*(colors + i) - (layer_size * 5)) % 255;
+            }
+            //white
+            else if (*(colors + i) < layer_size * 7) {
+                // printf("white\n");
+                *(rgb) = 255;
+                *(rgb + 2) = 255;
+                *(rgb + 1) = (*(colors + i) - (layer_size * 2)) % 255;
+            }
+            //black
+            else if (*(colors + i) < layer_size * 8) {
+                // printf("black\n");
+                *(rgb) = 255 - *(colors + i) - (layer_size * 7);
+                *(rgb + 1) = 255 - *(colors + i) - (layer_size * 7);
+                *(rgb + 2) = 255 - *(colors + i) - (layer_size * 7);
+            }
+            
+            // for (int i=0; i<3; i++) {
+            //     printf("%i ", *(rgb + i));
+            // } 
+            // printf("\ncolor_step %i\n", color_step);
+
+        } else {
+            *(rgb) = *(colors + i) % 255;
+            *(rgb + 1) = *(colors + i) % 255;
+            *(rgb + 2) = *(colors + i) % 255;
+
+            color_step = 1;
+        }
+        
+        // if (lw_x > brush_x){
+        //     if (lw_x < brush_x + bb_size){
+        //         if (lw_y > brush_y){
+        //             if (lw_y < brush_y + bb_size){
+
+        //                 //color application
+        //                 if (*(board + i) == 0){
+        //                     if (*(colors + i) > 0) {
+        //                     *(colors + i) -= color_step;
+        //                     } else {
+        //                         *(colors + i) = layer_size * 10;
+        //                     }
+        //                 }
+        //                 else {
+        //                     *(colors + i) = *(colors + i) + color_step;
+        //                     // printf("\ncolors %i\n", *(colors + i));
+        //                     *(colors + i) = *(colors + i) % (layer_size * 10);
+        //                     // printf("colors %i\n\n", *(colors + i));
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        // // //color application
+        // // if (*(board + i) == 0){
+        // //     if (*(colors + i) > 0) {
+        // //     *(colors + i) -= color_step;
+        // //     } else {
+        // //         *(colors + i) = layer_size * 10;
+        // //     }
+        // // }
+        // // else {
+        //     *(colors + i) = *(colors + i) + color_step;
+        //     // printf("\ncolors %i\n", *(colors + i));
+        //     *(colors + i) = *(colors + i) % (layer_size * 10);
+        //     // printf("colors %i\n\n", *(colors + i));
+        // }
+
+
+        *(pixels + (i * 4)) = *(rgb + 2);
+        *(pixels + (i * 4) + 1) = *(rgb + 1);
+        *(pixels + (i * 4) + 2) = *(rgb);
+        *(pixels + (i * 4) + 3) = 255;
+
+        
+
+
+    }
+}
+
+
 void value_color_s(int *board, uint8_t *pixels, int lw, int shade){   
 
     for (int i=0; i<lw; i++) {
@@ -315,8 +466,8 @@ int main(int argc, char *argv[]) {
     int base = 2;
     int view = 5;
         //board
-    int b_length =801;
-    int b_width = 801;
+    int b_length =901;
+    int b_width = 901;
         //brush board
     int bb_length = b_length;
     int bb_width = b_length;
@@ -330,7 +481,7 @@ int main(int argc, char *argv[]) {
 
     //-----menus-----
     int glove = 3;
-    int cata = 1;
+    int cata = 0;
     int layers = 1;
 
     //glove
@@ -343,7 +494,7 @@ int main(int argc, char *argv[]) {
     //layers
     int color_on = 1;
     int color_step = 8;
-    int color_step_scale = 4;
+    int color_step_scale = 1;
 
 
     int pin_test;
@@ -430,6 +581,18 @@ int main(int argc, char *argv[]) {
     int ci_2 = 0;
     int ci_3 = 0;
     int ci_4 = 0;
+
+    //board_growth
+    int board_growth_type = 2;
+    int smallest_board = 32;
+    int board_growth_scale = 2;
+
+    int board_growth_scaled = 0;
+    int board_shrink = 32;
+
+    int board_growth2_scale = 16;
+    int smallest_bboard = b_length/127 + 1;
+    
     
 
         //zero out
@@ -945,7 +1108,7 @@ int main(int argc, char *argv[]) {
 
         //board to brush
         if (glove > 0) {
-            printf("running");
+            // printf("running");
             for (int l=0; l<bb_length; l++) {
                 for (int w=0; w<bb_width; w++) {
                     *(brush_board + ((l * (bb_width)) + w) % lw_bb) = *(chaos_board + 
@@ -968,6 +1131,9 @@ int main(int argc, char *argv[]) {
 
 
         //brush to board
+        int brush_x = (*(glove_values) % 128) * brush_stroke;
+        int brush_y = (*(glove_values + 1) % 128) * brush_stroke;
+
         if (glove == 2) {
             for (int l=0; l<bb_length; l++) {
                 for (int w=0; w<bb_width; w++) {
@@ -991,13 +1157,13 @@ int main(int argc, char *argv[]) {
                 // printf("colors %i\n\n", *(colors + i));
             }
         }}}
-
+        
         if (glove == 3) {
             for (int l=0; l<bb_length; l++) {
                 for (int w=0; w<bb_width; w++) {
                     
-                    bb_convert = (((b_length - (l + (*(glove_values + 1) % 128) * brush_stroke) % b_length) * b_width) + 
-                                (w + (*(glove_values) % 128) * brush_stroke)) % lw;
+                    bb_convert = (((b_length - (l + brush_y) % b_length) * b_width) + 
+                                (w + brush_x)) % lw;
 
                     *(chaos_board + 
                     bb_convert) = 
@@ -1030,7 +1196,10 @@ int main(int argc, char *argv[]) {
         if (layers == 0) {
             value_color_s(chaos_board, pixels, lw, board_shade);}
         if (layers == 1) {
-            value_color(chaos_board, chaos_colors, pixels, lw, color_step, color_on);}}
+            if (glove == 3) {
+                value_color_b(chaos_board, chaos_colors, pixels, lw, color_step, color_on, bb_length, brush_x, brush_y, b_length);
+            } else {
+                value_color(chaos_board, chaos_colors, pixels, lw, color_step, color_on);}}}
 
         SDL_UnlockTexture(texture);
 
@@ -1407,13 +1576,15 @@ int main(int argc, char *argv[]) {
 
             res += 1;
             gv=0;
+            //server
             do {
                 res = recv(client, recvbuf, recvbuflen, 0);
                 if (res > 0) {
                     recvbuf[res] = "\0";
                     // printf("\nMessage received: %s\n", recvbuf);
                     // printf("len %zi\n", sizeof(recvbuf));
-
+                    
+                    //value placement
                     for (int i=0; i<12; i++) {
                         uint32_t myInt1 = recvbuf[0 + (i*4)] + 
                                         (recvbuf[1 + (i*4)] << 8) + 
@@ -1424,6 +1595,7 @@ int main(int argc, char *argv[]) {
                         } 
                         //printf("\n");
 
+                    //gv
                     for (int i=0; i<12; i++) {
                         // printf("%zi ", *(glove_values + i));
                         gv += *(glove_values + i);
@@ -1672,18 +1844,48 @@ int main(int argc, char *argv[]) {
                         *(brush_board + i%lw_bb) = 0;
 
                     }
+                    
+                    if (glove < 3) {
+                        color_on += 1;
+                        color_on = color_on % 2;
+                    }
 
-                    color_on += 1;
-                    color_on = color_on % 2;
+                    board_growth = 0;
                 }
                 
                 //color_step
                 color_step = (*(glove_values + 2) / color_step_scale) + 1;
 
                 //board_growth
-                board_growth = *(glove_values) + *(glove_values + 1) * 128;
-                
-                printf("\n\n%i", board_growth);
+                if (board_growth_type == 1) {
+                    
+                    board_growth += *(glove_values + 2) / board_growth_scale;
+
+                    if (board_growth > 0) {
+                        board_growth -= board_shrink / board_growth_scale;
+                    }
+
+
+                    board_growth_scaled = board_growth/board_growth_scale;
+
+                    if (board_growth_scaled <= 0) {
+                        board_growth_scaled = smallest_bboard;
+                    }
+                    
+                    // printf("\n\n%i\t%i", board_growth, board_growth_scaled);
+
+                    if (board_growth_scaled < b_length) {
+                        bb_length = board_growth_scaled;
+                        bb_width = board_growth_scaled;
+                    }
+                }
+
+                // printf("\n\n accel %i", *(glove_values + 11));
+
+                if (board_growth_type == 2) {
+                    bb_length = (*(glove_values + 11) * board_growth_scale + smallest_board )% b_length;
+                    bb_width = bb_length;
+                }
                 
             }
 
