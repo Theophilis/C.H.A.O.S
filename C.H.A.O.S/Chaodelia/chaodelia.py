@@ -263,18 +263,28 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         CELL_WIDTH = WIDTH
 
-
     #colors
+    color_0 = (0, 0, 0)
+    color_1 = (32, 32, 32)
+    color_2 = (255, 0, 255)
+    color_3 = (0, 255, 255)
+    color_4 = (255, 255, 0)
+    color_5 = (255, 255, 255)
+    color_6 = (255, 0, 0)
+    color_7 = (0, 255, 0)
+    color_8 = (0, 0, 255)
+
     if base < 5:
 
-        value_color = {0:(0, 0, 0), 1:(255, 0, 255), 2:(0, 255, 255), 3:(255, 255, 0)}
+        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3}
         color_value = {v:k for k, v in value_color.items()}
 
     else:
 
-        value_color = {0:(0, 0, 0), 1:(32, 32, 32), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0), 5:(255, 255, 255),
-                      6:(255, 0, 0), 7:(0, 255, 0), 8:(0, 0, 255)}
+        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
+                      6:color_6, 7:color_7, 8:color_8}
         color_value = {v:k for k, v in value_color.items()}
+
 
     # numerical
     letter_values = {' ': 0, 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11,
@@ -528,6 +538,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     pause = 0
     FPS = 120
     rule = 30
+
     start = 0
     step = 0
     step_0 = 0
@@ -545,12 +556,32 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     typing_mouse = 0
     mouse_scale = 16
 
+    #input maps
+    x_position_gv = 0
+    y_position_gv = 1
+    brush_size_gv = 2
+
+    stream_ud_gv = 3
+    stream_lr_gv = 4
+
+    #vel
+    vel = 1
+    cell_vel_gv = 6
+    cell_vel_scale = 1
+
+    #micro_brush
+    micro_brush = 0
+    xm_position_gv = 3
+    ym_position_gv = 4
+
+
     #tts
     ari = 1
     phrase = ' '
     mixer.init()
 
     #streams
+    streams = 2
     stream_buffer = 2
     stream_direction = deque(maxlen=stream_buffer)
     stream_direction.append(0)
@@ -578,12 +609,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     g_brush = 3
 
     number_of_sensors = 12
-
-    gv_x1 = 0
-    gv_y1 = 1
-    gv_x2 = 3
-    gv_y2 = 4
-    brush_size_affector = 11
 
     zero_out = 3200
     zero_full = zero_out*9
@@ -790,16 +815,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             brush_height_scale = brush_scale
             brush_width_scale = brush_scale
 
-            brush_height = 4 + (glove_values[brush_size_affector] * brush_height_scale)
-            brush_width = 4 + (glove_values[brush_size_affector] * brush_width_scale)
+            brush_height = 4 + (glove_values[brush_size_gv] * brush_height_scale)
+            brush_width = 4 + (glove_values[brush_size_gv] * brush_width_scale)
 
-            if g_brush == 1:
-                brush_x = (glove_values[gv_x1] * brush_scale_w)
-                brush_y = (glove_values[gv_y1] * brush_scale_h)
+            if micro_brush == 0:
+                brush_x = (glove_values[x_position_gv] * brush_scale_w)
+                brush_y = (glove_values[y_position_gv] * brush_scale_h)
 
-            if g_brush >= 2:
-                brush_x = (glove_values[gv_x2]) + (glove_values[gv_x1] * int(canvas_row_width/127))
-                brush_y = (glove_values[gv_y2]) + (glove_values[gv_y1] * int(canvas_rows/127))
+            if micro_brush == 1:
+                brush_x = (glove_values[xm_position_gv]) + (glove_values[x_position_gv] * int(canvas_row_width/127))
+                brush_y = (glove_values[ym_position_gv]) + (glove_values[y_position_gv] * int(canvas_rows/127))
 
             cells_a = np.zeros((brush_height, brush_width, 3), dtype='uint8')
 
@@ -809,7 +834,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
 
             #brush_step
-            cell_vel = len(cells_a)
+            if vel == 1:
+                cell_vel = len(cells_a)
+            elif vel == 2:
+                cell_vel = int(glove_values[cell_vel_gv]/cell_vel_scale) + 1
             for y in range(cell_vel):
 
                 cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
@@ -1562,7 +1590,28 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     #left
                     glove_sums[1] += glove_values[x + number_of_sensors]
 
-            # print(glove_sums)
+            # stream direction
+            if streams == 1:
+                if gloves == 2:
+                    if glove_values[7 + number_of_sensors] < mid_trigger:
+                        stream_direction.append(0)
+                    if glove_values[8 + number_of_sensors] < mid_trigger:
+                        stream_direction.append(1)
+                    if glove_values[9 + number_of_sensors] < mid_trigger:
+                        stream_direction.append(2)
+                    if glove_values[10 + number_of_sensors] < mid_trigger:
+                        stream_direction.append(3)
+
+            elif streams == 2:
+                if glove_values[stream_ud_gv] > mid_trigger:
+                    stream_direction.append(2)
+                else:
+                    stream_direction.append(0)
+                if glove_values[stream_lr_gv] > mid_trigger:
+                    stream_direction.append(1)
+                else:
+                    stream_direction.append(3)
+
 
             if g_char > 0:
 
@@ -1890,18 +1939,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             if g_brush == 2:
 
-                #stream direction
-                if gloves == 2:
-                    if glove_values[7 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(0)
-                    if glove_values[8 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(1)
-                    if glove_values[9 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(2)
-                    if glove_values[10 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(3)
-
-
                 char_size = int(bv / rule_window_scale)
 
                 # trigger detection
@@ -2033,16 +2070,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             if g_brush == 3:
 
-                #stream direction
-                if gloves == 2:
-                    if glove_values[7 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(0)
-                    if glove_values[8 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(1)
-                    if glove_values[9 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(2)
-                    if glove_values[10 + number_of_sensors] < mid_trigger:
-                        stream_direction.append(3)
 
 
                 char_size = int(bv / rule_window_scale)

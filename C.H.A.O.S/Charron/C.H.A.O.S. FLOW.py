@@ -301,13 +301,25 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #colors
+    color_0 = (0, 0, 0)
+    color_1 = (32, 32, 32)
+    color_2 = (255, 0, 255)
+    color_3 = (0, 255, 255)
+    color_4 = (255, 255, 0)
+    color_5 = (255, 255, 255)
+    color_6 = (255, 0, 0)
+    color_7 = (0, 255, 0)
+    color_8 = (0, 0, 255)
+
     if base < 5:
-        value_color = {0:(0, 0, 0), 1:(255, 0, 255), 2:(0, 255, 255), 3:(255, 255, 0)}
+
+        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3}
         color_value = {v:k for k, v in value_color.items()}
 
     elif base < 11:
-        value_color = {0:(0, 0, 0), 1:(32, 32, 32), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0), 5:(192, 192, 192),
-                      6:(255, 0, 0), 7:(0, 255, 0), 8:(0, 0, 255)}
+
+        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
+                      6:color_6, 7:color_7, 8:color_8}
         color_value = {v:k for k, v in value_color.items()}
 
     else:
@@ -561,7 +573,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #input augments
     midi_inputs = 1
-    gloves = 2
+    gloves = 1
 
     #glove emthods
     g_char = 0
