@@ -250,6 +250,9 @@ def Chaos_Window(device_id=-1):
 
     #input augments
     midi_inputs = 1
+    gloves = 1
+    number_of_sensors = 12
+    glove_values = [x for x in range(gloves * number_of_sensors)]
 
     #server
     PORT = 21621
@@ -355,71 +358,62 @@ def Chaos_Window(device_id=-1):
                     ev.append(int(l.split(':')[1]))
 
 
-                #x axis
-                if ev[1] == 0:
+                if ev[0] == 176:
+                    print('right')
+                    print(ev)
+                    glove_values[ev[1]] = ev[2]
 
-                    ev_1 = ev[2]
-
-                #y axis
-                if ev[1] == 1:
-
-                    ev_2 = ev[2]
-
-                #z axis
-                if ev[1] == 2:
-
-                    ev_3 = ev[2]
-
-                #pitch
-                if ev[1] == 3:
-
-                    ev_4 = ev[2]
-
-                #yaw
-                if ev[1] == 4:
-
-                    ev_5 = ev[2]
-
-                #roll
-                if ev[1] == 5:
-
-                    ev_6 = ev[2]
-
-                #thumb
-                if ev[1] == 6:
-
-                    ev_7 = ev[2]
-
-                #pointer
-                if ev[1] == 7:
-
-                    ev_8 = ev[2]
-
-                #middle
-                if ev[1] == 8:
-
-                    ev_9 = ev[2]
-
-                #ring
-                if ev[1] == 9:
-
-                    ev_10 = ev[2]
-
-                #pinky
-                if ev[1] == 10:
-
-                    ev_11 = ev[2]
-
-                #elbow
-                if ev[1] == 11:
-
-                    ev_12 = ev[2]
+                elif ev[0] == 177:
+                    print('left')
+                    print(ev)
+                    glove_values[ev[1] + number_of_sensors] = ev[2]
 
 
-        send_b(pack('llllllllllll', ev_1, ev_2, ev_3, ev_4, ev_5, ev_6, ev_7, ev_8, ev_9, ev_10, ev_11, ev_12))
+        #send
+        if gloves == 1:
+            send_b(pack('llllllllllll',
+                        glove_values[0],
+                        glove_values[1],
+                        glove_values[2],
+                        glove_values[3],
+                        glove_values[4],
+                        glove_values[5],
+                        glove_values[6],
+                        glove_values[7],
+                        glove_values[8],
+                        glove_values[9],
+                        glove_values[10],
+                        glove_values[11]))
+        elif gloves == 2:
+            if gloves == 1:
+                send_b(pack('llllllllllll',
+                            glove_values[0],
+                            glove_values[1],
+                            glove_values[2],
+                            glove_values[3],
+                            glove_values[4],
+                            glove_values[5],
+                            glove_values[6],
+                            glove_values[7],
+                            glove_values[8],
+                            glove_values[9],
+                            glove_values[10],
+                            glove_values[11],
+                            glove_values[12],
+                            glove_values[13],
+                            glove_values[14],
+                            glove_values[15],
+                            glove_values[16],
+                            glove_values[17],
+                            glove_values[18],
+                            glove_values[19],
+                            glove_values[20],
+                            glove_values[21],
+                            glove_values[22],
+                            glove_values[23]))
 
-        # print()
-        # print(evs)
+
+        print(glove_values)
 
 
         #midi clean up

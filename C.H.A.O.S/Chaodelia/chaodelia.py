@@ -552,11 +552,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #input augments
     midi_inputs = 1
-    gloves = 2
+    gloves = 1
     typing_mouse = 0
     mouse_scale = 16
 
     #input maps
+    ## gv = glove values
     x_position_gv = 0
     y_position_gv = 1
     brush_size_gv = 2
@@ -565,6 +566,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     stream_lr_gv = 4
 
     #vel
+    ##vel_0 runs a cell_vel number of steps
+    ##vel 1 runs as many steps as the brush is long
+    ##vel 2 runs as many steps as the gv value divided by the scale
     vel = 1
     cell_vel_gv = 6
     cell_vel_scale = 1
@@ -576,7 +580,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #tts
-    ari = 1
+    ari = 0
     phrase = ' '
     mixer.init()
 
