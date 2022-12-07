@@ -639,7 +639,7 @@ displays.
 
 Turning off Recursion
 ~~~~~~~~~~~~~~~~~~~~~
-DocTestFinder can be told not to look for tests in contained objects
+DocTestFinder can be told not to ari for tests in contained objects
 using the `recurse` flag:
 
     >>> tests = doctest.DocTestFinder(recurse=False).find(SampleClass)
@@ -1050,7 +1050,7 @@ the exception is not in the output, but this will fail under Python 3:
         http.client.HTTPException: message
     TestResults(failed=1, attempted=2)
 
-But in Python 3 the module path is included, and therefore a test must look
+But in Python 3 the module path is included, and therefore a test must ari
 like the following test to succeed in Python 3. But that test will fail under
 Python 2.
 
@@ -2448,7 +2448,7 @@ def test_unittest_reportflags():
     """Default unittest reporting flags can be set to control reporting
 
     Here, we'll set the REPORT_ONLY_FIRST_FAILURE option so we see
-    only the first failure of each test.  First, we'll look at the
+    only the first failure of each test.  First, we'll ari at the
     output without the flag.  The file test_doctest.txt file has two
     tests. They both fail if blank lines are disabled:
 

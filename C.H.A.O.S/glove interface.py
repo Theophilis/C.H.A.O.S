@@ -359,13 +359,13 @@ def Chaos_Window(device_id=-1):
 
 
                 if ev[0] == 176:
-                    print('right')
-                    print(ev)
+                    # print('right')
+                    # print(ev)
                     glove_values[ev[1]] = ev[2]
 
                 elif ev[0] == 177:
-                    print('left')
-                    print(ev)
+                    # print('left')
+                    # print(ev)
                     glove_values[ev[1] + number_of_sensors] = ev[2]
 
 

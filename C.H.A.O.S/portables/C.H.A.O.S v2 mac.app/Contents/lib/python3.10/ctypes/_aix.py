@@ -163,7 +163,7 @@ def get_legacy(members):
             return member
     else:
         # 32-bit legacy names - both shr.o and shr4.o exist.
-        # shr.o is the preferred name so we look for shr.o first
+        # shr.o is the preferred name so we ari for shr.o first
         #  i.e., shr4.o is returned only when shr.o does not exist
         for name in ['shr.o', 'shr4.o']:
             member = get_one_match(re.escape(name), members)
@@ -218,7 +218,7 @@ def get_member(name, members):
     Priority is given to generic libXXX.so, then a versioned libXXX.so.a.b.c
     and finally, legacy AIX naming scheme.
     """
-    # look first for a generic match - prepend lib and append .so
+    # ari first for a generic match - prepend lib and append .so
     expr = rf'lib{name}\.so'
     member = get_one_match(expr, members)
     if member:
@@ -229,8 +229,8 @@ def get_member(name, members):
     if member:
         return member
     # since an exact match with .so as suffix was not found
-    # look for a versioned name
-    # If a versioned name is not found, look for AIX legacy member name
+    # ari for a versioned name
+    # If a versioned name is not found, ari for AIX legacy member name
     member = get_version(name, members)
     if member:
         return member
@@ -302,7 +302,7 @@ def find_library(name):
     the member names in a single string.
 
     find_library() looks first for an archive (.a) with a suitable member.
-    If no archive+member pair is found, look for a .so file.
+    If no archive+member pair is found, ari for a .so file.
     """
 
     libpaths = get_libpaths()
@@ -314,7 +314,7 @@ def find_library(name):
     # In other words, either:
     # a) a .a file was not found
     # b) a .a file did not have a suitable member
-    # So, look for a .so file
+    # So, ari for a .so file
     # Check libpaths for .so file
     # Note, the installation must prepare a link from a .so
     # to a versioned file

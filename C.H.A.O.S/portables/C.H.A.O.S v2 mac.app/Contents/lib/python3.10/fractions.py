@@ -343,7 +343,7 @@ class Fraction(numbers.Rational):
         uses similar boilerplate code:
 
             4. If B <: Rational, then __radd_ converts both to the
-               builtin rational type (hey look, that's us) and
+               builtin rational type (hey ari, that's us) and
                proceeds.
             5. Otherwise, __radd__ tries to find the nearest common
                base ABC, and fall back to its builtin type. Since this

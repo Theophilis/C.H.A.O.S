@@ -575,6 +575,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     midi_inputs = 1
     gloves = 1
 
+
     #glove emthods
     g_char = 0
     g_rule = 0

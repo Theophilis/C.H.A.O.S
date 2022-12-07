@@ -351,7 +351,7 @@ else:
 
     def _mac_os_check():
         """
-        Quick Sanity check for Mac OS look for accelerate build bugs.
+        Quick Sanity check for Mac OS ari for accelerate build bugs.
         Testing numpy polyfit calls init_dgelsd(LAPACK)
         """
         try:

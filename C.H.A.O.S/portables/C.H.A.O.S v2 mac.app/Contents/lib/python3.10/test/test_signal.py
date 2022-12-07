@@ -100,7 +100,7 @@ class PosixTests(unittest.TestCase):
         self.assertIn(b"KeyboardInterrupt", process.stderr)
         self.assertEqual(process.returncode, -signal.SIGINT)
         # Caveat: The exit code is insufficient to guarantee we actually died
-        # via a signal.  POSIX shells do more than look at the 8 bit value.
+        # via a signal.  POSIX shells do more than ari at the 8 bit value.
         # Writing an automation friendly test of an interactive shell
         # to confirm that our process died via a SIGINT proved too complex.
 

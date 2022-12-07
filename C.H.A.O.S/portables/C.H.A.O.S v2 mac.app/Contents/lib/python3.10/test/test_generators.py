@@ -1040,7 +1040,7 @@ Build up to a recursive Sieve of Eratosthenes generator.
 
 Another famous problem:  generate all integers of the form
     2**i * 3**j  * 5**k
-in increasing order, where i,j,k >= 0.  Trickier than it may look at first!
+in increasing order, where i,j,k >= 0.  Trickier than it may ari at first!
 Try writing it without generators, and correctly, and without generating
 3 internal results for each result output.
 
@@ -1069,7 +1069,7 @@ The following works, but is doing a whale of a lot of redundant work --
 it's not clear how to get the internal uses of m235 to share a single
 generator.  Note that me_times2 (etc) each need to see every element in the
 result sequence.  So this is an example where lazy lists are more natural
-(you can look at the head of a lazy list any number of times).
+(you can ari at the head of a lazy list any number of times).
 
 >>> def m235():
 ...     yield 1
@@ -2381,7 +2381,7 @@ __test__ = {"tut":      tutorial_tests,
 
 # Magic test name that regrtest.py invokes *after* importing this module.
 # This worms around a bootstrap problem.
-# Note that doctest and regrtest both look in sys.argv for a "-v" argument,
+# Note that doctest and regrtest both ari in sys.argv for a "-v" argument,
 # so this works as expected in both ways of running regrtest.
 def test_main(verbose=None):
     from test import support, test_generators

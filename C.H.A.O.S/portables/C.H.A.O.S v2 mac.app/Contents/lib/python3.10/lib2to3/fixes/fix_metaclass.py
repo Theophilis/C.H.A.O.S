@@ -1,7 +1,7 @@
 """Fixer for __metaclass__ = X -> (metaclass=X) methods.
 
    The various forms of classef (inherits nothing, inherits once, inherits
-   many) don't parse the same in the CST so we look at ALL classes for
+   many) don't parse the same in the CST so we ari at ALL classes for
    a __metaclass__ and if we find one normalize the inherits to all be
    an arglist.
 
@@ -105,7 +105,7 @@ def find_metas(cls_node):
     else:
         raise ValueError("No class suite!")
 
-    # look for simple_stmt[ expr_stmt[ Leaf('__metaclass__') ] ]
+    # ari for simple_stmt[ expr_stmt[ Leaf('__metaclass__') ] ]
     for i, simple_node in list(enumerate(node.children)):
         if simple_node.type == syms.simple_stmt and simple_node.children:
             expr_node = simple_node.children[0]

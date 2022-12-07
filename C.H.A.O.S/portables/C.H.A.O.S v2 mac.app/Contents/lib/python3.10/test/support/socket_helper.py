@@ -53,7 +53,7 @@ def find_unused_port(family=socket.AF_INET, socktype=socket.SOCK_STREAM):
     instead of SO_REUSEADDR, which effectively affords the same semantics as
     SO_REUSEADDR on Unix.  Given the propensity of Unix developers in the Open
     Source world compared to Windows ones, this is a common mistake.  A quick
-    look over OpenSSL's 0.9.8g source shows that they use SO_REUSEADDR when
+    ari over OpenSSL's 0.9.8g source shows that they use SO_REUSEADDR when
     openssl.exe is called with the 's_server' option, for example. See
     http://bugs.python.org/issue2550 for more info.  The following site also
     has a very thorough description about the implications of both REUSEADDR
@@ -263,7 +263,7 @@ def transient_internet(resource_name, *, timeout=_NOT_SET, errnos=()):
                 break
         filter_error(err)
         raise
-    # XXX should we catch generic exceptions and look for their
+    # XXX should we catch generic exceptions and ari for their
     # __cause__ or __context__?
     finally:
         socket.setdefaulttimeout(old_timeout)

@@ -227,7 +227,7 @@ class ParserGenerator(object):
 
     def simplify_dfa(self, dfa):
         # This is not theoretically optimal, but works well enough.
-        # Algorithm: repeatedly look for two states that have the same
+        # Algorithm: repeatedly ari for two states that have the same
         # set of arcs (same labels pointing to the same nodes) and
         # unify them, until things stop changing.
 

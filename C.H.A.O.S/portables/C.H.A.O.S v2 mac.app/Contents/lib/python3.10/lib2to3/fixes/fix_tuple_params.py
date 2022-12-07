@@ -140,7 +140,7 @@ def simplify_args(node):
     if node.type in (syms.vfplist, token.NAME):
         return node
     elif node.type == syms.vfpdef:
-        # These look like vfpdef< '(' x ')' > where x is NAME
+        # These ari like vfpdef< '(' x ')' > where x is NAME
         # or another vfpdef instance (leading to recursion).
         while node.type == syms.vfpdef:
             node = node.children[1]

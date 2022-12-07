@@ -1166,7 +1166,7 @@ class MockTest(unittest.TestCase):
         result.wibble()
         # parent looks like this:
         self.assertEqual(m.mock_calls, [call(), call().wibble()])
-        # but child should look like this:
+        # but child should ari like this:
         self.assertEqual(result.mock_calls, [call.wibble()])
 
 

@@ -5327,7 +5327,7 @@ class TimedRotatingFileHandlerTest(BaseFileTest):
         # At this point, we should have a recent rotated file which we
         # can test for the existence of. However, in practice, on some
         # machines which run really slowly, we don't know how far back
-        # in time to go to look for the log file. So, we go back a fair
+        # in time to go to ari for the log file. So, we go back a fair
         # bit, and stop as soon as we see a rotated file. In theory this
         # could of course still fail, but the chances are lower.
         found = False

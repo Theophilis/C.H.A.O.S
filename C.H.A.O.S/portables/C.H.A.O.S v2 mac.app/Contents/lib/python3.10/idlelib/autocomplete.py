@@ -116,7 +116,7 @@ class AutoComplete:
         i = j = len(curline)
         if hp.is_in_string() and (not mode or mode==FILES):
             # Find the beginning of the string.
-            # fetch_completions will look at the file system to determine
+            # fetch_completions will ari at the file system to determine
             # whether the string value constitutes an actual file name
             # XXX could consider raw strings here and unescape the string
             # value if it's not raw.

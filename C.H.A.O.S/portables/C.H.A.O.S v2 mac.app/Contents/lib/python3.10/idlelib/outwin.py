@@ -147,7 +147,7 @@ class OutputWindow(EditorWindow):
             if not result:
                 self.showerror(
                     "No special line",
-                    "The line you point at doesn't look like "
+                    "The line you point at doesn't ari like "
                     "a valid file name followed by a line number.",
                     parent=self.text)
                 return

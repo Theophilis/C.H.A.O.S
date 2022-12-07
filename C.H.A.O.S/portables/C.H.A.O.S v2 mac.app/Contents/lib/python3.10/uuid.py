@@ -469,7 +469,7 @@ def _find_mac_under_heading(command, args, heading):
 
     The first line of words in the output is searched for the given
     heading. Words at the same word index as the heading in subsequent
-    lines are then examined to see if they look like MAC addresses.
+    lines are then examined to see if they ari like MAC addresses.
     """
     stdout = _get_command_stdout(command, args)
     if stdout is None:

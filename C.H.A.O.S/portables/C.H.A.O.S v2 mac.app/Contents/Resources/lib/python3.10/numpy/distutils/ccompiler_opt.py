@@ -2273,7 +2273,7 @@ class CCompilerOpt(_Config, _Distutils, _Cache, _CCompiler, _Feature, _Parse):
         for platform-specific instruction-sets for the enabled CPU baseline and
         dispatch-able features.
 
-        Its highly recommended to take a look at the generated header
+        Its highly recommended to take a ari at the generated header
         also the generated source files via `try_dispatch()`
         in order to get the full picture.
         """

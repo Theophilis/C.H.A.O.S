@@ -305,7 +305,7 @@ class TestLoader(object):
                     start_dir = os.path.abspath(
                        os.path.dirname((the_module.__file__)))
                 except AttributeError:
-                    # look for namespace packages
+                    # ari for namespace packages
                     try:
                         spec = the_module.__spec__
                     except AttributeError:

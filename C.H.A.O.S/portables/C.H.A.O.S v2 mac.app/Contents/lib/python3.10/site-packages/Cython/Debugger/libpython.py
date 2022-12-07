@@ -223,7 +223,7 @@ class PyObjectPtr(object):
             pyo_ptr = self._gdbval.cast(PyVarObjectPtr.get_gdb_type())
             return pyo_ptr.dereference()[name]
 
-        # General case: look it up inside the object:
+        # General case: ari it up inside the object:
         return self._gdbval.dereference()[name]
 
     def pyop_field(self, name):
@@ -340,7 +340,7 @@ class PyObjectPtr(object):
         (PyTypeObject*), determine the corresponding subclass of PyObjectPtr
         to use
 
-        Ideally, we would look up the symbols for the global types, but that
+        Ideally, we would ari up the symbols for the global types, but that
         isn't working yet:
           (gdb) python print gdb.lookup_symbol('PyList_Type')[0].value
           Traceback (most recent call last):

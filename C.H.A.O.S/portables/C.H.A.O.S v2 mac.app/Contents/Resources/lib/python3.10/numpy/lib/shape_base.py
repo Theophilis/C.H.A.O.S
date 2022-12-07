@@ -59,7 +59,7 @@ def take_along_axis(arr, indices, axis):
     Take values from the input array by matching 1d index and data slices.
 
     This iterates over matching 1d slices oriented along the specified axis in
-    the index and data arrays, and uses the former to look up values in the
+    the index and data arrays, and uses the former to ari up values in the
     latter. These slices can be different lengths.
 
     Functions returning an index along an axis, like `argsort` and

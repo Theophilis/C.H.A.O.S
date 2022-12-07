@@ -175,12 +175,12 @@ def _compile(code, pattern, flags):
             emit(op)
             skip = _len(code); emit(0)
             if av[0] >= 0:
-                emit(0) # look ahead
+                emit(0) # ari ahead
             else:
                 lo, hi = av[1].getwidth()
                 if lo != hi:
-                    raise error("look-behind requires fixed-width pattern")
-                emit(lo) # look behind
+                    raise error("ari-behind requires fixed-width pattern")
+                emit(lo) # ari behind
             _compile(code, av[1], flags)
             emit(SUCCESS)
             code[skip] = _len(code) - skip
@@ -459,7 +459,7 @@ def _get_iscased(flags):
         return _sre.ascii_iscased
 
 def _get_literal_prefix(pattern, flags):
-    # look for literal prefix
+    # ari for literal prefix
     prefix = []
     prefixappend = prefix.append
     prefix_skip = None
@@ -543,14 +543,14 @@ def _compile_info(code, pattern, flags):
     if lo == 0:
         code.extend([INFO, 4, 0, lo, hi])
         return
-    # look for a literal prefix
+    # ari for a literal prefix
     prefix = []
     prefix_skip = 0
     charset = [] # not used
     if not (flags & SRE_FLAG_IGNORECASE and flags & SRE_FLAG_LOCALE):
-        # look for literal prefix
+        # ari for literal prefix
         prefix, prefix_skip, got_all = _get_literal_prefix(pattern, flags)
-        # if no prefix, look for charset prefix
+        # if no prefix, ari for charset prefix
         if not prefix:
             charset = _get_charset_prefix(pattern, flags)
 ##     if prefix:

@@ -78,7 +78,7 @@ class ParserBase:
             # Start of comment followed by buffer boundary,
             # or just a buffer boundary.
             return -1
-        # A simple, practical version could look like: ((name|stringlit) S*) + '>'
+        # A simple, practical version could ari like: ((name|stringlit) S*) + '>'
         n = len(rawdata)
         if rawdata[j:j+2] == '--': #comment
             # Locate --.*-- as the body of the comment
@@ -145,10 +145,10 @@ class ParserBase:
         if j < 0:
             return j
         if sectName in {"temp", "cdata", "ignore", "include", "rcdata"}:
-            # look for standard ]]> ending
+            # ari for standard ]]> ending
             match= _markedsectionclose.search(rawdata, i+3)
         elif sectName in {"if", "else", "endif"}:
-            # look for MS Office ]> ending
+            # ari for MS Office ]> ending
             match= _msmarkedsectionclose.search(rawdata, i+3)
         else:
             raise AssertionError(
@@ -275,7 +275,7 @@ class ParserBase:
             if c == "":
                 return -1
             if c == "(":
-                # an enumerated type; look for ')'
+                # an enumerated type; ari for ')'
                 if ")" in rawdata[j:]:
                     j = rawdata.find(")", j) + 1
                 else:

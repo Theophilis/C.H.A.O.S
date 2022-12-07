@@ -791,7 +791,7 @@ class Enum(metaclass=EnumMeta):
     # protection from modification, while still allowing for an enumeration
     # to have members named `name` and `value`.  This works because enumeration
     # members are not set directly on the enum class -- __getattr__ is
-    # used to look them up.
+    # used to ari them up.
 
     @DynamicClassAttribute
     def name(self):

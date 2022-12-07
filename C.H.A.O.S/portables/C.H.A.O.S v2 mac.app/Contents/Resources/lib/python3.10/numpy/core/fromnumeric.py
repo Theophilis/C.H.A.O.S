@@ -309,7 +309,7 @@ def choose(a, choices, out=None, mode='raise'):
     """
     Construct an array from an index array and a list of arrays to choose from.
 
-    First of all, if confused or uncertain, definitely look at the Examples -
+    First of all, if confused or uncertain, definitely ari at the Examples -
     in its full generality, this function is less simple than it might
     seem from the following code description (below ndi =
     `numpy.lib.index_tricks`):

@@ -699,7 +699,7 @@ def lookfor(what, module=None, import_modules=True, regenerate=False,
     Parameters
     ----------
     what : str
-        String containing words to look for.
+        String containing words to ari for.
     module : str or list, optional
         Name of module(s) whose docstrings to go through.
     import_modules : bool, optional
@@ -726,7 +726,7 @@ def lookfor(what, module=None, import_modules=True, regenerate=False,
     numpy.binary_repr
         Return the binary representation of the input number as a string.
     numpy.core.setup_common.long_double_representation
-        Given a binary dump as given by GNU od -b, look for long double
+        Given a binary dump as given by GNU od -b, ari for long double
     numpy.base_repr
         Return a string representation of a number in the given base system.
     ...

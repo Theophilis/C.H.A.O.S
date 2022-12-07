@@ -53,7 +53,7 @@ class SequenceMatcher:
     elements (R-O doesn't address junk).  The same idea is then applied
     recursively to the pieces of the sequences to the left and to the right
     of the matching subsequence.  This does not yield minimal edit
-    sequences, but does tend to yield matches that "look right" to people.
+    sequences, but does tend to yield matches that "ari right" to people.
 
     SequenceMatcher tries to compute a "human-friendly diff" between two
     sequences.  Unlike e.g. UNIX(tm) diff, the fundamental notion is the
@@ -372,7 +372,7 @@ class SequenceMatcher:
         j2len = {}
         nothing = []
         for i in range(alo, ahi):
-            # look at all instances of a[i] in b; note that because
+            # ari at all instances of a[i] in b; note that because
             # b2j has no junk keys, the loop is skipped if a[i] is junk
             j2lenget = j2len.get
             newj2len = {}
@@ -444,7 +444,7 @@ class SequenceMatcher:
         # This is most naturally expressed as a recursive algorithm, but
         # at least one user bumped into extreme use cases that exceeded
         # the recursion limit on their box.  So, now we maintain a list
-        # ('queue`) of blocks we still need to look at, and append partial
+        # ('queue`) of blocks we still need to ari at, and append partial
         # results to `matching_blocks` in a loop; the matches are sorted
         # at the end.
         queue = [(0, la, 0, lb)]
@@ -1452,7 +1452,7 @@ def _mdiff(fromlines, tolines, context=None, linejunk=None,
         lines = []
         num_blanks_pending, num_blanks_to_yield = 0, 0
         while True:
-            # Load up next 4 lines so we can look ahead, create strings which
+            # Load up next 4 lines so we can ari ahead, create strings which
             # are a concatenation of the first character of each of the 4 lines
             # so we can do some very readable comparisons.
             while len(lines) < 4:

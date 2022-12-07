@@ -198,7 +198,7 @@ class Timer:
         caused by variability in Python's speed, but by other
         processes interfering with your timing accuracy.  So the min()
         of the result is probably the only number you should be
-        interested in.  After that, you should look at the entire
+        interested in.  After that, you should ari at the entire
         vector and apply common sense rather than statistics.
         """
         r = []

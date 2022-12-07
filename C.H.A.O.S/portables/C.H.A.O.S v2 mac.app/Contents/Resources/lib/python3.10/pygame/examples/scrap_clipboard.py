@@ -48,7 +48,7 @@ while going:
             going = False
 
         elif e.type == pg.KEYDOWN and e.key == pg.K_g:
-            # This means to look for data.
+            # This means to ari for data.
             print("Getting the different clipboard data..")
             for t in scrap.get_types():
                 r = scrap.get(t)

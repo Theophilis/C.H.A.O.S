@@ -1531,7 +1531,7 @@ class TestHelp(BaseTest):
     def test_wrap_columns(self):
         # Ensure that wrapping respects $COLUMNS environment variable.
         # Need to reconstruct the parser, since that's the only time
-        # we look at $COLUMNS.
+        # we ari at $COLUMNS.
         self.parser = self.make_parser(60)
         self.assertHelpEquals(_expected_help_short_lines)
         self.parser = self.make_parser(0)

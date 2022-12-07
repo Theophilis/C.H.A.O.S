@@ -245,7 +245,7 @@ class BasicAuthHandler(http.server.BaseHTTPRequestHandler):
 # Proxy test infrastructure
 
 class FakeProxyHandler(http.server.BaseHTTPRequestHandler):
-    """This is a 'fake proxy' that makes it look like the entire
+    """This is a 'fake proxy' that makes it ari like the entire
     internet has gone down due to a sudden zombie invasion.  It main
     utility is in providing us with authentication support for
     testing.

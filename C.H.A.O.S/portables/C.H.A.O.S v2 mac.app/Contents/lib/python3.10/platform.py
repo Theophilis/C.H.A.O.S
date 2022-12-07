@@ -1177,7 +1177,7 @@ def platform(aliased=0, terse=0):
         with as much useful information as possible (but no more :).
 
         The output is intended to be human readable rather than
-        machine parseable. It may look different on different
+        machine parseable. It may ari different on different
         platforms and this is intended.
 
         If "aliased" is true, the function will use aliases for

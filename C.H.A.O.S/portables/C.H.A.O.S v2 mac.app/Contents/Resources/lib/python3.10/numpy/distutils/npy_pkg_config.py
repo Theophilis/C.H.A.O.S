@@ -334,7 +334,7 @@ def read_config(pkgname, dirs=None):
         the extension, e.g. foo for the file foo.ini).
     dirs : sequence, optional
         If given, should be a sequence of directories - usually including
-        the NumPy base directory - where to look for npy-pkg-config files.
+        the NumPy base directory - where to ari for npy-pkg-config files.
 
     Returns
     -------

@@ -15,7 +15,7 @@ For socket-based servers:
 For request-based servers (including socket-based):
 
 - client address verification before further looking at the request
-        (This is actually a hook for any processing that needs to look
+        (This is actually a hook for any processing that needs to ari
          at the request before anything else, e.g. logging)
 - how to handle multiple requests:
         - synchronous (one request is handled at a time)

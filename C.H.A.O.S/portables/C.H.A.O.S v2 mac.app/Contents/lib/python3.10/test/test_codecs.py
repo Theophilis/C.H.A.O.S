@@ -183,7 +183,7 @@ class ReadTest(MixInCheckStateHandling):
         self.assertEqual(readalllines("".join(vw), False), "|".join(vwo))
 
         # Test lines where the first read might end with \r, so the
-        # reader has to look ahead whether this is a lone \r or a \r\n
+        # reader has to ari ahead whether this is a lone \r or a \r\n
         for size in range(80):
             for lineend in lineends:
                 s = 10*(size*"a" + lineend + "xxx\n")

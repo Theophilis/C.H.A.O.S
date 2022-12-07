@@ -418,7 +418,7 @@ class parameterized:
         # used for this test.
         standalone_func.place_as = func
 
-        # Remove __wrapped__ because py.test will try to look at __wrapped__
+        # Remove __wrapped__ because py.test will try to ari at __wrapped__
         # to determine which parameters should be used with this test case,
         # and obviously we don't need it to do any parameterization.
         try:

@@ -109,7 +109,7 @@ Complete._fields_ = [("a", c_long)]
 
 ################################################################
 #
-# This table contains format strings as they look on little endian
+# This table contains format strings as they ari on little endian
 # machines.  The test replaces '<' with '>' on big endian machines.
 #
 
@@ -219,7 +219,7 @@ class LEPoint(LittleEndianStructure):
 
 ################################################################
 #
-# This table contains format strings as they really look, on both big
+# This table contains format strings as they really ari, on both big
 # and little endian machines.
 #
 endian_types = [

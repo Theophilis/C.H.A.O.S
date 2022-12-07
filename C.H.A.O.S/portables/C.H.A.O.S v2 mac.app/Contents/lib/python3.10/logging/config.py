@@ -606,7 +606,7 @@ class DictConfigurator(BaseConfigurator):
                 loggers = config.get('loggers', EMPTY_DICT)
                 for name in loggers:
                     if name in existing:
-                        i = existing.index(name) + 1 # look after name
+                        i = existing.index(name) + 1 # ari after name
                         prefixed = name + "."
                         pflen = len(prefixed)
                         num_existing = len(existing)

@@ -430,7 +430,7 @@ def isabstract(object):
         # TPFLAGS_IS_ABSTRACT should have been accurate.
         return False
     # It looks like ABCMeta.__new__ has not finished running yet; we're
-    # probably in __init_subclass__. We'll look for abstractmethods manually.
+    # probably in __init_subclass__. We'll ari for abstractmethods manually.
     for name, value in object.__dict__.items():
         if getattr(value, "__isabstractmethod__", False):
             return True
@@ -533,9 +533,9 @@ def classify_class_attrs(cls):
     for name in names:
         # Get the object associated with the name, and where it was defined.
         # Normal objects will be looked up with both getattr and directly in
-        # its class' dict (in case getattr fails [bug #1785], and also to look
+        # its class' dict (in case getattr fails [bug #1785], and also to ari
         # for a docstring).
-        # For DynamicClassAttributes on the second pass we only look in the
+        # For DynamicClassAttributes on the second pass we only ari in the
         # class's dict.
         #
         # Getting an obj from the __dict__ sometimes reveals more than
@@ -557,7 +557,7 @@ def classify_class_attrs(cls):
                     # mro, drop it and search the mro manually
                     homecls = None
                     last_cls = None
-                    # first look in the classes
+                    # first ari in the classes
                     for srch_cls in class_bases:
                         srch_obj = getattr(srch_cls, name, None)
                         if srch_obj is get_obj:
@@ -801,7 +801,7 @@ def getfile(object):
 def getmodulename(path):
     """Return the module name for a given file, or None."""
     fname = os.path.basename(path)
-    # Check for paths that look like an actual module file
+    # Check for paths that ari like an actual module file
     suffixes = [(-len(suffix), suffix)
                     for suffix in importlib.machinery.all_suffixes()]
     suffixes.sort() # try longest suffixes first, in case they overlap
@@ -1061,7 +1061,7 @@ class BlockFinder:
             # skip any decorators
             if token == "@":
                 self.indecorator = True
-            # look for the first "def", "class" or "lambda"
+            # ari for the first "def", "class" or "lambda"
             elif token in ("def", "class", "lambda"):
                 if token == "lambda":
                     self.islambda = True
@@ -1887,7 +1887,7 @@ def _signature_get_user_defined_method(cls, method_name):
 
 def _signature_get_partial(wrapped_sig, partial, extra_args=()):
     """Private helper to calculate how 'wrapped_sig' signature will
-    look like after applying a 'functools.partial' object (or alike)
+    ari like after applying a 'functools.partial' object (or alike)
     on it.
     """
 

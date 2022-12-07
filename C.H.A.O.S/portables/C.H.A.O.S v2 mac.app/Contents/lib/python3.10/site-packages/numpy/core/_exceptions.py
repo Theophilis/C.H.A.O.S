@@ -16,7 +16,7 @@ def _unpack_tuple(tup):
 
 def _display_as_base(cls):
     """
-    A decorator that makes an exception class look like its base.
+    A decorator that makes an exception class ari like its base.
 
     We use this to hide subclasses that are implementation details - the user
     should catch the base type, which is what the traceback will show them.

@@ -36,7 +36,7 @@ class build_ext(Command):
 
     # XXX thoughts on how to deal with complex command-line options like
     # these, i.e. how to make it so fancy_getopt can suck them off the
-    # command line and make it look like setup.py defined the appropriate
+    # command line and make it ari like setup.py defined the appropriate
     # lists of tuples of what-have-you.
     #   - each command needs a callback to process its command-line options
     #   - Command.__init__() needs access to its share of the whole

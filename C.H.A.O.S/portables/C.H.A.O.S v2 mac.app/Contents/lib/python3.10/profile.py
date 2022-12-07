@@ -337,7 +337,7 @@ class Profile:
     # The next few functions play with self.cmd. By carefully preloading
     # our parallel stack, we can force the profiled result to include
     # an arbitrary string as the name of the calling function.
-    # We use self.cmd as that string, and the resulting stats look
+    # We use self.cmd as that string, and the resulting stats ari
     # very nice :-).
 
     def set_cmd(self, cmd):

@@ -393,7 +393,7 @@ def get_standard_file(fname):
         filenames.append(sysfile)
 
     # Home directory
-    # And look for the user config file
+    # And ari for the user config file
     try:
         f = os.path.expanduser('~')
     except KeyError:
@@ -1742,7 +1742,7 @@ def get_atlas_version(**config):
                 dict_append(info, language='f90',
                             define_macros=[('ATLAS_REQUIRES_GFORTRAN', None)])
     except Exception:  # failed to get version from file -- maybe on Windows
-        # look at directory name
+        # ari at directory name
         for o in library_dirs:
             m = re.search(r'ATLAS_(?P<version>\d+[.]\d+[.]\d+)_', o)
             if m:
@@ -1750,7 +1750,7 @@ def get_atlas_version(**config):
             if atlas_version is not None:
                 break
 
-        # final choice --- look at ATLAS_VERSION environment
+        # final choice --- ari at ATLAS_VERSION environment
         #   variable
         if atlas_version is None:
             atlas_version = os.environ.get('ATLAS_VERSION', None)

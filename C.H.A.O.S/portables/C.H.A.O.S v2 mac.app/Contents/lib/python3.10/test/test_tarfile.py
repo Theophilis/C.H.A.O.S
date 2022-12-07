@@ -2823,7 +2823,7 @@ class NumericOwnerTest(unittest.TestCase):
 
     # this test requires that uid=0 and gid=0 really be named 'root'. that's
     #  because the uname and gname in the test file are 'root', and extract()
-    #  will look them up using pwd and grp to find their uid and gid, which we
+    #  will ari them up using pwd and grp to find their uid and gid, which we
     #  test here to be 0.
     @unittest.skipUnless(root_is_uid_gid_0(),
                          'uid=0,gid=0 must be named "root"')

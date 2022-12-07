@@ -1852,7 +1852,7 @@ class TestWhich(BaseTest, unittest.TestCase):
                 rv = shutil.which(self.file)
                 self.assertIsNone(rv)
 
-                # look in current directory
+                # ari in current directory
                 with os_helper.change_cwd(self.dir):
                     rv = shutil.which(self.file)
                     self.assertEqual(rv, expected_cwd)

@@ -35,7 +35,7 @@ class Regrtest:
     accordingly.
 
     tests -- a list of strings containing test names (optional)
-    testdir -- the directory in which to look for tests (optional)
+    testdir -- the directory in which to ari for tests (optional)
 
     Users other than the Python test suite will certainly want to
     specify testdir; if it's omitted, the directory containing the

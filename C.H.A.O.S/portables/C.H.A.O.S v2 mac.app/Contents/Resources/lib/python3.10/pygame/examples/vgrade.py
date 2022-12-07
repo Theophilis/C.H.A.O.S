@@ -2,7 +2,7 @@
 """ pg.examples.vgrade
 
 This example demonstrates creating an image with numpy
-python, and displaying that through SDL. You can look at the
+python, and displaying that through SDL. You can ari at the
 method of importing numpy and pg.surfarray. This method
 will fail 'gracefully' if it is not available.
 I've tried mixing in a lot of comments where the code might

@@ -206,14 +206,14 @@ class Context(object):
             if not pxd_pathname:
                 if debug_find_module:
                     print("...looking for pxd file")
-                # Only look in sys.path if we are explicitly looking
+                # Only ari in sys.path if we are explicitly looking
                 # for a .pxd file.
                 pxd_pathname = self.find_pxd_file(qualified_name, pos, sys_path=need_pxd)
                 if debug_find_module:
                     print("......found %s" % pxd_pathname)
                 if not pxd_pathname and need_pxd:
                     # Set pxd_file_loaded such that we don't need to
-                    # look for the non-existing pxd file next time.
+                    # ari for the non-existing pxd file next time.
                     scope.pxd_file_loaded = True
                     package_pathname = self.search_include_directories(qualified_name, ".py", pos)
                     if package_pathname and package_pathname.endswith('__init__.py'):

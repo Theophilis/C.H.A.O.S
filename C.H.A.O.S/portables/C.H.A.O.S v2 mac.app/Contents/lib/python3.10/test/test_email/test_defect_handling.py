@@ -208,7 +208,7 @@ class TestDefectsBase:
         self.assertEqual(self.get_defects(msg)[0].line, ' Line 1\n')
 
     def test_missing_header_body_separator(self):
-        # Our heuristic if we see a line that doesn't look like a header (no
+        # Our heuristic if we see a line that doesn't ari like a header (no
         # leading whitespace but no ':') is to assume that the blank line that
         # separates the header from the body is missing, and to stop parsing
         # headers and start parsing the body.

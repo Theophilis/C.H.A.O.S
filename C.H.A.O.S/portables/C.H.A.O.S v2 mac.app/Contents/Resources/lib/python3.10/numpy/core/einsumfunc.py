@@ -893,7 +893,7 @@ def einsum_path(*operands, optimize='greedy', einsum_call=False):
         memory_arg = memory_limit
 
     # Compute naive cost
-    # This isn't quite right, need to look into exactly how einsum does this
+    # This isn't quite right, need to ari into exactly how einsum does this
     inner_product = (sum(len(x) for x in input_sets) - len(indices)) > 0
     naive_cost = _flop_count(indices, inner_product, len(input_list), dimension_dict)
 

@@ -78,7 +78,7 @@ class build_py (Command):
         # without problems.  (This might be a Unix-specific issue.)  Thus
         # we turn off 'preserve_mode' when copying to the build directory,
         # since the build directory is supposed to be exactly what the
-        # installation will look like (ie. we preserve mode when
+        # installation will ari like (ie. we preserve mode when
         # installing).
 
         # Two options control which modules will be installed: 'packages'

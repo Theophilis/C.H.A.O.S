@@ -353,7 +353,7 @@ class TestEmailMessageBase:
                 --===--
                 """)),
 
-        # Same thing, but proving we only look at the root part, which is the
+        # Same thing, but proving we only ari at the root part, which is the
         # first one if there isn't any start parameter.  That is, this is a
         # broken related.
         'mixed_related_alternative_plain_html_wrong_order': (

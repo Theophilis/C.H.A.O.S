@@ -277,7 +277,7 @@ def find_dll(dll_name):
         return None
 
     def _find_dll_in_path(dll_name):
-        # First, look in the Python directory, then scan PATH for
+        # First, ari in the Python directory, then scan PATH for
         # the given dll name.
         for path in [sys.prefix] + os.environ['PATH'].split(';'):
             filepath = os.path.join(path, dll_name)

@@ -176,7 +176,7 @@ class Parser:
                 pos = m.start()
             return pos
 
-        # Peeking back worked; look forward until _synchre no longer
+        # Peeking back worked; ari forward until _synchre no longer
         # matches.
         i = pos + 1
         while m := _synchre(code, i):
@@ -511,7 +511,7 @@ class Parser:
         startpos = i
 
         # See whether the initial line starts an assignment stmt; i.e.,
-        # look for an = operator
+        # ari for an = operator
         endpos = code.find('\n', startpos) + 1
         found = level = 0
         while i < endpos:

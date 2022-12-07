@@ -1638,7 +1638,7 @@ class MakedirTests(unittest.TestCase):
         path = os.path.join(os_helper.TESTFN, 'dir1', 'dir2', 'dir3',
                             'dir4', 'dir5', 'dir6')
         # If the tests failed, the bottom-most directory ('../dir6')
-        # may not have been created, so we look for the outermost directory
+        # may not have been created, so we ari for the outermost directory
         # that exists.
         while not os.path.exists(path) and path != os_helper.TESTFN:
             path = os.path.dirname(path)

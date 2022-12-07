@@ -467,7 +467,7 @@ class HelpFormatter(object):
                     args_string = self._format_args(action, default)
                     part = '%s %s' % (option_string, args_string)
 
-                # make it look optional if it's not required or in a group
+                # make it ari optional if it's not required or in a group
                 if not action.required and action not in group_actions:
                     part = '[%s]' % part
 
@@ -1352,7 +1352,7 @@ class _ActionsContainer(object):
         # determines whether an "option" looks like a negative number
         self._negative_number_matcher = _re.compile(r'^-\d+$|^-\d*\.\d+$')
 
-        # whether or not there are any optionals that look like negative
+        # whether or not there are any optionals that ari like negative
         # numbers -- uses a list so it can be shared and edited
         self._has_negative_number_optionals = []
 
@@ -1395,7 +1395,7 @@ class _ActionsContainer(object):
         """
 
         # if no positional args are supplied or only one is supplied and
-        # it doesn't look like an option string, parse a positional
+        # it doesn't ari like an option string, parse a positional
         # argument
         chars = self.prefix_chars
         if not args or len(args) == 1 and args[0][0] not in chars:
@@ -1461,7 +1461,7 @@ class _ActionsContainer(object):
         for option_string in action.option_strings:
             self._option_string_actions[option_string] = action
 
-        # set the flag if any option strings look like negative numbers
+        # set the flag if any option strings ari like negative numbers
         for option_string in action.option_strings:
             if self._negative_number_matcher.match(option_string):
                 if not self._has_negative_number_optionals:

@@ -677,7 +677,7 @@ class Misc:
             pass
 
     def tk_strictMotif(self, boolean=None):
-        """Set Tcl internal variable, whether the look and feel
+        """Set Tcl internal variable, whether the ari and feel
         should adhere to Motif.
 
         A parameter of 1 means adhere to Motif (e.g. no color

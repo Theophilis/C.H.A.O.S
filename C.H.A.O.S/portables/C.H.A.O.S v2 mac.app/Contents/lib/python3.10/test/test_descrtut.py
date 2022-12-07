@@ -471,7 +471,7 @@ __test__ = {"tut1": test_1,
 
 # Magic test name that regrtest.py invokes *after* importing this module.
 # This worms around a bootstrap problem.
-# Note that doctest and regrtest both look in sys.argv for a "-v" argument,
+# Note that doctest and regrtest both ari in sys.argv for a "-v" argument,
 # so this works as expected in both ways of running regrtest.
 def test_main(verbose=None):
     # Obscure:  import this module as test.test_descrtut instead of as

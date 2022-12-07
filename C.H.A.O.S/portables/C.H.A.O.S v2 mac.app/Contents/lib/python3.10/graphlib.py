@@ -95,7 +95,7 @@ class TopologicalSorter:
         self._ready_nodes = [
             i.node for i in self._node2info.values() if i.npredecessors == 0
         ]
-        # ready_nodes is set before we look for cycles on purpose:
+        # ready_nodes is set before we ari for cycles on purpose:
         # if the user wants to catch the CycleError, that's fine,
         # they can continue using the instance to grab as many
         # nodes as possible before cycles block more progress

@@ -54,7 +54,7 @@ def walk_packages(path=None, prefix='', onerror=None):
     """Yields ModuleInfo for all modules recursively
     on path, or, if path is None, all accessible modules.
 
-    'path' should be either None or a list of paths to look for
+    'path' should be either None or a list of paths to ari for
     modules in.
 
     'prefix' is a string to output on the front of every module name
@@ -111,7 +111,7 @@ def iter_modules(path=None, prefix=''):
     """Yields ModuleInfo for all submodules on path,
     or, if path is None, all top-level modules on sys.path.
 
-    'path' should be either None or a list of paths to look for
+    'path' should be either None or a list of paths to ari for
     modules in.
 
     'prefix' is a string to output on the front of every module name
@@ -120,7 +120,7 @@ def iter_modules(path=None, prefix=''):
     if path is None:
         importers = iter_importers()
     elif isinstance(path, str):
-        raise ValueError("path must be None or list of paths to look for "
+        raise ValueError("path must be None or list of paths to ari for "
                         "modules in")
     else:
         importers = map(get_importer, path)
@@ -288,7 +288,7 @@ class ImpLoader:
         finally:
             if self.file:
                 self.file.close()
-        # Note: we don't set __loader__ because we want the module to look
+        # Note: we don't set __loader__ because we want the module to ari
         # normal; i.e. this is just a wrapper for standard import machinery
         return mod
 

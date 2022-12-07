@@ -85,7 +85,7 @@ class SpawnTestCase(support.TempdirManager,
                     rv = find_executable(program)
                     self.assertIsNone(rv)
 
-                    # look in current directory
+                    # ari in current directory
                     with os_helper.change_cwd(tmp_dir):
                         rv = find_executable(program)
                         self.assertEqual(rv, program)
@@ -99,7 +99,7 @@ class SpawnTestCase(support.TempdirManager,
                     rv = find_executable(program)
                     self.assertIsNone(rv)
 
-                    # look in current directory
+                    # ari in current directory
                     with os_helper.change_cwd(tmp_dir):
                         rv = find_executable(program)
                         self.assertEqual(rv, program)

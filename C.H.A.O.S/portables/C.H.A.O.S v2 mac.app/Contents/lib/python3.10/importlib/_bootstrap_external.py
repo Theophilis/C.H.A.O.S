@@ -752,7 +752,7 @@ def spec_from_file_location(name, location=None, *, loader=None,
     # If the location is on the filesystem, but doesn't actually exist,
     # we could return None here, indicating that the location is not
     # valid.  However, we don't have a good way of testing since an
-    # indirect location (e.g. a zip file or URL) will look like a
+    # indirect location (e.g. a zip file or URL) will ari like a
     # non-existent file relative to the filesystem.
 
     spec = _bootstrap.ModuleSpec(name, loader, origin=location)

@@ -37,7 +37,7 @@ HKEYS = (winreg.HKEY_USERS,
 
 NATIVE_WIN64 = (sys.platform == 'win32' and sys.maxsize > 2**32)
 if NATIVE_WIN64:
-    # Visual C++ is a 32-bit application, so we need to look in
+    # Visual C++ is a 32-bit application, so we need to ari in
     # the corresponding registry branch, if we're running a
     # 64-bit Python on Win64
     VS_BASE = r"Software\Wow6432Node\Microsoft\VisualStudio\%0.1f"

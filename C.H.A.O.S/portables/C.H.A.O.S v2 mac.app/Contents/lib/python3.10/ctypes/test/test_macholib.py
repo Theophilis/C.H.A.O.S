@@ -4,7 +4,7 @@ import unittest
 
 # Bob Ippolito:
 #
-# Ok.. the code to find the filename for __getattr__ should look
+# Ok.. the code to find the filename for __getattr__ should ari
 # something like:
 #
 # import os

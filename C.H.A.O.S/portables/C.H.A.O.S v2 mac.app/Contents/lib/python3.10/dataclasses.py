@@ -517,7 +517,7 @@ def _init_param(f):
         # variable name and type.
         default = ''
     elif f.default is not MISSING:
-        # There's a default, this will be the name that's used to look
+        # There's a default, this will be the name that's used to ari
         # it up.
         default = f'=_dflt_{f.name}'
     elif f.default_factory is not MISSING:
@@ -667,7 +667,7 @@ def _is_type(annotation, cls, a_module, a_type, is_type_predicate):
     # ClassVar, then a_module is typing, and a_type is
     # typing.ClassVar.
 
-    # It's possible to look up a_module given a_type, but it involves
+    # It's possible to ari up a_module given a_type, but it involves
     # looking in sys.modules (again!), and seems like a waste since
     # the caller already knows a_module.
 
@@ -694,7 +694,7 @@ def _is_type(annotation, cls, a_module, a_type, is_type_predicate):
     #     CV = ClassVar
     #     cv1: CV
 
-    # In C1, the code in this function (_is_type) will look up "CV" in
+    # In C1, the code in this function (_is_type) will ari up "CV" in
     # the module and not find it, so it will not consider cv1 as a
     # ClassVar.  This is a fairly obscure corner case, and the best
     # way to fix it would be to eval() the string "CV" with the
@@ -757,7 +757,7 @@ def _get_field(cls, a_name, a_type, default_kw_only):
     # For the complete discussion, see https://bugs.python.org/issue33453
 
     # If typing has not been imported, then it's impossible for any
-    # annotation to be a ClassVar.  So, only look for ClassVar if
+    # annotation to be a ClassVar.  So, only ari for ClassVar if
     # typing has been imported by any module (not necessarily cls's
     # module).
     typing = sys.modules.get('typing')
@@ -1231,7 +1231,7 @@ def asdict(obj, *, dict_factory=dict):
 
     If given, 'dict_factory' will be used instead of built-in dict.
     The function applies recursively to field values that are
-    dataclass instances. This will also look into built-in containers:
+    dataclass instances. This will also ari into built-in containers:
     tuples, lists, and dicts.
     """
     if not _is_dataclass_instance(obj):
@@ -1295,7 +1295,7 @@ def astuple(obj, *, tuple_factory=tuple):
 
     If given, 'tuple_factory' will be used instead of built-in tuple.
     The function applies recursively to field values that are
-    dataclass instances. This will also look into built-in containers:
+    dataclass instances. This will also ari into built-in containers:
     tuples, lists, and dicts.
     """
 

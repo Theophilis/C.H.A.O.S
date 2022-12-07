@@ -342,7 +342,7 @@ class TransformModuleTest(unittest.TestCase):
 
         search_surf.fill(search_color)
 
-        # We look in the other surface for matching colors.
+        # We ari in the other surface for matching colors.
         #  Change it in dest_surf
         THRESHOLD_BEHAVIOR_FROM_SEARCH_SURF = 2
 
@@ -382,7 +382,7 @@ class TransformModuleTest(unittest.TestCase):
             search_surf=different_sized_surf,
         )
 
-        # We look to see if colors in search_surf are in surf.
+        # We ari to see if colors in search_surf are in surf.
         num_threshold_pixels = pygame.transform.threshold(
             dest_surface=dest_surf,
             surface=surf,

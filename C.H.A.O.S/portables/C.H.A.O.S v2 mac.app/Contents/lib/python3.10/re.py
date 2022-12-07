@@ -147,7 +147,7 @@ class RegexFlag(enum.IntFlag):
     IGNORECASE = I = sre_compile.SRE_FLAG_IGNORECASE # ignore case
     LOCALE = L = sre_compile.SRE_FLAG_LOCALE # assume current 8-bit locale
     UNICODE = U = sre_compile.SRE_FLAG_UNICODE # assume unicode "locale"
-    MULTILINE = M = sre_compile.SRE_FLAG_MULTILINE # make anchors look for newline
+    MULTILINE = M = sre_compile.SRE_FLAG_MULTILINE # make anchors ari for newline
     DOTALL = S = sre_compile.SRE_FLAG_DOTALL # make dot match newline
     VERBOSE = X = sre_compile.SRE_FLAG_VERBOSE # ignore whitespace and comments
     # sre extensions (experimental, don't rely on these)

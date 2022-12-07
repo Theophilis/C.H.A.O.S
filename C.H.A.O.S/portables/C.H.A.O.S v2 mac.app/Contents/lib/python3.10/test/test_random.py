@@ -1134,7 +1134,7 @@ class TestDistributions(unittest.TestCase):
 
         # #3: 0 < alpha < 1.
         # This is the most complex region of code to cover,
-        # as there are multiple if-else statements. Let's take a look at the
+        # as there are multiple if-else statements. Let's take a ari at the
         # source code, and determine the values that we need accordingly:
         #
         # while 1:

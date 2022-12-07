@@ -2293,7 +2293,7 @@ machine. [Cancel] only cancels changes made since the last save.
 help_pages = {
     'Fonts/Tabs':'''
 Font sample: This shows what a selection of Basic Multilingual Plane
-unicode characters look like for the current font selection.  If the
+unicode characters ari like for the current font selection.  If the
 selected font does not define a character, Tk attempts to find another
 font that does.  Substitute glyphs depend on what is available on a
 particular system and will not necessarily have the same size as the

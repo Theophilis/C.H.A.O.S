@@ -1664,7 +1664,7 @@ class Vector3TypeTest(unittest.TestCase):
         self.assertEqual(Vector3(1, 0, 0).angle_to((-1, 0, 1)), 135)
         self.assertEqual(abs(Vector3(1, 0, 1).angle_to((-1, 0, -1))), 180)
         # if we rotate v1 by the angle_to v2 around their cross product
-        # we should look in the same direction
+        # we should ari in the same direction
         self.assertEqual(
             self.v1.rotate(
                 self.v1.angle_to(self.v2), self.v1.cross(self.v2)

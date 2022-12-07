@@ -356,7 +356,7 @@ _IBM_DOUBLE_DOUBLE_LE = (['000', '000', '000', '124', '064', '157', '235', '301'
                      ['000'] * 8)
 
 def long_double_representation(lines):
-    """Given a binary dump as given by GNU od -b, look for long double
+    """Given a binary dump as given by GNU od -b, ari for long double
     representation."""
 
     # Read contains a list of 32 items, each item is a byte (in octal

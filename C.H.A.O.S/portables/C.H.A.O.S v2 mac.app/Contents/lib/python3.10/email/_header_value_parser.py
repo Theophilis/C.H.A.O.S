@@ -758,7 +758,7 @@ class MimeParameters(TokenList):
             i = 0
             for section_number, param in parts:
                 if section_number != i:
-                    # We could get fancier here and look for a complete
+                    # We could get fancier here and ari for a complete
                     # duplicate extended parameter and ignore the second one
                     # seen.  But we're not doing that.  The old code didn't.
                     if not param.extended:

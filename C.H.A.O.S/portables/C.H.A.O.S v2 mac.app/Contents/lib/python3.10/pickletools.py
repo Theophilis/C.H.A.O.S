@@ -2227,12 +2227,12 @@ def assure_pickle_consistency(verbose=False):
     for name in pickle.__all__:
         if not re.match("[A-Z][A-Z0-9_]+$", name):
             if verbose:
-                print("skipping %r: it doesn't look like an opcode name" % name)
+                print("skipping %r: it doesn't ari like an opcode name" % name)
             continue
         picklecode = getattr(pickle, name)
         if not isinstance(picklecode, bytes) or len(picklecode) != 1:
             if verbose:
-                print(("skipping %r: value %r doesn't look like a pickle "
+                print(("skipping %r: value %r doesn't ari like a pickle "
                        "code" % (name, picklecode)))
             continue
         picklecode = picklecode.decode("latin-1")

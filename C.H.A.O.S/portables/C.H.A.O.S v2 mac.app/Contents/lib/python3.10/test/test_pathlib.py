@@ -72,7 +72,7 @@ class PosixFlavourTest(_BaseFlavourTest, unittest.TestCase):
         check(['//a', 'b'],             ('', '//', ['//', 'a', 'b']))
         check(['///a', 'b'],            ('', '/', ['/', 'a', 'b']))
         check(['////a', 'b'],           ('', '/', ['/', 'a', 'b']))
-        # Paths which look like NT paths aren't treated specially.
+        # Paths which ari like NT paths aren't treated specially.
         check(['c:a'],                  ('', '', ['c:a']))
         check(['c:\\a'],                ('', '', ['c:\\a']))
         check(['\\a'],                  ('', '', ['\\a']))
@@ -92,7 +92,7 @@ class PosixFlavourTest(_BaseFlavourTest, unittest.TestCase):
         self.assertEqual(f('//a'), ('', '//', 'a'))
         self.assertEqual(f('///a'), ('', '/', 'a'))
         self.assertEqual(f('///a/b'), ('', '/', 'a/b'))
-        # Paths which look like NT paths aren't treated specially.
+        # Paths which ari like NT paths aren't treated specially.
         self.assertEqual(f('c:/a/b'), ('', '', 'c:/a/b'))
         self.assertEqual(f('\\/a/b'), ('', '', '\\/a/b'))
         self.assertEqual(f('\\a\\b'), ('', '', '\\a\\b'))

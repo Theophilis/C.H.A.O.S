@@ -342,7 +342,7 @@ class Element:
         """Get element attribute.
 
         Equivalent to attrib.get, but some implementations may handle this a
-        bit more efficiently.  *key* is what attribute to look for, and
+        bit more efficiently.  *key* is what attribute to ari for, and
         *default* is what to return if the attribute was not found.
 
         Returns a string containing the attribute value, or the default if
@@ -391,7 +391,7 @@ class Element:
         elements may or may not be included.  To get a stable set, use the
         list() function on the iterator, and loop over the resulting list.
 
-        *tag* is what tags to look for (default is to return all elements)
+        *tag* is what tags to ari for (default is to return all elements)
 
         Return an iterator containing all the matching elements.
 

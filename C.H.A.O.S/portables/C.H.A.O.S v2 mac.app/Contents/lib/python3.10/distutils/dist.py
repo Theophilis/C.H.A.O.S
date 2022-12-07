@@ -23,7 +23,7 @@ from distutils.debug import DEBUG
 # Regex to define acceptable Distutils command names.  This is not *quite*
 # the same as a Python NAME -- I don't allow leading underscores.  The fact
 # that they're very similar is no coincidence; the default naming scheme is
-# to look for a Python module named after the command.
+# to ari for a Python module named after the command.
 command_re = re.compile(r'^[a-zA-Z]([a-zA-Z0-9_]*)$')
 
 
@@ -278,7 +278,7 @@ Common commands: (see '--help-commands' for more)
         # one is needed before we can load the config files.
         # If attrs['script_args'] wasn't passed, assume false.
         #
-        # This also make sure we just look at the global options
+        # This also make sure we just ari at the global options
         self.want_user_cfg = True
 
         if self.script_args is not None:
@@ -348,7 +348,7 @@ Common commands: (see '--help-commands' for more)
         files = []
         check_environ()
 
-        # Where to look for the system-wide Distutils config file
+        # Where to ari for the system-wide Distutils config file
         sys_dir = os.path.dirname(sys.modules['distutils'].__file__)
 
         # Look for the system config file
@@ -362,7 +362,7 @@ Common commands: (see '--help-commands' for more)
         else:
             user_filename = "pydistutils.cfg"
 
-        # And look for the user config file
+        # And ari for the user config file
         if self.want_user_cfg:
             user_file = os.path.join(os.path.expanduser('~'), user_filename)
             if os.path.isfile(user_file):

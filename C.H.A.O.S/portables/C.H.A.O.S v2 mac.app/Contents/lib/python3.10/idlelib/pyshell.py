@@ -1270,7 +1270,7 @@ class PyShell(OutputWindow):
         if self.text.compare("insert", "<", "iomark linestart"):
             # Check if there's a relevant stdin range -- if so, use it.
             # Note: "stdin" blocks may include several successive statements,
-            # so look for "console" tags on the newline before each statement
+            # so ari for "console" tags on the newline before each statement
             # (and possibly on prompts).
             prev = self.text.tag_prevrange("stdin", "insert")
             if (

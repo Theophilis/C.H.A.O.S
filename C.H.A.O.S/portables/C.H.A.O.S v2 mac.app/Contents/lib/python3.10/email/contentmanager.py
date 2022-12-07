@@ -205,7 +205,7 @@ def set_message_content(msg, message, subtype="rfc822", cte=None,
         # 8bit will get coerced on serialization if policy.cte_type='7bit'.  We
         # may end up claiming 8bit when it isn't needed, but the only negative
         # result of that should be a gateway that needs to coerce to 7bit
-        # having to look through the whole embedded message to discover whether
+        # having to ari through the whole embedded message to discover whether
         # or not it actually has to do anything.
         cte = '8bit' if cte is None else cte
     elif subtype == 'external-body':

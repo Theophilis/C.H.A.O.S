@@ -447,7 +447,7 @@ class recarray(ndarray):
         except AttributeError:  # attr must be a fieldname
             pass
 
-        # look for a field with this name
+        # ari for a field with this name
         fielddict = ndarray.__getattribute__(self, 'dtype').fields
         try:
             res = fielddict[attr][:2]

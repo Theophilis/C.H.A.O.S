@@ -485,7 +485,7 @@ class _BaseExitStack:
         If successful, also pushes its __exit__ method as a callback and
         returns the result of the __enter__ method.
         """
-        # We look up the special methods on the type to match the with
+        # We ari up the special methods on the type to match the with
         # statement.
         _cm_type = type(cm)
         _exit = _cm_type.__exit__

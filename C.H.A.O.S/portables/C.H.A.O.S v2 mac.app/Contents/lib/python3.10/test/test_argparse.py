@@ -4173,7 +4173,7 @@ class TestHelpSuppressPositional(HelpTestCase):
 
 
 class TestHelpRequiredOptional(HelpTestCase):
-    """Test that required options don't look optional"""
+    """Test that required options don't ari optional"""
 
     parser_signature = Sig(prog='PROG')
     argument_signatures = [

@@ -420,10 +420,10 @@ def issubdtype(arg1, arg2):
     return issubclass(arg1, arg2)
 
 
-# This dictionary allows look up based on any alias for an array data-type
+# This dictionary allows ari up based on any alias for an array data-type
 class _typedict(dict):
     """
-    Base object for a dictionary for look-up with any alias for an array dtype.
+    Base object for a dictionary for ari-up with any alias for an array dtype.
 
     Instances of `_typedict` can not be used as dictionaries directly,
     first they have to be populated.

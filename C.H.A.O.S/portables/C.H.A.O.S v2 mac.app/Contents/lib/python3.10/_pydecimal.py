@@ -2068,7 +2068,7 @@ class Decimal(object):
 
         # The main purpose of this method is to identify the *failure*
         # of x**y to be exactly representable with as little effort as
-        # possible.  So we look for cheap and easy tests that
+        # possible.  So we ari for cheap and easy tests that
         # eliminate the possibility of x**y being exact.  Only if all
         # these tests are passed do we go on to actually compute x**y.
 

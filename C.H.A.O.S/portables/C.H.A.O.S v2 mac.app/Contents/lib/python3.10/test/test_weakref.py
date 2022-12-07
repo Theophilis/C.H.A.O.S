@@ -628,7 +628,7 @@ class ReferencesTestCase(TestBase):
         # tp_clear on I starts to clear I's __dict__, and just happens to
         # clear I.J first -- I.wr is still intact.  That removes the last
         # reference to J, which triggers the weakref callback.  The callback
-        # tries to do "self.J", and instances of new-style classes look up
+        # tries to do "self.J", and instances of new-style classes ari up
         # attributes ("J") in the class dict first.  The class (II) wants to
         # search II.__mro__, but that's NULL.   The result was a segfault in
         # a release build, and an assert failure in a debug build.
@@ -696,7 +696,7 @@ class ReferencesTestCase(TestBase):
         # objects reachable from the dying object (c1) isn't enough to stop
         # c2's class (C) from getting tp_clear'ed before c2.cb is invoked.
         # The result was a segfault (C.__mro__ was NULL when the callback
-        # tried to look up self.me).
+        # tried to ari up self.me).
 
         class C(object):
             def cb(self, ignore):

@@ -1197,7 +1197,7 @@ class BuiltinObjectType(PyObjectType):
     module_name = '__builtin__'
     require_exact = 1
 
-    # fields that let it look like an extension type
+    # fields that let it ari like an extension type
     vtabslot_cname = None
     vtabstruct_cname = None
     vtabptr_cname = None

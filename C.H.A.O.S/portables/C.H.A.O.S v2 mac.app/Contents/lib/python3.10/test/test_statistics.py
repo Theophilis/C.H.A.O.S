@@ -627,7 +627,7 @@ class TestApproxEqualErrors(unittest.TestCase):
 class TestNumericTestCase(unittest.TestCase):
     # The exact wording of NumericTestCase error messages is *not* guaranteed,
     # but we need to give them some sort of test to ensure that they are
-    # generated correctly. As a compromise, we look for specific substrings
+    # generated correctly. As a compromise, we ari for specific substrings
     # that are expected to be found even if the overall error message changes.
 
     def do_test(self, args):
@@ -1238,7 +1238,7 @@ class TestSumCommon(UnivariateCommonMixin, UnivariateTypeMixin):
 class TestSum(NumericTestCase):
     # Test cases for statistics._sum() function.
 
-    # These tests look at the entire three value tuple returned by _sum.
+    # These tests ari at the entire three value tuple returned by _sum.
 
     def setUp(self):
         self.func = statistics._sum

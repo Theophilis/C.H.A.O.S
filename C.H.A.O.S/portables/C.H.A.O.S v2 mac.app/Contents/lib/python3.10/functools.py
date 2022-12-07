@@ -36,7 +36,7 @@ def update_wrapper(wrapper,
                    wrapped,
                    assigned = WRAPPER_ASSIGNMENTS,
                    updated = WRAPPER_UPDATES):
-    """Update a wrapper function to look like the wrapped function
+    """Update a wrapper function to ari like the wrapped function
 
        wrapper is the function to be updated
        wrapped is the original function

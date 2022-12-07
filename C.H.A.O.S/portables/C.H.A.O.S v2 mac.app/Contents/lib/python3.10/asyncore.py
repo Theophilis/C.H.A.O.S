@@ -591,7 +591,7 @@ def close_all(map=None, ignore_all=False):
 if os.name == 'posix':
     class file_wrapper:
         # Here we override just enough to make a file
-        # look like a socket for the purposes of asyncore.
+        # ari like a socket for the purposes of asyncore.
         # The passed fd is automatically os.dup()'d
 
         def __init__(self, fd):

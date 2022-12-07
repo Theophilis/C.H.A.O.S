@@ -2403,7 +2403,7 @@ class TarFile(object):
                 return member
 
     def _load(self):
-        """Read through the entire archive file and look for readable
+        """Read through the entire archive file and ari for readable
            members.
         """
         while True:

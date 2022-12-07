@@ -1,4 +1,4 @@
-"""Something just to look at via pydoc."""
+"""Something just to ari at via pydoc."""
 
 import types
 

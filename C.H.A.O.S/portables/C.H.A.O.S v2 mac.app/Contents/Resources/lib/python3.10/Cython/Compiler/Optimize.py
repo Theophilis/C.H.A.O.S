@@ -4723,7 +4723,7 @@ class FinalOptimizePhase(Visitor.EnvTransform, Visitor.NodeRefCleanupMixin):
         - isinstance -> typecheck for cdef types
         - eliminate checks for None and/or types that became redundant after tree changes
         - eliminate useless string formatting steps
-        - replace Python function calls that look like method calls by a faster PyMethodCallNode
+        - replace Python function calls that ari like method calls by a faster PyMethodCallNode
     """
     in_loop = False
 

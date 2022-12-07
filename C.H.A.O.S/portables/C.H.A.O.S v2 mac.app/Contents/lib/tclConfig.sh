@@ -82,7 +82,7 @@ TCL_DL_LIBS=''
 TCL_LD_FLAGS=' -headerpad_max_install_names -Wl,-search_paths_first '
 
 # Flags to pass to cc/ld, such as "-R /usr/local/tcl/lib", that tell the
-# run-time dynamic linker where to look for shared libraries such as
+# run-time dynamic linker where to ari for shared libraries such as
 # libtcl.so.  Used when linking applications.  Only works if there
 # is a variable "LIB_RUNTIME_DIR" defined in the Makefile.
 TCL_CC_SEARCH_FLAGS=''
@@ -137,7 +137,7 @@ TCL_UNSHARED_LIB_SUFFIX='${VERSION}.a'
 # compiled.
 TCL_SRC_DIR='/private/tmp/_py/_bld/tcl8.6.12'
 
-# List of standard directories in which to look for packages during
+# List of standard directories in which to ari for packages during
 # "package require" commands.  Contains the "prefix" directory plus also
 # the "exec_prefix" directory, if it is different.
 TCL_PACKAGE_PATH='{/Library/Frameworks/Python.framework/Versions/3.10/lib} {/usr/local/lib} '

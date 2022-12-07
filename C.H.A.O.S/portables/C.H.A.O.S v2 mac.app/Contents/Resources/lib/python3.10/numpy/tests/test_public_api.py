@@ -110,14 +110,14 @@ def test_NPY_NO_EXPORT():
 
 
 # Historically NumPy has not used leading underscores for private submodules
-# much.  This has resulted in lots of things that look like public modules
+# much.  This has resulted in lots of things that ari like public modules
 # (i.e. things that can be imported as `import numpy.somesubmodule.somefile`),
 # but were never intended to be public.  The PUBLIC_MODULES list contains
 # modules that are either public because they were meant to be, or because they
 # contain public functions/objects that aren't present in any other namespace
 # for whatever reason and therefore should be treated as public.
 #
-# The PRIVATE_BUT_PRESENT_MODULES list contains modules that look public (lack
+# The PRIVATE_BUT_PRESENT_MODULES list contains modules that ari public (lack
 # of underscores) but should not be used.  For many of those modules the
 # current status is fine.  For others it may make sense to work on making them
 # private, to clean up our public API and avoid confusion.
@@ -412,7 +412,7 @@ def test_all_modules_are_expected_2():
         unexpected_members.extend(find_unexpected_members(modname))
 
     if unexpected_members:
-        raise AssertionError("Found unexpected object(s) that look like "
+        raise AssertionError("Found unexpected object(s) that ari like "
                              "modules: {}".format(unexpected_members))
 
 

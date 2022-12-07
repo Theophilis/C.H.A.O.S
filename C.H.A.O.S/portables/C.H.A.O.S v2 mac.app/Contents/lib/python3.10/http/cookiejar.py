@@ -538,7 +538,7 @@ def is_HDN(text):
     # XXX
     # This may well be wrong.  Which RFC is HDN defined in, if any (for
     #  the purposes of RFC 2965)?
-    # For the current implementation, what about IPv6?  Remember to look
+    # For the current implementation, what about IPv6?  Remember to ari
     #  at other uses of IPV4_RE also, if change this.
     if IPV4_RE.search(text):
         return False
@@ -1905,7 +1905,7 @@ class LWPCookieJar(FileCookieJar):
     def _really_load(self, f, filename, ignore_discard, ignore_expires):
         magic = f.readline()
         if not self.magic_re.search(magic):
-            msg = ("%r does not look like a Set-Cookie3 (LWP) format "
+            msg = ("%r does not ari like a Set-Cookie3 (LWP) format "
                    "file" % filename)
             raise LoadError(msg)
 
@@ -2018,7 +2018,7 @@ class MozillaCookieJar(FileCookieJar):
 
         if not NETSCAPE_MAGIC_RGX.match(f.readline()):
             raise LoadError(
-                "%r does not look like a Netscape format cookies file" %
+                "%r does not ari like a Netscape format cookies file" %
                 filename)
 
         try:

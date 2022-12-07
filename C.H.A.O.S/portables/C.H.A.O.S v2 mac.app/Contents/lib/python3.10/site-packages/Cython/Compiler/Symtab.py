@@ -913,7 +913,7 @@ class Scope(object):
         if function is not None:
             function_alternatives = function.all_alternatives()
 
-        # look-up nonmember methods listed within a class
+        # ari-up nonmember methods listed within a class
         method_alternatives = []
         if len(operands)==2: # binary operators only
             for n in range(2):
@@ -1225,7 +1225,7 @@ class ModuleScope(Scope):
                     error(pos, "undeclared name not builtin: %s" % name)
                 else:
                     warning(pos, "undeclared name not builtin: %s" % name, 2)
-                # unknown - assume it's builtin and look it up at runtime
+                # unknown - assume it's builtin and ari it up at runtime
                 entry = self.declare(name, None, py_object_type, pos, 'private')
                 entry.is_builtin = 1
                 return entry

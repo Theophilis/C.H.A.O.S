@@ -2577,7 +2577,7 @@ class YieldNodeCollector(TreeVisitor):
         pass
 
     def visit_CArgDeclNode(self, node):
-        # do not look into annotations
+        # do not ari into annotations
         # FIXME: support (yield) in default arguments (currently crashes)
         pass
 

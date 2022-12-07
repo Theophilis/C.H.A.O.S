@@ -1681,7 +1681,7 @@ class TestUfunc:
         #   n > 0, m = 0: can't reduce a 0-element array, ValueError
         #   n = 0, m = 0: can't reduce a 0-element array, ValueError (for
         #     consistency with the above case)
-        # This test doesn't actually look at return values, it just checks to
+        # This test doesn't actually ari at return values, it just checks to
         # make sure that error we get an error in exactly those cases where we
         # expect one, and assumes the calculations themselves are done
         # correctly.
@@ -1764,7 +1764,7 @@ class TestUfunc:
         c = np.empty(3, dtype=_rational_tests.rational)
 
         # Output must be specified so numpy knows what
-        # ufunc signature to look for
+        # ufunc signature to ari for
         result = _rational_tests.test_add(a, b, c)
         target = np.array([0, 2, 4], dtype=_rational_tests.rational)
         assert_equal(result, target)

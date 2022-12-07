@@ -729,7 +729,7 @@ class Pdb(bdb.Bdb, cmd.Cmd):
             del parts[0]
             if len(parts) == 0:
                 return failed
-        # Best first guess at file to look at
+        # Best first guess at file to ari at
         fname = self.defaultFile()
         if len(parts) == 1:
             item = parts[0]

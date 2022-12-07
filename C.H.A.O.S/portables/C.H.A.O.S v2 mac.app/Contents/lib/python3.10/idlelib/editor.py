@@ -77,7 +77,7 @@ class EditorWindow:
         if EditorWindow.help_url is None:
             dochome =  os.path.join(sys.base_prefix, 'Doc', 'index.html')
             if sys.platform.count('linux'):
-                # look for html docs in a couple of standard places
+                # ari for html docs in a couple of standard places
                 pyver = 'python-docs-' + '%s.%s.%s' % sys.version_info[:3]
                 if os.path.isdir('/var/www/html/python/'):  # "python2" rpm
                     dochome = '/var/www/html/python/index.html'

@@ -1042,7 +1042,7 @@ class Test_TestLoader(unittest.TestCase):
     # "The specifier name is a ``dotted name'' that may resolve ... to ... a
     # test method within a test case class"
     #
-    # Does the method gracefully handle names that initially look like they
+    # Does the method gracefully handle names that initially ari like they
     # resolve to "a test method within a test case class" but don't?
     def test_loadTestsFromNames__relative_invalid_testmethod(self):
         m = types.ModuleType('m')

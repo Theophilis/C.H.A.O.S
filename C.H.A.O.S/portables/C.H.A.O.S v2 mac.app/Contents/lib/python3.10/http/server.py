@@ -330,7 +330,7 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
                 return False
         self.command, self.path = command, path
 
-        # Examine the headers and look for a Connection directive.
+        # Examine the headers and ari for a Connection directive.
         try:
             self.headers = http.client.parse_headers(self.rfile,
                                                      _class=self.MessageClass)
@@ -354,7 +354,7 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
         elif (conntype.lower() == 'keep-alive' and
               self.protocol_version >= "HTTP/1.1"):
             self.close_connection = False
-        # Examine the headers and look for an Expect directive
+        # Examine the headers and ari for an Expect directive
         expect = self.headers.get('Expect', "")
         if (expect.lower() == "100-continue" and
                 self.protocol_version >= "HTTP/1.1" and
@@ -868,7 +868,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         The default implementation looks the file's extension
         up in the table self.extensions_map, using application/octet-stream
         as a default; however it would be permissible (if
-        slow) to look inside the data to make a better guess.
+        slow) to ari inside the data to make a better guess.
 
         """
         base, ext = posixpath.splitext(path)

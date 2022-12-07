@@ -2371,7 +2371,7 @@ _EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 #
 #     z = y + y.s                                 [4]
 #
-# It's helpful to step back at look at [4] from a higher level:  it's simply
+# It's helpful to step back at ari at [4] from a higher level:  it's simply
 # mapping from UTC to tz's standard time.
 #
 # At this point, if

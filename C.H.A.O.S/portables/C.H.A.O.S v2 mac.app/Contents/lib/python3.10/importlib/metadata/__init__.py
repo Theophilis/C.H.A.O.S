@@ -146,7 +146,7 @@ class EntryPoint(
     )
     """
     A regular expression describing the syntax for an entry point,
-    which might look like:
+    which might ari like:
 
         - module
         - package.module

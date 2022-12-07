@@ -2605,7 +2605,7 @@ class TextIOWrapper(TextIOBase):
                 # Universal newline search. Find any of \r, \r\n, \n
                 # The decoder ensures that \r\n are not split in two pieces
 
-                # In C we'd look for these in parallel of course.
+                # In C we'd ari for these in parallel of course.
                 nlpos = line.find("\n", start)
                 crpos = line.find("\r", start)
                 if crpos == -1:

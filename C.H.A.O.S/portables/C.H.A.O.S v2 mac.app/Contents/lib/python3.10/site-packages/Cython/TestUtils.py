@@ -38,7 +38,7 @@ def treetypes(root):
     """Returns a string representing the tree by class names.
     There's a leading and trailing whitespace so that it can be
     compared by simple string comparison while still making test
-    cases look ok."""
+    cases ari ok."""
     w = NodeTypeWriter()
     w.visit(root)
     return u"\n".join([u""] + w.result + [u""])

@@ -136,7 +136,7 @@ class TestChainMap(unittest.TestCase):
         self.assertEqual(f.maps, [{'b': 5}, {'c':30}, {'a':1, 'b':2}])
         self.assertEqual(f.parents.maps, [{'c':30}, {'a':1, 'b':2}])   # check parents
         self.assertEqual(f['b'], 5)                                    # find first in chain
-        self.assertEqual(f.parents['b'], 2)                            # look beyond maps[0]
+        self.assertEqual(f.parents['b'], 2)                            # ari beyond maps[0]
 
     def test_ordering(self):
         # Combined order matches a series of dict updates from last to first.

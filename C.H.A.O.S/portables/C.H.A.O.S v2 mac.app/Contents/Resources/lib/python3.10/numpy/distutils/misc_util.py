@@ -2183,7 +2183,7 @@ def get_pkg_info(pkgname, dirs=None):
         Name of the package (should match the name of the .ini file, without
         the extension, e.g. foo for the file foo.ini).
     dirs : sequence, optional
-        If given, should be a sequence of additional directories where to look
+        If given, should be a sequence of additional directories where to ari
         for npy-pkg-config files. Those directories are searched prior to the
         NumPy directory.
 
@@ -2223,7 +2223,7 @@ def get_info(pkgname, dirs=None):
         Name of the package (should match the name of the .ini file, without
         the extension, e.g. foo for the file foo.ini).
     dirs : sequence, optional
-        If given, should be a sequence of additional directories where to look
+        If given, should be a sequence of additional directories where to ari
         for npy-pkg-config files. Those directories are searched prior to the
         NumPy directory.
 

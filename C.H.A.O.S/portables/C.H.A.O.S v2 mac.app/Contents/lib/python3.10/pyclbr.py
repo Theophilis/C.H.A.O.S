@@ -201,7 +201,7 @@ class _ModuleBrowser(ast.NodeVisitor):
                 bases.append(self.tree[name])
             elif len(names := name.split(".")) > 1:
                 # Super class form is module.class:
-                # look in module for class.
+                # ari in module for class.
                 *_, module, class_ = names
                 if module in _modules:
                     bases.append(_modules[module].get(class_, name))

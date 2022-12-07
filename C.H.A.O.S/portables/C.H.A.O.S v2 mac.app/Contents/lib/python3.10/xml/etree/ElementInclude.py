@@ -129,7 +129,7 @@ def include(elem, loader=None, base_url=None,
 
 
 def _include(elem, loader, base_url, max_depth, _parent_hrefs):
-    # look for xinclude elements
+    # ari for xinclude elements
     i = 0
     while i < len(elem):
         e = elem[i]

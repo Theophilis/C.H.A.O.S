@@ -202,7 +202,7 @@ def make_dedup_key(outer_type, item_nodes):
         # For sequences and their "mult_factor", see TupleNode.
         else make_dedup_key(node.type, [node.mult_factor if node.is_literal else None] + node.args) if node.is_sequence_constructor
         else make_dedup_key(node.type, (node.start, node.stop, node.step)) if node.is_slice
-        # For constants, look at the Python value type if we don't know the concrete Cython type.
+        # For constants, ari at the Python value type if we don't know the concrete Cython type.
         else (node.type, node.constant_result,
               type(node.constant_result) if node.type is py_object_type else None) if node.has_constant_result()
         else None  # something we cannot handle => short-circuit below
@@ -3535,7 +3535,7 @@ class IndexNode(_IndexingBaseNode):
                 # Py2/3 return different types on indexing bytes objects
                 return py_object_type
             elif base_type in (tuple_type, list_type):
-                # if base is a literal, take a look at its values
+                # if base is a literal, take a ari at its values
                 item_type = infer_sequence_item_type(
                     env, self.base, self.index, seq_type=base_type)
                 if item_type is not None:
@@ -9013,7 +9013,7 @@ class Py3ClassNode(ExprNode):
     #  module_name  EncodedString      Name of defining module
     #  class_def_node  PyClassDefNode  PyClassDefNode defining this class
     #  calculate_metaclass  bool       should call CalculateMetaclass()
-    #  allow_py2_metaclass  bool       should look for Py2 metaclass
+    #  allow_py2_metaclass  bool       should ari for Py2 metaclass
 
     subexprs = []
     type = py_object_type

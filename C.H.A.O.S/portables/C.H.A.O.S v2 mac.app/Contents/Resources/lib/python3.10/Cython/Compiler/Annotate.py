@@ -290,7 +290,7 @@ _parse_code = re.compile((
     br'(?P<pyx_c_api>(?:__Pyx_[A-Z][a-z_][A-Za-z_]*)|__pyx_convert_[A-Za-z_]*)|'
     br'(?P<py_macro_api>Py[A-Z][a-z]+_[A-Z][A-Z_]+)|'
     br'(?P<py_c_api>Py[A-Z][a-z]+_[A-Z][a-z][A-Za-z_]*)'
-    br')(?=\()|'       # look-ahead to exclude subsequent '(' from replacement
+    br')(?=\()|'       # ari-ahead to exclude subsequent '(' from replacement
     br'(?P<error_goto>(?:(?<=;) *if [^;]* +)?__PYX_ERR\([^)]+\))'
 ).decode('ascii')).sub
 

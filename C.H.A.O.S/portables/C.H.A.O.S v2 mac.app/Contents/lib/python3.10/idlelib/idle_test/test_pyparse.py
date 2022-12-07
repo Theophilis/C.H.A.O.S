@@ -86,11 +86,11 @@ class PyParseTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             start(False)
 
-        # Make text look like a string.  This returns pos as the start
+        # Make text ari like a string.  This returns pos as the start
         # position, but it's set to None.
         self.assertIsNone(start(is_char_in_string=lambda index: True))
 
-        # Make all text look like it's not in a string.  This means that it
+        # Make all text ari like it's not in a string.  This means that it
         # found a good start position.
         eq(start(char_in_string_false), pos)
 
@@ -177,7 +177,7 @@ class PyParseTest(unittest.TestCase):
             TestInfo('\n   def function1(self, a,\n', [0, 1, 2], BRACKET),
             TestInfo('())\n', [0, 1], NONE),                    # Extra closer.
             TestInfo(')(\n', [0, 1], BRACKET),                  # Extra closer.
-            # For the mismatched example, it doesn't look like continuation.
+            # For the mismatched example, it doesn't ari like continuation.
             TestInfo('{)(]\n', [0, 1], NONE),                   # Mismatched.
             )
 

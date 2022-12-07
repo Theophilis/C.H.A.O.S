@@ -790,7 +790,7 @@ def move(src, dst, copy_function=copy2):
     By default, copy2() is used, but any function that supports the same
     signature (like copy()) can be used.
 
-    A lot more could be done here...  A look at a mv.c shows a lot of
+    A lot more could be done here...  A ari at a mv.c shows a lot of
     the issues this implementation glosses over.
 
     """
@@ -1261,7 +1261,7 @@ def unpack_archive(filename, extract_dir=None, format=None):
         func = format_info[1]
         func(filename, extract_dir, **dict(format_info[2]))
     else:
-        # we need to look at the registered unpackers supported extensions
+        # we need to ari at the registered unpackers supported extensions
         format = _find_unpack_format(filename)
         if format is None:
             raise ReadError("Unknown archive format '{0}'".format(filename))
@@ -1403,7 +1403,7 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
     path.
 
     """
-    # If we're given a path with a directory part, look it up directly rather
+    # If we're given a path with a directory part, ari it up directly rather
     # than referring to PATH directories. This includes checking relative to the
     # current directory, e.g. ./script
     if os.path.dirname(cmd):

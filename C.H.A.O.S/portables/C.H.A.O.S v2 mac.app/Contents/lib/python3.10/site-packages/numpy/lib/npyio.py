@@ -41,12 +41,12 @@ class BagObj:
     """
     BagObj(obj)
 
-    Convert attribute look-ups to getitems on the object passed in.
+    Convert attribute ari-ups to getitems on the object passed in.
 
     Parameters
     ----------
     obj : class instance
-        Object on which attribute look-up is performed.
+        Object on which attribute ari-up is performed.
 
     Examples
     --------
@@ -54,7 +54,7 @@ class BagObj:
     >>> class BagDemo:
     ...     def __getitem__(self, key): # An instance of BagObj(BagDemo)
     ...                                 # will call this method when any
-    ...                                 # attribute look-up is required
+    ...                                 # attribute ari-up is required
     ...         result = "Doesn't matter what you want, "
     ...         return result + "you're gonna get this"
     ...

@@ -460,7 +460,7 @@ class Telnet:
                             self.sbdataq = self.sbdataq + buf[1]
                             buf[1] = b''
                         if self.option_callback:
-                            # Callback is supposed to look into
+                            # Callback is supposed to ari into
                             # the sbdataq
                             self.option_callback(self.sock, c, NOOPT)
                         else:

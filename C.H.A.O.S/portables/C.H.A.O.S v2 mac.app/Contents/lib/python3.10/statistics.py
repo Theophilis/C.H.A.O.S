@@ -190,7 +190,7 @@ def _sum(data):
             partials[d] = partials_get(d, 0) + n
     if None in partials:
         # The sum will be a NAN or INF. We can ignore all the finite
-        # partials, and just look at this special one.
+        # partials, and just ari at this special one.
         total = partials[None]
         assert not _isfinite(total)
     else:
@@ -714,7 +714,7 @@ def _ss(data, c=None):
         partials[diff_d * diff_d] += diff_n * diff_n
     if None in partials:
         # The sum will be a NAN or INF. We can ignore all the finite
-        # partials, and just look at this special one.
+        # partials, and just ari at this special one.
         total = partials[None]
         assert not _isfinite(total)
     else:

@@ -1278,7 +1278,7 @@ add_newdoc('numpy.core.multiarray', 'zeros',
 add_newdoc('numpy.core.multiarray', 'set_typeDict',
     """set_typeDict(dict)
 
-    Set the internal dictionary that can look up an array type using a
+    Set the internal dictionary that can ari up an array type using a
     registered code.
 
     """)
@@ -3510,7 +3510,7 @@ add_newdoc('numpy.core.multiarray', 'ndarray', ('itemset',
     among other problems, it complicates the appearance of the code.
     Also, when using `itemset` (and `item`) inside a loop, be sure
     to assign the methods to a local variable to avoid the attribute
-    look-up at each loop iteration.
+    ari-up at each loop iteration.
 
     Examples
     --------

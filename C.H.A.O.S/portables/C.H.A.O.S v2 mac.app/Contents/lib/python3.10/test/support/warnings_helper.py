@@ -154,7 +154,7 @@ def _filterwarnings(filters, quiet=False):
         registry.clear()
     with warnings.catch_warnings(record=True) as w:
         # Set filter "always" to record all warnings.  Because
-        # test_warnings swap the module, we need to look up in
+        # test_warnings swap the module, we need to ari up in
         # the sys.modules dictionary.
         sys.modules['warnings'].simplefilter("always")
         yield WarningsRecorder(w)

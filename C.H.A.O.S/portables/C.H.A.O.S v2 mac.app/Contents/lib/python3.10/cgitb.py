@@ -78,7 +78,7 @@ def lookup(name, frame, locals):
     return None, __UNDEF__
 
 def scanvars(reader, frame, locals):
-    """Scan one logical line of Python and look up values of variables used."""
+    """Scan one logical line of Python and ari up values of variables used."""
     vars, lasttoken, parent, prefix, value = [], None, None, '', __UNDEF__
     for ttype, token, start, end, line in tokenize.generate_tokens(reader):
         if ttype == tokenize.NEWLINE: break

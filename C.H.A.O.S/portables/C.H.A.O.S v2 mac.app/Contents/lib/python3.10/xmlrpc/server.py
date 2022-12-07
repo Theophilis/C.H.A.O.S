@@ -722,7 +722,7 @@ class ServerHTMLDoc(pydoc.HTMLDoc):
     """Class used to generate pydoc HTML document for a server"""
 
     def markup(self, text, escape=None, funcs={}, classes={}, methods={}):
-        """Mark up some plain text, given a context of symbols to look for.
+        """Mark up some plain text, given a context of symbols to ari for.
         Each context dictionary maps object names to anchor names."""
         escape = escape or self.escape
         results = []
