@@ -483,7 +483,7 @@ int main(int argc, char *argv[]) {
     int board_growth = 0;
 
     //-----menus-----
-    int glove = 3;
+    int glove = 1;
     int pin = 0;
     int cata = 0;
     int layers = 1;
@@ -497,7 +497,8 @@ int main(int argc, char *argv[]) {
     int layer_size = 255;
     int bb_convert = 0;
 
-    //layers
+    //layers 
+    int color_catch = 0;
     int color_on = 1;
     int color_step = 8;
     int color_step_scale = 1;
@@ -592,7 +593,7 @@ int main(int argc, char *argv[]) {
     int brush_x = (*(glove_values) % 128) * brush_stroke;
     int brush_y = (*(glove_values + 1) % 128) * brush_stroke;
 
-    int board_growth_type = 2;
+    int board_growth_type = 1;
     int smallest_board = 32;
     int board_growth_scale = 2;
 
@@ -987,7 +988,7 @@ int main(int argc, char *argv[]) {
     int recvbuflen = BUFFLEN;
 
     //server
-    if (glove > 1) {
+    if (glove > 0) {
     
 
 
@@ -1118,7 +1119,7 @@ int main(int argc, char *argv[]) {
     while (!should_quit) {
 
         //board to brush
-        if (glove > 0) {
+        if (glove == 1) {
             // printf("running");
             for (int l=0; l<bb_length; l++) {
                 for (int w=0; w<bb_width; w++) {
@@ -1126,9 +1127,6 @@ int main(int argc, char *argv[]) {
                     (((b_length - (l + (*(glove_values + 1) % 128) * brush_stroke) % b_length) * b_width) + 
                     (w + (*(glove_values) % 128) * brush_stroke)) % lw);
         }}}
-        if (glove == 2) {
-        *(brush_board + lw_bb/2) = 1; 
-        }
 
 
         //chaomize
@@ -1142,36 +1140,7 @@ int main(int argc, char *argv[]) {
 
 
         //brush to board
-
-        if (glove == 2) {
-            for (int l=0; l<bb_length; l++) {
-                for (int w=0; w<bb_width; w++) {
-                    
-                    bb_convert = (((b_length - (l + brush_y) % b_length) * b_width) + 
-                                (w + brush_x)) % lw;
-
-                    *(chaos_board + 
-                    bb_convert) = 
-                    *(brush_board + ((l * (bb_width)) + w) % lw_bb);
-
-                if (*(brush_board + ((l * (bb_width)) + w) % lw_bb) == 0){
-                    if (*(chaos_colors + bb_convert) > 0) {
-                    *(chaos_colors + bb_convert) -= color_step;
-                    if (*(chaos_colors + bb_convert) < 0) {
-                        *(chaos_colors + bb_convert) = 0;
-                    }
-                    }
-                }
-                else {
-                *(chaos_colors + bb_convert) = *(chaos_colors + bb_convert) + color_step;
-                *(chaos_colors + bb_convert) = *(chaos_colors + bb_convert) % (layer_size * 10);
-
-                // printf("\ncolors %i\n", *(chaos_colors + bb_convert));
-                // printf("colors %i\n\n", *(chaos_colors + bb_convert));
-            }
-        }}}
-
-        if (glove == 3) {
+        if (glove == 1) {
             for (int l=0; l<bb_length; l++) {
                 for (int w=0; w<bb_width; w++) {
                     
@@ -1209,7 +1178,7 @@ int main(int argc, char *argv[]) {
         if (layers == 0) {
             value_color_s(chaos_board, pixels, lw, board_shade);}
         if (layers == 1) {
-            if (glove == 3) {
+            if (glove == 1) {
                 value_color_b(chaos_board, chaos_colors, pixels, lw, color_step, color_on, bb_length, brush_x, brush_y, b_length);
             } else {
                 value_color(chaos_board, chaos_colors, pixels, lw, color_step, color_on);}}}
@@ -1635,235 +1604,6 @@ int main(int argc, char *argv[]) {
 
                 //glove methods
             if (glove == 1) {
-            if (*(glove_values + 7) > index_trigger) {
-                if (c_1 < drain_level) {
-                    c_1 += step_up;
-                } else {
-                    c_1 = 0;
-                    c_0 = 0;
-                    for (int i=0; i<bv; i++) {
-                        if (*(a_rule + i) == 1) {
-                            *(a_rule + i) = 0;
-                        }
-                    }
-                }
-            } else {
-                if (c_1 > 0) {
-                    c_1 -= step_down;
-                }
-            }
-
-            if (*(glove_values + 8) > middle_trigger) {
-                if (c_2 < drain_level) {
-                    c_2 += step_up;
-                } else {
-                    c_2 = 0;
-                    c_0 = 0;
-                    for (int i=0; i<bv; i++) {
-                        if (*(a_rule + i) == 2) {
-                            *(a_rule + i) = 0;
-                        }
-                    }
-                }
-            } else {
-                if (c_2 > 0) {
-                    c_2 -= step_down;
-                }
-            }
-
-            if (*(glove_values + 9) > ring_trigger) {
-                if (c_3 < drain_level) {
-                    c_3 += step_up;
-                } else {
-                    c_3 = 0;
-                    c_0 = 0;
-                    for (int i=0; i<bv; i++) {
-                        if (*(a_rule + i) == 3) {
-                            *(a_rule + i) = 0;
-                        }
-                    }
-                }
-            } else {
-                if (c_3 > 0) {
-                    c_3 -= step_down;
-                }
-            }
-
-            if (*(glove_values + 10) > pinky_trigger) {
-                if (c_4 < drain_level) {
-                    c_4 += step_up;
-                } else {
-                    c_4 = 0;
-                    c_0 = 0;
-                    for (int i=0; i<bv; i++) {
-                        if (*(a_rule + i) == 4) {
-                            *(a_rule + i) = 0;
-                        }
-                    }
-                }
-            } else {
-                if (c_4 > 0) {
-                    c_4 -= step_down;
-                }
-            }
-
-            if (c_0 < c_1) {
-                c_0 = c_1;
-            }
-
-            if (c_0 < c_2) {
-                c_0 = c_2;
-            }
-
-            if (c_0 < c_3) {
-                c_0 = c_3;
-            }
-
-            if (c_0 < c_4) {
-                c_0 = c_4;
-            }
-
-            if (c_0 > 0) {
-                c_0 -= step_down;
-            }
-
-            c_total = c_0 + c_1 + c_2 + c_3 + c_4;
-            c_ratio = c_total / c_max;
-            window = c_ratio * window_max;
-
-            printf("\n%f\t%f\t%f\t%f\t%f\t%f\t%f\n", c_0, c_1, c_2, c_3, c_4, c_ratio, window);
-
-            place = 0;
-            if (c_total < 1) {
-                c_total = 1;
-            }
-            ci_0 = (c_0/c_total) * window;
-            ci_1 = (c_1/c_total) * window;
-            ci_2 = (c_2/c_total) * window;
-            ci_3 = (c_3/c_total) * window;
-            ci_4 = (c_4/c_total) * window;
-
-            if(ci_0 > drain_level) {
-                ci_0 = drain_level;
-            }
-            if(ci_1 > drain_level) {
-                ci_1 = drain_level;
-            }
-            if(ci_2 > drain_level) {
-                ci_2 = drain_level;
-            }
-            if(ci_3 > drain_level) {
-                ci_3 = drain_level;
-            }
-            if(ci_4 > drain_level) {
-                ci_4 = drain_level;
-            }
-
-            printf("\n%i\t%i\t%i\t%i\t%i\n", ci_0, ci_1, ci_2, ci_3, ci_4);
-
-            for (int i=0; i<ci_0; i++) {
-                *(a_rule + (gv + place)) = 0;
-                place += *(glove_values + 6)/skip_scale;
-            }
-
-            for (int i=0; i<ci_1; i++) {
-                *(a_rule + (gv + place)) = 1;
-                place += *(glove_values + 6)/skip_scale;
-            }
-
-            if (base > 2) {
-            for (int i=0; i<ci_2; i++) {
-                *(a_rule + (gv + place)) = 2;
-                place += *(glove_values + 6)/skip_scale;
-            }}
-
-            if (base > 3) {
-            for (int i=0; i<ci_3; i++) {
-                *(a_rule + (gv + place)) = 3;
-                place += *(glove_values + 6)/skip_scale;
-            }}
-
-            if (base > 4) {
-            for (int i=0; i<ci_4; i++) {
-                *(a_rule + (gv + place)) = 4;
-                place += *(glove_values + 6)/skip_scale;
-            }}}
-            
-            else if (glove == 2) {
-                
-                //rule calc
-                rule_value = ((*(glove_values + 6)/64) + 
-                            (*(glove_values + 7)/64) * 2 + 
-                            (*(glove_values + 8)/64) * 4 + 
-                            (*(glove_values + 9)/64) * 8 +
-                            (*(glove_values + 10)/64) * 16);
-
-                //single change check
-                if (rule_value % bv != last_value) {
-                    if (*(a_rule + (rule_value % bv)) == 0) {
-                        *(a_rule + (rule_value % bv)) = 1;
-                    } else {
-                        *(a_rule + (rule_value % bv)) = 0;
-                    }} else {
-                    }
-                last_value = (rule_value % bv);
-
-
-                //wrist activation
-                if (*(glove_values + 11)/64 == 1) {
-
-                    for (int i=0; i<lw; i++) {
-                        *(chaos_board + i) = 0;
-                        *(chaos_colors + i) = 0;
-                        *(brush_board + i%lw_bb) = 0;
-
-                    }
-                    
-                    if (glove < 3) {
-                        color_on += 1;
-                        color_on = color_on % 2;
-                    }
-
-                    board_growth = 0;
-                }
-                
-                //color_step
-                color_step = (*(glove_values + 2) / color_step_scale) + 1;
-
-                //board_growth
-                if (board_growth_type == 1) {
-                    
-                    board_growth += *(glove_values + 2) / board_growth_scale;
-
-                    if (board_growth > 0) {
-                        board_growth -= board_shrink / board_growth_scale;
-                    }
-
-
-                    board_growth_scaled = board_growth/board_growth_scale;
-
-                    if (board_growth_scaled <= 0) {
-                        board_growth_scaled = smallest_bboard;
-                    }
-                    
-                    // printf("\n\n%i\t%i", board_growth, board_growth_scaled);
-
-                    if (board_growth_scaled < b_length) {
-                        bb_length = board_growth_scaled;
-                        bb_width = board_growth_scaled;
-                    }
-                }
-
-                // printf("\n\n accel %i", *(glove_values + 11));
-
-                if (board_growth_type == 2) {
-                    bb_length = (*(glove_values + 7) * board_growth_scale + smallest_board )% b_length;
-                    bb_width = bb_length;
-                }
-                
-            }
-
-            else if (glove == 3) {
                 
                 //brush x & y
                 brush_x = (*(glove_values) % 128) * brush_stroke;
@@ -1898,44 +1638,21 @@ int main(int argc, char *argv[]) {
 
                     }
                     
-                    if (glove < 3) {
+                    if (color_catch == 0) {
                         color_on += 1;
                         color_on = color_on % 2;
+                        color_catch = 1;
                     }
 
                     board_growth = 0;
+                } else {
+                    color_catch = 0;
                 }
                 
                 //color_step
                 color_step = (*(glove_values + 2) / color_step_scale) + 1;
 
-                //board_growth
                 if (board_growth_type == 1) {
-                    
-                    board_growth += *(glove_values + 2) / board_growth_scale;
-
-                    if (board_growth > 0) {
-                        board_growth -= board_shrink / board_growth_scale;
-                    }
-
-
-                    board_growth_scaled = board_growth/board_growth_scale;
-
-                    if (board_growth_scaled <= 0) {
-                        board_growth_scaled = smallest_bboard;
-                    }
-                    
-                    // printf("\n\n%i\t%i", board_growth, board_growth_scaled);
-
-                    if (board_growth_scaled < b_length) {
-                        bb_length = board_growth_scaled;
-                        bb_width = board_growth_scaled;
-                    }
-                }
-
-                // printf("\n\n accel %i", *(glove_values + 11));
-
-                if (board_growth_type == 2) {
                     bb_length = (*(glove_values + 7) * board_growth_scale + smallest_board )% b_length;
                     bb_width = bb_length;
                 }
@@ -1945,16 +1662,16 @@ int main(int argc, char *argv[]) {
         }
         
         if (pin > 0) {
-        pin_y = lw - (((((*(glove_values + 1) * b_width/128) % b_width) * b_width) % lw) - 1);
-        pin_x = (*(glove_values) * b_width/128) % b_width;
-        pin_test = (pin_x + pin_y) % lw;
+            pin_y = lw - (((((*(glove_values + 1) * b_width/128) % b_width) * b_width) % lw) - 1);
+            pin_x = (*(glove_values) * b_width/128) % b_width;
+            pin_test = (pin_x + pin_y) % lw;
 
-        if (*(chaos_board + pin_test) == 0) {
-            *(chaos_board + pin_test) = 1;
-        }
-        else {
-            *(chaos_board + pin_test) = 0;
-        }
+            if (*(chaos_board + pin_test) == 0) {
+                *(chaos_board + pin_test) = 1;
+            }
+            else {
+                *(chaos_board + pin_test) = 0;
+            }
 
         } 
         
