@@ -560,7 +560,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ## gv = glove values
     x_position_gv = 0
     y_position_gv = 1
-    brush_size_gv = 2
+    brush_size_gv = 11
 
     stream_ud_gv = 3
     stream_lr_gv = 4
@@ -574,13 +574,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     cell_vel_scale = 1
 
     #micro_brush
-    micro_brush = 0
+    micro_brush = 1
     xm_position_gv = 3
     ym_position_gv = 4
 
 
     #tts
-    ari = 0
+    ari = 1
     phrase = ' '
     mixer.init()
 

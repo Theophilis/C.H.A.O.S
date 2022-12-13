@@ -239,10 +239,10 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_fire'
+j_name = 'journal_division'
 
 #number of colors
-base = 9
+base = 6
 
 ###color bank###
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
@@ -257,10 +257,11 @@ magenta = (1, 0, 1)
 cyan = (0, 1, 1)
 yellow = (1, 1, 0)
 
-magenta_d = (.8, 0, .8)
+magenta_d = (.3, 0, .3)
 yellow_d = (.8, .8, 0)
-cyan_d = (0, .8, .8)
-red_d = (.8, 0, 0)
+cyan_d = (0, .7, .7)
+
+red_d = (.7, 0, 0)
 
 
 grey_scale = 1
@@ -279,9 +280,8 @@ grey8 = (.09*grey_scale, .09*grey_scale, .09*grey_scale)
 
 
 purple = (.6, 0, .6)
-turquoise = (0, .8, .8)
 light_grey = (.8, .8, .8)
-moss = (.2, .4, .2)
+moss = (.1, .3, .1)
 orange = (1, .5, .1)
 
 
@@ -290,24 +290,29 @@ color_list_0 = [cyan, white, yellow, grey, black]
 color_list_1 = [red, yellow, orange]
 color_list_2 = [blue, magenta, cyan, red]
 color_list_3 = [black, grey, cyan, magenta, yellow]
+
+#6 color
+color_list_6 = [grey6, cyan, red, magenta_d, white, moss]
+
+#9 color
 color_list_9 = [black, grey, cyan, magenta, yellow, light_grey, red, blue, green]
 color_list_10 = [black, cyan, grey, grey2, grey3, red, grey5, grey6, grey7, grey8]
 
 
-#0=no reflection 1=reflected image across the top
-reflect = 1
+#0=no reflection, 1=reflected image across the top, 2=reflection across bottom
+reflect = 2
 
 ###dimensions
 
 ##length adjustment. length = length * scale / shrink
 #increase the number of cells in each rule call (multiplicative)
-scale_l = 1
+scale_l = 2
 #decrease the number of cells in each rule call (divisive)
-shrink_l = 2
+shrink_l = 3
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
-scale_w = 1
+scale_w = 5
 #(divisive)
 shrink_w = 1
 
@@ -344,9 +349,10 @@ except:
 
 
 #choose which bookmarked segments you want to stitch together. numbers must be separated by commas.
-bookmark_choices = []
+bookmark_choices = [5, 13]
 
 center_seed = 1
+seed_distro = 4
 
 
 def synthesize(j_name, split, s_f, color_list, width=0):
@@ -833,7 +839,6 @@ def synthesize(j_name, split, s_f, color_list, width=0):
 
                                 synthesis.append(s)
 
-                        j_name += '-bookmarks-'
                         j_name += str(bookmarks[x])
 
                         # print("")
@@ -930,8 +935,10 @@ def synthesize(j_name, split, s_f, color_list, width=0):
                     row = [0 for x in range(width)]
 
                     if center_seed == 1:
-                        for y in range(base):
-                            row[int(len(row) / 2) + y - base] = y
+                        for z in range(seed_distro):
+                            z += 1
+                            for y in range(base):
+                                row[int(len(row) / (1 + seed_distro)) * z + y - base] = y
 
                     synthesis.append(row)
 
@@ -964,6 +971,13 @@ def synthesize(j_name, split, s_f, color_list, width=0):
 
                             synthesis.append(s)
 
+                    if reflect == 2:
+
+                        synthesis = list(reversed(synthesis))
+
+                        for s in reversed(synthesis[:]):
+                            synthesis.append(s)
+
                     j_name += '-bookmarks-'
                     j_name += str(bookmark_choices)
 
@@ -972,7 +986,7 @@ def synthesize(j_name, split, s_f, color_list, width=0):
                     # print(synthesis)
 
                     file = str(base) + '-' + j_name + '_length' + str(scale_l) + '-' + str(shrink_l) + '_width' + str(
-                        scale_w) + '-' + str(shrink_w) + '_Colors-' + str(color_list_label)
+                        scale_w) + '-' + str(shrink_w) + '_Colors-' + str(color_list_label) + '-' + str(reflect)
                     path_name = os.path.join(path, file)
 
                     ax = plt.gca()
@@ -1070,7 +1084,7 @@ def rule_book(rule_book, color_list, length, width):
 
 
 
-synthesize(j_name,split, 1, color_list_9)
+synthesize(j_name,split, 1, color_list_6)
 
 
 

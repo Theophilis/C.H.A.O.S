@@ -587,6 +587,7 @@ def Chaos_Window(device_id=-1):
 
             #mouse
             if glove_values[3] > 64:
+
                 # left
                 if glove_values[7] > 64 and l_brake == 0:
                     print()
@@ -611,30 +612,40 @@ def Chaos_Window(device_id=-1):
 
                 mouse.move(int(glove_values[0]) * width_scale, screen_height - int(glove_values[1]) * height_scale, absolute=True, duration=0)
 
-            #key press
-            if glove_values[0] > 64 and x_brake == 0:
+                # if glove_values[0] > 80:
+                #     mouse.move(int(glove_values[2] / mouse_scale), 0, absolute=False, duration=0)
+                # if glove_values[0] < 40:
+                #     mouse.move(-int(glove_values[2] / mouse_scale), 0, absolute=False, duration=0)
+                # if glove_values[1] > 80:
+                #     mouse.move(0, -int(glove_values[2] / mouse_scale), absolute=False, duration=0)
+                # if glove_values[1] < 40:
+                #     mouse.move(0, int(glove_values[2] / mouse_scale), absolute=False, duration=0)
 
-                # print()
-                # print(value)
-                # print(value_letter[value])
-                if value < 10:
-                    keyboard.press(value_integer[value])
-                    keyboard.release(value_integer[value])
+            else:
 
-                x_brake = 1
+                if glove_values[0] > 64 and x_brake == 0:
 
-            elif glove_values[0] < 64 and x_brake == 1:
+                    # print()
+                    # print(value)
+                    # print(value_letter[value])
+                    if value < 10:
+                        keyboard.press(value_integer[value])
+                        keyboard.release(value_integer[value])
 
-                # print()
-                # print(value)
-                # print(value_letter[value])
+                    x_brake = 1
 
-                if value < 10:
-                    keyboard.press(value_integer[value])
-                    keyboard.release(value_integer[value])
+                elif glove_values[0] < 64 and x_brake == 1:
+
+                    # print()
+                    # print(value)
+                    # print(value_letter[value])
+
+                    if value < 10:
+                        keyboard.press(value_integer[value])
+                        keyboard.release(value_integer[value])
 
 
-                x_brake = 0
+                    x_brake = 0
 
 
 

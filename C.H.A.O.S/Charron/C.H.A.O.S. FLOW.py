@@ -536,13 +536,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     run = 1
     pause = 0
     FPS = 120
-    rule = 30
-    start = 0
+    rule_0 = 672023
     step = 0
     step_0 = 0
     space = 0
     clock = pygame.time.Clock()
-    origin_rule = 0
     bv = base ** view
     bbv = base ** base ** view
     rule_window_scale = 4
@@ -572,7 +570,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_offset = CELL_WIDTH + 40
 
     #input augments
-    midi_inputs = 1
+    midi_inputs = 0
     gloves = 1
 
 
@@ -606,10 +604,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     cell_rows = int(HEIGHT) + 1
 
     if base < 11:
-        d_rule, i_rule = rule_gen(rule, base)
+        d_rule, i_rule = rule_gen(rule_0, base)
 
     else:
-        d_rule, i_rule = rule_gen_xx(rule, base)
+        d_rule, i_rule = rule_gen_xx(rule_0, base)
 
 
     # print("")
@@ -621,7 +619,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     print((cell_row_width, cell_rows))
 
     cells_a = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
-    cells_a[0, int(cell_row_width / 2)] = value_color[1]
+
+    for x in range(base):
+        cells_a[0, int(cell_row_width / 2) + x - int(base/2)] = value_color[x]
 
 
     for x in range(cell_rows - 1):
@@ -1001,18 +1001,42 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     v_input += "-"
 
-                elif event.key == pygame.K_RETURN:
+                elif event.key == pygame.K_PERIOD:
 
-                    pause += 1
-                    pause = pause % 2
+                    d_rule, i_rule = rule_gen(rule_0, base)
+                    #
 
-                    print("")
-                    print("pause")
-                    print(pause)
+                elif event.key == pygame.K_UP:
+
+                    stream_direction.append(2)
+
+                    # print('up')
+                    # print(stream_direction)
+
+                elif event.key == pygame.K_RIGHT:
+
+                    stream_direction.append(1)
+
+                    # print("right")
+                    # print(stream_direction)
+
+                elif event.key == pygame.K_DOWN:
+
+                    stream_direction.append(0)
+
+                    # print("down")
+                    # print(stream_direction)
+
+                elif event.key == pygame.K_LEFT:
+
+                    stream_direction.append(3)
+
+                    # print('left')
+                    # print(stream_direction)
 
 
                 #console commands
-                elif event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                if event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
 
                     if input_box == 0:
 
@@ -1166,39 +1190,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                         input_box = 0
 
-                elif event.key == pygame.K_PERIOD:
+                if event.key == pygame.K_RETURN:
 
-                    d_rule, i_rule = rule_gen(origin_rule, base)
-                    #
+                    pause += 1
+                    pause = pause % 2
 
-
-                elif event.key == pygame.K_UP:
-
-                    stream_direction.append(2)
-
-                    # print('up')
-                    # print(stream_direction)
-
-                elif event.key == pygame.K_RIGHT:
-
-                    stream_direction.append(1)
-
-                    # print("right")
-                    # print(stream_direction)
-
-                elif event.key == pygame.K_DOWN:
-
-                    stream_direction.append(0)
-
-                    # print("down")
-                    # print(stream_direction)
-
-                elif event.key == pygame.K_LEFT:
-
-                    stream_direction.append(3)
-
-                    # print('left')
-                    # print(stream_direction)
+                    print("")
+                    print("pause")
+                    print(pause)
 
 
             #midi
@@ -1937,7 +1936,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(9, 1, 1, 1)
+Chaos_Window(6, 1, 1, -1)
 
 
 

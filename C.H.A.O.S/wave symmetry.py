@@ -258,8 +258,8 @@ def extract(diff):
 # print(y)
 # print(z)
 
-base = 3
-view = 8
+base = 2
+view = 5
 
 xb = [base_x(x, base) for x in range(base ** view)]
 for x in range(len(xb)):
