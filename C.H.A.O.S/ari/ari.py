@@ -540,7 +540,7 @@ def Chaos_Window(device_id=-1):
                 print(typing_mouse)
             elif glove_values[2] < 64 and mode_brake == 1:
                 mode_brake = 0
-                #
+
 
             # enter
             elif glove_values[2] > 64 and value == 0 and z_brake == 0:

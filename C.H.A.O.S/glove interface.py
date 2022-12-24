@@ -413,7 +413,7 @@ def Chaos_Window(device_id=-1):
                             glove_values[23]))
 
 
-        print(glove_values)
+        # print(glove_values)
 
 
         #midi clean up
