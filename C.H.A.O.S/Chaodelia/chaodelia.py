@@ -349,10 +349,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
             WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
 
-        # WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
-        WIN.blit(time_label, (WIDTH - time_label.get_width() - 20, 10))
-        # WIN.blit(step_length, (WIDTH - step_length.get_width() - 20, 70))
-        WIN.blit(phrase_label, (int(WIDTH/2) - phrase_label.get_width(), 40))
+        if ari == 1:
+            # WIN.blit(step_label_b, (WIDTH - step_label_b.get_width(), 10))
+            WIN.blit(time_label, (WIDTH - time_label.get_width() - 20, 10))
+            # WIN.blit(step_length, (WIDTH - step_length.get_width() - 20, 70))
+            WIN.blit(phrase_label, (int(WIDTH/2) - phrase_label.get_width(), 40))
+            draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 40, 80)
 
         # WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
         # WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 90))
@@ -380,7 +382,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         if list_count != 0:
             draw_text(str(list_count), small_font, (255, 255, 255), WIN, 11, 33)
 
-        draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 40, 80)
+
 
         pygame.display.update()
 
@@ -1285,12 +1287,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     step_0 = step
 
                 elif event.key == pygame.K_F1:
-                    book_rule = str()
-                    for ir in i_rule:
-                        book_rule += str(ir)
-                    rule_book.append(book_rule)
+                    # book_rule = str()
+                    # for ir in i_rule:
+                    #     book_rule += str(ir)
+                    # rule_book.append(book_rule)
 
-                    print(len(rule_book))
+                    ari += 1
+                    ari = ari % 2
 
                 elif event.key == pygame.K_F2:
                     for y in range(canvas_rows):
