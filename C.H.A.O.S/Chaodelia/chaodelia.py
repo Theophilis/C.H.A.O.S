@@ -315,7 +315,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
         #ui drawing
-        if ui_on == 2:
+        if ui_on == 1:
 
             for x in range(len(right_triggers)):
 
@@ -601,7 +601,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     bookmarks = [0]
 
     #ui
-    ui_on = 2
+    ui_on = 1
     ui_scale = 14
     bar_height = 100
     bar_width = ui_scale + int(ui_scale / 2)
@@ -1296,6 +1296,15 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     ari = ari % 2
 
                 elif event.key == pygame.K_F2:
+                    # book_rule = str()
+                    # for ir in i_rule:
+                    #     book_rule += str(ir)
+                    # rule_book.append(book_rule)
+
+                    ui_on += 1
+                    ui_on = ui_on % 2
+
+                elif event.key == pygame.K_F3:
                     for y in range(canvas_rows):
                         for x in range(canvas_row_width):
                             canvas[y, x] = 0
@@ -2126,7 +2135,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     left_sorted = [left_triggers.index(x) for x in sorted(left_triggers[::], reverse=True)]
 
                 # t_sums
-                t_sums = [right_triggers[right_sorted[0]]]
+                t_sums = [right_triggers[right_sorted[0]] + 1]
                 if gloves == 2:
                     t_sums = [left_triggers[left_sorted[0]], right_triggers[right_sorted[0]]]
 
