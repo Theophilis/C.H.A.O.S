@@ -430,12 +430,12 @@ def Chaos_Window(device_id=-1):
                         # print(evs[6 + x])
                         # print(value_color[evs[6 + x]])
                         # print(type(value_color[evs[6 + x]]))
-                        color = value_color[int(glove_values[6 + x] / 64)]
+                        color = value_color[int(glove_values[10 - x] / 64)]
                         # print(color)
                         indicators[y - (x * 100) - 100, z] = color
 
             # letter input
-            if glove_values[0] > 64 and x_brake == 0:
+            if glove_values[2] > 64 and x_brake == 0:
 
                 # print()
                 # print(value)
@@ -469,7 +469,7 @@ def Chaos_Window(device_id=-1):
                             phrase = ' '
 
                 x_brake = 1
-            elif glove_values[0] < 64 and x_brake == 1:
+            elif glove_values[2] < 64 and x_brake == 1:
 
                 # print()
                 # print(value)
@@ -531,24 +531,24 @@ def Chaos_Window(device_id=-1):
                 y_brake = 0
 
             # mode
-            if glove_values[2] > 64 and value == 18 and mode_brake == 0:
+            if glove_values[0] > 128 and value == 18 and mode_brake == 0:
 
                 print()
                 print('mode change')
                 typing_mouse = (typing_mouse + 1) % 2
                 mode_brake = 1
                 print(typing_mouse)
-            elif glove_values[2] < 64 and mode_brake == 1:
+            elif glove_values[0] < 64 and mode_brake == 1:
                 mode_brake = 0
 
 
             # enter
-            elif glove_values[2] > 64 and value == 0 and z_brake == 0:
+            elif glove_values[0] > 64 and value == 0 and z_brake == 0:
                 keyboard.press(pynput.keyboard.Key.enter)
                 keyboard.release(pynput.keyboard.Key.enter)
 
                 z_brake = 1
-            elif glove_values[2] < 64 and value == 0 and z_brake == 1:
+            elif glove_values[0] < 64 and value == 0 and z_brake == 1:
                 z_brake = 0
                 #
 

@@ -115,6 +115,7 @@ def rule_gen(rule, base=2):
     return rules, int_rule[:base ** view]
 
 
+
 def rule_gen_2(rule, base, length):
     rules = dict()
 
