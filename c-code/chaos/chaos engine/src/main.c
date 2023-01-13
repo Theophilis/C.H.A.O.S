@@ -324,7 +324,7 @@ void value_color_s(int *board, uint8_t *pixels, int lw, int shade){
         else if (*(board + i) == 2) {
             // printf("one\n");
             *(pixels + (i * 4)) = 255;
-            *(pixels + (i * 4) + 1) = 0;
+            *(pixels + (i * 4) + 1) = 255;
             *(pixels + (i * 4) + 2) = 255;
             *(pixels + (i * 4) + 3) = 255;
         }
@@ -723,7 +723,7 @@ int main(int argc, char *argv[]) {
     int color_step_scale = 16;
     int color_reset = 0;
 
-    int layer_scale = 8;
+    int layer_scale = 1;
     int layer_size = 255 + (256 * layer_scale);
     int layer_count = 7;
 
@@ -1367,11 +1367,38 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        printf("\n\n%i\t%i", black/b_width, white/b_width);
+        // printf("\n\n%i\t%i", black/b_width, white/b_width);
 
         //pulse
         if (pulse > 0) {
+
+            if (pulse == 1) {
+            
+                *(a_rule + rule_value % bv) += 1;
+                *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
+
+                if (symm > 0) {
+                                    // printf("\n\nsymmetrize");
+                                    rule_fold(a_rule, symmetry, base, symm, rule_value, bv);
+                                }
+                        
+                if (rule_value == 17) {
+                                color_reset += 1;
+                                color_reset = color_reset % 2;
+                            }
+
+                if (rule_value == 0) {
+                                for (int i=0; i< bv/2; i++) {
+                                    *(a_rule + i) = 0;
+                                    *(a_rule + i + bv/2) = 1;
+                                }
+                            }
+                symm += 1;
+                symm = symm % 4;
+            }
+            
             pulse += 1;
+
             if (pulse > b_width/2) {
                 if (quad_clear == 1) {
                     for (int i=0; i<lw; i++) {
@@ -1404,6 +1431,11 @@ int main(int argc, char *argv[]) {
 
                 pulse = 1;      
             }
+
+            *(chaos_colors + b_width * (b_length/2) + pulse) = 0;
+            *(chaos_colors + b_width * (b_length/2) + pulse + b_length) = 0;
+            *(chaos_colors + b_width * (b_length/2) + pulse + b_length * 2) = 0;
+            
         }
 
 
@@ -2291,60 +2323,118 @@ int main(int argc, char *argv[]) {
                             (*(glove_values + 9)/64) * 8 +
                             (*(glove_values + 10)/64) * 16);
 
+
                 //single change check
-                if (rule_value % bv != last_value) {
-                    *(a_rule + rule_value % bv) += 1;
-                    *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
+                // if (rule_value % bv != last_value) {
+                //     *(a_rule + rule_value % bv) += 1;
+                //     *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
+                //     if (symm > 0) {
+                //         // printf("\n\nsymmetrize");
+                //         rule_fold(a_rule, symmetry, base, symm, rule_value, bv);
+                //     }
+                //     }
+                //     last_value = (rule_value % bv);
+                
+                //swipe change
+                if (*(glove_values + 2) < 64) {
+                    if (x_block == 0) {
+                        // printf("\n\nleft %i", rule_value);
 
-                    if (symm > 0) {
-                        // printf("\n\nsymmetrize");
-                        rule_fold(a_rule, symmetry, base, symm, rule_value, bv);
+                        if (rule_value % bv != last_value) {
+                            *(a_rule + rule_value % bv) += 1;
+                            *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
+
+                            if (symm > 0) {
+                                    // printf("\n\nsymmetrize");
+                                    rule_fold(a_rule, symmetry, base, symm, rule_value, bv);
+                                }
+                        
+                            if (rule_value == 17) {
+                                color_reset += 1;
+                                color_reset = color_reset % 2;
+                            }
+
+                            if (rule_value == 0) {
+                                for (int i=0; i< bv/2; i++) {
+                                    *(a_rule + i) = 0;
+                                    *(a_rule + i + bv/2) = 1;
+                                }
+                            }
+                        }
+                        
+                        last_value = (rule_value % bv);
+                        x_block = 1;
                     }
+                } else {
+                    if (x_block == 1) {
+                        // printf("\n\nright %i", rule_value);
 
+                        if (rule_value % bv != last_value) {
+                            *(a_rule + rule_value % bv) += 1;
+                            *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
+                            
+                            if (symm > 0) {
+                                // printf("\n\nsymmetrize");
+                                rule_fold(a_rule, symmetry, base, symm, rule_value, bv);
+                            }
+                            
+                            if (rule_value == 17) {
+                                color_reset += 1;
+                                color_reset = color_reset % 2;
+                            }
 
+                            if (rule_value == 0) {
+                                for (int i=0; i< bv/2; i++) {
+                                    *(a_rule + i) = 0;
+                                    *(a_rule + i + bv/2) = 1;
+                                }
+                            }
+
+                            }
+                        
+                        last_value = (rule_value % bv);
+                        x_block = 0;
                     }
-                    last_value = (rule_value % bv);
+                
+                }
+
 
 
                 //accel activation
-                if (*(glove_values + 11)/64 == 1) {
-
-                    if (quad_clear == 1) {
-                        for (int i=0; i<lw; i++) {
-                            *(chaos_board + i) = 0;
-                            *(chaos_colors + i) = 0;
-                            }
-                        for (int i=0; i<b_width/2; i++) {
-                            for (int o=0; o<b_length/2; o++) {
-                                *(chaos_board + o + (i*b_width)) = 1;
-                                *(chaos_board + o + (i*b_width) + (lw/2)) = 1;
-                            }
-                        }
-
-                        *(chaos_board + (lw/4)) = 0;
-                        *(chaos_board + (lw/4) + b_width/2) = 1;
-                        *(chaos_board + (lw/2) + (lw/4)) = 0;
-                        *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
-                    } else {         
-                        for (int i=0; i<lw; i++) {
-                            *(chaos_board + i) = 0;
-                            *(chaos_colors + i) = 0;
-                            *(brush_board + i%lw_bb) = 0;
-                        }
-                    }
-                    
-                    if (color_catch == 0) {
-                        if (color_alt == 1) { 
-                            color_on += 1;
-                            color_on = color_on % 2;
-                            color_catch = 1;
-                        }
-                    }
-
-                    board_growth = 0;
-                } else {
-                    color_catch = 0;
-                }
+                // if (*(glove_values + 11)/64 == 1) {
+                //     if (quad_clear == 1) {
+                //         for (int i=0; i<lw; i++) {
+                //             *(chaos_board + i) = 0;
+                //             *(chaos_colors + i) = 0;
+                //             }
+                //         for (int i=0; i<b_width/2; i++) {
+                //             for (int o=0; o<b_length/2; o++) {
+                //                 *(chaos_board + o + (i*b_width)) = 1;
+                //                 *(chaos_board + o + (i*b_width) + (lw/2)) = 1;
+                //             }
+                //         }
+                //         *(chaos_board + (lw/4)) = 0;
+                //         *(chaos_board + (lw/4) + b_width/2) = 1;
+                //         *(chaos_board + (lw/2) + (lw/4)) = 0;
+                //         *(chaos_board + (lw/2) + (lw/4) + b_width/2) = 1;
+                //     } else {         
+                //         for (int i=0; i<lw; i++) {
+                //             *(chaos_board + i) = 0;
+                //             *(chaos_colors + i) = 0;
+                //             *(brush_board + i%lw_bb) = 0;
+                //         }
+                //     }
+                //     if (color_catch == 0) {
+                //         if (color_alt == 1) { 
+                //             color_on += 1;
+                //             color_on = color_on % 2;
+                //             color_catch = 1;
+                //         }
+                //     }
+                //     board_growth = 0;
+                // } else {
+                //     color_catch = 0;
+                // }
 
                 //wrist activation
                 // if (*(glove_values + 3)/64 == 1){
@@ -2354,7 +2444,7 @@ int main(int argc, char *argv[]) {
                 // }
                 
                 //color_step
-                color_step = (*(glove_values + 2) / color_step_scale) + 1;
+                // color_step = (*(glove_values + 2) / color_step_scale) + 1;
                 
             }
 

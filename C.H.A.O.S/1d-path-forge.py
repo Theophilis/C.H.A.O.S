@@ -3103,7 +3103,7 @@ def Chaos_Window(base, pixel_res, cell_vel, device_id=None):
         pickle.dump(journal, outfile)
         outfile.close
 
-        # print(len(journal))
+        # print(len(journal))`
 
 
 # menus
