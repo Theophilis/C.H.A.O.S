@@ -562,7 +562,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ## gv = glove values
     x_position_gv = 0
     y_position_gv = 1
-    brush_size_gv = 11
+    brush_size_gv = 2
 
     stream_ud_gv = 3
     stream_lr_gv = 4
@@ -571,7 +571,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ##vel_0 runs a cell_vel number of steps
     ##vel 1 runs as many steps as the brush is long
     ##vel 2 runs as many steps as the gv value divided by the scale
-    vel = 1
+    vel = 2
     cell_vel_gv = 6
     cell_vel_scale = 1
 
