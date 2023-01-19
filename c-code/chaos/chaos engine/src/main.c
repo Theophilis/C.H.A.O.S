@@ -715,6 +715,7 @@ int main(int argc, char *argv[]) {
 
     //layers 
     int pulse = 1;
+    int step_lock = 0;
 
     int color_catch = 0;
     int color_alt = 0;
@@ -1373,28 +1374,33 @@ int main(int argc, char *argv[]) {
         if (pulse > 0) {
 
             if (pulse == 1) {
-            
+                
                 *(a_rule + rule_value % bv) += 1;
                 *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
 
                 if (symm > 0) {
-                                    // printf("\n\nsymmetrize");
-                                    rule_fold(a_rule, symmetry, base, symm, rule_value, bv);
+                    // printf("\n\nsymmetrize");
+                    rule_fold(a_rule, symmetry, base, symm, rule_value, bv);
                                 }
+
                         
                 if (rule_value == 17) {
                                 color_reset += 1;
                                 color_reset = color_reset % 2;
                             }
 
+                step_lock = 0;
                 if (rule_value == 0) {
-                                for (int i=0; i< bv/2; i++) {
+                    for (int i=0; i< bv/2; i++) {
                                     *(a_rule + i) = 0;
                                     *(a_rule + i + bv/2) = 1;
                                 }
-                            }
+                    step_lock = 1;
+                    }
+                
                 symm += 1;
                 symm = symm % 4;
+
             }
             
             pulse += 1;
@@ -1431,7 +1437,7 @@ int main(int argc, char *argv[]) {
 
                 pulse = 1;      
             }
-
+            
             *(chaos_colors + b_width * (b_length/2) + pulse) = 0;
             *(chaos_colors + b_width * (b_length/2) + pulse + b_length) = 0;
             *(chaos_colors + b_width * (b_length/2) + pulse + b_length * 2) = 0;
@@ -2444,8 +2450,16 @@ int main(int argc, char *argv[]) {
                 // }
                 
                 //color_step
-                // color_step = (*(glove_values + 2) / color_step_scale) + 1;
-                
+
+                if (rule_value == 0) {
+                    if (step_lock == 0) {
+                        color_step = (*(glove_values + 2) / color_step_scale) + 1;
+                    } else {
+                        color_step = 1;
+                    }
+                } else {
+                    color_step = 1;
+                }
             }
 
 
