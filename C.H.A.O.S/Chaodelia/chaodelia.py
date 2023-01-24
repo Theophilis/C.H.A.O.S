@@ -213,6 +213,51 @@ def viewer_1d(row, y, view, v_0, color_value):
         return v_0
 
 
+def viewer_1d_1(row, y, view, v_0, color_value, color_value_1):
+
+    # print('view')
+    # print(view)
+    # print("v_0_v")
+    # print(v_0)
+    # print(len(v_0))
+
+    if len(v_0) % 2 == 1:
+
+        if y + len(v_0) > len(row) - 1:
+
+            v_0.append('0')
+
+        else:
+
+            v_0.append(str(color_value[tuple(row[y + int(len(v_0) / 2) + 1])]))
+
+    else:
+
+        if y - len(v_0) < -1:
+
+            v_0.insert(0, '0')
+
+        else:
+
+            try:
+                v_0.insert(0, str(color_value[tuple(row[int(y - len(v_0) / 2)])]))
+
+            except:
+                v_0.insert(0, str(color_value_1[tuple(row[int(y - len(v_0) / 2)])]))
+
+    view -= 1
+
+    if view == 0:
+
+        return v_0
+
+    else:
+
+        v_0 = viewer_1d(row, y, view, v_0, color_value)
+
+        return v_0
+
+
 def Color_cells_1d(d_rule, cell_row_width, row_0):
 
     # print("")
@@ -274,6 +319,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     color_7 = (0, 255, 0)
     color_8 = (0, 0, 255)
 
+    color_list = [0, 0, 0, 32, 32, 32, 255, 0, 255, 0, 255, 255, 255, 255, 0, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0,255]
+
     if base < 5:
 
         value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3}
@@ -284,6 +331,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
                       6:color_6, 7:color_7, 8:color_8}
         color_value = {v:k for k, v in value_color.items()}
+
 
 
     # numerical
@@ -305,7 +353,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     value_letter = {v: k for k, v in letter_values.items()}
 
 
-    def redraw_window(input_box, v_input, step_show, dt, timer):
+    def redraw_window(input_box, v_input, step_show, dt, timer, cv_pos):
 
         #preparation
 
@@ -316,6 +364,28 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         #ui drawing
         if ui_on == 1:
+            cv_pos = 0
+
+            for x in range(27):
+
+                crect_0 = pygame.Rect(WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32, 63, 31)
+                pygame.draw.rect(WIN, (255, 255, 255), crect_0)
+                draw_text( str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32)
+
+                if crect_0.collidepoint((mx, my)):
+                    cv_pos = x + 1
+
+                    try:
+                        color_list[x] = int(v_input)
+                    except:
+                        color_list[x] = 0
+                    # print(cv_pos)
+
+
+
+            # print()
+            # print('cv_pos')
+            # print(cv_pos)
 
             for x in range(len(right_triggers)):
 
@@ -385,6 +455,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
         pygame.display.update()
+
+        return cv_pos
 
     def input(letter, base, page, input_box, v_input):
 
@@ -540,6 +612,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     pause = 0
     FPS = 120
     rule = 30
+    mx, my = pygame.mouse.get_pos()
 
     start = 0
     step = 0
@@ -573,7 +646,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ##vel 2 runs as many steps as the gv value divided by the scale
     vel = 2
     cell_vel_gv = 6
-    cell_vel_scale = 1
+    cell_vel_scale = 3
 
     #micro_brush
     micro_brush = 1
@@ -606,6 +679,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     bar_height = 100
     bar_width = ui_scale + int(ui_scale / 2)
     ari_scale = 50
+    cv_pos = 0
+
 
 
     #glove emthods
@@ -803,6 +878,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         # print("")
         # print("running")
 
+        mx, my = pygame.mouse.get_pos()
         ts_1 = time.time()
         timer = ts_1 - ts_0
 
@@ -812,7 +888,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         # print(type(timer))
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
-        redraw_window(input_box, v_input, step_show, dt, timer)
+        cv_pos = redraw_window(input_box, v_input, step_show, dt, timer, cv_pos)
 
         #mitosis
         pause = 0
@@ -860,7 +936,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     for x in range(len(cells_a[0])):
                         cells_a[(0 + momentum[stream_direction[step % stream_buffer % len(stream_direction)]]) % (
                                     len(cells_a[0]) - 1), x] = value_color[
-                            d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
+                             d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
 
                 if len(stream_direction) > 0:
 
@@ -1148,14 +1224,36 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
         #inputs
+        click = False
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
                 run = 2
 
 
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+
             #keyboard
             elif event.type == pygame.KEYDOWN:
+
+                color_0 = (int(color_list[0]), int(color_list[1]), int(color_list[2]))
+                color_1 = (int(color_list[3]), int(color_list[4]), int(color_list[5]))
+                color_2 = (int(color_list[6]), int(color_list[7]), int(color_list[8]))
+                color_3 = (int(color_list[9]), int(color_list[10]), int(color_list[11]))
+                color_4 = (int(color_list[12]), int(color_list[13]), int(color_list[14]))
+                color_5 = (int(color_list[15]), int(color_list[16]), int(color_list[17]))
+                color_6 = (int(color_list[18]), int(color_list[19]), int(color_list[20]))
+                color_7 = (int(color_list[21]), int(color_list[22]), int(color_list[23]))
+                color_8 = (int(color_list[24]), int(color_list[25]), int(color_list[26]))
+
+                print(color_0, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8)
+
+                colors_list = [color_0, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8]
+
+
 
                 if event.key == K_ESCAPE:
                     run = 2
@@ -1264,10 +1362,45 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     v_input = input('m', base, page, input_box, v_input)
                     page = []
 
+
+
                 elif event.key == pygame.K_SPACE:
+
                     v_input = input(' ', base, page, input_box, v_input)
                     space += 1
                     page = []
+
+
+                    period = 0
+                    for y in range(HEIGHT):
+                        period = 0
+                        for x in range(WIDTH):
+                            # print()
+                            # print(canvas[y, x])
+                            # print(color_value[tuple(canvas[y, x])])
+                            # print(colors_list[color_value[tuple(canvas[y, x])]])
+
+                            color = colors_list[color_value[tuple(canvas[y, x])]]
+                            # print(color)
+                            canvas[y, x] = color
+                            # print(canvas[y, x])
+
+                            # period += 1
+                            # if period > 50:
+                            #     break
+
+                    if base < 5:
+
+                        value_color = {0: color_0, 1: color_1, 2: color_2, 3: color_3}
+                        color_value = {v: k for k, v in value_color.items()}
+
+                    else:
+
+                        value_color = {0: color_0, 1: color_1, 2: color_2, 3: color_3, 4: color_4, 5: color_5,
+                                       6: color_6, 7: color_7, 8: color_8}
+                        color_value = {v: k for k, v in value_color.items()}
+
+
 
                 elif event.key == pygame.K_0:
 
@@ -1315,64 +1448,103 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     v = 1
 
-                    if input_box == 1:
+                    print(cv_pos)
+
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
+
 
                 elif event.key == pygame.K_2:
 
                     v = 2
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_3:
 
                     v = 3
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_4:
 
                     v = 4
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_5:
 
                     v = 5
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_6:
 
                     v = 6
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_7:
 
                     v = 7
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_8:
 
                     v = 8
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_9:
 
                     v = 9
 
-                    if input_box == 1:
+                    if input_box == 1 or cv_pos > 0:
                         v_input += str(v)
+                        print(v_input)
+
+                    else:
+                        v_input = ''
 
                 elif event.key == pygame.K_BACKSPACE:
                     v_input = v_input[0:-1]
