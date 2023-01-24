@@ -371,10 +371,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 crect_0 = pygame.Rect(WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32, 63, 31)
                 pygame.draw.rect(WIN, (255, 255, 255), crect_0)
-                draw_text( str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32)
+                # draw_text( str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32)
 
                 if crect_0.collidepoint((mx, my)):
                     cv_pos = x + 1
+
+                    draw_text(v_input, text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
+                              150 + int(x / 3) * 32)
 
                     if click:
                         try:
@@ -382,6 +385,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         except:
                             color_list[x] = 0
                     # print(cv_pos)
+                else:
+                    draw_text(str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
+                              150 + int(x / 3) * 32)
 
 
 
@@ -880,8 +886,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         # print("")
         # print("running")
 
-        print()
-        print(glove_values)
+        # print()
+        # print(glove_values)
 
         mx, my = pygame.mouse.get_pos()
         ts_1 = time.time()
@@ -1808,8 +1814,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     ev.append(int(l.split(':')[1]))
 
                 if ev[0] == 176:
-                    print('right')
-                    print(ev)
+                    # print('right')
+                    # print(ev)
                     glove_values[ev[1]] = ev[2]
 
                 if gloves == 2:
