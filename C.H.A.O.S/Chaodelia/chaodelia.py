@@ -366,6 +366,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         if ui_on == 1:
             cv_pos = 0
 
+            #palette menu
             for x in range(27):
 
                 crect_0 = pygame.Rect(WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32, 63, 31)
@@ -375,10 +376,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 if crect_0.collidepoint((mx, my)):
                     cv_pos = x + 1
 
-                    try:
-                        color_list[x] = int(v_input)
-                    except:
-                        color_list[x] = 0
+                    if click:
+                        try:
+                            color_list[x] = int(v_input)
+                        except:
+                            color_list[x] = 0
                     # print(cv_pos)
 
 
@@ -655,7 +657,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #tts
-    ari = 1
+    ari = 0
     phrase = ' '
     mixer.init()
 
@@ -877,6 +879,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         # print("")
         # print("running")
+
+        print()
+        print(glove_values)
 
         mx, my = pygame.mouse.get_pos()
         ts_1 = time.time()
@@ -1249,7 +1254,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 color_7 = (int(color_list[21]), int(color_list[22]), int(color_list[23]))
                 color_8 = (int(color_list[24]), int(color_list[25]), int(color_list[26]))
 
-                print(color_0, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8)
+                # print(color_0, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8)
 
                 colors_list = [color_0, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8]
 
@@ -1368,7 +1373,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     v_input = input(' ', base, page, input_box, v_input)
                     space += 1
-                    page = []
+
 
 
                     period = 0
@@ -1399,6 +1404,60 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         value_color = {0: color_0, 1: color_1, 2: color_2, 3: color_3, 4: color_4, 5: color_5,
                                        6: color_6, 7: color_7, 8: color_8}
                         color_value = {v: k for k, v in value_color.items()}
+
+                    pygame.midi.quit()
+                    if midi_inputs == 1:
+
+                        pygame.init()
+                        pygame.midi.init()
+                        pygame.fastevent.init()
+                        event_post = pygame.fastevent.post
+
+                        # rtmidi init
+                        if device_id >= 0:
+                            print(" ")
+                            print("device info")
+                            _print_device_info()
+
+                            input_id = device_id
+                            print("input_id")
+                            print(input_id)
+
+                            print(' ')
+                            print("using input_id :%s:" % input_id)
+                            pygame.midi.get_device_info(input_id)
+                            p_m_i = pygame.midi.Input(device_id)
+
+                        glove_values = [x for x in range(gloves * number_of_sensors)]
+                        glove_sums = [x for x in range(gloves)]
+
+                        print("")
+                        print("glove_values")
+                        print(glove_values)
+
+                        mode_brake = 0
+                        x_brake = 0
+                        y_brake = 0
+                        z_brake = 0
+                        l_brake = 0
+                        r_brake = 0
+
+                        if device_id > 0:
+
+                            if midi_inputs == 1:
+
+                                if p_m_i.poll():
+
+                                    # print(' ')
+                                    # print('i')
+                                    # print(i)
+
+                                    midi_events = p_m_i.read(999)
+                                    midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
+
+                                    for m_e in midi_evs:
+                                        event_post(m_e)
+
 
 
 
@@ -1749,8 +1808,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     ev.append(int(l.split(':')[1]))
 
                 if ev[0] == 176:
-                    # print('right')
-                    # print(ev)
+                    print('right')
+                    print(ev)
                     glove_values[ev[1]] = ev[2]
 
                 if gloves == 2:
