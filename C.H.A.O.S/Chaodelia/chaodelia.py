@@ -190,6 +190,8 @@ def viewer_1d(row, y, view, v_0, color_value):
 
             v_0.append(str(color_value[tuple(row[y + int(len(v_0) / 2) + 1])]))
 
+
+
     else:
 
         if y - len(v_0) < -1:
@@ -199,6 +201,7 @@ def viewer_1d(row, y, view, v_0, color_value):
         else:
 
             v_0.insert(0, str(color_value[tuple(row[int(y - len(v_0) / 2)])]))
+
 
     view -= 1
 
@@ -371,7 +374,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 crect_0 = pygame.Rect(WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32, 63, 31)
                 pygame.draw.rect(WIN, (255, 255, 255), crect_0)
-                # draw_text( str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32)
+                # 0
 
                 if crect_0.collidepoint((mx, my)):
                     cv_pos = x + 1
@@ -1383,7 +1386,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
                     period = 0
-                    for y in range(HEIGHT):
+                    for y in range(HEIGHT + 1):
                         period = 0
                         for x in range(WIDTH):
                             # print()
@@ -1399,6 +1402,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             # period += 1
                             # if period > 50:
                             #     break
+
+                    # canvas to brush
+                    for y in range(brush_height):
+                        for x in range(brush_width):
+                            cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
 
                     if base < 5:
 
