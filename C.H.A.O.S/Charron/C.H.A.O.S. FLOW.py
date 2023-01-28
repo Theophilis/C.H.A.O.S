@@ -570,7 +570,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_offset = CELL_WIDTH + 40
 
     #input augments
-    midi_inputs = 0
+    midi_inputs = 1
     gloves = 1
 
 
@@ -1936,7 +1936,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(6, 1, 1, -1)
+Chaos_Window(9, 1, 1, 1)
 
 
 

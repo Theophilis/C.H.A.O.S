@@ -617,7 +617,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         return rule_list, list_count
 
-
     #active variables
     run = 1
     pause = 0
@@ -657,7 +656,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ##vel 2 runs as many steps as the gv value divided by the scale
     vel = 2
     cell_vel_gv = 6
-    cell_vel_scale = 3
+    cell_vel_scale = 2
 
     #micro_brush
     micro_brush = 1
