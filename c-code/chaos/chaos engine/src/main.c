@@ -749,16 +749,18 @@ int main(int argc, char *argv[]) {
 
     //layers 
     int pulse = 1;
+    int pulse_capture = 1;
     int step_lock = 0;
 
     int color_catch = 0;
     int color_alt = 0;
     int color_on = 1;
     int color_step = 1;
+    int step = 0;
     int color_step_scale = 16;
     int color_reset = 0;
 
-    int layer_scale = 2;
+    int layer_scale = 4;
     int layer_size = 255 + (256 * layer_scale);
     int layer_count = 7;
 
@@ -814,6 +816,7 @@ int main(int argc, char *argv[]) {
     int *side_board = malloc((s_length * s_width) * sizeof(int));
     int *key_counter = malloc((27 * sizeof(int)));
     int *glove_values = malloc((glove_size * n_o_gloves) * sizeof(long));
+    int *aura = malloc(5 * sizeof(int));
     //x=0, y=1, z=2, pitch=3, yaw=4, roll=5, thumb=6, pointer=7, middle=8, ring=9, pinky=10, elbow=11
 
         //glove methods
@@ -918,6 +921,16 @@ int main(int argc, char *argv[]) {
     }
 
     int symmetry[32] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15, 16, 24, 20, 28, 18, 26, 22, 30, 17, 25, 21, 29, 19, 27, 23, 31};
+    
+    int b_up[16] = {0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
+    int b_right[16] = {0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29};
+    int b_left[16] = {0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27};
+    int b_down[16] = {0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,};
+
+    int w_up[16] = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31};
+    int w_right[16] = {2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31};
+    int w_left[16] = {4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31};
+    int w_down[16] = {8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31};
 
 
     //ar_lib
@@ -1401,11 +1414,19 @@ int main(int argc, char *argv[]) {
 
         //pulse
         if (pulse > 0) {
+            
+            if (pulse_capture > 0) {
+            if (pulse%(b_width/4) == 0) {
 
-            if (pulse == 1) {
-
-                color_step = color_step + 1;
+                symm = *(glove_values + 11) / 32;
                 
+                step = step + 1;
+                if (step%4 == 0) {
+                color_step = color_step + 1;}
+
+                // printf("\n\ncolor_step %i", color_step);
+                
+                if (glove > 0) {
                 *(a_rule + rule_value % bv) += 1;
                 *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
 
@@ -1452,7 +1473,10 @@ int main(int argc, char *argv[]) {
 
                 
                 if (rule_value == 0) {
-                    if (step_lock == 1) {
+
+                    if (step_lock == 0) {
+                        color_step = color_step / 2;
+                    } if (step_lock == 1) {
                         for (int i=0; i< bv/2; i++) {
                                     *(a_rule + i) = 0;
                                     *(a_rule + i + bv/2) = 1;
@@ -1460,6 +1484,7 @@ int main(int argc, char *argv[]) {
                     
                     } else if (step_lock == 2) {
                         
+                        color_step = 1;
                         color_reset += 1;
                         color_reset = color_reset % 2;
 
@@ -1494,19 +1519,17 @@ int main(int argc, char *argv[]) {
                     }
 
                     step_lock = step_lock + 1;
-                    color_step = 1;
+
                     
                     } else {
                     step_lock = 0;
                     }
 
                     // printf("\nstep_lock %i", step_lock);
-                
-                symm += 1;
-                symm = symm % 4;
-
+                }
             }
-            
+            }
+
             pulse += 1;
 
             if (pulse > b_width/2) {
@@ -1542,10 +1565,34 @@ int main(int argc, char *argv[]) {
                 pulse = 1;      
             }
             
-            *(chaos_colors + b_width * (b_length/2) + pulse) = 0;
-            *(chaos_colors + b_width * (b_length/2) + pulse + b_length) = 0;
-            *(chaos_colors + b_width * (b_length/2) + pulse + b_length * 2) = 0;
+            //pixle managment
+                //pulse flow
+                    //left origin
 
+            for (int i=0; i<3; i++) {
+            *(chaos_colors + b_width * (b_length/2) + pulse - i) = 0;
+            *(chaos_colors + b_width * (b_length/2) + pulse + b_length - i) = 0;
+            *(chaos_colors + b_width * (b_length/2) + pulse + b_length * 2 - i) = 0;
+            }
+
+                    //right origin
+            for (int i=0; i<3; i++) {
+            *(chaos_colors + b_width * (b_length/2) - pulse + b_width + i) = 0;
+            *(chaos_colors + b_width * (b_length/2) - pulse + b_length + b_width + i) = 0;
+            *(chaos_colors + b_width * (b_length/2) -pulse + b_length * 2 + b_width + i) = 0;
+            }
+
+                    //peak origin
+            for (int i=0; i<3; i++) {
+            *(chaos_colors + (b_width)/2 + (pulse - i + 1) * b_length) = 0;
+            *(chaos_colors + (b_width+1)/2 + (pulse - i + 1) * b_length) = 0;
+            *(chaos_colors + (b_width-1)/2 + (pulse - i + 1) * b_length) = 0;
+            }
+
+            
+
+
+                //rule speed
             *(side_board + (s_width/8) * s_length + (pulse * s_width/(b_width/2))) = (color_step - 1) % 9;
             *(side_board + (s_width/8) * s_length * 2 + (pulse * s_width/(b_width/2))) = (color_step - 1) % 9;
             *(side_board + (s_width/8) * s_length * 3 + (pulse * s_width/(b_width/2))) = (color_step - 1) % 9;
@@ -1601,6 +1648,9 @@ int main(int argc, char *argv[]) {
             else if (glove == 4) {
                 chaomize(brush_board, a_rule, lw_bb, ww_bb, bb_width, base);}
             
+            else if (glove == 5) {
+                chaomize(chaos_board, a_rule, lw_bb, ww_bb, bb_width, base);}
+
         }
 
         //brush to board
@@ -2042,6 +2092,7 @@ int main(int argc, char *argv[]) {
                     
                     case SDL_SCANCODE_F1:
                         glove = 1;
+                        pulse_capture = 1;
                         pin = 1;
                         bb_length = b_length;
                         bb_width = b_width;
@@ -2429,8 +2480,15 @@ int main(int argc, char *argv[]) {
                 }
             } while (res > 0);
 
+            rule_value = ((*(glove_values + 6)/64) + 
+                            (*(glove_values + 7)/64) * 2 + 
+                            (*(glove_values + 8)/64) * 4 + 
+                            (*(glove_values + 9)/64) * 8 +
+                            (*(glove_values + 10)/64) * 16);
+
 
             //glove methods
+
             if (glove == 1) {
 
 
@@ -2454,7 +2512,7 @@ int main(int argc, char *argv[]) {
                 //     last_value = (rule_value % bv);
                 
                 //swipe change
-                if (*(glove_values + 11) < 64) {
+                if (*(glove_values + 11) < 129) {
                     if (x_block == 0) {
                         // printf("\n\nleft %i", rule_value);
 
@@ -2589,53 +2647,8 @@ int main(int argc, char *argv[]) {
                             (*(glove_values + 9)/64) * 8 +
                             (*(glove_values + 10)/64) * 16);
 
-                //single change check
-                if (rule_value % bv != last_value) {
-                    *(a_rule + rule_value % bv) += 1;
-                    *(a_rule + rule_value % bv) = *(a_rule + rule_value % bv) % base;
-
-                    if (symm == 1) {
-                        if (rule_value % bv != *(symmetry + rule_value % bv)) {
-                        *(a_rule + *(symmetry + rule_value % bv)) += 1;
-                        *(a_rule + *(symmetry + rule_value % bv)) = *(a_rule + *(symmetry + rule_value % bv)) % base;
-                        }
-                    }}
-                    last_value = (rule_value % bv);
-
-
-                //accel activation
-                if (*(glove_values + 11)/64 == 1) {
-
-                    for (int i=0; i<lw; i++) {
-                        *(chaos_board + i) = 0;
-                        *(chaos_colors + i) = 0;
-                        *(brush_board + i%lw_bb) = 0;
-
-                    }
-                    
-                    if (color_catch == 0) {
-                        color_on += 1;
-                        color_on = color_on % 2;
-                        color_catch = 1;
-                    }
-
-                    board_growth = 0;
-                } else {
-                    color_catch = 0;
-                }
-
-                //wrist activation
-                if (*(glove_values + 3)/64 == 1){
-                    symm = 1;
-                } else {
-                    symm = 0;
-                }
-                
-                //color_step
-                color_step = (*(glove_values + 2) / color_step_scale) + 1;
-
                 if (board_growth_type == 1) {
-                    bb_length = (*(glove_values + 7) * board_growth_scale + smallest_board )% b_length;
+                    bb_length = (*(glove_values + 2) * board_growth_scale + smallest_board )% b_length;
                     bb_width = bb_length;
                 }
                 
@@ -2805,6 +2818,90 @@ int main(int argc, char *argv[]) {
             }
  
 
+            else if (glove == 5) {
+
+                *(aura) = *(glove_values + 6)/64;
+                *(aura + 1) = *(glove_values + 7)/64;
+                *(aura + 2) = *(glove_values + 8)/64;
+                *(aura + 3) = *(glove_values + 9)/64;
+                *(aura + 4) = *(glove_values + 10)/64;
+
+                // printf("\n\n");
+                // for (int i=0; i<5; i++) {
+
+                //     printf("%i ", *(aura + i));
+                // }
+
+                if (*(aura) == 0) {
+
+                    //up
+                    if (*(aura + 1) == 1) {
+                        *(a_rule + 30) = 0;
+                    } else {
+                        *(a_rule + 30) = 1;
+                    }
+
+                    //right
+                    if (*(aura + 2) == 1) {
+                        *(a_rule + 29) = 0;
+                    } else {
+                        *(a_rule + 29) = 1;
+                    }
+
+                    //left
+                    if (*(aura + 3) == 1) {
+                        *(a_rule + 27) = 0;
+                    } else {
+                        *(a_rule + 27) = 1;
+                    }
+
+                    //down
+                    if (*(aura + 4) == 1) {
+                        *(a_rule + 23) = 0;
+                    } else {
+                        *(a_rule + 23) = 1;
+                    }
+
+                } else {
+
+                    //up
+                    if (*(aura + 1) == 1) {
+                        *(a_rule + 1) = 1;
+                    } else {
+                        *(a_rule + 1) = 0;
+                    }
+
+                    //right
+                    if (*(aura + 2) == 1) {
+                        *(a_rule + 2) = 1;
+                    } else {
+                        *(a_rule + 2) = 0;
+                    }
+
+                    //left
+                    if (*(aura + 3) == 1) {
+                        *(a_rule + 4) = 1;
+                    } else {
+                        *(a_rule + 4) = 0;
+                    }
+
+                    //down
+                    if (*(aura + 4) == 1) {
+                        *(a_rule + 8) = 1;
+                    } else {
+                        *(a_rule + 8) = 0;
+                    }
+
+
+                }
+
+                if (*(glove_values + 11) > 64) {
+       
+                        for (int i=0; i<lw; i++) {
+                            *(chaos_colors + i) = 0;
+                        }
+                    }
+            }
 
 
         }
