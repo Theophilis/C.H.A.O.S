@@ -412,8 +412,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
         #vanilla labels
-        rule_label_0_b = main_font.render(f"RUL3: {i_rule[0:int((base ** view) / 2)]}", 1, (255, 255, 255))
-        rule_label_1_b = main_font.render(f"          {i_rule[int((base ** view) / 2):int((base ** view))]}", 1,
+        rule_label_0_b = main_font.render(f"RUL3: {i_rule_0[0:int((base ** view) / 2)]}", 1, (255, 255, 255))
+        rule_label_1_b = main_font.render(f"          {i_rule_0[int((base ** view) / 2):int((base ** view))]}", 1,
                                           (255, 255, 255))
 
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
@@ -637,15 +637,19 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #input augments
     midi_inputs = 1
-    gloves = 1
+    gloves = 2
     typing_mouse = 0
     mouse_scale = 16
 
     #input maps
     ## gv = glove values
-    x_position_gv = 0
-    y_position_gv = 1
-    brush_size_gv = 2
+    x_position_g0v = 0
+    y_position_g0v = 1
+    x_position_g1v = 12
+    y_position_g1v = 13
+
+    brush_size_g0v = 11
+    brush_size_g1v = 23
 
     stream_ud_gv = 3
     stream_lr_gv = 4
@@ -655,26 +659,38 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ##vel 1 runs as many steps as the brush is long
     ##vel 2 runs as many steps as the gv value divided by the scale
     vel = 2
-    cell_vel_gv = 6
-    cell_vel_scale = 2
+    cell_vel_g0v = 6
+    cell_vel_g1v = 18
+    cell_vel_scale = 8
 
     #micro_brush
-    micro_brush = 1
+    micro_brush = 0
     xm_position_gv = 3
     ym_position_gv = 4
 
 
     #tts
     ari = 0
+    ari_speak = 0
     phrase = ' '
     mixer.init()
 
     #streams
-    streams = 2
+    streams = 3
     stream_buffer = 2
-    stream_direction = deque(maxlen=stream_buffer)
-    stream_direction.append(0)
+
+    stream_direction_0 = deque(maxlen=stream_buffer)
+    stream_direction_0.append(0)
+    stream_direction_1 = deque(maxlen=stream_buffer)
+    stream_direction_1.append(0)
+
     momentum = {0:0, 1:0, 2:0, 3:0}
+
+    last_x_0 = 0
+    last_y_0 = 0
+
+    last_x_1 = 0
+    last_y_1 = 0
 
     #record keeping
     journal = dict()
@@ -731,16 +747,21 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_height = 100
     brush_scale_h = int(canvas_rows / 127)
     brush_scale_w = int(canvas_row_width / 127)
-    brush_scale = 1
+    brush_scale_0 = 2
+    brush_scale_1 = 2
+
+    brush_min_0 = 32
+    brush_min_1 = 16
 
     cell_row_width = brush_width
     cell_rows = brush_height
 
-    d_rule, i_rule = rule_gen(rule, base)
+    d_rule_0, i_rule_0 = rule_gen(rule, base)
+    d_rule_1, i_rule_1 = rule_gen(rule, base)
 
     print("")
     print("d_rule")
-    print(d_rule)
+    print(d_rule_0, d_rule_1)
 
     print("")
     print('cells: width height')
@@ -748,16 +769,19 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     canvas = np.zeros((canvas_rows, canvas_row_width, 3), dtype='uint8')
     cells_a = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
+    cells_b = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
 
     if start == 0:
 
         cells_a[0, int(cell_row_width / 2)] = value_color[1]
+        cells_b[0, int(cell_row_width / 2)] = value_color[1]
 
     else:
 
         #fix this
 
         cells_a[0] = rule_gen_2(start, base, cell_row_width)[1]
+
 
     # print("")
     # print(cells_a)
@@ -769,11 +793,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     for x in range(cell_rows - 1):
 
         cells_a = np.roll(cells_a, 1, 0)
+        cells_b = np.roll(cells_b, 1, 0)
         # cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
 
         for y in range(cell_row_width):
 
-            cells_a[0, y] = value_color[d_rule[tuple(viewer_1d(cells_a[1], y, view, [], color_value))]]
+            cells_a[0, y] = value_color[d_rule_0[tuple(viewer_1d(cells_a[1], y, view, [], color_value))]]
+            cells_a[0, y] = value_color[d_rule_1[tuple(viewer_1d(cells_b[1], y, view, [], color_value))]]
 
     # print("")
     # print('value_color')
@@ -876,10 +902,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     print(" ")
     print("d_rule")
-    print(d_rule)
+    print(d_rule_0, d_rule_1)
     print("i_rule")
-    print(i_rule)
-    print(len(i_rule))
+    print(i_rule_0, i_rule_1)
+    print(len(i_rule_0), len(i_rule_1))
 
 
     #main loop
@@ -890,6 +916,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         # print()
         # print(glove_values)
+
+        # print()
+        # print(i_rule_0)
+        # print(i_rule_1)
 
         mx, my = pygame.mouse.get_pos()
         ts_1 = time.time()
@@ -907,53 +937,88 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         pause = 0
         if pause == 0:
 
-            brush_height_scale = brush_scale
-            brush_width_scale = brush_scale
+            brush_height_scale_0 = brush_scale_0
+            brush_width_scale_0 = brush_scale_0
+            brush_height_scale_1 = brush_scale_1
+            brush_width_scale_1 = brush_scale_1
 
-            brush_height = 4 + (glove_values[brush_size_gv] * brush_height_scale)
-            brush_width = 4 + (glove_values[brush_size_gv] * brush_width_scale)
+            brush_height_0 = brush_min_0 + (glove_values[brush_size_g0v] * brush_height_scale_0)
+            brush_width_0 = brush_min_0 + (glove_values[brush_size_g0v] * brush_width_scale_0)
+            brush_height_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_height_scale_1)
+            brush_width_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_width_scale_1)
+
 
             if micro_brush == 0:
-                brush_x = (glove_values[x_position_gv] * brush_scale_w)
-                brush_y = (glove_values[y_position_gv] * brush_scale_h)
+                brush_x_0 = (glove_values[x_position_g0v] * brush_scale_w)
+                brush_y_0 = (glove_values[y_position_g0v] * brush_scale_h)
+
+                brush_x_1 = (glove_values[x_position_g1v] * brush_scale_w)
+                brush_y_1 = (glove_values[y_position_g1v] * brush_scale_h)
+
+                # print('')
+                # print("brush_0")
+                # print(brush_x_0, brush_y_0)
+                # print(brush_height_0, brush_width_0)
+                #
+                # print("brush_1")
+                # print(brush_x_1, brush_y_1)
+                # print(brush_height_1, brush_width_1)
 
             if micro_brush == 1:
-                brush_x = (glove_values[xm_position_gv]) + (glove_values[x_position_gv] * int(canvas_row_width/127))
-                brush_y = (glove_values[ym_position_gv]) + (glove_values[y_position_gv] * int(canvas_rows/127))
+                brush_x_0 = (glove_values[xm_position_gv]) + (glove_values[x_position_g0v] * int(canvas_row_width/127))
+                brush_y_0 = (glove_values[ym_position_gv]) + (glove_values[y_position_g0v] * int(canvas_rows/127))
 
-            cells_a = np.zeros((brush_height, brush_width, 3), dtype='uint8')
+                brush_x_1 = (glove_values[xm_position_gv]) + (glove_values[x_position_g1v] * int(canvas_row_width / 127))
+                brush_y_1 = (glove_values[ym_position_gv]) + (glove_values[y_position_g1v] * int(canvas_rows / 127))
+
+            cells_a = np.zeros((brush_height_0, brush_width_0, 3), dtype='uint8')
+            cells_b = np.zeros((brush_height_1, brush_width_1, 3), dtype='uint8')
 
             #canvas to brush
-            for y in range(brush_height):
-                for x in range(brush_width):
-                    cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
+            for y in range(brush_height_0):
+                for x in range(brush_width_0):
+                    cells_a[y, x] = canvas[(y - brush_y_0) % canvas_rows, (x + brush_x_0) % canvas_row_width]
+
+            if gloves == 2:
+                for y in range(brush_height_1):
+                    for x in range(brush_width_1):
+                        cells_b[y, x] = canvas[(y - brush_y_1) % canvas_rows, (x + brush_x_1) % canvas_row_width]
 
             #brush_step
             if vel == 1:
-                cell_vel = len(cells_a)
+                cell_vel_1 = len(cells_a)
             elif vel == 2:
-                cell_vel = int(glove_values[cell_vel_gv]/cell_vel_scale) + 1
-            for y in range(cell_vel):
+                cell_vel_0 = int(glove_values[cell_vel_g0v]/cell_vel_scale) + 1
 
-                cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
+                if gloves == 2:
+                    cell_vel_1 = int(glove_values[cell_vel_g1v]/cell_vel_scale) + 1
+
+            for y in range(cell_vel_0):
+
+                cells_a = np.rot90(cells_a, stream_direction_0[step % stream_buffer % len(stream_direction_0)], (0, 1))
 
 
                 cells_a = np.roll(cells_a, 1, 0)
 
                 if g_brush == 1:
                     for x in range(len(cells_a[0])):
-                        cells_a[(0 + momentum[stream_direction[step % stream_buffer % len(stream_direction)]]) % (len(cells_a[0]) - 1), x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
+                        cells_a[(0 + momentum[stream_direction_0[step % stream_buffer % len(stream_direction_0)]]) % (len(cells_a[0]) - 1), x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
 
                 if g_brush >= 2:
 
                     for x in range(len(cells_a[0])):
-                        cells_a[(0 + momentum[stream_direction[step % stream_buffer % len(stream_direction)]]) % (
+                        cells_a[(0 + momentum[stream_direction_0[step % stream_buffer % len(stream_direction_0)]]) % (
                                     len(cells_a[0]) - 1), x] = value_color[
-                             d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
+                             d_rule_0[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
 
-                if len(stream_direction) > 0:
+                    for x in range(len(cells_b[0])):
+                        cells_b[(0 + momentum[stream_direction_0[step % stream_buffer % len(stream_direction_0)]]) % (
+                                len(cells_b[0]) - 1), x] = value_color[
+                            d_rule_1[tuple(viewer_1d(cells_b[1], x, view, [], color_value))]]
 
-                    cells_a = np.rot90(cells_a, 4 - stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
+                if len(stream_direction_0) > 0:
+
+                    cells_a = np.rot90(cells_a, 4 - stream_direction_0[step % stream_buffer % len(stream_direction_0)], (0, 1))
 
                     # cells_a = np.rot90(cells_a, 3, (0, 1))
                     # cells_a = np.rot90(cells_a, 2, (0, 1))
@@ -965,18 +1030,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
                 rule = str()
-                for ir in i_rule:
+                for ir in i_rule_0:
                     rule += str(ir)
                 rule = (rule, datetime.now())
 
-                if i_rule != rule_point:
+                if i_rule_0 != rule_point:
                     # print()
                     # print()
                     # print("align")
                     # print("i_rule & rule_point")
                     # print(i_rule)
                     # print(rule_point)
-                    rule_point = i_rule[::]
+                    rule_point = i_rule_0[::]
                     # print()
                     # print("i_rule & rule_point")
                     # print(i_rule)
@@ -993,10 +1058,75 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 step += 1
 
+            if gloves == 2:
+                for y in range(cell_vel_1):
+
+                    cells_b = np.rot90(cells_b, stream_direction_1[step % stream_buffer % len(stream_direction_1)], (0, 1))
+
+                    cells_b = np.roll(cells_b, 1, 0)
+
+                    if g_brush == 1:
+                        for x in range(len(cells_b[0])):
+                            cells_b[(0 + momentum[stream_direction_1[step % stream_buffer % len(stream_direction_1)]]) % (
+                                        len(cells_b[0]) - 1), x] = value_color[
+                                d_rule[tuple(viewer_1d(cells_b[1], x, view, [], color_value))]]
+
+                    if g_brush >= 2:
+
+                        for x in range(len(cells_b[0])):
+                            cells_b[(0 + momentum[stream_direction_1[step % stream_buffer % len(stream_direction_1)]]) % (
+                                    len(cells_b[0]) - 1), x] = value_color[
+                                d_rule_1[tuple(viewer_1d(cells_b[1], x, view, [], color_value))]]
+
+                    if len(stream_direction_1) > 0:
+                        cells_b = np.rot90(cells_b, 4 - stream_direction_1[step % stream_buffer % len(stream_direction_1)],
+                                           (0, 1))
+
+                        # cells_a = np.rot90(cells_a, 3, (0, 1))
+                        # cells_a = np.rot90(cells_a, 2, (0, 1))
+                        # cells_a = np.rot90(cells_a, 1, (0, 1))
+
+                    line = tuple(color_value[tuple(v)] for v in cells_b[0])
+                    page.append(line)
+
+                    rule = str()
+                    for ir in i_rule_0:
+                        rule += str(ir)
+                    rule = (rule, datetime.now())
+
+                    if i_rule_0 != rule_point:
+                        # print()
+                        # print()
+                        # print("align")
+                        # print("i_rule & rule_point")
+                        # print(i_rule)
+                        # print(rule_point)
+                        rule_point = i_rule_0[::]
+                        # print()
+                        # print("i_rule & rule_point")
+                        # print(i_rule)
+                        # print(rule_point)
+
+                        if rule not in journal:
+                            journal[rule] = []
+                            journal[rule].append(page)
+
+                        else:
+                            journal[rule].append(page)
+
+                        page = []
+
+                    step += 1
+
             #brush to canvas
-            for y in range(brush_height):
-                for x in range(brush_width):
-                    canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width] = cells_a[y, x]
+            for y in range(brush_height_0):
+                for x in range(brush_width_0):
+                    canvas[(y - brush_y_0) % canvas_rows, (x + brush_x_0) % canvas_row_width] = cells_a[y, x]
+
+            if gloves == 2:
+                for y in range(brush_height_1):
+                    for x in range(brush_width_1):
+                        canvas[(y - brush_y_1) % canvas_rows, (x + brush_x_1) % canvas_row_width] = cells_b[y, x]
 
         #tts
         if ari > 0:
@@ -1005,6 +1135,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             # typing
             if typing_mouse == 0:
+
+
 
                 value = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (int(glove_values[8] / 64) * 2 ** 2) + (
                             int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
@@ -1030,12 +1162,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 # letter input
                 if glove_values[0] > 64 and x_brake == 0:
 
-                    # print()
-                    # print(value)
-                    # print(value_letter[value])
+                    print()
+                    print("value letter")
+                    print(value)
+                    print(value_letter[value])
 
-                    keyboard.press(value_letter[value])
-                    keyboard.release(value_letter[value])
+                    # keyboard.press(value_letter[value])
+                    # keyboard.release(value_letter[value])
 
                     phrase += value_letter[value]
 
@@ -1045,53 +1178,57 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     x_brake = 1
 
-                    if value == 17 and len(phrase) > 1:
+                    if ari_speak == 1:
+                        if value == 17 and len(phrase) > 1:
 
-                        try:
-                            print('spoken')
-                            audio = gTTS(text=phrase, lang='en', slow=False)
+                            try:
+                                print('spoken')
+                                audio = gTTS(text=phrase, lang='en', slow=False)
 
-                            audio.save('i-' + phrase + '.mp3')
+                                audio.save('i-' + phrase + '.mp3')
 
-                            path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
-                            mixer.music.load(path)
-                            mixer.music.play()
+                                path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
+                                mixer.music.load(path)
+                                mixer.music.play()
 
-                            phrase = ' '
+                                phrase = ' '
 
-                        except:
-                            phrase = ' '
+                            except:
+                                phrase = ' '
+
                 elif glove_values[0] < 64 and x_brake == 1:
 
-                    # print()
-                    # print(value)
-                    # print(value_letter[value])
+                    print()
+                    print("value letter")
+                    print(value)
+                    print(value_letter[value])
 
-                    keyboard.press(value_letter[value])
-                    keyboard.release(value_letter[value])
+                    # keyboard.press(value_letter[value])
+                    # keyboard.release(value_letter[value])
 
                     phrase += value_letter[value]
 
-                    print()
+                    # print()
                     print('phrase')
                     print(phrase)
 
-                    if value == 17 and len(phrase) > 1:
+                    if ari_speak == 1:
+                        if value == 17 and len(phrase) > 1:
 
-                        try:
-                            print('spoken')
-                            audio = gTTS(text=phrase, lang='en', slow=False)
+                            try:
+                                print('spoken')
+                                audio = gTTS(text=phrase, lang='en', slow=False)
 
-                            audio.save('i-' + phrase + '.mp3')
+                                audio.save('i-' + phrase + '.mp3')
 
-                            path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
-                            mixer.music.load(path)
-                            mixer.music.play()
+                                path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
+                                mixer.music.load(path)
+                                mixer.music.play()
 
-                            phrase = ' '
+                                phrase = ' '
 
-                        except:
-                            phrase = ' '
+                            except:
+                                phrase = ' '
 
 
                     x_brake = 0
@@ -1123,95 +1260,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     y_brake = 0
 
-                # mode
-                if glove_values[2] > 64 and value == 18 and mode_brake == 0:
 
-                    print()
-                    print('mode change')
-                    typing_mouse = (typing_mouse + 1) % 2
-                    mode_brake = 1
-                    print(typing_mouse)
-
-                    for y in range(canvas_rows):
-                        for x in range(canvas_row_width):
-                            canvas[y, x] = 0
-
-                elif glove_values[2] < 64 and mode_brake == 1:
-                    mode_brake = 0
-                    #
-
-                # enter
-                elif glove_values[2] > 64 and value == 0 and z_brake == 0:
-                    keyboard.press(pynput.keyboard.Key.enter)
-                    keyboard.release(pynput.keyboard.Key.enter)
-
-                    z_brake = 1
-                elif glove_values[2] < 64 and value == 0 and z_brake == 1:
-                    z_brake = 0
-                    #
             typing_mouse = 0
 
-            # mouse
-            if typing_mouse == 1:
-                print('mouse')
-
-                value = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + \
-                        (int(glove_values[8] / 64) * 2 ** 2) + (
-                            int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
-                for x in range(5):
-                    for y in range(100):
-                        for z in range(100):
-                            # print()
-                            # print(x)
-                            # print(evs[6 + x])
-                            # print(value_color[evs[6 + x]])
-                            # print(type(value_color[evs[6 + x]]))
-                            color = value_color[int(glove_values[6 + x] / 64)]
-                            # print(color)
-                            canvas[y - (x * 100) - 100, z] = color
-
-                # mode
-                if glove_values[2] > 64 and value == 16 and mode_brake == 0:
-
-                    print()
-                    print('mode change')
-                    typing_mouse = (typing_mouse + 1) % 2
-                    mode_brake = 1
-                    print(typing_mouse)
-                elif glove_values[2] < 64 and mode_brake == 1:
-                    mode_brake = 0
-                    #
-
-                # position
-                if glove_values[6] > 64:
-                    if glove_values[0] > 80:
-                        mouse.move(int(glove_values[2] / mouse_scale), 0, absolute=False, duration=0)
-                    if glove_values[0] < 40:
-                        mouse.move(-int(glove_values[2] / mouse_scale), 0, absolute=False, duration=0)
-                    if glove_values[1] > 80:
-                        mouse.move(0, -int(glove_values[2] / mouse_scale), absolute=False, duration=0)
-                    if glove_values[1] < 40:
-                        mouse.move(0, int(glove_values[2] / mouse_scale), absolute=False, duration=0)
-
-                # left
-                if glove_values[7] > 64 and l_brake == 0:
-                    print()
-                    print('left')
-                    mouse.click('left')
-                    l_brake = 1
-                elif glove_values[7] < 64 and l_brake == 1:
-                    l_brake = 0
-                    #
-
-                # right
-                if glove_values[8] > 64 and r_brake == 0:
-                    print()
-                    print('right')
-                    mouse.click('right')
-                    r_brake = 1
-                elif glove_values[8] < 64 and r_brake == 1:
-                    r_brake = 0
-                    #
 
 
         #console rule inputs
@@ -1402,10 +1453,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             # if period > 50:
                             #     break
 
-                    # canvas to brush
-                    for y in range(brush_height):
-                        for x in range(brush_width):
-                            cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
+                    # # canvas to brush
+                    # for y in range(brush_height):
+                    #     for x in range(brush_width):
+                    #         cells_a[y, x] = canvas[(y - brush_y) % canvas_rows, (x + brush_x) % canvas_row_width]
 
                     if base < 5:
 
@@ -1864,13 +1915,42 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             elif streams == 2:
                 if glove_values[stream_ud_gv] > mid_trigger:
-                    stream_direction.append(2)
+                    stream_direction_0.append(2)
                 else:
-                    stream_direction.append(0)
+                    stream_direction_0.append(0)
                 if glove_values[stream_lr_gv] > mid_trigger:
-                    stream_direction.append(1)
+                    stream_direction_0.append(1)
                 else:
-                    stream_direction.append(3)
+                    stream_direction_0.append(3)
+
+            elif streams == 3:
+
+                if last_x_0 > brush_x_0:
+                    stream_direction_0.append(1)
+                if last_x_0 < brush_x_0:
+                    stream_direction_0.append(3)
+
+                if last_y_0 > brush_y_0:
+                    stream_direction_0.append(0)
+                if last_y_0 < brush_y_0:
+                    stream_direction_0.append(2)
+
+                if last_x_1 > brush_x_1:
+                    stream_direction_1.append(1)
+                if last_x_1 < brush_x_1:
+                    stream_direction_1.append(3)
+
+                if last_x_1 > brush_x_0:
+                    stream_direction_0.append(0)
+                if last_x_1 > brush_x_0:
+                    stream_direction_1.append(2)
+
+                last_x_0 = brush_x_0
+                last_y_0 = brush_y_0
+
+                last_x_1 = brush_x_1
+                last_y_1 = brush_y_1
+
 
 
             if g_char > 0:
@@ -2330,6 +2410,26 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             if g_brush == 3:
 
+                # print(glove_values)
+
+                value_0 = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (
+                            int(glove_values[8] / 64) * 2 ** 2) + (
+                                int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
+
+                if gloves == 2:
+                    value_1 = (int(glove_values[18] / 64) * 2 ** 0) + (int(glove_values[19] / 64) * 2 ** 1) + (
+                                int(glove_values[20] / 64) * 2 ** 2) + (
+                                    int(glove_values[21] / 64) * 2 ** 3) + (int(glove_values[22] / 64) * 2 ** 4)
+
+                if glove_values[2] > 64:
+                    if value_0 == 17:
+                        if value_1 == 17:
+                            for x in range(canvas_rows):
+                                for y in range(canvas_row_width):
+                                    canvas[x, y] = 0
+
+                            phrase = ''
+
 
 
                 char_size = int(bv / rule_window_scale)
@@ -2428,17 +2528,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     while scan == 0:
 
-                        if i_rule[place] != right_palette[x]:
-                            i_rule[place] = right_palette[x]
-                            d_rule[list(d_rule.keys())[place]] = right_palette[x]
+                        if i_rule_0[place] != right_palette[x]:
+                            i_rule_0[place] = right_palette[x]
+                            d_rule_0[list(d_rule_0.keys())[place]] = right_palette[x]
                             scan = 1
                         else:
                             steps += 1
 
                         if steps == int(bv / rule_window_scale):
-                            i_rule[place] = right_palette[x]
-                            d_rule[list(d_rule.keys())[place]] = right_palette[x]
+                            i_rule_0[place] = right_palette[x]
+                            d_rule_0[list(d_rule_0.keys())[place]] = right_palette[x]
                             scan = 1
+
                 if gloves == 2:
                     for x in range(len(left_palette)):
 
@@ -2449,16 +2550,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                         while scan == 0:
 
-                            if i_rule[place] != left_palette[x]:
-                                i_rule[place] = left_palette[x]
-                                d_rule[list(d_rule.keys())[place]] = left_palette[x]
+                            if i_rule_1[place] != left_palette[x]:
+                                i_rule_1[place] = left_palette[x]
+                                d_rule_1[list(d_rule_1.keys())[place]] = left_palette[x]
                                 scan = 1
                             else:
                                 steps += 1
 
                             if steps == int(bv / rule_window_scale):
-                                i_rule[place] = left_palette[x]
-                                d_rule[list(d_rule.keys())[place]] = left_palette[x]
+                                i_rule_1[place] = left_palette[x]
+                                d_rule_1[list(d_rule_1.keys())[place]] = left_palette[x]
                                 scan = 1
 
         #midi clean up
