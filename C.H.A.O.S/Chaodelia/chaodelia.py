@@ -637,7 +637,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #input augments
     midi_inputs = 1
-    gloves = 2
+    gloves = 1
     typing_mouse = 0
     mouse_scale = 16
 
@@ -944,16 +944,19 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             brush_height_0 = brush_min_0 + (glove_values[brush_size_g0v] * brush_height_scale_0)
             brush_width_0 = brush_min_0 + (glove_values[brush_size_g0v] * brush_width_scale_0)
-            brush_height_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_height_scale_1)
-            brush_width_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_width_scale_1)
+
+            if gloves == 2:
+                brush_height_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_height_scale_1)
+                brush_width_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_width_scale_1)
 
 
             if micro_brush == 0:
                 brush_x_0 = (glove_values[x_position_g0v] * brush_scale_w)
                 brush_y_0 = (glove_values[y_position_g0v] * brush_scale_h)
 
-                brush_x_1 = (glove_values[x_position_g1v] * brush_scale_w)
-                brush_y_1 = (glove_values[y_position_g1v] * brush_scale_h)
+                if gloves == 2:
+                    brush_x_1 = (glove_values[x_position_g1v] * brush_scale_w)
+                    brush_y_1 = (glove_values[y_position_g1v] * brush_scale_h)
 
                 # print('')
                 # print("brush_0")
@@ -972,7 +975,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 brush_y_1 = (glove_values[ym_position_gv]) + (glove_values[y_position_g1v] * int(canvas_rows / 127))
 
             cells_a = np.zeros((brush_height_0, brush_width_0, 3), dtype='uint8')
-            cells_b = np.zeros((brush_height_1, brush_width_1, 3), dtype='uint8')
+
+            if gloves == 2:
+                cells_b = np.zeros((brush_height_1, brush_width_1, 3), dtype='uint8')
 
             #canvas to brush
             for y in range(brush_height_0):
@@ -1935,21 +1940,26 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 if last_y_0 < brush_y_0:
                     stream_direction_0.append(2)
 
-                if last_x_1 > brush_x_1:
-                    stream_direction_1.append(1)
-                if last_x_1 < brush_x_1:
-                    stream_direction_1.append(3)
-
-                if last_x_1 > brush_x_0:
-                    stream_direction_0.append(0)
-                if last_x_1 > brush_x_0:
-                    stream_direction_1.append(2)
-
                 last_x_0 = brush_x_0
                 last_y_0 = brush_y_0
 
-                last_x_1 = brush_x_1
-                last_y_1 = brush_y_1
+                if gloves == 2:
+                    if last_x_1 > brush_x_1:
+                        stream_direction_1.append(1)
+                    if last_x_1 < brush_x_1:
+                        stream_direction_1.append(3)
+
+                    if last_x_1 > brush_x_0:
+                        stream_direction_0.append(0)
+                    if last_x_1 > brush_x_0:
+                        stream_direction_1.append(2)
+
+                    last_x_1 = brush_x_1
+                    last_y_1 = brush_y_1
+
+
+
+
 
 
 
@@ -2423,7 +2433,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 if glove_values[2] > 64:
                     if value_0 == 17:
-                        if value_1 == 17:
+
+                        if gloves == 2:
+                            if value_1 == 17:
+                                for x in range(canvas_rows):
+                                    for y in range(canvas_row_width):
+                                        canvas[x, y] = 0
+
+                                phrase = ''
+
+                        else:
                             for x in range(canvas_rows):
                                 for y in range(canvas_row_width):
                                     canvas[x, y] = 0
