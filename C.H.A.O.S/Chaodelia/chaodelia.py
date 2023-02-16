@@ -336,7 +336,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         color_value = {v:k for k, v in value_color.items()}
 
 
-
     # numerical
     letter_values = {' ': 0, 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11,
                      'l': 12, 'm': 13,
@@ -355,6 +354,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     value_letter = {v: k for k, v in letter_values.items()}
 
+    color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
 
     def redraw_window(input_box, v_input, step_show, dt, timer, cv_pos):
 
@@ -392,23 +392,46 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     draw_text(str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
                               150 + int(x / 3) * 32)
 
+            for y in range(27):
+                for x in range(27):
+                    bar = pygame.Rect(10 + x * 8, 10 + y * 8, 7, 7)
+                    pygame.draw.rect(WIN, value_color[i_rule_0[x + 27 * y]], bar)
+
+            if gloves == 2:
+                for y in range(27):
+                    for x in range(27):
+                        bar = pygame.Rect(8 + 27*8 + x * 8, 10 + y * 8, 7, 7)
+                        pygame.draw.rect(WIN, value_color[i_rule_1[x + 27 * y]], bar)
+
+            #bars
+            if g_brush == 3:
+                for x in range(len(right_triggers)):
+
+                    #right triggers
+                    bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(right_triggers) - 10 - ari_scale, int(HEIGHT) - int(bar_height * ((right_triggers[x] / zero_out))),
+                                      bar_width, int(bar_height * ((right_triggers[x] / zero_out))))
+                    pygame.draw.rect(WIN, value_color[x + 1], bar)
+
+                    #left triggers
+                    bar = pygame.Rect((ari_scale) + bar_width * x + 10, int(HEIGHT) - int(bar_height * ((left_triggers[x] / zero_out))),
+                                      bar_width, int(bar_height * ((left_triggers[x] / zero_out))))
+                    pygame.draw.rect(WIN, value_color[x + 1], bar)
+
+            if g_brush == 4:
+                for x in range(len(midi_weights)):
+
+                        bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(midi_weights) - 10 - ari_scale,
+                                          int(HEIGHT) - int(bar_height * ((midi_weights[x] / zero_out))),
+                                          bar_width, int(bar_height * ((midi_weights[x] / zero_out))) * 1000)
+                        pygame.draw.rect(WIN, value_color[x], bar)
+
+                for y in range(27):
+                    for x in range(27):
+                        bar = pygame.Rect(10 + x*8, 10+y*8, 7, 7)
+                        pygame.draw.rect(WIN, value_color[i_rule_0[x + 27*y]], bar)
 
 
-            # print()
-            # print('cv_pos')
-            # print(cv_pos)
 
-            for x in range(len(right_triggers)):
-
-                #right triggers
-                bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(right_triggers) - 10 - ari_scale, int(HEIGHT) - int(bar_height * ((right_triggers[x] / zero_out))),
-                                  bar_width, int(bar_height * ((right_triggers[x] / zero_out))))
-                pygame.draw.rect(WIN, value_color[x + 1], bar)
-
-                #left triggers
-                bar = pygame.Rect((ari_scale) + bar_width * x + 10, int(HEIGHT) - int(bar_height * ((left_triggers[x] / zero_out))),
-                                  bar_width, int(bar_height * ((left_triggers[x] / zero_out))))
-                pygame.draw.rect(WIN, value_color[x + 1], bar)
 
 
         #vanilla labels
@@ -617,6 +640,114 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         return rule_list, list_count
 
+    def glove(glove_values):
+
+        # print()
+
+        # print(glove_values)
+
+        value_g = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (
+                int(glove_values[8] / 64) * 2 ** 2) + (
+                          int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
+        # print(value_g)
+
+        # if glove_values[2] > 64:
+        #     if value_0 == 17:
+        #         for x in range(canvas_rows):
+        #                 for y in range(canvas_row_width):
+        #                     canvas[x, y] = 0
+        #
+        #         phrase = ''
+
+        midi_colors = []
+        new_rule = []
+        color_post = {0:1, 1:5, 2:2, 3:6, 4:3, 5:7, 6:4, 7:8, 8:0}
+        post_color = {v: k for k, v in color_post.items()}
+
+        midpoint = 64
+
+        for x in range(4):
+
+            if glove_values[7 + x] > midpoint:
+                midi_colors.append(glove_values[7 + x] - 64)
+            else:
+                midi_colors.append(0)
+
+            if glove_values[7 + x] < midpoint:
+                midi_colors.append(64 - glove_values[7 + x])
+            else:
+                midi_colors.append(0)
+
+        midi_colors.append(max(midi_colors))
+
+        mc_total = sum(midi_colors)
+
+
+        # print(len(i_rule_0))
+        # print(midi_colors)
+        # print(mc_total)
+
+        for x in range(len(midi_colors)):
+            midi_colors[x] = round(midi_colors[x]/mc_total, 2)
+
+
+        midi_weights = midi_colors[::]
+        # for x in range(len(i_rule_0)):
+        #     if midi_colors[x%len(midi_colors)] > 0:
+        #         midi_colors[x%len(midi_colors)] -= 1
+        #         new_rule.append(color_post[x%(len(midi_colors)-1)])
+
+        sorted_weights = []
+        for x in range(len(midi_weights)):
+
+            sorted_weights.append(midi_weights[post_color[x]])
+
+        # print(color_post)
+        # print(sorted_weights)
+
+        for x in range(len(sorted_weights)):
+
+
+            sorted_weights[x] = int(sorted_weights[x] * 81)
+            # print(sorted_weights)
+
+
+            for y in range(sorted_weights[x]):
+                new_rule.append(x)
+
+        # print(sorted_weights)
+        # print(len(new_rule))
+        # print(new_rule)
+
+        if len(new_rule) < 81:
+            for x in range(81 - len(new_rule)):
+                new_rule.append(0)
+
+        # print(len(new_rule))
+        # print(new_rule)
+
+        paint_brush = []
+        for x in range(len(new_rule)):
+            # print(new_rule[x])
+            for y in range(9):
+                paint_brush.append(new_rule[x])
+
+        # print(len(paint_brush))
+        # print(paint_brush)
+
+        for x in range(base):
+            for y in range(27):
+                if y%3 == 0:
+                    paint_brush[x*81 + x*9 + x-81 + 3*y] = paint_brush[(x-3)*81 + (x-1)]
+                elif y%3 == 1:
+                    paint_brush[x*81 + x*9 + x-81 + 3*y] = paint_brush[(x-2)*81 + (x-1)]
+                else:
+                    paint_brush[x*81 + x*9 + x-81 + 3*y] = paint_brush[(x-1)*81 + (x-1)]
+
+
+        return paint_brush, sorted_weights
+
+
     #active variables
     run = 1
     pause = 0
@@ -637,7 +768,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #input augments
     midi_inputs = 1
-    gloves = 1
+    gloves = 2
     typing_mouse = 0
     mouse_scale = 16
 
@@ -648,7 +779,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_position_g1v = 12
     y_position_g1v = 13
 
-    brush_size_g0v = 11
+    brush_size_g0v = 2
     brush_size_g1v = 23
 
     stream_ud_gv = 3
@@ -702,10 +833,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #ui
     ui_on = 1
     ui_scale = 14
-    bar_height = 100
+    bar_height = 1000
     bar_width = ui_scale + int(ui_scale / 2)
     ari_scale = 50
     cv_pos = 0
+    midi_weights = [0 for x in range(8)]
 
 
 
@@ -713,7 +845,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     g_char = 0
     g_rule = 0
     g_words = 0
-    g_brush = 3
+    g_brush = 4
 
     number_of_sensors = 12
 
@@ -752,6 +884,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     brush_min_0 = 32
     brush_min_1 = 16
+
+    spin = 0
 
     cell_row_width = brush_width
     cell_rows = brush_height
@@ -933,6 +1067,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         dt = clock.tick(FPS)
         cv_pos = redraw_window(input_box, v_input, step_show, dt, timer, cv_pos)
 
+
+
         #mitosis
         pause = 0
         if pause == 0:
@@ -971,8 +1107,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 brush_x_0 = (glove_values[xm_position_gv]) + (glove_values[x_position_g0v] * int(canvas_row_width/127))
                 brush_y_0 = (glove_values[ym_position_gv]) + (glove_values[y_position_g0v] * int(canvas_rows/127))
 
-                brush_x_1 = (glove_values[xm_position_gv]) + (glove_values[x_position_g1v] * int(canvas_row_width / 127))
-                brush_y_1 = (glove_values[ym_position_gv]) + (glove_values[y_position_g1v] * int(canvas_rows / 127))
+                if gloves == 2:
+                    brush_x_1 = (glove_values[xm_position_gv]) + (glove_values[x_position_g1v] * int(canvas_row_width / 127))
+                    brush_y_1 = (glove_values[ym_position_gv]) + (glove_values[y_position_g1v] * int(canvas_rows / 127))
 
             cells_a = np.zeros((brush_height_0, brush_width_0, 3), dtype='uint8')
 
@@ -1918,7 +2055,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     if glove_values[10 + number_of_sensors] < mid_trigger:
                         stream_direction.append(3)
 
-            elif streams == 2:
+            if streams == 2:
                 if glove_values[stream_ud_gv] > mid_trigger:
                     stream_direction_0.append(2)
                 else:
@@ -1956,10 +2093,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     last_x_1 = brush_x_1
                     last_y_1 = brush_y_1
-
-
-
-
 
 
 
@@ -2441,14 +2574,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                                         canvas[x, y] = 0
 
                                 phrase = ''
-
                         else:
                             for x in range(canvas_rows):
                                 for y in range(canvas_row_width):
                                     canvas[x, y] = 0
 
                             phrase = ''
-
 
 
                 char_size = int(bv / rule_window_scale)
@@ -2580,6 +2711,90 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                                 i_rule_1[place] = left_palette[x]
                                 d_rule_1[list(d_rule_1.keys())[place]] = left_palette[x]
                                 scan = 1
+
+            if g_brush == 4:
+
+                # print(glove_values)
+
+                value_0 = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (
+                            int(glove_values[8] / 64) * 2 ** 2) + (
+                                int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
+
+                if gloves == 2:
+                    value_1 = (int(glove_values[18] / 64) * 2 ** 0) + (int(glove_values[19] / 64) * 2 ** 1) + (
+                                int(glove_values[20] / 64) * 2 ** 2) + (
+                                    int(glove_values[21] / 64) * 2 ** 3) + (int(glove_values[22] / 64) * 2 ** 4)
+
+                if glove_values[11] > 64:
+                    if value_0 == 17:
+
+                        if gloves == 2:
+                            if value_1 == 17:
+                                for x in range(canvas_rows):
+                                    for y in range(canvas_row_width):
+                                        canvas[x, y] = 0
+
+                                phrase = ''
+                        else:
+                            for x in range(canvas_rows):
+                                for y in range(canvas_row_width):
+                                    canvas[x, y] = 0
+
+                            phrase = ''
+
+
+
+                full_rule, midi_weights = glove(glove_values)
+                # print(i_rule_0)
+                # print(len(i_rule_0))
+                # print(d_rule_0)
+                # print(full_rule)
+                i_rule_0 = full_rule
+                # print("")
+                # print("glove_turn")
+                # print(i_rule_0)
+                # print(glove_values[11])
+                spin += int(glove_values[11]/4)
+                for x in range((glove_values[11] + spin)%bbv):
+                    y = i_rule_0[0]
+                    i_rule_0 = i_rule_0[1:]
+                    i_rule_0.append(y)
+                # print(i_rule_0)
+                for x in range(len(i_rule_0[:729])):
+                    # print(d_rule_0[list(d_rule_0.keys())[x]], i_rule_0[x])
+                    d_rule_0[list(d_rule_0.keys())[x]] = i_rule_0[x]
+
+                if gloves == 2:
+                    # print(glove_values)
+                    full_rule, midi_weights = glove(glove_values[12:])
+
+                    # print(i_rule_0)
+                    # print(len(i_rule_0))
+                    # print(d_rule_0)
+                    # print(full_rule)
+
+                    i_rule_1 = full_rule
+
+                    # print("")
+                    # print("glove_turn")
+                    # print(i_rule_0)
+                    # print(glove_values[11])
+                    spin += int(glove_values[23] / 4)
+                    for x in range((glove_values[23] + spin) % bbv):
+                        y = i_rule_1[0]
+                        i_rule_1 = i_rule_1[1:]
+                        i_rule_1.append(y)
+                    # print(i_rule_0)
+                    for x in range(len(i_rule_1[:729])):
+                        # print(d_rule_0[list(d_rule_0.keys())[x]], i_rule_0[x])
+                        d_rule_1[list(d_rule_1.keys())[x]] = i_rule_1[x]
+
+
+
+                # print()
+                # print(test_rule)
+                # print(midi_weights)
+
 
         #midi clean up
         if device_id > 0:
