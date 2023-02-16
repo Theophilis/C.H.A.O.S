@@ -394,13 +394,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             for y in range(27):
                 for x in range(27):
-                    bar = pygame.Rect(10 + x * 8, 10 + y * 8, 7, 7)
+                    bar = pygame.Rect(WIDTH-27*9 + x * 8, 500 + y * 8, 7, 7)
                     pygame.draw.rect(WIN, value_color[i_rule_0[x + 27 * y]], bar)
 
             if gloves == 2:
                 for y in range(27):
                     for x in range(27):
-                        bar = pygame.Rect(8 + 27*8 + x * 8, 10 + y * 8, 7, 7)
+                        bar = pygame.Rect(8 + x * 8, 500 + y * 8, 7, 7)
                         pygame.draw.rect(WIN, value_color[i_rule_1[x + 27 * y]], bar)
 
             #bars
@@ -418,17 +418,20 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     pygame.draw.rect(WIN, value_color[x + 1], bar)
 
             if g_brush == 4:
-                for x in range(len(midi_weights)):
+                for x in range(len(midi_weights_0)):
 
-                        bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(midi_weights) - 10 - ari_scale,
-                                          int(HEIGHT) - int(bar_height * ((midi_weights[x] / zero_out))),
-                                          bar_width, int(bar_height * ((midi_weights[x] / zero_out))) * 1000)
+                        bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(midi_weights_0) - 4*bar_width,
+                                          int(HEIGHT) - int(bar_height * ((midi_weights_0[x] / zero_out))),
+                                          bar_width, int(bar_height * ((midi_weights_0[x] / zero_out))))
                         pygame.draw.rect(WIN, value_color[x], bar)
 
-                for y in range(27):
-                    for x in range(27):
-                        bar = pygame.Rect(10 + x*8, 10+y*8, 7, 7)
-                        pygame.draw.rect(WIN, value_color[i_rule_0[x + 27*y]], bar)
+                for x in range(len(midi_weights_1)):
+
+                        bar = pygame.Rect(bar_width * x + bar_width*4,
+                                          int(HEIGHT) - int(bar_height * ((midi_weights_1[x] / zero_out))),
+                                          bar_width, int(bar_height * ((midi_weights_1[x] / zero_out))))
+                        pygame.draw.rect(WIN, value_color[x], bar)
+
 
 
 
@@ -769,8 +772,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #input augments
     midi_inputs = 1
     gloves = 2
-    typing_mouse = 0
-    mouse_scale = 16
 
     #input maps
     ## gv = glove values
@@ -833,12 +834,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #ui
     ui_on = 1
     ui_scale = 14
-    bar_height = 1000
-    bar_width = ui_scale + int(ui_scale / 2)
+    bar_height = 15000
+    bar_width = ui_scale + int(ui_scale / 1)
     ari_scale = 50
     cv_pos = 0
-    midi_weights = [0 for x in range(8)]
 
+
+    midi_weights_0 = []
+    midi_weights_1 = []
 
 
     #glove emthods
@@ -2744,7 +2747,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
 
-                full_rule, midi_weights = glove(glove_values)
+                full_rule, midi_weights_0 = glove(glove_values)
                 # print(i_rule_0)
                 # print(len(i_rule_0))
                 # print(d_rule_0)
@@ -2766,7 +2769,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 if gloves == 2:
                     # print(glove_values)
-                    full_rule, midi_weights = glove(glove_values[12:])
+                    full_rule, midi_weights_1 = glove(glove_values[12:])
 
                     # print(i_rule_0)
                     # print(len(i_rule_0))
