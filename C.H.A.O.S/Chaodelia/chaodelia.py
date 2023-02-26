@@ -336,6 +336,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         color_value = {v:k for k, v in value_color.items()}
 
 
+
     # numerical
     letter_values = {' ': 0, 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11,
                      'l': 12, 'm': 13,
@@ -752,6 +753,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #active variables
+    eb = 0
     run = 1
     pause = 0
     FPS = 120
@@ -780,8 +782,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_position_g1v = 12
     y_position_g1v = 13
 
-    brush_size_g0v = 2
-    brush_size_g1v = 23
+    brush_size_g0v = 6
+    brush_size_g1v = 18
 
     stream_ud_gv = 3
     stream_lr_gv = 4
@@ -790,10 +792,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ##vel_0 runs a cell_vel number of steps
     ##vel 1 runs as many steps as the brush is long
     ##vel 2 runs as many steps as the gv value divided by the scale
-    vel = 2
-    cell_vel_g0v = 6
-    cell_vel_g1v = 18
-    cell_vel_scale = 8
+    vel = 0
+    cell_vel_g0v = 5
+    cell_vel_g1v = 17
+    cell_vel_scale = 2
+    cell_vel_min = 8
+    cell_vel = cell_vel_min
 
     #micro_brush
     micro_brush = 0
@@ -866,6 +870,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     t_minus = 2
     t_change_scale = 4
 
+    spin_speed = 8
+
     #chaos console
     input_box = 0
     list_count = 0
@@ -882,10 +888,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_height = 100
     brush_scale_h = int(canvas_rows / 127)
     brush_scale_w = int(canvas_row_width / 127)
-    brush_scale_0 = 2
-    brush_scale_1 = 2
+    brush_scale_0 = 4
+    brush_scale_1 = 4
 
-    brush_min_0 = 32
+    brush_min_0 = 16
     brush_min_1 = 16
 
     spin = 0
@@ -1070,7 +1076,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         dt = clock.tick(FPS)
         cv_pos = redraw_window(input_box, v_input, step_show, dt, timer, cv_pos)
 
-
+        zero = np.zeros((1, canvas_row_width, 3), dtype='uint8')
+        eb +=1
+        canvas[eb%HEIGHT] = zero
+        if eb>HEIGHT:
+            eb = 0
 
         #mitosis
         pause = 0
@@ -1081,12 +1091,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             brush_height_scale_1 = brush_scale_1
             brush_width_scale_1 = brush_scale_1
 
-            brush_height_0 = brush_min_0 + (glove_values[brush_size_g0v] * brush_height_scale_0)
-            brush_width_0 = brush_min_0 + (glove_values[brush_size_g0v] * brush_width_scale_0)
+            brush_height_0 = brush_min_0 + int(glove_values[brush_size_g0v] / brush_height_scale_0)
+            brush_width_0 = brush_min_0 + int(glove_values[brush_size_g0v] / brush_width_scale_0)
 
             if gloves == 2:
-                brush_height_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_height_scale_1)
-                brush_width_1 = brush_min_1 + (glove_values[brush_size_g1v] * brush_width_scale_1)
+                brush_height_1 = brush_min_1 + int(glove_values[brush_size_g1v] / brush_height_scale_1)
+                brush_width_1 = brush_min_1 + int(glove_values[brush_size_g1v] / brush_width_scale_1)
 
 
             if micro_brush == 0:
@@ -1130,13 +1140,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         cells_b[y, x] = canvas[(y - brush_y_1) % canvas_rows, (x + brush_x_1) % canvas_row_width]
 
             #brush_step
-            if vel == 1:
-                cell_vel_1 = len(cells_a)
+            if vel == 0:
+                cell_vel_0 = cell_vel
+                cell_vel_1 = cell_vel
+            elif vel == 1:
+                cell_vel_1 = len(cells_a) + cell_vel_min
             elif vel == 2:
-                cell_vel_0 = int(glove_values[cell_vel_g0v]/cell_vel_scale) + 1
+                cell_vel_0 = int(glove_values[cell_vel_g0v]/cell_vel_scale) + cell_vel_min
 
                 if gloves == 2:
-                    cell_vel_1 = int(glove_values[cell_vel_g1v]/cell_vel_scale) + 1
+                    cell_vel_1 = int(glove_values[cell_vel_g1v]/cell_vel_scale) + cell_vel_min
 
             for y in range(cell_vel_0):
 
@@ -2089,9 +2102,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     if last_x_1 < brush_x_1:
                         stream_direction_1.append(3)
 
-                    if last_x_1 > brush_x_0:
+                    if last_y_1 > brush_y_0:
                         stream_direction_0.append(0)
-                    if last_x_1 > brush_x_0:
+                    if last_y_1 > brush_y_0:
                         stream_direction_1.append(2)
 
                     last_x_1 = brush_x_1
@@ -2757,7 +2770,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 # print("glove_turn")
                 # print(i_rule_0)
                 # print(glove_values[11])
-                spin += int(glove_values[11]/4)
+                spin += int(glove_values[11]/spin_speed)
                 for x in range((glove_values[11] + spin)%bbv):
                     y = i_rule_0[0]
                     i_rule_0 = i_rule_0[1:]
@@ -2782,7 +2795,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     # print("glove_turn")
                     # print(i_rule_0)
                     # print(glove_values[11])
-                    spin += int(glove_values[23] / 4)
+                    spin += int(glove_values[23]/spin_speed)
                     for x in range((glove_values[23] + spin) % bbv):
                         y = i_rule_1[0]
                         i_rule_1 = i_rule_1[1:]
