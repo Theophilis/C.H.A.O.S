@@ -313,7 +313,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #colors
     color_0 = (0, 0, 0)
-    color_1 = (32, 32, 32)
+    color_1 = (64, 64, 64)
     color_2 = (255, 0, 255)
     color_3 = (0, 255, 255)
     color_4 = (255, 255, 0)
@@ -367,42 +367,43 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
         #ui drawing
-        if ui_on == 1:
+        if ui_on > 0:
             cv_pos = 0
 
-            #palette menu
-            for x in range(27):
+            if ui_on > 1:
+                #palette menu
+                for x in range(27):
 
-                crect_0 = pygame.Rect(WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32, 63, 31)
-                pygame.draw.rect(WIN, (255, 255, 255), crect_0)
-                # 0
+                    crect_0 = pygame.Rect(WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32, 63, 31)
+                    pygame.draw.rect(WIN, (255, 255, 255), crect_0)
+                    # 0
 
-                if crect_0.collidepoint((mx, my)):
-                    cv_pos = x + 1
+                    if crect_0.collidepoint((mx, my)):
+                        cv_pos = x + 1
 
-                    draw_text(v_input, text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
-                              150 + int(x / 3) * 32)
+                        draw_text(v_input, text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
+                                  150 + int(x / 3) * 32)
 
-                    if click:
-                        try:
-                            color_list[x] = int(v_input)
-                        except:
-                            color_list[x] = 0
-                    # print(cv_pos)
-                else:
-                    draw_text(str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
-                              150 + int(x / 3) * 32)
+                        if click:
+                            try:
+                                color_list[x] = int(v_input)
+                            except:
+                                color_list[x] = 0
+                        # print(cv_pos)
+                    else:
+                        draw_text(str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
+                                  150 + int(x / 3) * 32)
 
             #palettese
             for y in range(27):
                 for x in range(27):
-                    bar = pygame.Rect(WIDTH-27*9 + x * 3, 500 + y * 3, 3, 3)
+                    bar = pygame.Rect(WIDTH-27*6 + x * 3, 800 + y * 3, 3, 3)
                     pygame.draw.rect(WIN, value_color[i_rule_0[x + 27 * y]], bar)
 
             if gloves == 2:
                 for y in range(27):
                     for x in range(27):
-                        bar = pygame.Rect(8 + x * 3, 500 + y * 3, 3, 3)
+                        bar = pygame.Rect(27*3 + x * 3, 800 + y * 3, 3, 3)
                         pygame.draw.rect(WIN, value_color[i_rule_1[x + 27 * y]], bar)
 
             #bars
@@ -447,8 +448,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         time_label = lable_font.render(str(int(timer/60)), 1, (255, 255, 255))
         step_length = main_font.render(f"5T3P: {step - step_0}", 1, (255, 255, 255))
 
-        phrase0_label = lable_font.render(f"0: {phrase_0}", 1, (255, 255, 255))
-        phrase1_label = lable_font.render(f"1: {phrase_1}", 1, (255, 255, 255))
+        phrase0_label = lable_font.render(f":{phrase_0}", 1, (255, 255, 255))
+        phrase1_label = lable_font.render(f":{phrase_1}", 1, (255, 255, 255))
+        goal_label = lable_font.render(f"{goal}", 1, (255, 255, 255))
+        turn_label = lable_font.render(f"{turn}", 1, (255, 255, 255))
 
         value0_label = lable_font.render(f"{value_letter[value_0]}", 1, (255, 255, 255))
         value1_label = lable_font.render(f"{value_letter[value_1]}", 1, (255, 255, 255))
@@ -473,12 +476,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             WIN.blit(phrase0_label, (int(WIDTH/2) + WIDTH/4 - phrase0_label.get_width(), 10))
             WIN.blit(phrase1_label, (int(WIDTH/4) - phrase1_label.get_width(), 10))
+            WIN.blit(goal_label, (int(WIDTH/2) - goal_label.get_width()/2, 10))
+            WIN.blit(turn_label, (int(WIDTH/2), int(HEIGHT/2)))
 
             WIN.blit(value1_label, (int(WIDTH/4), 60))
             WIN.blit(value0_label, (int(WIDTH/2) + WIDTH/4, 60))
 
-            WIN.blit(score_label, (int(WIDTH/2) - score_label.get_width()/2, 10))
-            WIN.blit(point_label, (int(WIDTH/2) - point_label.get_width()/2, 80))
+            WIN.blit(score_label, (int(WIDTH/2) - score_label.get_width()/2, 80))
+            WIN.blit(point_label, (int(WIDTH/2) - point_label.get_width()/2, 160))
 
             if ari > 1:
                 # stick_0
@@ -881,6 +886,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ari_speak = 0
     phrase_0 = ' '
     phrase_1 = ''
+    goal = ''
     mixer.init()
 
     #streams
@@ -1359,19 +1365,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     for x in range(brush_width_1):
                         canvas[(y - brush_y_1) % canvas_rows, (x + brush_x_1) % canvas_row_width] = cells_b[y, x]
 
-        #tts
+        #ari
         if ari > 0:
+
+            value = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (
+                        int(glove_values[8] / 64) * 2 ** 2) + (
+                            int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
 
             if ari == 1:
                 typing_mouse = 0
 
                 # typing
                 if typing_mouse == 0:
-
-
-
-                    value = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (int(glove_values[8] / 64) * 2 ** 2) + (
-                                int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
 
                     #ari ui
                     for x in range(5):
@@ -1630,6 +1635,24 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             if ari == 3:
 
+                # ari ui
+                for x in range(5):
+                    for y in range(ari_scale):
+                        for z in range(ari_scale):
+                            # print()
+                            # print(x)
+                            # print(evs[6 + x])
+                            # print(value_color[evs[6 + x]])
+                            # print(type(value_color[evs[6 + x]]))
+                            color = value_color[int(glove_values[6 + x] / 64)]
+                            # print(color)
+                            canvas[y - (x * ari_scale) - ari_scale, (WIDTH - ari_scale) + z] = color
+
+                            if gloves == 2:
+                                color = value_color[int(glove_values[18 + x] / 64)]
+                                # print(color)
+                                canvas[y - (x * ari_scale) - ari_scale, z] = color
+
                 if glove_values[0] > 64:
                     x_polarity_0 = 1
                 else:
@@ -1656,21 +1679,53 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         talking_chalk_0 = 0
 
                     if talking_chalk_0 == 4:
-                        talking_chalk_0 = 0
-                        talking_chalk_1 = 0
 
-                        point_0 = int((step - mark) / 100)
+                        if turn == 0:
+                            talking_chalk_0 = 0
+                            talking_chalk_1 = 0
+
+                            point_0 = int((step - mark) / 100)
 
 
-                        print("")
-                        print("step_0")
-                        print(step/100)
-                        print(mark/100)
-                        print(point_0)
+                            print("")
+                            print("step_0")
+                            print(step/100)
+                            print(mark/100)
+                            print(point_0)
 
-                        mark = step
+                            mark = step
+                            eb = HEIGHT
 
-                        phrase_0 = ''
+                            goal = phrase_0
+                            phrase_0 = ''
+
+                        elif turn == 1 and phrase_0 == goal:
+                            talking_chalk_0 = 0
+                            talking_chalk_1 = 0
+
+                            point_0 = int((step - mark) / 100)
+
+
+                            # print("")
+                            # print("step_0")
+                            # print(step/100)
+                            # print(mark/100)
+                            # print(point_0)
+
+                            score_0 += point_0
+                            score_1 += point_1
+
+                            point_0 = 0
+                            point_1 = 0
+
+                            mark = step
+                            eb = HEIGHT
+
+                            phrase_0 = ''
+                            turn = 0
+
+                        else:
+                            phrase_0 = ''
 
                     # print("talking_0")
                     # print(x_polarity_0, y_polarity_0)
@@ -1708,20 +1763,54 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             talking_chalk_1 = 0
 
                         if talking_chalk_1 == 4:
-                            talking_chalk_0 = 0
-                            talking_chalk_1 = 0
 
-                            point_1 = int((step - mark) / 100)
+                            if turn == 1:
 
-                            print("")
-                            print("step_1")
-                            print(step/100)
-                            print(mark/100)
-                            print(point_1)
+                                talking_chalk_0 = 0
+                                talking_chalk_1 = 0
 
-                            mark = step
+                                point_1 = int((step - mark) / 100)
 
-                            phrase_1 = ''
+                                print("")
+                                print("step_1")
+                                print(step/100)
+                                print(mark/100)
+                                print(point_1)
+
+                                mark = step
+                                eb = HEIGHT
+
+                                goal = phrase_1
+                                phrase_1 = ''
+
+                            if turn == 0 and phrase_1 == goal:
+                                talking_chalk_0 = 0
+                                talking_chalk_1 = 0
+
+                                point_1 = int((step - mark) / 100)
+
+                                # print("")
+                                # print("step_1")
+                                # print(step/100)
+                                # print(mark/100)
+                                # print(point_1)
+
+                                score_0 += point_0
+                                score_1 += point_1
+
+                                point_0 = 0
+                                point_1 = 0
+
+                                mark = step
+                                eb = HEIGHT
+
+                                phrase_1 = ''
+                                turn = 1
+
+                            else:
+                                phrase_1 = ''
+
+
 
                         # print("talking_1")
                         # print(x_polarity_1, y_polarity_1)
@@ -2006,6 +2095,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     step_0 = step
 
+
                 elif event.key == pygame.K_F1:
                     # book_rule = str()
                     # for ir in i_rule:
@@ -2015,8 +2105,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     ari += 2
                     ari = ari % 4
 
-
-
                 elif event.key == pygame.K_F2:
                     # book_rule = str()
                     # for ir in i_rule:
@@ -2024,7 +2112,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     # rule_book.append(book_rule)
 
                     ui_on += 1
-                    ui_on = ui_on % 2
+                    ui_on = ui_on % 3
 
                 elif event.key == pygame.K_F3:
                     for y in range(canvas_rows):
