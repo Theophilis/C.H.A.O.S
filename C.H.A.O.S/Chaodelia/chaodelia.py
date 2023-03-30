@@ -851,13 +851,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     cell_vel = cell_vel_min
 
     #micro_brush
-    micro_brush = 2
+    micro_brush = 0
     xm_position_gv = 3
     ym_position_gv = 4
 
 
     #ari
-    ari = 3
+    ari = 0
     turn = 0
 
     value_0 = 0
@@ -2104,6 +2104,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     ari += 2
                     ari = ari % 4
+
+                    if ari > 0:
+                        micro_brush = 2
+                    else:
+                        micro_brush = 0
 
                 elif event.key == pygame.K_F2:
                     # book_rule = str()
