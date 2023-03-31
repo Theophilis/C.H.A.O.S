@@ -464,6 +464,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         return cv_pos
 
+    def unite():
+        path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\United States\audio\hit-0.mp3'
+        mixer.music.load(path)
+        mixer.music.play()
+
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
     post_color = {v: k for k, v in color_post.items()}
@@ -583,20 +588,21 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     start = 0
     step = 0
-    step_0 = 0
     step_show = 0
     clock = pygame.time.Clock()
     origin_rule = 0
     bv = base ** view
     bbv = base ** base ** view
-    rule_window_scale = 4
 
     #input augments
     midi_inputs = 1
     gloves = 2
 
+    #us
+    us = 1
+    polarity = [0, 0, 0, 0]
+
     #input maps
-    ## gv = glove values
     x_position_g0v = 0
     y_position_g0v = 1
     x_position_g1v = 12
@@ -605,22 +611,15 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_size_g0v = 6
     brush_size_g1v = 18
 
-    stream_ud_gv = 3
-    stream_lr_gv = 4
 
     #vel
     ##vel_0 runs a cell_vel number of steps
     ##vel 1 runs as many steps as the brush is long
     ##vel 2 runs as many steps as the gv value divided by the scale
-    vel = 0
-    cell_vel_g0v = 5
-    cell_vel_g1v = 17
-    cell_vel_scale = 2
     cell_vel_min = 8
     cell_vel = cell_vel_min
 
     #micro_brush
-    micro_brush = 0
     mixer.init()
 
     #streams
@@ -643,16 +642,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #record keeping
     journal = dict()
     page = []
-    rule_book = []
     rule_point = list()
-    bookmarks = [0]
 
     #ui
     ui_on = 1
     ui_scale = 14
     bar_height = 15000
     bar_width = ui_scale + int(ui_scale / 1)
-    ari_scale = 50
     cv_pos = 0
 
 
@@ -661,35 +657,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #glove emthods
-    g_char = 0
-    g_rule = 0
-    g_words = 0
     g_brush = 4
-
     number_of_sensors = 12
 
     zero_out = 3200
-    zero_full = zero_out*9
-
-    high_trigger = 80
-    low_trigger = 48
-    mid_trigger = 63
-
-    left_triggers = [0 for x in range(8)]
-    right_triggers = [0 for x in range(8)]
-
-    t_plus = 4
-    t_minus = 2
-    t_change_scale = 4
-
     spin_speed = 8
 
     #chaos console
     input_box = 0
     list_count = 0
     v_input = ''
-    write = 0
-    j_name = ''
     max_rule = base ** base ** view
 
     #cell design
@@ -887,6 +864,25 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
         cv_pos = redraw_window(input_box, v_input, step_show, dt, timer, cv_pos)
+
+        if us == 1:
+
+            # polarity[0] = int(glove_values[0]/64)
+            # polarity[1] = int(glove_values[1]/64)
+            # polarity[2] = int(glove_values[12]/64)
+            # polarity[3] = int(glove_values[13]/64)
+
+            if polarity[0] != int(glove_values[0]/64):
+
+                polarity[0] = int(glove_values[0] / 64)
+                eb = HEIGHT
+
+                # print('')
+                # print('unite')
+                # print('polarity')
+                # print(polarity)
+                unite()
+
 
         if eb > 0:
             zero = np.zeros((1, canvas_row_width, 3), dtype='uint8')
@@ -1308,6 +1304,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     print(pause)
 
 
+                elif event.key == pygame.K_q:
+
+                    print('hit')
+                    path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\United States\audio\hit-0.mp3'
+                    mixer.music.load(path)
+                    mixer.music.play()
+
+
                 #console commands
                 elif event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
 
@@ -1595,7 +1599,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
 
-                                          
+
 # menus
 
 mainClock = pygame.time.Clock()
