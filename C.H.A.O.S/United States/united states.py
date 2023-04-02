@@ -22,6 +22,9 @@ sys.setrecursionlimit(999999999)
 
 pygame.font.init()
 
+pygame.mixer.init()
+pygame.mixer.set_num_channels(32)
+
 length = 8
 # number of times given rule is applied and number of initial rows generated
 width = length * 2 + 1
@@ -464,10 +467,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         return cv_pos
 
-    def unite():
-        path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\United States\audio\hit-0.mp3'
+    def bass(n):
+        path = r'audio\bass-' + str(n) + '.mp3'
         mixer.music.load(path)
-        mixer.music.play()
+        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+
 
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
@@ -585,6 +589,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     FPS = 120
     rule = 30
     mx, my = pygame.mouse.get_pos()
+    channel = 0
 
     start = 0
     step = 0
@@ -601,6 +606,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #us
     us = 1
     polarity = [0, 0, 0, 0]
+    flips = [0, 0, 0, 0, 0, 0, 0]
 
     #input maps
     x_position_g0v = 0
@@ -877,11 +883,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 polarity[0] = int(glove_values[0] / 64)
                 eb = HEIGHT
 
-                # print('')
-                # print('unite')
-                # print('polarity')
-                # print(polarity)
-                unite()
+                bass(polarity[0] + polarity[1] * 2)
+                channel += 1
+                channel = channel % 32
+
+            if polarity[1] != int(glove_values[1]/64):
+
+                polarity[1] = int(glove_values[1] / 64)
+                eb = HEIGHT
+
+                bass(polarity[0] + polarity[1] * 2)
+                channel += 1
+                channel = channel % 32
 
 
         if eb > 0:
@@ -1306,10 +1319,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 elif event.key == pygame.K_q:
 
-                    print('hit')
-                    path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\United States\audio\hit-0.mp3'
-                    mixer.music.load(path)
-                    mixer.music.play()
+                    bass(1)
 
 
                 #console commands
