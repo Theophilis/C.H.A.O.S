@@ -423,6 +423,21 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         pygame.draw.rect(WIN, value_color[x], bar)
 
 
+        if us == 1:
+
+            draw_text(str(hit), text_font, (255, 255, 255), WIN, int(WIDTH/2), 10)
+
+            shade = beat * 8 -1
+
+            crect_0 = pygame.Rect(int(WIDTH/2) - 40, 0, 1, HEIGHT)
+            pygame.draw.rect(WIN, (shade, shade, shade), crect_0)
+
+            crect_0 = pygame.Rect(0, int(HEIGHT/2) + 50, WIDTH, 1)
+            pygame.draw.rect(WIN, (shade, shade, shade), crect_0)
+
+
+
+
         #vanilla labels
         rule_label_0_b = main_font.render(f"RUL3: {i_rule_0[0:int((base ** view) / 2)]}", 1, (255, 255, 255))
         rule_label_1_b = main_font.render(f"          {i_rule_0[int((base ** view) / 2):int((base ** view))]}", 1,
@@ -469,6 +484,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     def bass(n):
         path = r'audio\bass-' + str(n) + '.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+
+    def kick():
+        path = r'audio\kick-0.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+
+    def snare():
+        path = r'audio\snare-0.mp3'
         mixer.music.load(path)
         pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
 
@@ -583,13 +608,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #active variables
-    eb = 0
     run = 1
     pause = 0
     FPS = 120
     rule = 30
     mx, my = pygame.mouse.get_pos()
     channel = 0
+    beat = 32
 
     start = 0
     step = 0
@@ -599,13 +624,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     bv = base ** view
     bbv = base ** base ** view
 
+    #eb
+    eb = 0
+
     #input augments
     midi_inputs = 1
     gloves = 2
 
     #us
     us = 1
-    polarity = [0, 0, 0, 0]
+    hit = 0
+
+    polarity = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     flips = [0, 0, 0, 0, 0, 0, 0]
 
     #input maps
@@ -614,16 +644,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_position_g1v = 12
     y_position_g1v = 13
 
-    brush_size_g0v = 6
-    brush_size_g1v = 18
+    brush_size_g0v = 11
+    brush_size_g1v = 23
 
 
     #vel
     ##vel_0 runs a cell_vel number of steps
     ##vel 1 runs as many steps as the brush is long
     ##vel 2 runs as many steps as the gv value divided by the scale
-    cell_vel_min = 8
-    cell_vel = cell_vel_min
+    cell_vel_min = 1
+    cell_vel = 16
 
     #micro_brush
     mixer.init()
@@ -686,8 +716,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_scale_0 = 4
     brush_scale_1 = 4
 
-    brush_min_0 = 16
-    brush_min_1 = 16
+    brush_min_0 = 12
+    brush_min_1 = 12
 
     spin = 0
 
@@ -873,11 +903,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         if us == 1:
 
-            # polarity[0] = int(glove_values[0]/64)
-            # polarity[1] = int(glove_values[1]/64)
-            # polarity[2] = int(glove_values[12]/64)
-            # polarity[3] = int(glove_values[13]/64)
-
+            #right
             if polarity[0] != int(glove_values[0]/64):
 
                 polarity[0] = int(glove_values[0] / 64)
@@ -887,6 +913,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 channel += 1
                 channel = channel % 32
 
+
+                eb_0 = int(HEIGHT/2)
+
+                if beat < 4:
+                    hit += 1
+
             if polarity[1] != int(glove_values[1]/64):
 
                 polarity[1] = int(glove_values[1] / 64)
@@ -895,6 +927,37 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 bass(polarity[0] + polarity[1] * 2)
                 channel += 1
                 channel = channel % 32
+
+
+            #left
+            bo = 13
+            if polarity[bo] != int(glove_values[bo]/64):
+
+                polarity[bo] = int(glove_values[bo] / 64)
+                eb = HEIGHT
+
+                kick()
+                channel += 1
+                channel = channel % 32
+            bo = 12
+            if polarity[bo] != int(glove_values[bo]/64):
+
+                polarity[bo] = int(glove_values[bo] / 64)
+                eb = HEIGHT
+
+                snare()
+                channel += 1
+                channel = channel % 32
+
+            #beat
+            beat = beat - 1
+            if beat == 0:
+
+                beat = 32
+                kick()
+                channel += 1
+                channel = channel % 32
+
 
 
         if eb > 0:
@@ -936,8 +999,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     cells_b[y, x] = canvas[(y - brush_y_1) % canvas_rows, (x + brush_x_1) % canvas_row_width]
 
             #brush_step
-            cell_vel_0 = cell_vel
-            cell_vel_1 = cell_vel
+            cell_vel_0 = brush_width_0
+            cell_vel_1 = brush_width_1
 
 
             for y in range(cell_vel_0):
