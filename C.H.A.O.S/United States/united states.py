@@ -497,6 +497,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         mixer.music.load(path)
         pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
 
+    def shake():
+        path = r'audio\shake-0.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
 
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
@@ -653,7 +657,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     ##vel 1 runs as many steps as the brush is long
     ##vel 2 runs as many steps as the gv value divided by the scale
     cell_vel_min = 1
-    cell_vel = 16
+    cell_vel = 1
 
     #micro_brush
     mixer.init()
@@ -716,8 +720,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_scale_0 = 4
     brush_scale_1 = 4
 
-    brush_min_0 = 12
-    brush_min_1 = 12
+    brush_min_0 = 16
+    brush_min_1 = 16
 
     spin = 0
 
@@ -945,7 +949,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 polarity[bo] = int(glove_values[bo] / 64)
                 eb = HEIGHT
 
-                snare()
+                shake()
                 channel += 1
                 channel = channel % 32
 
@@ -954,7 +958,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             if beat == 0:
 
                 beat = 32
-                kick()
+                # kick()
                 channel += 1
                 channel = channel % 32
 
