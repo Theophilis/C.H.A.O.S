@@ -487,6 +487,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         mixer.music.load(path)
         pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
 
+    def pluck(n):
+        path = r'audio\pluck-' + str(n) + '.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+
+    def hh(n):
+        path = r'audio\hh-' + str(n) + '.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+
+
+
     def kick():
         path = r'audio\kick-0.mp3'
         mixer.music.load(path)
@@ -720,8 +732,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_scale_0 = 4
     brush_scale_1 = 4
 
-    brush_min_0 = 16
-    brush_min_1 = 16
+    brush_min_0 = 13
+    brush_min_1 = 13
 
     spin = 0
 
@@ -932,6 +944,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 channel += 1
                 channel = channel % 32
 
+            for x in range(5):
+                if polarity[x + 6] != int(glove_values[x + 6]/64):
+                    polarity[x + 6] = int(glove_values[x + 6]/64)
+
+                    pluck(x)
+                    channel += 1
+                    channel = channel % 32
+
 
             #left
             bo = 13
@@ -952,6 +972,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 shake()
                 channel += 1
                 channel = channel % 32
+
+            for x in range(5):
+                if polarity[x + 18] != int(glove_values[x + 18]/64):
+                    polarity[x + 18] = int(glove_values[x + 18]/64)
+
+                    hh(x%2)
+                    channel += 1
+                    channel = channel % 32
+
+
 
             #beat
             beat = beat - 1
