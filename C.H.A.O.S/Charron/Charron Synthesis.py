@@ -239,10 +239,10 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_division'
+j_name = 'journal_line'
 
 #number of colors
-base = 6
+base = 9
 
 ###color bank###
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
@@ -276,6 +276,39 @@ grey6 = (.07*grey_scale, .07*grey_scale, .07*grey_scale)
 grey7 = (.08*grey_scale, .08*grey_scale, .08*grey_scale)
 grey8 = (.09*grey_scale, .09*grey_scale, .09*grey_scale)
 
+rg0 = (1, 0, 0)
+rg1 = (1, .25, 0)
+rg2 = (1, .5, 0)
+rg3 = (1, .75, 0)
+rg4 = (1, 1, 0)
+rg5 = (.75, 1, 0)
+rg6 = (.5, 1, 0)
+rg7 = (.25, 1, 0)
+rg8 = (0, 1, 0)
+
+rb0 = (1, 0, 0)
+rb1 = (1, 0, .25)
+rb2 = (1, 0, .5)
+rb3 = (1, 0, .75)
+rb4 = (1, 0, 1)
+rb5 = (.75, 0, 1)
+rb6 = (.5, 0, 1)
+rb7 = (.25, 0, 1)
+rb8 = (0, 0, 1)
+
+gb0 = (0, 1, 0)
+gb1 = (0, 1, .25)
+gb2 = (0, 1, .5)
+gb3 = (0, 1, .75)
+gb4 = (0, 1, 1)
+gb5 = (0, .75, 1)
+gb6 = (0, .5, 1)
+gb7 = (0, .25, 1)
+gb8 = (0, 0, 1)
+
+
+
+
 
 
 
@@ -297,22 +330,25 @@ color_list_6 = [grey6, cyan, red, magenta_d, white, moss]
 #9 color
 color_list_9 = [black, grey, cyan, magenta, yellow, light_grey, red, blue, green]
 color_list_10 = [black, cyan, grey, grey2, grey3, red, grey5, grey6, grey7, grey8]
+color_list_rb = [rb0, rb1, rb2, rb3, rb4, rb5, rb6, rb7, rb8]
+color_list_rg = [rg0, rg1, rg2, rg3, rg4, rg5, rg6, rg7, rg8]
+color_list_gb = [gb0, gb1, black, gb3, magenta, gb5, white, gb7, gb8]
 
 
 #0=no reflection, 1=reflected image across the top, 2=reflection across bottom
-reflect = 2
+reflect = 1
 
 ###dimensions
 
 ##length adjustment. length = length * scale / shrink
 #increase the number of cells in each rule call (multiplicative)
-scale_l = 2
+scale_l = 1
 #decrease the number of cells in each rule call (divisive)
-shrink_l = 3
+shrink_l = 4
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
-scale_w = 5
+scale_w = 2
 #(divisive)
 shrink_w = 1
 
@@ -349,10 +385,10 @@ except:
 
 
 #choose which bookmarked segments you want to stitch together. numbers must be separated by commas.
-bookmark_choices = [5, 13]
+bookmark_choices = [2, 3, 4, 5, 6, 7]
 
 center_seed = 1
-seed_distro = 4
+seed_distro = 1
 
 
 def synthesize(j_name, split, s_f, color_list, width=0):
@@ -1084,7 +1120,7 @@ def rule_book(rule_book, color_list, length, width):
 
 
 
-synthesize(j_name,split, 1, color_list_6)
+synthesize(j_name,split, 1, color_list_gb)
 
 
 

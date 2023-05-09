@@ -10,6 +10,7 @@ import sys
 import pygame.midi
 import time
 from collections import deque
+import math
 
 from pygame import mixer
 
@@ -299,7 +300,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     print("device_id")
     print(device_id)
     p_m_i = 0
-    ts_0 = time.time()
 
     #window
     if analytics == 1:
@@ -354,7 +354,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
 
-    def redraw_window(input_box, v_input, step_show, dt, timer, cv_pos):
+    def redraw_window():
 
         #preparation
 
@@ -365,31 +365,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         #ui drawing
         if ui_on > 0:
-            cv_pos = 0
-
-            if ui_on > 1:
-                #palette menu
-                for x in range(27):
-
-                    crect_0 = pygame.Rect(WIDTH - 196 + (x % 3) * 64, 150 + int(x/3) * 32, 63, 31)
-                    pygame.draw.rect(WIN, (255, 255, 255), crect_0)
-                    # 0
-
-                    if crect_0.collidepoint((mx, my)):
-                        cv_pos = x + 1
-
-                        draw_text(v_input, text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
-                                  150 + int(x / 3) * 32)
-
-                        if click:
-                            try:
-                                color_list[x] = int(v_input)
-                            except:
-                                color_list[x] = 0
-                        # print(cv_pos)
-                    else:
-                        draw_text(str(color_list[x]), text_font, (0, 0, 0), WIN, WIDTH - 196 + (x % 3) * 64,
-                                  150 + int(x / 3) * 32)
 
             #palettese
             for y in range(27):
@@ -419,61 +394,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         pygame.draw.rect(WIN, value_color[x], bar)
 
 
-        if us == 1:
-
-            draw_text(str(hit), text_font, (255, 255, 255), WIN, int(WIDTH/2), 10)
-
-            shade = beat * 8 -1
-
-            crect_0 = pygame.Rect(int(WIDTH/2) - 40, 0, 1, HEIGHT)
-            pygame.draw.rect(WIN, (shade, shade, shade), crect_0)
-
-            crect_0 = pygame.Rect(0, int(HEIGHT/2) + 50, WIDTH, 1)
-            pygame.draw.rect(WIN, (shade, shade, shade), crect_0)
-
-
-
-
-        #vanilla labels
-        rule_label_0_b = main_font.render(f"RUL3: {i_rule_0[0:int((base ** view) / 2)]}", 1, (255, 255, 255))
-        rule_label_1_b = main_font.render(f"          {i_rule_0[int((base ** view) / 2):int((base ** view))]}", 1,
-                                          (255, 255, 255))
-
-        #vanilla blit
-        if step_show == 1:
-
-            WIN.blit(rule_label_0_b, (10, HEIGHT - 120))
-            WIN.blit(rule_label_1_b, (7, HEIGHT - 80))
-
-
-        # WIN.blit(zero_count, (WIDTH - zero_count.get_width(), 90))
-        # WIN.blit(origin_value, (WIDTH - origin_value.get_width(), 90))
-
-
-        #glove blit
-        # WIN.blit(trigger_thresholds, (WIDTH - trigger_thresholds.get_width(), HEIGHT - 50))
-        # WIN.blit(trigger_values, (WIDTH - trigger_values.get_width(), HEIGHT - 100))
-        # WIN.blit(tsp_values, (CELL_WIDTH + 120, 170))
-        # WIN.blit(tsp_view, (CELL_WIDTH + 120, 135))
-
-        # WIN.blit(gv, (WIDTH - gv.get_width(), 90))
-
-
-        #conosle inputs
-        if input_box == 1:
-            v_input_r = small_font.render(v_input, 1, (0, 0, 0))
-
-            type_box = pygame.Rect(10, 10, v_input_r.get_width() + 2, v_input_r.get_height() + 2)
-
-            pygame.draw.rect(WIN, (255, 255, 255), type_box)
-
-            WIN.blit(v_input_r, (11, 11))
-
-        if list_count != 0:
-            draw_text(str(list_count), small_font, (255, 255, 255), WIN, 11, 33)
-
-
-
         pygame.display.update()
 
         return cv_pos
@@ -491,9 +411,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     def hh(n):
         path = r'audio\hh-' + str(n) + '.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
-
-
+        pygame.mixer.Channel(channel + 2).play(pygame.mixer.Sound(path))
 
     def kick():
         path = r'audio\kick-0.mp3'
@@ -508,7 +426,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     def shake():
         path = r'audio\shake-0.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+        pygame.mixer.Channel(channel + 1).play(pygame.mixer.Sound(path))
 
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
@@ -621,17 +539,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #active variables
     run = 1
-    pause = 0
-    FPS = 120
     rule = 30
-    mx, my = pygame.mouse.get_pos()
     channel = 0
-    beat = 32
-
+    pause = 0
     start = 0
     step = 0
-    step_show = 0
-    clock = pygame.time.Clock()
     origin_rule = 0
     bv = base ** view
     bbv = base ** base ** view
@@ -643,12 +555,20 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     midi_inputs = 1
     gloves = 2
 
-    #us
-    us = 1
-    hit = 0
+    #Peacekeeper
+    pce = 1
+    balance = [0, 0]
+    angle = 0
 
-    polarity = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    flips = [0, 0, 0, 0, 0, 0, 0]
+    charge_0 = [0, 0]
+    path_0 = [(0, 0), (0, 0)]
+    power_0 = 0
+    m_0 = 0
+
+    charge_1 = [0, 0]
+    path_1 = [(0, 0), (0, 0)]
+    power_1 = 0
+    m_1 = 0
 
     #input maps
     x_position_g0v = 0
@@ -656,15 +576,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_position_g1v = 12
     y_position_g1v = 13
 
-    brush_size_g0v = 11
-    brush_size_g1v = 23
-
-
-    #vel
-    ##vel_0 runs a cell_vel number of steps
-    ##vel 1 runs as many steps as the brush is long
-    ##vel 2 runs as many steps as the gv value divided by the scale
-    cell_vel_min = 1
     cell_vel = 1
 
     #micro_brush
@@ -693,7 +604,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     rule_point = list()
 
     #ui
-    ui_on = 1
+    ui_on = 0
     ui_scale = 14
     bar_height = 15000
     bar_width = ui_scale + int(ui_scale / 1)
@@ -713,9 +624,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #chaos console
     input_box = 0
-    list_count = 0
     v_input = ''
-    max_rule = base ** base ** view
 
     #cell design
     canvas_rows = int(HEIGHT) + 1
@@ -725,11 +634,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     brush_height = 100
     brush_scale_h = int(canvas_rows / 127)
     brush_scale_w = int(canvas_row_width / 127)
-    brush_scale_0 = 4
-    brush_scale_1 = 4
 
-    brush_min_0 = 13
-    brush_min_1 = 13
+    brush_min_0 = 14
+    brush_min_1 = 14
 
     spin = 0
 
@@ -891,103 +798,125 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #main loop
     while run == 1:
 
-        # print("")
-        # print("running")
+        redraw_window()
 
-        # print()
-        # print(glove_values)
+        if pce == 1:
 
-        # print()
-        # print(i_rule_0)
-        # print(i_rule_1)
+            #keeper 1
 
-        mx, my = pygame.mouse.get_pos()
-        ts_1 = time.time()
-        timer = ts_1 - ts_0
+            if glove_values[11] < 8:
 
-        # print("")
-        # print("timer")
-        # print(timer)
-        # print(type(timer))
-        WIN.fill((0, 0, 0))
-        dt = clock.tick(FPS)
-        cv_pos = redraw_window(input_box, v_input, step_show, dt, timer, cv_pos)
+                #power clear
+                if charge_0[0] == 0:
+                    power_0 = 0
 
-        if us == 1:
-
-            #right
-            if polarity[0] != int(glove_values[0]/64):
-
-                polarity[0] = int(glove_values[0] / 64)
-                eb = HEIGHT
-
-                bass(polarity[0] + polarity[1] * 2)
-                channel += 1
-                channel = channel % 32
+                #path set
+                if charge_0[0] != charge_0[1]:
+                    path_0[charge_0[0]] = (glove_values[0], glove_values[1])
+                    charge_0[1] = charge_0[0]
 
 
-                eb_0 = int(HEIGHT/2)
+                    #start
+                    if charge_0[0] == 0:
+                        kick()
+                    #end
+                    if charge_0[0] == 1:
+                        kick()
+                        shake()
 
-                if beat < 4:
-                    hit += 1
+                        num = path_0[1][1] - path_0[0][1]
+                        den = path_0[1][0] - path_0[0][0]
 
-            if polarity[1] != int(glove_values[1]/64):
+                        # print()
+                        # print('1')
+                        # print(power_0)
 
-                polarity[1] = int(glove_values[1] / 64)
-                eb = HEIGHT
+                        #m set
+                        try:
+                            m_0 = num/den
+                            # print(m_0)
+                        #m = inf
+                        except:
+                            m_0 = 1000
+                            # print(m_0)
+                            # print("holy fuck")
 
-                bass(polarity[0] + polarity[1] * 2)
-                channel += 1
-                channel = channel % 32
+                        balance[0] = 1
+            #move
+            else:
 
-            for x in range(5):
-                if polarity[x + 6] != int(glove_values[x + 6]/64):
-                    polarity[x + 6] = int(glove_values[x + 6]/64)
+                #charger
+                if charge_0[0] == charge_0[1]:
+                    charge_0[0] += 1
+                    charge_0[0] = charge_0[0] % 2
 
-                    pluck(x)
-                    channel += 1
-                    channel = channel % 32
-
-
-            #left
-            bo = 13
-            if polarity[bo] != int(glove_values[bo]/64):
-
-                polarity[bo] = int(glove_values[bo] / 64)
-                eb = HEIGHT
-
-                kick()
-                channel += 1
-                channel = channel % 32
-            bo = 12
-            if polarity[bo] != int(glove_values[bo]/64):
-
-                polarity[bo] = int(glove_values[bo] / 64)
-                eb = HEIGHT
-
-                shake()
-                channel += 1
-                channel = channel % 32
-
-            for x in range(5):
-                if polarity[x + 18] != int(glove_values[x + 18]/64):
-                    polarity[x + 18] = int(glove_values[x + 18]/64)
-
-                    hh(x%2)
-                    channel += 1
-                    channel = channel % 32
+                #power
+                if glove_values[11] > power_0:
+                    power_0 = glove_values[11]
 
 
+            #keeper 2
+            if glove_values[23] < 8:
 
-            #beat
-            beat = beat - 1
-            if beat == 0:
+                #power clear
+                if charge_1[0] == 0:
+                    power_1 = 0
 
-                beat = 32
-                # kick()
-                channel += 1
-                channel = channel % 32
+                #path set
+                if charge_1[0] != charge_1[1]:
+                    path_1[charge_1[0]] = (glove_values[12], glove_values[13])
+                    charge_1[1] = charge_1[0]
 
+                    #start
+                    if charge_1[0] == 0:
+                        kick()
+                    #end
+                    if charge_1[0] == 1:
+                        kick()
+                        shake()
+
+                        num = path_1[1][1] - path_1[0][1]
+                        den = path_1[1][0] - path_1[0][0]
+
+                        # print()
+                        # print('2')
+                        # print(power_1)
+
+                        try:
+                            m_1 = num/den
+                            # print(m_1)
+
+                        except:
+                            m_1 = 1000
+                            # print(m_1)
+                            # print("holy fuck")
+
+                        balance[1] = 1
+            #move
+            else:
+
+                if charge_1[0] == charge_1[1]:
+                    charge_1[0] += 1
+                    charge_1[0] = charge_1[0] % 2
+
+                if glove_values[23] > power_1:
+                    power_1 = glove_values[23]
+
+            if balance[0] + balance[1] == 2:
+
+                angle = math.degrees(math.atan(abs((m_1 - m_0)/(1 + m_1 * m_0))))
+
+                if angle > 80:
+                    canvas = np.zeros((canvas_rows, canvas_row_width, 3), dtype='uint8')
+
+                print()
+                print("")
+                print("balanced")
+                print(angle)
+
+
+                balance[0] = 0
+                balance[1] = 0
 
 
         if eb > 0:
@@ -995,19 +924,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             eb = eb - 1
             canvas[eb] = zero
 
+
         #mitosis
-        pause = 0
         if pause == 0:
 
-            brush_height_scale_0 = brush_scale_0
-            brush_width_scale_0 = brush_scale_0
-            brush_height_scale_1 = brush_scale_1
-            brush_width_scale_1 = brush_scale_1
-
-            brush_height_0 = brush_min_0 + int(glove_values[brush_size_g0v] / brush_height_scale_0)
-            brush_width_0 = brush_min_0 + int(glove_values[brush_size_g0v] / brush_width_scale_0)
-            brush_height_1 = brush_min_1 + int(glove_values[brush_size_g1v] / brush_height_scale_1)
-            brush_width_1 = brush_min_1 + int(glove_values[brush_size_g1v] / brush_width_scale_1)
+            brush_height_0 = brush_min_0
+            brush_width_0 = brush_height_0
+            brush_height_1 = brush_min_1
+            brush_width_1 = brush_height_1
 
             #brush x,y
             brush_x_0 = (glove_values[x_position_g0v] * brush_scale_w)
@@ -1164,30 +1088,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 for x in range(brush_width_1):
                     canvas[(y - brush_y_1) % canvas_rows, (x + brush_x_1) % canvas_row_width] = cells_b[y, x]
 
-        #console rule inputs
-        if list_count != 0:
-
-            if rule_list[0] < max_rule:
-
-                # print("")
-                # print('valid')
-                # print(rule_list[0])
-
-                d_rule, i_rule = rule_gen(rule_list[0], base)
-
-            else:
-
-                new_rule = rule_list[0] % max_rule
-
-                d_rule, i_rule = rule_gen(new_rule, base)
-
-            rule_list = rule_list[1:]
-
-            list_count -= 1
-
 
         #inputs
-        click = False
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -1286,119 +1188,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         for x in range(canvas_row_width):
                             canvas[y, x] = 0
 
-                elif event.key == pygame.K_F4:
-                    turn = 0
 
-
-                elif event.key == pygame.K_1:
-
-                    v = 1
-
-                    print(cv_pos)
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-
-                elif event.key == pygame.K_2:
-
-                    v = 2
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_3:
-
-                    v = 3
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_4:
-
-                    v = 4
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_5:
-
-                    v = 5
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_6:
-
-                    v = 6
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_7:
-
-                    v = 7
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_8:
-
-                    v = 8
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_9:
-
-                    v = 9
-
-                    if input_box == 1 or cv_pos > 0:
-                        v_input += str(v)
-                        print(v_input)
-
-                    else:
-                        v_input = ''
-
-                elif event.key == pygame.K_BACKSPACE:
-                    v_input = v_input[0:-1]
-
-                elif event.key == pygame.K_MINUS:
-                    # print("underscore")
-
-                    v_input += "-"
 
                 elif event.key == pygame.K_RETURN:
 
@@ -1409,10 +1199,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     print("pause")
                     print(pause)
 
-
-                elif event.key == pygame.K_q:
-
-                    bass(1)
 
 
                 #console commands

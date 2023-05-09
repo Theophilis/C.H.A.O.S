@@ -570,7 +570,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_offset = CELL_WIDTH + 40
 
     #input augments
-    midi_inputs = 1
+    midi_inputs = 0
     gloves = 1
 
 
@@ -703,6 +703,15 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
         redraw_window(input_box, v_input, dt, timer)
+
+
+        if step - step_0 > 3000:
+            bookmarks.append(len(list(journal.keys())))
+            print("")
+            print("bookmarks")
+            print(bookmarks)
+
+            step_0 = step
 
         #mitosis
         if pause == 0:
@@ -1936,7 +1945,8 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(9, 1, 1, 1)
+Chaos_Window(9, 1, 0, -1)
+
 
 
 
