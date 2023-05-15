@@ -20,7 +20,7 @@ sys.setrecursionlimit(999999999)
 pygame.font.init()
 
 pygame.mixer.init()
-pygame.mixer.set_num_channels(32)
+pygame.mixer.set_num_channels(64)
 
 length = 8
 # number of times given rule is applied and number of initial rows generated
@@ -393,40 +393,46 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                                           bar_width, int(bar_height * ((midi_weights_1[x] / zero_out))))
                         pygame.draw.rect(WIN, value_color[x], bar)
 
+        if pce == 1:
+            hp_0 = pygame.Rect(0, 0, 50, health[0] * 9)
+            pygame.draw.rect(WIN, (160, 160, 160), hp_0)
+
+            hp_1 = pygame.Rect(WIDTH-50, 0, 50, health[1] * 9)
+            pygame.draw.rect(WIN, (160, 160, 160), hp_1)
 
         pygame.display.update()
 
         return cv_pos
 
-    def bass(n):
+    def bass(n, c):
         path = r'audio\bass-' + str(n) + '.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
-    def pluck(n):
+    def pluck(n, c):
         path = r'audio\pluck-' + str(n) + '.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
-    def hh(n):
+    def hh(n, c):
         path = r'audio\hh-' + str(n) + '.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel + 2).play(pygame.mixer.Sound(path))
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
-    def kick():
+    def kick(c):
         path = r'audio\kick-0.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
-    def snare():
+    def snare(c):
         path = r'audio\snare-0.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path))
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
-    def shake():
+    def shake(c):
         path = r'audio\shake-0.mp3'
         mixer.music.load(path)
-        pygame.mixer.Channel(channel + 1).play(pygame.mixer.Sound(path))
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
@@ -557,8 +563,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     #Peacekeeper
     pce = 1
+    turn = 0
+    streak = 0
     balance = [0, 0]
     angle = 0
+    health = [100, 100]
 
     charge_0 = [0, 0]
     path_0 = [(0, 0), (0, 0)]
@@ -802,9 +811,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         if pce == 1:
 
-            #keeper 1
+            #notes
+            if turn == 0:
+                note_0 = (int(glove_values[0]/64)+int(glove_values[1]/64)*2)
+                note_1 = (int(glove_values[12]/64)+int(glove_values[13]/64)*2)
+            else:
+                note_0 = (int(glove_values[12]/64)+int(glove_values[13]/64)*2)
+                note_1 = (int(glove_values[0] / 64) + int(glove_values[1] / 64) * 2)
 
-            if glove_values[11] < 8:
+            #keeper 1
+            if glove_values[11] < 4:
 
                 #power clear
                 if charge_0[0] == 0:
@@ -812,17 +828,31 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 #path set
                 if charge_0[0] != charge_0[1]:
-                    path_0[charge_0[0]] = (glove_values[0], glove_values[1])
+
+                    if balance[0] == 0:
+                        path_0[charge_0[0]] = (glove_values[0], glove_values[1])
                     charge_0[1] = charge_0[0]
 
 
                     #start
                     if charge_0[0] == 0:
-                        kick()
+                        if turn == 0:
+                            kick(0)
+                            bass(note_0, 1)
+                            channel += 2
+                        else:
+                            pluck(note_0, 2)
+                            channel += 1
                     #end
                     if charge_0[0] == 1:
-                        kick()
-                        shake()
+                        if turn == 0:
+                            bass(note_0, 3)
+                            kick(4)
+                            shake(5)
+                            channel += 3
+                        else:
+                            pluck(note_0, 6)
+                            channel += 1
 
                         num = path_0[1][1] - path_0[0][1]
                         den = path_0[1][0] - path_0[0][0]
@@ -850,13 +880,20 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     charge_0[0] += 1
                     charge_0[0] = charge_0[0] % 2
 
+                    if turn == 0:
+                        hh(charge_0[0], 7)
+                        channel += 1
+                    else:
+                        pluck(note_1, 8)
+                        channel += 1
+
                 #power
                 if glove_values[11] > power_0:
                     power_0 = glove_values[11]
 
 
             #keeper 2
-            if glove_values[23] < 8:
+            if glove_values[23] < 4:
 
                 #power clear
                 if charge_1[0] == 0:
@@ -864,16 +901,30 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 #path set
                 if charge_1[0] != charge_1[1]:
-                    path_1[charge_1[0]] = (glove_values[12], glove_values[13])
+
+                    if balance[1] == 0:
+                        path_1[charge_1[0]] = (glove_values[12], glove_values[13])
                     charge_1[1] = charge_1[0]
 
                     #start
                     if charge_1[0] == 0:
-                        kick()
+                        if turn == 1:
+                            kick(9)
+                            bass(note_0, 10)
+                            channel += 2
+                        else:
+                            pluck(note_0, 11)
+                            channel += 1
                     #end
                     if charge_1[0] == 1:
-                        kick()
-                        shake()
+                        if turn == 1:
+                            bass(note_0, 12)
+                            kick(13)
+                            shake(14)
+                            channel += 3
+                        else:
+                            pluck(note_0, 15)
+                            channel += 1
 
                         num = path_1[1][1] - path_1[0][1]
                         den = path_1[1][0] - path_1[0][0]
@@ -892,6 +943,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             # print("holy fuck")
 
                         balance[1] = 1
+
             #move
             else:
 
@@ -899,20 +951,61 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     charge_1[0] += 1
                     charge_1[0] = charge_1[0] % 2
 
+                    if turn == 1:
+                        hh(charge_1[0], 16)
+                        channel += 1
+                    else:
+                        pluck(note_1, 17)
+                        channel += 1
+
                 if glove_values[23] > power_1:
                     power_1 = glove_values[23]
 
             if balance[0] + balance[1] == 2:
 
-                angle = math.degrees(math.atan(abs((m_1 - m_0)/(1 + m_1 * m_0))))
+                try:
+                    angle = math.degrees(math.atan(abs((m_1 - m_0)/(1 + m_1 * m_0))))
+                except:
+                    print('fuck off')
 
                 if angle > 80:
                     canvas = np.zeros((canvas_rows, canvas_row_width, 3), dtype='uint8')
+                    turn += 1
+                    turn = turn % 2
+                    snare(18)
+                    channel += 1
 
                 print()
                 print("")
                 print("balanced")
+                print('turn')
+                print(turn)
+                print("angle")
                 print(angle)
+                print("power")
+                print(power_0, power_1)
+
+                if turn == 0:
+
+                    print('health')
+                    print(health[1])
+                    print('strike')
+                    print((power_0 - int(power_1*(angle/90)))/10)
+
+                    health[1] = health[1] - (power_0 - int(power_1*(angle/90)))/10
+
+                    print(health[1])
+
+                else:
+
+                    print("health")
+                    print(health[0])
+                    print('strike')
+                    print((power_1 - int(power_0*(angle/90)))/10)
+
+                    health[0] = health[0] - (power_1 - int(power_0*(angle/90)))/10
+
+                    print(health[1])
 
 
                 balance[0] = 0
@@ -1172,6 +1265,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                                     for m_e in midi_evs:
                                         event_post(m_e)
+
+                    health = [100, 100]
 
 
                 elif event.key == pygame.K_F2:
