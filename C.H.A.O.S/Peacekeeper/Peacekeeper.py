@@ -394,11 +394,25 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         pygame.draw.rect(WIN, value_color[x], bar)
 
         if pce == 1:
-            hp_0 = pygame.Rect(0, 0, 50, health[0] * 9)
-            pygame.draw.rect(WIN, (160, 160, 160), hp_0)
 
-            hp_1 = pygame.Rect(WIDTH-50, 0, 50, health[1] * 9)
-            pygame.draw.rect(WIN, (160, 160, 160), hp_1)
+            bold = 2
+
+            hp_0 = pygame.Rect(WIDTH- health[0], HEIGHT/2, health[0], downs[0])
+            pygame.draw.rect(WIN, value_color[states[0] + charge_0[0]], hp_0)
+            hp_1 = pygame.Rect(0, HEIGHT/2, health[1], downs[1])
+            pygame.draw.rect(WIN, value_color[states[1] + charge_1[0]], hp_1)
+
+            ac_0 = pygame.Rect(WIDTH-health[0], glove_values[11]*(HEIGHT/128), health[0], downs[0])
+            pygame.draw.rect(WIN, value_color[states[0] + charge_0[0]], ac_0)
+            ac_1 = pygame.Rect(0, glove_values[23]*(HEIGHT/128), health[1], downs[1])
+            pygame.draw.rect(WIN, value_color[states[1] + charge_1[0]], ac_1)
+
+            pow_0 = pygame.Rect(WIDTH-health[0], power_0*(HEIGHT/128), health[0], downs[0])
+            pygame.draw.rect(WIN, value_color[streak%8], pow_0)
+            pow_1 = pygame.Rect(0, power_1*(HEIGHT/128), health[1], downs[1])
+            pygame.draw.rect(WIN, value_color[streak%8], pow_1)
+
+            draw_text(str(int(angle)), main_font, (10, 100, 10), WIN, WIDTH / 2 , 100)
 
         pygame.display.update()
 
@@ -567,7 +581,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     streak = 0
     balance = [0, 0]
     angle = 0
-    health = [100, 100]
+    health = [WIDTH/2, WIDTH/2]
+    states = [0, 0, 0]
+    downs = [1, 1]
+    juice = 3
 
     charge_0 = [0, 0]
     path_0 = [(0, 0), (0, 0)]
@@ -822,6 +839,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             #keeper 1
             if glove_values[11] < 4:
 
+                states[0] = 0
+
                 #power clear
                 if charge_0[0] == 0:
                     power_0 = 0
@@ -875,6 +894,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             #move
             else:
 
+                states[0] = 1
+
                 #charger
                 if charge_0[0] == charge_0[1]:
                     charge_0[0] += 1
@@ -894,6 +915,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             #keeper 2
             if glove_values[23] < 4:
+
+                states[1] = 0
 
                 #power clear
                 if charge_1[0] == 0:
@@ -947,6 +970,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             #move
             else:
 
+                states[1] = 1
+
                 if charge_1[0] == charge_1[1]:
                     charge_1[0] += 1
                     charge_1[0] = charge_1[0] % 2
@@ -961,55 +986,98 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 if glove_values[23] > power_1:
                     power_1 = glove_values[23]
 
+
             if balance[0] + balance[1] == 2:
+
+                # print()
+                # print("")
 
                 try:
                     angle = math.degrees(math.atan(abs((m_1 - m_0)/(1 + m_1 * m_0))))
                 except:
                     print('fuck off')
 
-                if angle > 80:
+                if angle > 80 and states[2] == 1:
                     canvas = np.zeros((canvas_rows, canvas_row_width, 3), dtype='uint8')
                     turn += 1
                     turn = turn % 2
                     snare(18)
                     channel += 1
+                    print("parry")
+                    print("turn")
+                    print(turn)
+                    print(m_0, m_1)
+                    print(path_0, path_1)
+                    print(angle)
 
-                print()
-                print("")
-                print("balanced")
-                print('turn')
-                print(turn)
-                print("angle")
-                print(angle)
-                print("power")
-                print(power_0, power_1)
 
                 if turn == 0:
 
-                    print('health')
-                    print(health[1])
-                    print('strike')
-                    print((power_0 - int(power_1*(angle/90)))/10)
+                    # print('health')
+                    # print(health[1])
+                    # print('strike')
+                    # print((power_0 - int(power_1*(angle/90)))/10)
+                    if states[2] == 0:
+                        # print("half_1")
+                        power_1 = int(power_1/2)
 
-                    health[1] = health[1] - (power_0 - int(power_1*(angle/90)))/10
+                    health[1] = health[1] - (power_0 - int(power_1*(angle/90))) * juice
 
-                    print(health[1])
+                    # print(health[1])
 
                 else:
 
-                    print("health")
-                    print(health[0])
-                    print('strike')
-                    print((power_1 - int(power_0*(angle/90)))/10)
+                    # print("health")
+                    # print(health[0])
+                    # print('strike')
+                    # print((power_1 - int(power_0*(angle/90)))/10)
+                    if states[2] == 0:
+                        # print("half_0")
+                        power_0 = int(power_0/2)
 
-                    health[0] = health[0] - (power_1 - int(power_0*(angle/90)))/10
 
-                    print(health[1])
+                    health[0] = health[0] - (power_1 - int(power_0*(angle/90))) * juice
+
+                    # print(health[1])
+
+                # print("balanced")
+                # print('turn')
+                # print(turn)
+                # print("angle")
+                # print(angle)
+                # print("power")
+                # print(power_0, power_1)
+                # print(streak)
 
 
                 balance[0] = 0
                 balance[1] = 0
+                streak += 1
+
+                if health[0] < 0:
+                    downs[0] += 1
+                    health[0] = WIDTH/2
+                    print("")
+                    print("down_0")
+                    print(downs)
+                if health[1] < 0:
+                    downs[1] += 1
+                    health[1] = WIDTH/2
+                    print("")
+                    print("downs_1")
+                    print(downs)
+
+
+
+
+
+
+            if states[0] + states[1] == 2:
+                states[2] = 1
+                # print("moving")
+            elif states[0] + states[1] == 0:
+                states[2] = 0
+                # print("still")
 
 
         if eb > 0:
@@ -1266,7 +1334,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                                     for m_e in midi_evs:
                                         event_post(m_e)
 
-                    health = [100, 100]
+                    health = [WIDTH/2, WIDTH/2]
 
 
                 elif event.key == pygame.K_F2:
