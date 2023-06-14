@@ -350,12 +350,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 #right triggers
                 bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(right_triggers) -50, int(HEIGHT/2),
                                   bar_width, int(bar_height * ((right_triggers[x] / zero_out))))
-                pygame.draw.rect(WIN, value_color[x + 1], bar)
+                pygame.draw.rect(WIN, value_color[(x + 1) % base], bar)
 
                 #left triggers
                 bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(left_triggers) -50, int(HEIGHT/2) + bar_height + int(bar_height/2),
                                   bar_width, int(bar_height * ((left_triggers[x] / zero_out))))
-                pygame.draw.rect(WIN, value_color[x + 1], bar)
+                pygame.draw.rect(WIN, value_color[(x + 1) % base], bar)
 
 
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
@@ -1945,7 +1945,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(9, 1, 0, -1)
+Chaos_Window(3, 1, 0, -1)
 
 
 

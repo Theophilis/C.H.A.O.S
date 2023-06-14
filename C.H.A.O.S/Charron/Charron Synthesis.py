@@ -239,10 +239,10 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_line'
+j_name = 'journal_being-ground'
 
 #number of colors
-base = 9
+base = 3
 
 ###color bank###
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
@@ -321,8 +321,9 @@ orange = (1, .5, .1)
 #corresponding to the number of colors indicated above. Order of colors matters, change to get new variations of a design.
 color_list_0 = [cyan, white, yellow, grey, black]
 color_list_1 = [red, yellow, orange]
-color_list_2 = [blue, magenta, cyan, red]
+color_list_2 = [magenta, cyan, yellow]
 color_list_3 = [black, grey, cyan, magenta, yellow]
+color_list_4 = [white, cyan, magenta, yellow, blue]
 
 #6 color
 color_list_6 = [grey6, cyan, red, magenta_d, white, moss]
@@ -336,7 +337,7 @@ color_list_gb = [gb0, gb1, black, gb3, magenta, gb5, white, gb7, gb8]
 
 
 #0=no reflection, 1=reflected image across the top, 2=reflection across bottom
-reflect = 1
+reflect = 2
 
 ###dimensions
 
@@ -344,13 +345,13 @@ reflect = 1
 #increase the number of cells in each rule call (multiplicative)
 scale_l = 1
 #decrease the number of cells in each rule call (divisive)
-shrink_l = 4
+shrink_l = 2
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
-scale_w = 2
+scale_w = 3
 #(divisive)
-shrink_w = 1
+shrink_w = 2
 
 
 
@@ -374,6 +375,7 @@ try:
     print("bookmarks")
     print(journal['bookmarks'])
     bookmarks = journal['bookmarks']
+    bookmarks = bookmarks[2::]
 
 except:
     #dont touch
@@ -385,10 +387,10 @@ except:
 
 
 #choose which bookmarked segments you want to stitch together. numbers must be separated by commas.
-bookmark_choices = [2, 3, 4, 5, 6, 7]
+bookmark_choices = [1, 3, 5]
 
 center_seed = 1
-seed_distro = 1
+seed_distro = 3
 
 
 def synthesize(j_name, split, s_f, color_list, width=0):
@@ -775,6 +777,7 @@ def synthesize(j_name, split, s_f, color_list, width=0):
 
             else:
 
+
                 if len(bookmark_choices) == 0:
 
                     for x in range(len(bookmarks) - 1):
@@ -1120,7 +1123,7 @@ def rule_book(rule_book, color_list, length, width):
 
 
 
-synthesize(j_name,split, 1, color_list_gb)
+synthesize(j_name,split, 1, color_list_2)
 
 
 
