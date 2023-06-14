@@ -449,6 +449,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
 
+    def ome(n, c):
+        path = r'audio\ome\ome_' + str(n) + '.mp3'
+        mixer.music.load(path)
+        w = pygame.mixer.Sound(path)
+        pygame.mixer.Channel(c).play(w)
+
+
+
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
     post_color = {v: k for k, v in color_post.items()}
     def glove(glove_values):
@@ -576,7 +584,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     gloves = 2
 
     #Peacekeeper
-    pce = 1
+    pce = 2
     turn = 0
     streak = 0
     balance = [0, 0]
@@ -595,6 +603,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     path_1 = [(0, 0), (0, 0)]
     power_1 = 0
     m_1 = 0
+
+    wu = 0
+    my = 0
 
     #input maps
     x_position_g0v = 0
@@ -1079,6 +1090,36 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 states[2] = 0
                 # print("still")
 
+        if pce == 2:
+
+            print(glove_values[0:3])
+
+
+            me = int(glove_values[0]/64) + int(glove_values[1]/64) * 2 + int(glove_values[2]/64) * 4
+
+            if my != me:
+                ome(me, 1)
+                eb = HEIGHT
+
+                print(me)
+
+            my = me
+
+            brush_min_0 = int(glove_values[2]/8) + 2
+            brush_min_1 = int(glove_values[2]/8) + 2
+
+
+
+
+
+
+            if states[0] + states[1] == 2:
+                states[2] = 1
+                # print("moving")
+            elif states[0] + states[1] == 0:
+                states[2] = 0
+                # print("still")
+
 
         if eb > 0:
             zero = np.zeros((1, canvas_row_width, 3), dtype='uint8')
@@ -1495,8 +1536,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 elif event.key == pygame.K_PERIOD:
 
-                    d_rule, i_rule = rule_gen(origin_rule, base)
-                    #
+                    ome(wu%8, 1)
+
+                    wu += 1
 
                 elif event.key == pygame.K_UP:
 
