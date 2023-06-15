@@ -594,6 +594,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     downs = [1, 1]
     juice = 3
 
+        #1
     charge_0 = [0, 0]
     path_0 = [(0, 0), (0, 0)]
     power_0 = 0
@@ -604,8 +605,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     power_1 = 0
     m_1 = 0
 
+        #2
     wu = 0
     my = 0
+    walks = [0, 0, 0, 0, 0, 0, 0]
 
     #input maps
     x_position_g0v = 0
@@ -1092,33 +1095,37 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         if pce == 2:
 
-            print(glove_values[0:3])
+            # print()
+            # print("peace")
+
+            for x in range(3):
+                # print(glove_values[x], walks[x])
+
+                if abs(walks[x] - glove_values[x]) > 16:
+                    print()
+                    print("walking " + str(x))
+                    print(glove_values[x], walks[x])
+
+                    if walks[x] > glove_values[x]:
+                        walks[x + 3] = 0
+                    else:
+                        walks[x + 3] = 1
+
+                    print(walks[x + 3])
+
+                    walks[x] = glove_values[x]
+
+                    feet = (walks[3] + walks[4]*2 + walks[5]*4)
+
+                    if feet  != walks[-1]:
+                        ome(feet, feet)
+                        walks[-1] = feet
+                        eb = HEIGHT
 
 
-            me = int(glove_values[0]/64) + int(glove_values[1]/64) * 2 + int(glove_values[2]/64) * 4
 
-            if my != me:
-                ome(me, 1)
-                eb = HEIGHT
-
-                print(me)
-
-            my = me
-
-            brush_min_0 = int(glove_values[2]/8) + 2
-            brush_min_1 = int(glove_values[2]/8) + 2
-
-
-
-
-
-
-            if states[0] + states[1] == 2:
-                states[2] = 1
-                # print("moving")
-            elif states[0] + states[1] == 0:
-                states[2] = 0
-                # print("still")
+            brush_min_0 = int(glove_values[2]/4) + 3
+            brush_min_1 = int(glove_values[2]/4) + 3
 
 
         if eb > 0:
