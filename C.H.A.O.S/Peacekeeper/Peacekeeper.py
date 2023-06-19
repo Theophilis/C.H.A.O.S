@@ -455,7 +455,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         w = pygame.mixer.Sound(path)
         pygame.mixer.Channel(c).play(w)
 
-
+    def pong(n, c):
+        path = r'audio\pong\pong_' + str(n) + '.mp3'
+        mixer.music.load(path)
+        w = pygame.mixer.Sound(path)
+        pygame.mixer.Channel(c).play(w)
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
     post_color = {v: k for k, v in color_post.items()}
@@ -584,7 +588,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     gloves = 2
 
     #Peacekeeper
-    pce = 2
+    pce = 3
     turn = 0
     streak = 0
     balance = [0, 0]
@@ -609,6 +613,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     wu = 0
     my = 0
     walks = [0, 0, 0, 0, 0, 0, 0]
+
+        #3
+    toggles = [0, 0, 0, 0, 0]
 
     #input maps
     x_position_g0v = 0
@@ -1127,6 +1134,41 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             brush_min_0 = int(glove_values[2]/4) + 3
             brush_min_1 = int(glove_values[2]/4) + 3
 
+        if pce == 3:
+            # print(glove_values[6:11])
+
+            brush_min_0 = int(glove_values[2] / 4) + 5
+            brush_min_1 = int(glove_values[2] / 4) + 5
+            me = int(glove_values[0] / 64) + int(glove_values[1] / 64) * 2 + int(glove_values[2] / 64) * 4
+
+            if int(glove_values[6]/64) != toggles[0]:
+                toggles[0] = int(glove_values[6]/64)
+                eb = HEIGHT
+
+                ome(me, 1)
+            if int(glove_values[7]/64) != toggles[1]:
+                toggles[1] = int(glove_values[7]/64)
+                # print(toggles)
+
+                pong(0 + me, 2)
+            if int(glove_values[8]/64) != toggles[2]:
+                toggles[2] = int(glove_values[8]/64)
+                # print(toggles)
+
+                pong(2 + me, 3)
+            if int(glove_values[9]/64) != toggles[3]:
+                toggles[3] = int(glove_values[9]/64)
+                # print(toggles)
+
+                pong(4 + me, 4)
+            if int(glove_values[10]/64) != toggles[4]:
+                toggles[4] = int(glove_values[10]/64)
+                # print(toggles)
+
+                pong(7 + me, 5)
+
+
+
 
         if eb > 0:
             zero = np.zeros((1, canvas_row_width, 3), dtype='uint8')
@@ -1543,9 +1585,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 elif event.key == pygame.K_PERIOD:
 
-                    ome(wu%8, 1)
+                    pong(wu%15, 1)
 
                     wu += 1
+
+                    if wu > 14:
+                        wu = 0
 
                 elif event.key == pygame.K_UP:
 
