@@ -615,7 +615,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     walks = [0, 0, 0, 0, 0, 0, 0]
 
         #3
-    toggles = [0, 0, 0, 0, 0]
+    toggles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
 
     #input maps
     x_position_g0v = 0
@@ -1139,7 +1140,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             brush_min_0 = int(glove_values[2] / 4) + 5
             brush_min_1 = int(glove_values[2] / 4) + 5
-            me = int(glove_values[0] / 64) + int(glove_values[1] / 64) * 2 + int(glove_values[2] / 64) * 4
+            me = int(glove_values[2]/64) + int(abs((glove_values[0] - 127)/64))*2 + int(glove_values[1]/64)*4
+            # print(int(abs((glove_values[0] - 128)/64)))
+
 
             if int(glove_values[6]/64) != toggles[0]:
                 toggles[0] = int(glove_values[6]/64)
@@ -1166,6 +1169,14 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 # print(toggles)
 
                 pong(7 + me, 5)
+            if int(glove_values[2]/64) != toggles[5]:
+                kick(5)
+                toggles[5] = int(glove_values[2]/64)
+                if int(glove_values[11]>64):
+                    shake(6)
+
+
+
 
 
 
