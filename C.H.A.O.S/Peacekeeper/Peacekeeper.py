@@ -414,6 +414,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
             draw_text(str(int(angle)), main_font, (10, 100, 10), WIN, WIDTH / 2 , 100)
 
+        if pce == 3:
+
+            if glove_values[11] > ac_trig:
+                ac_0 = pygame.Rect(0, HEIGHT/2, WIDTH, 2)
+                pygame.draw.rect(WIN, value_color[me + 1], ac_0)
+
+            if glove_values[2] > 64:
+                ac_0 = pygame.Rect(WIDTH/2, 0, 2, HEIGHT)
+                pygame.draw.rect(WIN, value_color[me + 1], ac_0)
+
         pygame.display.update()
 
         return cv_pos
@@ -615,7 +625,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     walks = [0, 0, 0, 0, 0, 0, 0]
 
         #3
-    toggles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    me = 0
+    ac_trig = 16
+    toggles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
 
 
     #input maps
@@ -988,7 +1001,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             # print("holy fuck")
 
                         balance[1] = 1
-
             #move
             else:
 
@@ -1144,6 +1156,50 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             # print(int(abs((glove_values[0] - 128)/64)))
 
 
+            #keeper 1
+            if glove_values[11] < ac_trig:
+
+                states[0] = 0
+
+                #power clear
+                if charge_0[0] == 0:
+                    power_0 = 0
+
+                #path set
+                if charge_0[0] != charge_0[1]:
+
+                    if balance[0] == 0:
+                        path_0[charge_0[0]] = (glove_values[0], glove_values[1])
+                    charge_0[1] = charge_0[0]
+
+
+                    #start
+                    if charge_0[0] == 0:
+                        kick(6)
+                    #end
+                    if charge_0[0] == 1:
+                        if turn == 0:
+                            kick(6)
+                            shake(7)
+            #move
+            else:
+
+                states[0] = 1
+
+                #charger
+                if charge_0[0] == charge_0[1]:
+                    charge_0[0] += 1
+                    charge_0[0] = charge_0[0] % 2
+
+
+                    hh(charge_0[0], 7)
+
+
+                #power
+                if glove_values[11] > power_0:
+                    power_0 = glove_values[11]
+
+
             if int(glove_values[6]/64) != toggles[0]:
                 toggles[0] = int(glove_values[6]/64)
                 eb = HEIGHT
@@ -1169,11 +1225,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 # print(toggles)
 
                 pong(7 + me, 5)
-            if int(glove_values[2]/64) != toggles[5]:
-                kick(5)
-                toggles[5] = int(glove_values[2]/64)
-                if int(glove_values[11]>64):
-                    shake(6)
+
+
+
+
 
 
 
