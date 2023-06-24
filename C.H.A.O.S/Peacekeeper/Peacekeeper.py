@@ -354,6 +354,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
 
+    scale_shift = {0:0, 1:2, 2:4, 3:5, 4:7, 5:9, 6:11, 7:12}
+    chord_types = {0:(16, 19), 1:(15, 19), 2:(16, 22)}
+
     def redraw_window():
 
         #preparation
@@ -467,6 +470,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     def pong(n, c):
         path = r'audio\pong\pong_' + str(n) + '.mp3'
+        mixer.music.load(path)
+        w = pygame.mixer.Sound(path)
+        pygame.mixer.Channel(c).play(w)
+
+    def sinsaw(n, c):
+        path = r'audio\sinsaw\sinsaw_' + str(n) + '.mp3'
         mixer.music.load(path)
         w = pygame.mixer.Sound(path)
         pygame.mixer.Channel(c).play(w)
@@ -598,7 +607,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     gloves = 2
 
     #Peacekeeper
-    pce = 3
+    pce = 4
     turn = 0
     streak = 0
     balance = [0, 0]
@@ -628,7 +637,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     me = 0
     ac_trig = 16
     toggles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
+    wake = [0, 0, 0, 0, 0]
 
 
     #input maps
@@ -1150,8 +1159,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         if pce == 3:
             # print(glove_values[6:11])
 
-            brush_min_0 = int(glove_values[2] / 4) + 5
-            brush_min_1 = int(glove_values[2] / 4) + 5
+            brush_min_0 = int(glove_values[2] / 4) + 14
+            brush_min_1 = int(glove_values[2] / 4) + 14
             me = int(glove_values[2]/64) + int(abs((glove_values[0] - 127)/64))*2 + int(glove_values[1]/64)*4
             # print(int(abs((glove_values[0] - 128)/64)))
 
@@ -1226,13 +1235,46 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 pong(7 + me, 5)
 
+        if pce == 4:
+            # print(glove_values[6:11])
+
+            brush_min_0 = int(glove_values[2] / 4) + 14
+            brush_min_1 = int(glove_values[14] / 4) + 14
+            me = int(glove_values[2]/64) + int(abs((glove_values[0] - 127)/64))*2 + int(glove_values[1]/64)*4
+            my = int(glove_values[14]/64) + int((glove_values[12])/64)*2 + int(glove_values[13]/64)*4
+            print(my)
 
 
+            if int(glove_values[6]/64) != toggles[0]:
+                toggles[0] = int(glove_values[6]/64)
+                eb = HEIGHT
+                sinsaw(0 + scale_shift[me], 0 + wake[0])
+                wake[0] += 1
+                wake[0] = wake[0]%4
 
+            if int(glove_values[7]/64) != toggles[1]:
+                toggles[1] = int(glove_values[7]/64)
+                sinsaw(12 + scale_shift[me], 4 + wake[1])
+                wake[1] += 1
+                wake[1] = wake[1]%4
 
+            if int(glove_values[8]/64) != toggles[2]:
+                toggles[2] = int(glove_values[8]/64)
+                sinsaw(chord_types[my%3][0] + scale_shift[me], 8 + wake[2])
+                wake[2] += 1
+                wake[2] = wake[2]%4
 
+            if int(glove_values[9]/64) != toggles[3]:
+                toggles[3] = int(glove_values[9]/64)
+                sinsaw(chord_types[my%3][1] + scale_shift[me], 12 + wake[3])
+                wake[3] += 1
+                wake[3] = wake[3]%4
 
-
+            if int(glove_values[10]/64) != toggles[4]:
+                toggles[4] = int(glove_values[10]/64)
+                sinsaw(24 + scale_shift[me], 16 + wake[4])
+                wake[4] += 1
+                wake[4] = wake[4]%4
 
 
 
@@ -1651,12 +1693,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 elif event.key == pygame.K_PERIOD:
 
-                    pong(wu%15, 1)
+                    sinsaw(wu, 1)
 
                     wu += 1
-
-                    if wu > 14:
-                        wu = 0
 
                 elif event.key == pygame.K_UP:
 
