@@ -1276,6 +1276,40 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 wake[4] += 1
                 wake[4] = wake[4]%4
 
+            if int(glove_values[18]/64) != toggles[5]:
+                toggles[5] = int(glove_values[18]/64)
+                eb = HEIGHT
+                sinsaw(0 + scale_shift[me] + 12, 0 + wake[0])
+                wake[0] += 1
+                wake[0] = wake[0]%4
+
+            if int(glove_values[19]/64) != toggles[6]:
+                toggles[6] = int(glove_values[19]/64)
+                sinsaw(12 + scale_shift[me] + 12, 4 + wake[1])
+                wake[1] += 1
+                wake[1] = wake[1]%4
+
+            if int(glove_values[20]/64) != toggles[7]:
+                toggles[7] = int(glove_values[20]/64)
+                sinsaw(chord_types[my%3][0] + scale_shift[me], 8 + wake[2])
+                wake[2] += 1
+                wake[2] = wake[2]%4
+
+            if int(glove_values[21]/64) != toggles[8]:
+                toggles[8] = int(glove_values[21]/64)
+                sinsaw(chord_types[my%3][1] + scale_shift[me] + 12, 12 + wake[3])
+                wake[3] += 1
+                wake[3] = wake[3]%4
+
+            if int(glove_values[22]/64) != toggles[9]:
+                toggles[9] = int(glove_values[22]/64)
+                sinsaw(24 + scale_shift[me] + 12, 16 + wake[4])
+                wake[4] += 1
+                wake[4] = wake[4]%4
+
+            right_letter = int(glove_values[6]/64) + int(glove_values[7]/64)*2  + int(glove_values[7]/64)*4 + int(glove_values[7]/64)*5
+
+            print(right_letter)
 
 
         if eb > 0:

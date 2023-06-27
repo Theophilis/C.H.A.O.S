@@ -251,7 +251,7 @@ def Chaos_Window(device_id=-1):
 
     #input augments
     midi_inputs = 1
-    gloves = 1
+    gloves = 2
     number_of_sensors = 12
     glove_values = [x for x in range(gloves * number_of_sensors)]
 
