@@ -355,7 +355,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
 
     scale_shift = {0:0, 1:2, 2:4, 3:5, 4:7, 5:9, 6:11, 7:12}
-    chord_types = {0:(16, 19), 1:(15, 19), 2:(16, 22)}
+    chord_types = {0:(16, 19), 1:(16, 22), 2:(15, 19)}
 
     def redraw_window():
 
@@ -427,6 +427,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 ac_0 = pygame.Rect(WIDTH/2, 0, 2, HEIGHT)
                 pygame.draw.rect(WIN, value_color[me + 1], ac_0)
 
+        if pce == 4:
+            draw_text(str(value_letter[right_letter]), TITLE_FONT, (10, 100, 10), WIN, WIDTH - 64, 0)
+            draw_text(str(value_letter[left_letter]), TITLE_FONT, (10, 100, 10), WIN, 32, 0)
+            draw_text(voice, TITLE_FONT, (10, 100, 10), WIN, WIDTH/2, HEIGHT/2)
+
+
         pygame.display.update()
 
         return cv_pos
@@ -476,6 +482,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     def sinsaw(n, c):
         path = r'audio\sinsaw\sinsaw_' + str(n) + '.mp3'
+        mixer.music.load(path)
+        w = pygame.mixer.Sound(path)
+        pygame.mixer.Channel(c).play(w)
+
+    def saw(n, c):
+        path = r'audio\saw\saw_' + str(n) + '.mp3'
+        mixer.music.load(path)
+        w = pygame.mixer.Sound(path)
+        pygame.mixer.Channel(c).play(w)
+
+    def sin(n, c):
+        path = r'audio\sin\sin_' + str(n) + '.mp3'
         mixer.music.load(path)
         w = pygame.mixer.Sound(path)
         pygame.mixer.Channel(c).play(w)
@@ -605,6 +623,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     #input augments
     midi_inputs = 1
     gloves = 2
+    right_letter = 0
+    left_letter = 0
+    voice = ' '
 
     #Peacekeeper
     pce = 4
@@ -616,6 +637,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     states = [0, 0, 0]
     downs = [1, 1]
     juice = 3
+    chalk = 0
+    cad = []
 
         #1
     charge_0 = [0, 0]
@@ -1238,78 +1261,110 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         if pce == 4:
             # print(glove_values[6:11])
 
-            brush_min_0 = int(glove_values[2] / 4) + 14
-            brush_min_1 = int(glove_values[14] / 4) + 14
+            brush_min_0 = int(glove_values[2] / 4) + 2
+            brush_min_1 = int(glove_values[14] / 4) + 2
             me = int(glove_values[2]/64) + int(abs((glove_values[0] - 127)/64))*2 + int(glove_values[1]/64)*4
             my = int(glove_values[14]/64) + int((glove_values[12])/64)*2 + int(glove_values[13]/64)*4
-            print(my)
+            # print(my)
 
 
             if int(glove_values[6]/64) != toggles[0]:
                 toggles[0] = int(glove_values[6]/64)
-                eb = HEIGHT
-                sinsaw(0 + scale_shift[me], 0 + wake[0])
-                wake[0] += 1
-                wake[0] = wake[0]%4
+                if toggles[0] == 1:
+                    eb = HEIGHT
+                    sin(0 + scale_shift[me], 0 + wake[0])
+                    wake[0] += 1
+                    wake[0] = wake[0]%4
 
             if int(glove_values[7]/64) != toggles[1]:
                 toggles[1] = int(glove_values[7]/64)
-                sinsaw(12 + scale_shift[me], 4 + wake[1])
-                wake[1] += 1
-                wake[1] = wake[1]%4
+                if toggles[1] == 1:
+                    sin(12 + scale_shift[me], 4 + wake[1])
+                    wake[1] += 1
+                    wake[1] = wake[1]%4
 
             if int(glove_values[8]/64) != toggles[2]:
                 toggles[2] = int(glove_values[8]/64)
-                sinsaw(chord_types[my%3][0] + scale_shift[me], 8 + wake[2])
-                wake[2] += 1
-                wake[2] = wake[2]%4
+                if toggles[2] == 1:
+                    sin(chord_types[my%3][0] + scale_shift[me], 8 + wake[2])
+                    wake[2] += 1
+                    wake[2] = wake[2]%4
 
             if int(glove_values[9]/64) != toggles[3]:
                 toggles[3] = int(glove_values[9]/64)
-                sinsaw(chord_types[my%3][1] + scale_shift[me], 12 + wake[3])
-                wake[3] += 1
-                wake[3] = wake[3]%4
+                if toggles[3] == 1:
+                    sin(chord_types[my%3][1] + scale_shift[me], 12 + wake[3])
+                    wake[3] += 1
+                    wake[3] = wake[3]%4
 
             if int(glove_values[10]/64) != toggles[4]:
                 toggles[4] = int(glove_values[10]/64)
-                sinsaw(24 + scale_shift[me], 16 + wake[4])
-                wake[4] += 1
-                wake[4] = wake[4]%4
+                if toggles[4] == 1:
+                    sin(24 + scale_shift[me], 16 + wake[4])
+                    wake[4] += 1
+                    wake[4] = wake[4]%4
 
             if int(glove_values[18]/64) != toggles[5]:
                 toggles[5] = int(glove_values[18]/64)
-                eb = HEIGHT
-                sinsaw(0 + scale_shift[me] + 12, 0 + wake[0])
-                wake[0] += 1
-                wake[0] = wake[0]%4
+                if toggles[5] == 1:
+                    eb = HEIGHT
+                    saw(0 + scale_shift[me], 0 + wake[0])
+                    wake[0] += 1
+                    wake[0] = wake[0]%4
 
             if int(glove_values[19]/64) != toggles[6]:
                 toggles[6] = int(glove_values[19]/64)
-                sinsaw(12 + scale_shift[me] + 12, 4 + wake[1])
-                wake[1] += 1
-                wake[1] = wake[1]%4
+                if toggles[6] == 1:
+                    saw(12 + scale_shift[me], 4 + wake[1])
+                    wake[1] += 1
+                    wake[1] = wake[1]%4
 
             if int(glove_values[20]/64) != toggles[7]:
                 toggles[7] = int(glove_values[20]/64)
-                sinsaw(chord_types[my%3][0] + scale_shift[me], 8 + wake[2])
-                wake[2] += 1
-                wake[2] = wake[2]%4
+                if toggles[7] == 1:
+                    saw(chord_types[my%3][0] + scale_shift[me], 8 + wake[2])
+                    wake[2] += 1
+                    wake[2] = wake[2]%4
 
             if int(glove_values[21]/64) != toggles[8]:
                 toggles[8] = int(glove_values[21]/64)
-                sinsaw(chord_types[my%3][1] + scale_shift[me] + 12, 12 + wake[3])
-                wake[3] += 1
-                wake[3] = wake[3]%4
+                if toggles[8] == 1:
+                    saw(chord_types[my%3][1] + scale_shift[me], 12 + wake[3])
+                    wake[3] += 1
+                    wake[3] = wake[3]%4
 
             if int(glove_values[22]/64) != toggles[9]:
                 toggles[9] = int(glove_values[22]/64)
-                sinsaw(24 + scale_shift[me] + 12, 16 + wake[4])
-                wake[4] += 1
-                wake[4] = wake[4]%4
+                if toggles[9] == 1:
+                    saw(24 + scale_shift[me], 16 + wake[4])
+                    wake[4] += 1
+                    wake[4] = wake[4]%4
 
-            right_letter = int(glove_values[6]/64) + int(glove_values[7]/64)*2  + int(glove_values[7]/64)*4 + int(glove_values[7]/64)*5
+            right_letter = int(glove_values[6]/64) + int(glove_values[7]/64)*2 + int(glove_values[8]/64)*4 + int(glove_values[9]/64)*8 + int(glove_values[10]/64)*16
+            left_letter = int(glove_values[18]/64) + int(glove_values[19]/64)*2 + int(glove_values[20]/64)*4 + int(glove_values[21]/64)*8 + int(glove_values[22]/64)*16
 
-            print(right_letter)
+            if right_letter == left_letter and glove_values[11] < 3:
+                if voice[-1] != value_letter[right_letter]:
+                    voice += value_letter[right_letter]
+                    cad.append(time.time())
+                    print()
+                    print(voice)
+                    print(cad)
+                if right_letter == 0 and len(voice)>1:
+                    voice = ' '
+                    c_0 = cad[0]
+                    for x in range(len(cad)):
+                        cad[x] = cad[x]-c_0
+                    print(cad)
+
+
+
+
+
+
+
+
+
 
 
         if eb > 0:
@@ -1727,9 +1782,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 elif event.key == pygame.K_PERIOD:
 
-                    sinsaw(wu, 1)
+                    sin(wu, 1)
+                    # saw(wu, 1)
 
                     wu += 1
+                    print("wu")
+                    print(wu)
 
                 elif event.key == pygame.K_UP:
 
@@ -1880,6 +1938,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     for m_e in midi_evs:
                         event_post(m_e)
+
 
 
 

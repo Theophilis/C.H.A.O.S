@@ -269,7 +269,7 @@ pygame.display.init()
 
 current_display = pygame.display.Info()
 # WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 1600, 800
+WIDTH, HEIGHT = 800, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -281,7 +281,7 @@ pygame.display.set_caption("C.H.A.O.S")
 click = False
 
 
-def Chaos_Window(base, cell_vel, analytics, device_id=-1):
+def Chaos_Window(base, analytics, device_id=-1):
 
     print("base")
     print(base)
@@ -399,139 +399,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         return v_input
 
-    def fibonacci(a, duration, list, calls=1, b=0):
-
-        if b == 0:
-            b = a
-
-            list.append(a)
-            list.append(b)
-
-        c = a + b
-
-        for x in range(calls):
-            list.append(c)
-
-        if duration != 0:
-            duration -= 1
-
-            fibonacci(c, duration, list, calls, a)
-
-    def rl_gen(input_list):
-
-        if input_list[0] == 'm':
-
-            input_list = input_list[1:]
-
-            if len(input_list) == 2:
-
-                rule_list = [x * int(input_list[1]) for x in range(int(input_list[0]))]
-
-            elif len(input_list) == 4:
-
-                # print(" ")
-                # print("input_list")
-                # print(input_list)
-
-                rule_list = [x * int(input_list[3]) for x in
-                             range(int(input_list[0]), int(input_list[1]), int(input_list[2]))]
-
-                # print(" ")
-                # print("len() 4")
-                # print(rule_list)
-
-            elif len(input_list) == 5:
-
-                rule_list = []
-
-                rule_list_0 = [x * int(input_list[3]) for x in
-                               range(int(input_list[0]), int(input_list[1]), int(input_list[2]))]
-
-                for rule in rule_list_0:
-
-                    for x in range(int(input_list[4])):
-                        rule_list.append(rule)
-
-                # print(rule_list)
-
-            list_count = len(rule_list)
-
-        elif input_list[0] == 'fib':
-
-            input_list = input_list[1:]
-
-            rule_list = []
-
-            if len(input_list) == 1:
-
-                fibonacci(1, int(input_list[0]), rule_list)
-
-            elif len(input_list) == 2:
-
-                fibonacci(1, int(input_list[0]), rule_list, int(input_list[1]))
-
-            elif len(input_list) == 3:
-
-                fibonacci(int(input_list[2]), int(input_list[0]), rule_list, int(input_list[1]))
-
-            # print(" ")
-            # print("rule_list")
-            # print(rule_list)
-
-            list_count = len(rule_list)
-
-        elif input_list[0] == 'sqr':
-
-            # print(" ")
-            # print("sqr")
-
-            input_list = input_list[1:]
-
-            if len(input_list) == 2:
-                rule_list = [x ** int(input_list[1]) for x in range(int(input_list[0]))]
-
-                # print('rule_list')
-                # print(rule_list)
-
-            list_count = len(rule_list)
-
-        elif input_list[0] == 'exp':
-
-            # print(" ")
-            # print("sqr")
-
-            input_list = input_list[1:]
-
-            rule_list = []
-
-            if len(input_list) == 2:
-
-                # print("")
-                # print("exp len 2")
-                # print(input_list)
-
-                rule_list_0 = [x ** x for x in range(int(input_list[0]))]
-
-                # print("rule_list_0")
-                # print(rule_list_0)
-
-                for rule in rule_list_0:
-
-                    # print("rule")
-                    # print(rule)
-                    #
-                    # print(input_list[1])
-
-                    for x in range(int(input_list[1])):
-                        rule_list.append(rule)
-
-                # print('rule_list')
-                # print(rule_list)
-
-            list_count = len(rule_list)
-
-        return rule_list, list_count
-
     #active variables
     run = 1
     pause = 0
@@ -545,19 +412,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     bbv = base ** base ** view
     rule_window_scale = 4
 
-    #streams
-    stream_buffer = 0
-    stream_direction = deque(maxlen=stream_buffer)
-    stream_direction.append(0)
-    momentum = {0:0, 1:0, 2:0, 3:0}
-    momentum_scale_scale = 3
-
     #record keeping
     journal = dict()
     page = []
-    rule_book = []
     rule_point = list()
     bookmarks = [0]
+    rule_count = 0
+    rule = str()
 
     #ui
     ui_on = 1
@@ -587,9 +448,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     low_trigger = 48
     left_triggers = [0 for x in range(8)]
     right_triggers = [0 for x in range(8)]
-
-    t_plus = 2
-    t_minus = 1
     t_change_scale = 4
 
     #chaos console
@@ -609,10 +467,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     else:
         d_rule, i_rule = rule_gen_xx(rule_0, base)
 
-
-    # print("")
-    # print("d_rule")
-    # print(d_rule)
 
     print("")
     print('cells: width height')
@@ -715,65 +569,29 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         #mitosis
         if pause == 0:
-            for y in range(cell_vel):
 
-                #step
-                if len(stream_direction) > 1:
+            cells_a = np.roll(cells_a, 1, 0)
 
-                    cells_a = np.rot90(cells_a, stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
+            for x in range(len(cells_a[0])):
+                cells_a[0, x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
 
-                    if 1 in stream_direction and 3 in stream_direction or 0 in stream_direction and 2 in stream_direction:
+            #record keeping
+            if i_rule != rule_point:
 
-                        momentum[stream_direction[step % stream_buffer % len(stream_direction)]] += int(glove_values[2] / momentum_scale_scale) + 1
+                # print()
+                # print(rule)
+                # print(rule_count)
+                # print(step)
+                journal[(rule,step)] = rule_count
 
-                    else:
-
-                        momentum[0] = 0
-                        momentum[2] = 0
-                        momentum[1] = 0
-                        momentum[3] = 0
-
-                cells_a = np.roll(cells_a, 1, 0)
-
-                for x in range(len(cells_a[0])):
-                    cells_a[0 , x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
-
-                if len(stream_direction) > 0:
-                    cells_a = np.rot90(cells_a, 4 - stream_direction[step % stream_buffer % len(stream_direction)], (0, 1))
-
-                #record keeping
-                line = tuple(color_value[tuple(v)] for v in cells_a[0])
-
-                page.append(line)
-
+                rule_point = i_rule[::]
                 rule = str()
                 for ir in i_rule:
                     rule += str(ir)
-                rule = (rule, datetime.now())
+                rule_count = 0
 
-                if i_rule != rule_point:
-                    # print()
-                    # print()
-                    # print("align")
-                    # print("i_rule & rule_point")
-                    # print(i_rule)
-                    # print(rule_point)
-                    rule_point = i_rule[::]
-                    # print()
-                    # print("i_rule & rule_point")
-                    # print(i_rule)
-                    # print(rule_point)
-
-                    if rule not in journal:
-                        journal[rule] = []
-                        journal[rule].append(page)
-
-                    else:
-                        journal[rule].append(page)
-
-                    page = []
-
-                step += 1
+            rule_count += 1
+            step += 1
 
 
         #console rule inputs
@@ -931,13 +749,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                     step_0 = step
 
-                elif event.key == pygame.K_F1:
-                    book_rule = str()
-                    for ir in i_rule:
-                        book_rule += str(ir)
-                    rule_book.append(book_rule)
-
-                    print(len(rule_book))
 
                 elif event.key == pygame.K_1:
 
@@ -1015,33 +826,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     d_rule, i_rule = rule_gen(rule_0, base)
                     #
 
-                elif event.key == pygame.K_UP:
-
-                    stream_direction.append(2)
-
-                    # print('up')
-                    # print(stream_direction)
-
-                elif event.key == pygame.K_RIGHT:
-
-                    stream_direction.append(1)
-
-                    # print("right")
-                    # print(stream_direction)
-
-                elif event.key == pygame.K_DOWN:
-
-                    stream_direction.append(0)
-
-                    # print("down")
-                    # print(stream_direction)
-
-                elif event.key == pygame.K_LEFT:
-
-                    stream_direction.append(3)
-
-                    # print('left')
-                    # print(stream_direction)
 
 
                 #console commands
@@ -1065,114 +849,102 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                             if len(input_list) > 1:
 
-                                try:
 
-                                    rule_list, list_count = rl_gen(input_list)
+                                if input_list[0] == 'base':
 
-                                except:
+                                    print("##########based##########")
 
-                                    if input_list[0] == 'base':
+                                    base = int(input_list[1])
+                                    bv = base ** view
 
-                                        print("##########based##########")
+                                    step_size = int(base ** view / (base - 1))
+                                    o_r = rule_gen(0, base)[1]
+                                    for x in range(int((base ** view) / step_size) + 1):
 
-                                        base = int(input_list[1])
-                                        bv = base ** view
+                                        if x > 0:
 
-                                        step_size = int(base ** view / (base - 1))
-                                        o_r = rule_gen(0, base)[1]
-                                        for x in range(int((base ** view) / step_size) + 1):
-
-                                            if x > 0:
-
-                                                o_r[-((step_size * x + 1) % bv)] = x
-
-                                            else:
-
-                                                o_r[-((step_size * x + 1) % bv)] = 1
-                                        o_r[-1] = 1
-                                        origin_rule = decimal(o_r, base)
-                                        ir_height = base
-
-                                        # colors
-                                        if base < 5:
-
-                                            value_color = {0: (0, 0, 0), 1: (255, 0, 255), 2: (0, 255, 255),
-                                                           3: (255, 255, 0), 4: (192, 192, 192), 5: (255, 0, 0),
-                                                           6: (0, 255, 0), 7: (0, 0, 255)}
-                                            color_value = {v: k for k, v in value_color.items()}
+                                            o_r[-((step_size * x + 1) % bv)] = x
 
                                         else:
 
-                                            value_color = {0: (0, 0, 0), 1: (32, 32, 32), 2: (255, 0, 255),
-                                                           3: (0, 255, 255), 4: (255, 255, 0), 5: (192, 192, 192),
-                                                           6: (255, 0, 0), 7: (0, 255, 0), 8: (0, 0, 255)}
-                                            color_value = {v: k for k, v in value_color.items()}
+                                            o_r[-((step_size * x + 1) % bv)] = 1
+                                    o_r[-1] = 1
+                                    origin_rule = decimal(o_r, base)
+                                    ir_height = base
 
-                                        print("origin rule")
-                                        print(o_r)
-                                        print(origin_rule)
+                                    # colors
+                                    if base < 5:
 
-                                        d_rule, i_rule = rule_gen(origin_rule, base)
+                                        value_color = {0: (0, 0, 0), 1: (255, 0, 255), 2: (0, 255, 255),
+                                                       3: (255, 255, 0), 4: (192, 192, 192), 5: (255, 0, 0),
+                                                       6: (0, 255, 0), 7: (0, 0, 255)}
+                                        color_value = {v: k for k, v in value_color.items()}
 
-                                        print("d_rule, i_rule")
-                                        print(d_rule)
-                                        print(i_rule)
+                                    else:
 
-                                        if ui_on == 1:
+                                        value_color = {0: (0, 0, 0), 1: (32, 32, 32), 2: (255, 0, 255),
+                                                       3: (0, 255, 255), 4: (255, 255, 0), 5: (192, 192, 192),
+                                                       6: (255, 0, 0), 7: (0, 255, 0), 8: (0, 0, 255)}
+                                        color_value = {v: k for k, v in value_color.items()}
 
-                                            rule_models = []
+                                    print("origin rule")
+                                    print(o_r)
+                                    print(origin_rule)
 
-                                            ir_split = []
+                                    d_rule, i_rule = rule_gen(origin_rule, base)
 
-                                            [ir_split.append(i_rule[x * int(len(i_rule) / ir_height):(x + 1) * int(
-                                                len(i_rule) / ir_height)]) for x in
-                                             range(ir_height)]
+                                    print("d_rule, i_rule")
+                                    print(d_rule)
+                                    print(i_rule)
 
-                                            [[rule_models.append(
-                                                pygame.Rect(1 * ui_scale * x + x_offset,
-                                                            1 * ui_scale + 20 + ui_scale * y, ui_scale, ui_scale)) for x
-                                                in
-                                                range(len(ir_split[y]))] for y in range(ir_height)]
+                                    if ui_on == 1:
 
+                                        rule_models = []
 
-                                        print("new_row")
-                                        print(rule_gen_2(origin_rule, base, cell_row_width)[1])
+                                        ir_split = []
 
-                                        # mitosis
-                                        for x in range(cell_vel):
+                                        [ir_split.append(i_rule[x * int(len(i_rule) / ir_height):(x + 1) * int(
+                                            len(i_rule) / ir_height)]) for x in
+                                         range(ir_height)]
 
-                                            cells_a = np.roll(cells_a, 1, 0)
-
-                                            clunk = 0
-
-                                            for y in rule_gen_2(origin_rule, base, cell_row_width)[1]:
-
-                                                cells_a[0, clunk] = value_color[y]
-
-                                                clunk += 1
-
-                                    elif input_list[0] == 'name':
-                                        j_name = input_list[1]
-
-                                        write = 1
-
-                                    elif input_list[0] == 't-clear':
-
-                                        trigger_0 = 0
-                                        trigger_1 = 0
-                                        trigger_2 = 0
-                                        trigger_3 = 0
-                                        trigger_4 = 0
-                                        trigger_5 = 0
-                                        trigger_6 = 0
-                                        trigger_7 = 0
-                                        trigger_8 = 0
-
-                                    elif input_list[0] == 'dam':
-
-                                        stream_direction = deque(maxlen=stream_buffer)
+                                        [[rule_models.append(
+                                            pygame.Rect(1 * ui_scale * x + x_offset,
+                                                        1 * ui_scale + 20 + ui_scale * y, ui_scale, ui_scale)) for x
+                                            in
+                                            range(len(ir_split[y]))] for y in range(ir_height)]
 
 
+                                    print("new_row")
+                                    print(rule_gen_2(origin_rule, base, cell_row_width)[1])
+
+                                    # mitosis
+
+                                    cells_a = np.roll(cells_a, 1, 0)
+
+                                    clunk = 0
+
+                                    for y in rule_gen_2(origin_rule, base, cell_row_width)[1]:
+
+                                            cells_a[0, clunk] = value_color[y]
+
+                                            clunk += 1
+
+                                elif input_list[0] == 'name':
+                                    j_name = input_list[1]
+
+                                    write = 1
+
+                                elif input_list[0] == 't-clear':
+
+                                    trigger_0 = 0
+                                    trigger_1 = 0
+                                    trigger_2 = 0
+                                    trigger_3 = 0
+                                    trigger_4 = 0
+                                    trigger_5 = 0
+                                    trigger_6 = 0
+                                    trigger_7 = 0
+                                    trigger_8 = 0
 
 
                             elif v_input == 'write':
@@ -1443,7 +1215,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     if write == 1:
 
         journal['bookmarks'] = bookmarks
-        journal['rule_book'] = rule_book
+
+        # print("")
+        # print(bookmarks)
+        # print(journal)
 
         if len(j_name) > 0:
 
@@ -1945,7 +1720,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(3, 1, 0, -1)
+Chaos_Window(3, 1, -1)
 
 
 

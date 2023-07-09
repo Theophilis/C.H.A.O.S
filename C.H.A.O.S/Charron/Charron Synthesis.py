@@ -239,7 +239,7 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_being-ground'
+j_name = 'journal_truth'
 
 #number of colors
 base = 3
@@ -337,7 +337,7 @@ color_list_gb = [gb0, gb1, black, gb3, magenta, gb5, white, gb7, gb8]
 
 
 #0=no reflection, 1=reflected image across the top, 2=reflection across bottom
-reflect = 2
+reflect = 1
 
 ###dimensions
 
@@ -349,9 +349,9 @@ shrink_l = 2
 
 ##width adjustment width = width * scale_w / shrink_w
 #multiplicative
-scale_w = 3
+scale_w = 1
 #(divisive)
-shrink_w = 2
+shrink_w = 1
 
 
 
@@ -370,16 +370,11 @@ path = 'synthesis'
 
 print("len of journals")
 print(len(list(journal.keys())))
+print("bookmarks")
+print(journal['bookmarks'])
+bookmarks = journal['bookmarks']
 
-try:
-    print("bookmarks")
-    print(journal['bookmarks'])
-    bookmarks = journal['bookmarks']
-    bookmarks = bookmarks[2::]
 
-except:
-    #dont touch
-    bookmarks = [0]
 
 #full print overide
 # bookmarks = [0]
@@ -387,13 +382,13 @@ except:
 
 
 #choose which bookmarked segments you want to stitch together. numbers must be separated by commas.
-bookmark_choices = [1, 3, 5]
+bookmark_choices = [1, 3, 2]
 
 center_seed = 1
-seed_distro = 3
+seed_distro = 1
 
 
-def synthesize(j_name, split, s_f, color_list, width=0):
+def synthesize(j_name, color_list):
 
     cMap = c.ListedColormap(color_list)
 
@@ -402,225 +397,64 @@ def synthesize(j_name, split, s_f, color_list, width=0):
 
         color_list_label.append((int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)))
 
-    if split != 0:
+    journal_key = list(journal.keys())[1:]
 
-        l_j = len(list(journal.keys()))
-        s_j = int(len(list(journal.keys())) / split)
+    # print("")
+    # print('journal_key')
+    # print(journal_key)
 
-        print("")
-        print("l_j")
-        print(l_j)
+    if len(bookmark_choices) == 0:
 
-        print("")
-        print("s_j")
-        print(s_j)
-
-        for x in range(split):
+        for x in range(len(bookmarks)-1):
 
             synthesis = []
             frame = []
+            width = 0
 
-            print("split")
+            # print()
+            # print("bookmarks")
+            # print(bookmarks[x], bookmarks[x + 1])
+
+            journal_bookmark = journal_key[bookmarks[x]:bookmarks[x + 1]]
+            # print(journal_bookmark)
+
+            for rule in journal_bookmark:
+
+                frame.append((rule[0], journal[rule]))
+                width += journal[rule]
+
+            # print("frame")
+            # print(frame)
+            #
+            # print('width')
+            # print(width)
+
+            width = int(width * scale_w / shrink_w)
+
+            row = [0 for x in range(width)]
+            if center_seed == 1:
+                for y in range(base):
+                    row[int(len(row) / 2) + y - base] = y
+
+            synthesis.append(row)
+
+            for f in frame:
+
+                count = 0
+
+                d_rule, i_rule = rule_gen(f[0], base, string=1)
+
+                while count < f[1]:
+                    synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
+
+                    count += 1
+
+            print()
             print(x)
-
-            journal_key = list(journal.keys())[x * s_j:(x + 1) * s_j]
-
-            print("")
-            print('journal_key')
-            print((x * s_j, (x + 1) * s_j))
-
-            if s_f == 0:
-
-                for k in journal_key:
-
-                    # print(k[0])
-                    jk = journal[k]
-
-                    if len(jk[0]) > 0:
-
-                        # print('')
-                        print(list(journal.keys()).index(k))
-                        # print(k)
-                        # print(jk)
-
-                        width += len(jk[0])
-
-                        for j in jk:
-
-                            for k in j:
-
-                                synthesis.append(k)
-
-
-
-                synthesis = np.asarray(synthesis)
-
-                j_name += '-simple'
-
-            if s_f == 1:
-
-                for k in journal_key:
-
-                    # print(k[0])
-                    jk = journal[k]
-
-                    if list(journal.keys()).index(k) == 0:
-
-                        # print('')
-                        # print(list(journal.keys()).index(k))
-                        # print(k)
-                        # print(jk)
-
-                        rows = 0
-
-                        for j in jk:
-
-                            for j_1 in j:
-
-                                rows += 1
-                                width += 1
-
-                        try:
-                            i_rule = rule_gen(int(k), base)[1]
-
-                        except:
-                            i_rule = rule_gen(k[0], base, string=1)[1]
-
-
-                        k_str = ''
-
-                        for i in i_rule:
-
-                            k_str += i
-
-                        frame.append((k_str, int(rows * scale_l / shrink_l) + 1))
-
-                        continue
-
-
-                    if len(jk[0]) > 0:
-
-                        # print('')
-                        # print(list(journal.keys()).index(k))
-                        # print(k)
-                        # print(jk)
-
-
-                        frame.append((k[0], int(len(jk[0]) * scale_l / shrink_l) + 1))
-
-                        width += int(len(jk[0]) * scale_l / shrink_l) + 1
-
-                print("")
-                # print("frame")
-                # print(frame)
-                print('width')
-                print(width)
-
-                row = [0 for x in range(width)]
-                row[int(len(row)/2)] = 1
-
-                synthesis.append(row)
-
-                # print('row')
-                # print(row)
-                print(len(row))
-
-                for f in frame:
-
-                    count = 0
-
-                    d_rule, i_rule = rule_gen(f[0], base, string=1)
-
-                    while count < f[1]:
-
-                        synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
-
-                        count += 1
-
-                # print("")
-                # print("synthesis")
-                # print(synthesis)
-
-                synthesis = np.asarray(synthesis)
-
-                j_name += '-full'
-
-                # print("")
-                # print("synthesis")
-                # print(synthesis)
-
-            file = str(base) + '-' + j_name + '-' + str(scale_l) + '-' + str(shrink_l) + '-' + str(x)
-            path_name = os.path.join(path, file)
-
-            ax = plt.gca()
-            ax.set_aspect(1)
-
-            plt.margins(0, None)
-
-            plt.pcolormesh(synthesis, cmap=cMap)
-
-            #hide x-axis
-            ax.get_xaxis().set_visible(False)
-
-            #hide y-axis
-            ax.get_yaxis().set_visible(False)
-
-            print("")
-            print("printing")
-
-            # plt.show()
-            plt.savefig(path_name, dpi=width, bbox_inches='tight',pad_inches = 0)
-            plt.close()
-
-    else:
-
-        synthesis = []
-        frame = []
-
-        journal_key = list(journal.keys())[1:]
-
-        print("")
-        print('journal_key')
-
-        #simple
-        if s_f == 0:
-
-            for k in journal_key:
-
-                # print(k[0])
-                jk = journal[k]
-
-                if len(jk[0]) > 0:
-
-                    # print('')
-                    print(list(journal.keys()).index(k))
-                    # print(k)
-                    # print(jk)
-
-                    width += len(jk[0])
-
-                    for j in jk:
-
-                        for k in j:
-                            synthesis.append(k)
-
             print("len syn")
             print(len(synthesis))
 
-            if reflect == 1:
-
-                for s in synthesis[:]:
-
-                    synthesis.append(s)
-
-            print(len(synthesis))
-
-            synthesis = np.asarray(synthesis)
-
-
-            j_name += '-simple'
-
-            j_name += '-full'
+            j_name += str(bookmarks[x])
 
             # print("")
             # print("synthesis")
@@ -643,487 +477,119 @@ def synthesize(j_name, split, s_f, color_list, width=0):
             # hide y-axis
             ax.get_yaxis().set_visible(False)
 
-            print("")
             print("printing")
 
             # plt.show()
             plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
             plt.close()
 
-        #full
-        if s_f == 1:
+    else:
 
-            if len(bookmarks) == 1:
+        journal_bookmark = []
+        synthesis = []
+        frame = []
+        width = 0
 
-                for rule in journal_key:
+        for b in bookmark_choices:
+            for o in range(bookmarks[b] - bookmarks[b - 1]):
+                journal_bookmark.append(journal_key[bookmarks[b-1] + o])
 
-                    if type(rule) == str:
-                        continue
+        # print("journal bookmark")
+        # print(journal_bookmark)
+        # print(len(journal_bookmark))
 
-                    # print(k[0])
-                    #journal[rule]
-                    jr = journal[rule]
+        for rule in journal_bookmark:
+            frame.append((rule[0], journal[rule]))
+            width += journal[rule]
 
-                    #first rule
-                    if list(journal.keys()).index(rule) == 0:
+        # print('width')
+        # print(width)
 
-                        rows = 0
+        width = int(width * scale_w / shrink_w)
 
-                        for page in jr:
 
-                            for line in page:
-                                rows += 1
-                                width += 1
+        row = [0 for x in range(width)]
 
-                        try:
-                            i_rule = rule_gen(int(rule), base)[1]
+        if center_seed == 1:
+            for z in range(seed_distro):
+                z += 1
+                for y in range(base):
+                    row[int(len(row) / (1 + seed_distro)) * z + y - base] = y
 
-                        except:
-                            i_rule = rule_gen(rule[0], base, string=1)[1]
+        synthesis.append(row)
 
-                        k_str = ''
+        for f in frame:
 
-                        for i in i_rule:
-                            k_str += i
+            count = 0
 
-                        frame.append((k_str, int(rows * scale_l / shrink_l) + 1))
+            d_rule, i_rule = rule_gen(f[0], base, string=1)
 
-                        continue
+            while count < f[1]:
+                synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
 
-                    if len(jr[0]) > 0:
-                        # print('')
-                        # print(list(journal.keys()).index(k))
-                        # print(k)
-                        # print(jk)
+                count += 1
 
-                        frame.append((rule[0], int(len(jr[0]) * scale_l / shrink_l) + 1))
+        print()
+        print("width")
+        print(width)
+        print("len syn")
+        print(len(synthesis))
 
-                        width += int(len(jr[0]) * scale_l / shrink_l) + 1
+        if reflect == 1:
 
-                print("")
-                print('width')
-                print(width)
-
-                width = int(width * scale_w /shrink_w)
-
-                row = [0 for x in range(width)]
-                if center_seed == 1:
-                    for y in range(base):
-                        row[int(len(row) / 2) + y - base] = y
-
-                synthesis.append(row)
-
-                for f in frame:
-
-                    count = 0
-
-                    d_rule, i_rule = rule_gen(f[0], base, string=1)
-
-                    while count < f[1]:
-                        synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
-
-                        count += 1
-
-                print("len syn")
-                print(len(synthesis))
-
-                if reflect == 1:
-
-                    for s in reversed(synthesis[:]):
-
-                        # print("")
-                        # print("s")
-                        # print(s)
-                        # print(type(s))
-
-                        # s = list(reversed(s[:]))
-
-                        # print(s)
-                        # print(type(s))
-
-                        synthesis.append(s)
-
-                print(len(synthesis))
-
-                j_name += '-full'
-
+            for s in reversed(synthesis[:]):
                 # print("")
-                # print("synthesis")
-                # print(synthesis)
+                # print("s")
+                # print(s)
+                # print(type(s))
 
-                file = j_name + '_' + str(scale_l) + '-' + str(shrink_l) + '_' + str(
-                    scale_w) + '-' + str(shrink_w) + '_C-' + str(color_list_label)
-                path_name = os.path.join(path, file)
+                # s = list(reversed(s[:]))
 
-                ax = plt.gca()
-                ax.set_aspect(1)
+                # print(s)
+                # print(type(s))
 
-                plt.margins(0, None)
+                synthesis.append(s)
 
-                plt.pcolormesh(synthesis, cmap=cMap)
+        if reflect == 2:
 
-                # hide x-axis
-                ax.get_xaxis().set_visible(False)
+            synthesis = list(reversed(synthesis))
 
-                # hide y-axis
-                ax.get_yaxis().set_visible(False)
+            for s in reversed(synthesis[:]):
+                synthesis.append(s)
 
-                print("")
-                print("printing")
-
-                # plt.show()
-                plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
-                plt.close()
-
-            else:
-
-
-                if len(bookmark_choices) == 0:
-
-                    for x in range(len(bookmarks) - 1):
-
-                        synthesis = []
-                        frame = []
-                        width = 0
-
-                        print()
-                        print("bookmarks")
-                        print(bookmarks[x], bookmarks[x + 1])
-
-                        journal_bookmark = journal_key[bookmarks[x]:bookmarks[x + 1]]
-
-                        for rule in journal_bookmark:
-
-                            if type(rule) == str:
-                                continue
-
-                            # print(k[0])
-                            # journal[rule]
-                            jr = journal[rule]
-
-                            # first rule
-                            if list(journal.keys()).index(rule) == 0:
-
-                                rows = 0
-
-                                for page in jr:
-
-                                    for line in page:
-                                        rows += 1
-                                        width += 1
-
-                                try:
-                                    i_rule = rule_gen(int(rule), base)[1]
-
-                                except:
-                                    i_rule = rule_gen(rule[0], base, string=1)[1]
-
-                                k_str = ''
-
-                                for i in i_rule:
-                                    k_str += i
-
-                                frame.append((k_str, int(rows * scale_l / shrink_l) + 1))
-
-                                continue
-
-                            if len(jr[0]) > 0:
-                                # print('')
-                                # print(list(journal.keys()).index(k))
-                                # print(k)
-                                # print(jk)
-
-                                frame.append((rule[0], int(len(jr[0]) * scale_l / shrink_l) + 1))
-
-                                width += int(len(jr[0]) * scale_l / shrink_l) + 1
-
-                        print('width')
-                        print(width)
-
-                        width = int(width * scale_w / shrink_w)
-
-                        row = [0 for x in range(width)]
-                        if center_seed == 1:
-                            for y in range(base):
-                                row[int(len(row) / 2) + y - base] = y
-
-                        synthesis.append(row)
-
-                        for f in frame:
-
-                            count = 0
-
-                            d_rule, i_rule = rule_gen(f[0], base, string=1)
-
-                            while count < f[1]:
-                                synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
-
-                                count += 1
-
-                        print("len syn")
-                        print(len(synthesis))
-
-                        if reflect == 1:
-
-                            for s in reversed(synthesis[:]):
-                                # print("")
-                                # print("s")
-                                # print(s)
-                                # print(type(s))
-
-                                # s = list(reversed(s[:]))
-
-                                # print(s)
-                                # print(type(s))
-
-                                synthesis.append(s)
-
-                        j_name += str(bookmarks[x])
-
-                        # print("")
-                        # print("synthesis")
-                        # print(synthesis)
-
-                        file = str(base) + '-' + j_name + '_length' + str(scale_l) + '-' + str(shrink_l) + '_width' + str(
-                            scale_w) + '-' + str(shrink_w) + '_Colors-' + str(color_list_label)
-                        path_name = os.path.join(path, file)
-
-                        ax = plt.gca()
-                        ax.set_aspect(1)
-
-                        plt.margins(0, None)
-
-                        plt.pcolormesh(synthesis, cmap=cMap)
-
-                        # hide x-axis
-                        ax.get_xaxis().set_visible(False)
-
-                        # hide y-axis
-                        ax.get_yaxis().set_visible(False)
-
-                        print("printing")
-
-                        # plt.show()
-                        plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
-                        plt.close()
-
-                else:
-
-                    journal_bookmark = []
-                    synthesis = []
-                    frame = []
-                    width = 0
-
-                    for b in bookmark_choices:
-                        for o in range(bookmarks[b] - bookmarks[b - 1]):
-                            journal_bookmark.append(journal_key[bookmarks[b-1] + o])
-
-                    for rule in journal_bookmark:
-
-                        if type(rule) == str:
-                            continue
-
-                        # print(k[0])
-                        # journal[rule]
-                        jr = journal[rule]
-
-                        # first rule
-                        if list(journal.keys()).index(rule) == 0:
-
-                            rows = 0
-
-                            for page in jr:
-
-                                for line in page:
-                                    rows += 1
-                                    width += 1
-
-                            try:
-                                i_rule = rule_gen(int(rule), base)[1]
-
-                            except:
-                                i_rule = rule_gen(rule[0], base, string=1)[1]
-
-                            k_str = ''
-
-                            for i in i_rule:
-                                k_str += i
-
-                            frame.append((k_str, int(rows * scale_l / shrink_l) + 1))
-
-                            continue
-
-                        if len(jr[0]) > 0:
-                            # print('')
-                            # print(list(journal.keys()).index(k))
-                            # print(k)
-                            # print(jk)
-
-                            frame.append((rule[0], int(len(jr[0]) * scale_l / shrink_l) + 1))
-
-                            width += int(len(jr[0]) * scale_l / shrink_l) + 1
-
-                    print('width')
-                    print(width)
-
-                    width = int(width * scale_w / shrink_w)
-                    print("shrink")
-                    print(width)
-
-
-                    row = [0 for x in range(width)]
-
-                    if center_seed == 1:
-                        for z in range(seed_distro):
-                            z += 1
-                            for y in range(base):
-                                row[int(len(row) / (1 + seed_distro)) * z + y - base] = y
-
-                    synthesis.append(row)
-
-                    for f in frame:
-
-                        count = 0
-
-                        d_rule, i_rule = rule_gen(f[0], base, string=1)
-
-                        while count < f[1]:
-                            synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
-
-                            count += 1
-
-                    print("len syn")
-                    print(len(synthesis))
-
-                    if reflect == 1:
-
-                        for s in reversed(synthesis[:]):
-                            # print("")
-                            # print("s")
-                            # print(s)
-                            # print(type(s))
-
-                            # s = list(reversed(s[:]))
-
-                            # print(s)
-                            # print(type(s))
-
-                            synthesis.append(s)
-
-                    if reflect == 2:
-
-                        synthesis = list(reversed(synthesis))
-
-                        for s in reversed(synthesis[:]):
-                            synthesis.append(s)
-
-                    j_name += '-bookmarks-'
-                    j_name += str(bookmark_choices)
-
-                    # print("")
-                    # print("synthesis")
-                    # print(synthesis)
-
-                    file = str(base) + '-' + j_name + '_length' + str(scale_l) + '-' + str(shrink_l) + '_width' + str(
-                        scale_w) + '-' + str(shrink_w) + '_Colors-' + str(color_list_label) + '-' + str(reflect)
-                    path_name = os.path.join(path, file)
-
-                    ax = plt.gca()
-                    ax.set_aspect(1)
-
-                    plt.margins(0, None)
-
-                    plt.pcolormesh(synthesis, cmap=cMap)
-
-                    # hide x-axis
-                    ax.get_xaxis().set_visible(False)
-
-                    # hide y-axis
-                    ax.get_yaxis().set_visible(False)
-
-                    print("printing")
-
-                    # plt.show()
-                    plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
-                    plt.close()
-
-
-
-length = 250
-width = 3500
-def rule_book(rule_book, color_list, length, width):
-
-    cMap = c.ListedColormap(color_list)
-
-    color_list_label = []
-    for color in color_list:
-
-        color_list_label.append((int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)))
-
-    canvas = []
-    row = [0 for x in range(width)]
-    if center_seed == 1:
-        for y in range(base):
-            row[int(len(row) / 2) + y - base] = y
-
-    canvas.append(row)
-
-    rule_book = rule_book[1:3] + rule_book[5:10]
-    print(len(rule_book))
-
-    for rule in rule_book:
-        d_rule, i_rule = rule_gen(rule, base, width, 1)
-
-        #build
-        for x in range(length):
-            row = Color_cells(d_rule, width, canvas[-1])[0]
-            canvas.append(row)
+        j_name += '-bookmarks-'
+        j_name += str(bookmark_choices)
 
         # print("")
         # print("synthesis")
         # print(synthesis)
 
-    canvas2 = canvas[::]
+        file = str(base) + '-' + j_name + '_length' + str(scale_l) + '-' + str(shrink_l) + '_width' + str(
+            scale_w) + '-' + str(shrink_w) + '_Colors-' + str(color_list_label) + '-' + str(reflect)
+        path_name = os.path.join(path, file)
 
-    for row in list(reversed(canvas2)):
-        canvas.append(row)
+        ax = plt.gca()
+        ax.set_aspect(1)
 
+        plt.margins(0, None)
 
+        plt.pcolormesh(synthesis, cmap=cMap)
 
-    file = str(length) + '-' + str(width) + '_' + str(color_list_label) + '-' + str(center_seed)
-    path_name = os.path.join(path, file)
+        # hide x-axis
+        ax.get_xaxis().set_visible(False)
 
-    ax = plt.gca()
-    ax.set_aspect(1)
+        # hide y-axis
+        ax.get_yaxis().set_visible(False)
 
-    plt.margins(0, None)
+        print("printing")
 
-    plt.pcolormesh(canvas, cmap=cMap)
-
-    # hide x-axis
-    ax.get_xaxis().set_visible(False)
-
-    # hide y-axis
-    ax.get_yaxis().set_visible(False)
-
-    print("")
-    print("printing")
-
-    # plt.show()
-    plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
-    plt.close()
+        # plt.show()
+        plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
+        plt.close()
 
 
 
-
-# rule_book(journal['rule_book'], color_list_10, length, width)
-
-
-
-
-
-
-synthesize(j_name,split, 1, color_list_2)
+synthesize(j_name, color_list_2)
 
 
 
