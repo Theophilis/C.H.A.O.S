@@ -268,7 +268,7 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
+WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
 # WIDTH, HEIGHT = 800, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
