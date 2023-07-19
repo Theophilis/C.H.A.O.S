@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 from matplotlib import colors as c
+import os
 import pickle
 
 
@@ -239,7 +239,7 @@ def Color_cells(d_rule, cell_row_width, row_0):
 ####everything needed to develope journal patterns takes place here####
 
 #name of the journal to be developed. must be in quotation marks(single or double)(journal name should be completely green)
-j_name = 'journal_truth'
+j_name = 'journal_xx'
 
 #number of colors
 base = 3
@@ -248,7 +248,9 @@ base = 3
 #each color is made of three values between 0 and 1. (Red, Green, Blue)
 #the website below used values betwen 0 and 255, so any values taken must be converted/aproximated
 #https://color.adobe.com/create/color-wheel
+
 black = (0, 0, 0)
+grey = (.5, .5, .5)
 white = (1, 1, 1)
 red = (1, 0, 0)
 green = (0, 1, 0)
@@ -256,6 +258,7 @@ blue = (0, 0, 1)
 magenta = (1, 0, 1)
 cyan = (0, 1, 1)
 yellow = (1, 1, 0)
+
 
 magenta_d = (.3, 0, .3)
 yellow_d = (.8, .8, 0)
@@ -382,7 +385,7 @@ bookmarks = journal['bookmarks']
 
 
 #choose which bookmarked segments you want to stitch together. numbers must be separated by commas.
-bookmark_choices = [1, 3, 2]
+bookmark_choices = []
 
 center_seed = 1
 seed_distro = 1

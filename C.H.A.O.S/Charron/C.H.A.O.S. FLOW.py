@@ -1,15 +1,15 @@
 # C.H.A.O.S
 
 import numpy as np
-from datetime import datetime
-import random
 import pygame
 import os
 import pickle
 import sys
 import pygame.midi
 import time
-from collections import deque
+import matplotlib.pyplot as plt
+from matplotlib import colors as c
+from os import listdir
 
 sys.setrecursionlimit(999999999)
 
@@ -268,8 +268,8 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-# WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
-WIDTH, HEIGHT = 800, 400
+WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
+# WIDTH, HEIGHT = 800, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
                  'd': 12, 'f': 13,
@@ -280,8 +280,512 @@ pygame.display.set_caption("C.H.A.O.S")
 
 click = False
 
+mainClock = pygame.time.Clock()
+from pygame.locals import *
 
-def Chaos_Window(base, analytics, device_id=-1):
+pygame.init()
+text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
+small_font = pygame.font.SysFont("leelawadeeuisemilight", 24)
+main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
+lable_font = pygame.font.SysFont("leelawadeeuisemilight", 48)
+TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
+
+
+def draw_text(text, font, color_dt, surface, x, y):
+    textobj = font.render(text, 1, color_dt)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+
+def print_device_into():
+    pygame.midi.init()
+    _print_device_info()
+    pygame.midi.quit()
+
+def _print_device_info():
+    for i in range(pygame.midi.get_count()):
+        r = pygame.midi.get_device_info(i)
+        (interf, name, input, output, opened) = r
+
+        in_out = ""
+        if input:
+            in_out = "(input)"
+        if output:
+            in_out = "(output)"
+
+        print(
+            "%2i: interface :%s:, name :%s:, opened :%s:  %s"
+            % (i, interf, name, opened, in_out)
+        )
+
+def input_main(device_id=None):
+
+    pygame.init()
+    pygame.fastevent.init()
+    event_get = pygame.fastevent.get
+    event_post = pygame.fastevent.post
+
+    #rtmidi init
+    # midiout = rtmidi.MidiOut()
+    # available_ports = midiout.get_port_name(1)
+    # print(" ")
+    # print("midiout")
+    # print(midiout)
+    # print("available ports")
+    # print(available_ports)
+    #
+    # if available_ports:
+    #     midiout.open_port(1)
+    # else:
+    #     midiout.open_virtual_port('My virtual output')
+
+    pygame.midi.init()
+
+    print(" ")
+    print("device info")
+    _print_device_info()
+
+    if device_id is None:
+        input_id = pygame.midi.get_default_input_id()
+    else:
+        input_id = device_id
+
+    print(' ')
+    print("using input_id :%s:" % input_id)
+    i = pygame.midi.Input(input_id)
+
+    # print('i')
+    # print(i)
+    #
+    # print(" ")
+    # print("device info")
+    # _print_device_info()
+
+    pygame.display.set_mode((1, 1))
+    going = True
+
+    while going:
+        events = event_get()
+        for e in events:
+
+            # print(" ")
+            # print('e')
+            # print(e)
+            # print(type(e))
+
+
+            if e.type in [pygame.QUIT]:
+                going = False
+            if e.type in [pygame.KEYDOWN]:
+                going = False
+            if e.type in [pygame.midi.MIDIIN]:
+
+                # print(e)
+
+                clean_e = str(e)[21:-3]
+                list_e = clean_e.split(',')
+                ev = []
+                for l in list_e:
+                    ev.append(int(l.split(':')[1]))
+
+                # print(" ")
+                # print("ev")
+                # print(ev)
+                # print(e)
+
+                # if ev[0] == 144:
+                #     midiout.send_noteon(ev[0], ev[1], ev[2])
+                # elif ev[0] == 128:
+                #     midiout.send_noteoff(ev[0], ev[1])
+
+        if i.poll():
+
+            # print(' ')
+            # print('i')
+            # print(i)
+
+            midi_events = i.read(10)
+            midi_evs = pygame.midi.midis2events(midi_events, i.device_id)
+
+            for m_e in midi_evs:
+                event_post(m_e)
+
+    del i
+    pygame.midi.quit()
+
+def viewer(row, y, view, v_0):
+
+    # print('view')
+    # print(view)
+    # print("v_0_v")
+    # print(v_0)
+    # print(len(v_0))
+
+    if len(v_0) % 2 == 1:
+
+        if y + len(v_0) > len(row) - 1:
+
+            v_0.append('0')
+
+        else:
+
+            v_0.append(str(row[y + int(len(v_0) / 2) + 1]))
+
+    else:
+
+        if y - len(v_0) < 0:
+
+            v_0.insert(0, '0')
+
+        else:
+
+            v_0.insert(0, str(row[int(y - len(v_0) / 2)]))
+
+    view -= 1
+
+    if view == 0:
+
+        return v_0
+
+    else:
+
+        v_0 = viewer(row, y, view, v_0)
+
+        return v_0
+
+def Color_cells(d_rule, cell_row_width, row_0):
+
+    rc = []
+    row_1 = [0 for x in range(cell_row_width)]
+
+    for y in range(len(row_0)):
+
+        # if direction != 0:
+        #     y = len(row_0) - y - 1
+
+        v_0 = []
+
+        # print(" ")
+        # print("y")
+        # print(y)
+
+        v_0 = tuple(viewer(row_0, y, view, v_0))
+
+        # print("v_0")
+        # print(v_0)
+        #
+        # print("rule")
+        # print(d_rule[v_0])
+
+        rc.append(list(d_rule.keys()).index(v_0))
+
+        # print("color_cells")
+        # print("y")
+        # print(y)
+        # print('len(row_1)')
+        # print(len(row_1))
+        # print("v_0")
+        # print(v_0)
+
+        row_1[y] = int(d_rule[v_0])
+
+    return row_1, rc
+
+def rule_gen_s(rule, base = 2, width = 0, string = 0):
+
+    rules = dict()
+
+    if string != 0:
+        int_rule = [l for l in rule]
+
+
+    else:
+
+        if base == 2:
+
+            int_rule = bin(rule).replace('0b', '')
+
+
+        else:
+
+            int_rule = base_x(rule, base)
+
+
+        x = int_rule[::-1]
+
+        if width == 0:
+            while len(x) < base ** view:
+
+                x += '0'
+
+            bnr = x[::-1]
+            int_rule = list(bnr)
+
+        else:
+            while len(x) < width:
+                x += '0'
+
+            bnr = x[::-1]
+            int_rule = list(bnr)
+
+    # print(" ")
+    # print("int_rule")
+    # [print(int_rule)]
+
+
+    for x in reversed(range(len(int_rule))):
+
+        key = tuple(base_x(x, base)[-view:])
+
+        # print(" ")
+        # print("key")
+        # print(key)
+
+        if len(key) < view:
+
+            diff = view - len(key)
+            key = list(key)
+
+            for y in range(diff):
+
+                key.insert(0, str(0))
+
+        key = "".join(key)
+
+
+        # print(" ")
+        # print(x)
+        # print("int_rule_x")
+        # print(int_rule)
+        # print(int_rule[x])
+
+        rules[tuple(key)] = int_rule[-x - 1]
+
+    # print("")
+    # print("rules")
+    # print(rules)
+
+    return rules, int_rule
+
+
+
+def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scales):
+
+    infile = open("journals/" + j_name, "rb")
+    journal = pickle.load(infile)
+    infile.close
+
+    path = 'synthesis'
+
+    print("len of journals")
+    print(len(list(journal.keys())))
+    print("bookmarks")
+    print(journal['bookmarks'])
+    bookmarks = journal['bookmarks']
+    base = journal['base']
+
+    print("color_list")
+    print(color_list[:base])
+    cMap = c.ListedColormap(color_list[:base])
+
+    color_list_label = []
+    for color in color_list:
+
+        color_list_label.append((int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)))
+
+    journal_key = list(journal.keys())[1:]
+
+    # print("")
+    # print('journal_key')
+    # print(journal_key)
+
+    if len(bookmark_choices) == 0:
+
+        for x in range(len(bookmarks)-1):
+
+            synthesis = []
+            frame = []
+            width = 0
+
+            # print()
+            # print("bookmarks")
+            # print(bookmarks[x], bookmarks[x + 1])
+
+            if bookmarks[x] == bookmarks[x + 1]:
+                continue
+            journal_bookmark = journal_key[bookmarks[x]:bookmarks[x + 1]]
+            # print(journal_bookmark)
+
+            for rule in journal_bookmark:
+
+                frame.append((rule[0], journal[rule]))
+                width += journal[rule]
+
+            # print("frame")
+            # print(frame)
+            #
+            # print('width')
+            # print(width)
+
+            width = int(width * scales[2]/scales[3])
+
+            row = [0 for x in range(width)]
+            if center_seed[0] == 1:
+                for y in range(base):
+                    row[int(len(row) / 2) + y - base] = y
+
+            synthesis.append(row)
+
+            for f in frame:
+
+                count = 0
+
+                d_rule, i_rule = rule_gen_s(f[0], base, string=1)
+
+                while count < int(f[1] * (scales[0]/scales[1]) + 1):
+                    synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
+
+                    count += 1
+
+            print()
+            print(x)
+            print("len syn")
+            print(len(synthesis))
+
+            j_name += str(bookmarks[x])
+
+            # print("")
+            # print("synthesis")
+            # print(synthesis)
+
+            file = str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[0]) + '_width' + str(
+                scales[0]) + '-' + str(scales[0]) + '_Colors-' + str(color_list_label)
+            path_name = os.path.join(path, file)
+
+            ax = plt.gca()
+            ax.set_aspect(1)
+
+            plt.margins(0, None)
+
+            plt.pcolormesh(synthesis, cmap=cMap)
+
+            # hide x-axis
+            ax.get_xaxis().set_visible(False)
+
+            # hide y-axis
+            ax.get_yaxis().set_visible(False)
+
+            print("printing")
+
+            # plt.show()
+            plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
+            plt.close()
+
+    else:
+
+        journal_bookmark = []
+        synthesis = []
+        frame = []
+        width = 0
+
+        for b in bookmark_choices:
+            for o in range(bookmarks[b] - bookmarks[b - 1]):
+                journal_bookmark.append(journal_key[bookmarks[b-1] + o])
+
+        # print("journal bookmark")
+        # print(journal_bookmark)
+        # print(len(journal_bookmark))
+
+        for rule in journal_bookmark:
+            frame.append((rule[0], journal[rule]))
+            width += journal[rule]
+
+        # print('width')
+        # print(width)
+
+        width = int(width * scales[2]/scales[3])
+
+
+        row = [0 for x in range(width)]
+
+        if center_seed[0] == 1:
+            for z in range(center_seed[1]):
+                z += 1
+                for y in range(base):
+                    row[int(len(row) / (1 + center_seed[1])) * z + y - base] = y
+
+        synthesis.append(row)
+
+        for f in frame:
+
+            count = 0
+
+            d_rule, i_rule = rule_gen_s(f[0], base, string=1)
+
+            while count < int(f[1] * (scales[0]/scales[1]) + 1):
+                synthesis.append(Color_cells(d_rule, width, synthesis[-1])[0])
+
+                count += 1
+
+        print()
+        print("width")
+        print(width)
+        print("len syn")
+        print(len(synthesis))
+
+        if reflect == 1:
+
+            for s in reversed(synthesis[:]):
+                # print("")
+                # print("s")
+                # print(s)
+                # print(type(s))
+
+                # s = list(reversed(s[:]))
+
+                # print(s)
+                # print(type(s))
+
+                synthesis.append(s)
+
+        if reflect == 2:
+
+            synthesis = list(reversed(synthesis))
+
+            for s in reversed(synthesis[:]):
+                synthesis.append(s)
+
+        j_name += '-bookmarks-'
+        j_name += str(bookmark_choices)
+
+        # print("")
+        # print("synthesis")
+        # print(synthesis)
+
+        file = str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[1]) + '_width' + str(
+            scales[2]) + '-' + str(scales[3]) + '_Colors-' + str(color_list_label) + '-' + str(reflect)
+        path_name = os.path.join(path, file)
+
+        ax = plt.gca()
+        ax.set_aspect(1)
+
+        plt.margins(0, None)
+
+        plt.pcolormesh(synthesis, cmap=cMap)
+
+        # hide x-axis
+        ax.get_xaxis().set_visible(False)
+
+        # hide y-axis
+        ax.get_yaxis().set_visible(False)
+
+        print("printing")
+
+        # plt.show()
+        plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
+        plt.close()
+
+def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
 
     print("base")
     print(base)
@@ -403,7 +907,6 @@ def Chaos_Window(base, analytics, device_id=-1):
     run = 1
     pause = 0
     FPS = 120
-    rule_0 = 672023
     step = 0
     step_0 = 0
     space = 0
@@ -422,7 +925,7 @@ def Chaos_Window(base, analytics, device_id=-1):
 
     #ui
     ui_on = 1
-    ui_scale = 14
+    ui_scale = 20
     bar_height = 100
     bar_width = ui_scale + int(ui_scale / 2)
 
@@ -1215,6 +1718,7 @@ def Chaos_Window(base, analytics, device_id=-1):
     if write == 1:
 
         journal['bookmarks'] = bookmarks
+        journal['base'] = base
 
         # print("")
         # print(bookmarks)
@@ -1236,262 +1740,129 @@ def Chaos_Window(base, analytics, device_id=-1):
 
         # print(len(journal))
 
-
-# menus
-
-mainClock = pygame.time.Clock()
-from pygame.locals import *
-
-pygame.init()
-text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
-small_font = pygame.font.SysFont("leelawadeeuisemilight", 24)
-main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
-lable_font = pygame.font.SysFont("leelawadeeuisemilight", 48)
-TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
-
-
-def draw_text(text, font, color_dt, surface, x, y):
-    textobj = font.render(text, 1, color_dt)
-    textrect = textobj.get_rect()
-    textrect.topleft = (x, y)
-    surface.blit(textobj, textrect)
-
-
 def menu():
 
     click = False
-    input_text_c = ''
-    input_text_v = ''
     device_id = None
     analytics = 0
+    reflection = 0
+    rule_0 = 0
+    base = 0
+    midi = 0
+
+    #inputs
+    input_text_c = ''
+    input_text_v = ''
+    input_text_rgb = ''
+    input_text_bk = ''
+
+    #journals
+    j_choice = 0
+    chosen_journal = ''
+    bookmarks = []
+    bookmarks_s = []
+
+    #synthesize
+    center_seed = [1, 1]
+    scales = [1, 1, 1, 1]
+
+    #colors
+    black = (0, 0, 0)
+    grey = (.5, .5, .5)
+    white = (1, 1, 1)
+    red = (1, 0, 0)
+    green = (0, 1, 0)
+    blue = (0, 0, 1)
+    magenta = (1, 0, 1)
+    cyan = (0, 1, 1)
+    yellow = (1, 1, 0)
+
+    c_choice = 0
+    color_list = [black, magenta, cyan, yellow, grey, red, green, blue, white]
 
     pygame.init()
     pygame.fastevent.init()
 
-    pygame.midi.init()
+    if midi == 1:
+        pygame.midi.init()
 
-    print(" ")
-    print("device info")
-    _print_device_info()
+        print(" ")
+        print("device info")
+        _print_device_info()
 
-    mc = pygame.midi.get_count()
-    print("mc")
-    print(mc)
+        mc = pygame.midi.get_count()
+        print("mc")
+        print(mc)
 
-    ports = dict()
+        ports = dict()
 
-    print("")
-    print("mdi")
-    for m in range(pygame.midi.get_count()):
-
-
-        mdi = pygame.midi.get_device_info(m)
-        print(mdi)
-
-        ports[m] = str(mdi[1])
+        print("")
+        print("mdi")
+        for m in range(pygame.midi.get_count()):
 
 
+            mdi = pygame.midi.get_device_info(m)
+            print(mdi)
+
+            ports[m] = str(mdi[1])
 
 
-    if device_id is None:
-        input_id = pygame.midi.get_default_input_id()
+
+
+        if device_id is None:
+            input_id = pygame.midi.get_default_input_id()
+        else:
+            input_id = device_id
+
+        print(' ')
+        print("using input_id :%s:" % input_id)
+        p_m_i = pygame.midi.Input(input_id)
+        device_id = -1
     else:
-        input_id = device_id
-
-    print(' ')
-    print("using input_id :%s:" % input_id)
-    p_m_i = pygame.midi.Input(input_id)
-    device_id = -1
+        #
+        device_id = -1
 
     while True:
 
-
+        #basics
         WIN.fill((0, 0, 0))
-        t_line = pygame.Rect(WIDTH / 2 - 633, 200, 1360, 2)
         draw_text('C311UL4R H4PT1C 4UT0M4T4 0P3R4T1NG 5Y5T3M', TITLE_FONT, (10, 100, 10), WIN, WIDTH / 2 - 655, 100)
+        t_line = pygame.Rect(WIDTH / 2 - 633, 200, 1360, 2)
         pygame.draw.rect(WIN, (10, 100, 10), t_line)
-
-        text_surface_c = main_font.render(input_text_c, True, (100, 10, 10))
-        text_surface_v = main_font.render(input_text_v, True, (100, 10, 100))
         mx, my = pygame.mouse.get_pos()
+        journals = os.listdir("journals")[1:]
+
+        #inputs
+        text_surface_c = main_font.render(input_text_c, True, (100, 10, 10))
+        text_surface_v = main_font.render(input_text_v, True, (100, 10, 10))
 
 
-        for p in ports:
-
-            # print("")
-            # print(p)
-            # print(ports[p])
-
-            port_button = pygame.Rect(WIDTH / 2 + 400, 600 + p * 40, 362, 34)
-            pygame.draw.rect(WIN, (192, 128, 0), port_button)
-
-            port_button = pygame.Rect(WIDTH / 2 + 400, 600 + p * 40, 360, 30)
-            pygame.draw.rect(WIN, (0, 0, 0), port_button)
-
-            if port_button.collidepoint((mx, my)):
-
-                # print("collide")
-                # print(p)
-
-                if click:
-
-                    print(p)
-
-                    device_id = int(p)
-                    draw_text('> ' + str(ports[p]), small_font, (255, 255, 255), WIN, WIDTH / 2 + 400, 600 + p * 40)
-
-            draw_text('> ' + str(ports[p]), small_font, (192, 128, 0), WIN, WIDTH / 2 + 400, 600 + p * 40)
-
-        size_2 = pygame.Rect(WIDTH / 2 - 300, 400, 200, 50)
-        size_3 = pygame.Rect(WIDTH / 2 - 300, 500, 200, 50)
-        size_5 = pygame.Rect(WIDTH / 2 - 300, 600, 200, 50)
-        size_10 = pygame.Rect(WIDTH / 2 - 300, 700, 200, 50)
-        size_2_i = pygame.Rect(WIDTH / 2 - 300, 400, 197, 43)
-        size_3_i = pygame.Rect(WIDTH / 2 - 300, 500, 197, 43)
-        size_5_i = pygame.Rect(WIDTH / 2 - 300, 600, 197, 43)
-        size_10_i = pygame.Rect(WIDTH / 2 - 300, 700, 197, 43)
-
-        # binary = pygame.Rect(WIDTH/2 + 100, 400, 200, 50)
-        # ternary = pygame.Rect(WIDTH/2 + 100, 500, 200, 50)
-        # quaternary = pygame.Rect(WIDTH/2 + 100, 600, 200, 50)
-        # binary_i = pygame.Rect(WIDTH/2 + 100, 400, 197, 43)
-        # ternary_i = pygame.Rect(WIDTH/2 + 100, 500, 197, 43)
-        # quaternary_i = pygame.Rect(WIDTH/2 + 100, 600, 197, 43)
-
-        color_rect = pygame.Rect(WIDTH / 2 + 100, 400, 200, 50)
-        color_rect_i = pygame.Rect(WIDTH / 2 + 100, 400, 197, 43)
-
-        vel_rect = pygame.Rect(WIDTH / 2 + 100, 500, 200, 50)
-        vel_rect_i = pygame.Rect(WIDTH / 2 + 100, 500, 197, 43)
-
-        enter = pygame.Rect(WIDTH / 2 + 100, 700, 200, 50)
-        enter_i = pygame.Rect(WIDTH / 2 + 100, 700, 197, 43)
-
-        underline_2 = pygame.Rect(WIDTH / 2 - 300, 385, 200, 2)
-
-        analytics_button = pygame.Rect(WIDTH / 2 + 470, 300, 200, 50)
-        pygame.draw.rect(WIN, (0, 192, 192), analytics_button)
-        analytics_button = pygame.Rect(WIDTH / 2 + 470, 300, 197, 43)
-        pygame.draw.rect(WIN, (0, 0, 0), analytics_button)
-        draw_text('analytics ^ 0 off - 1 on', small_font, (0, 192, 192), WIN,WIDTH / 2 + 470, 350)
+        #####design#####
+        x = 300
+        y = 250
+        design = pygame.Rect(x, y, 200, 70)
+        design_i = pygame.Rect(x, y, 197, 65)
+        pygame.draw.rect(WIN, (100, 10, 100), design)
+        pygame.draw.rect(WIN, (0, 0, 0), design_i)
+        if design.collidepoint((mx, my)):
+            if click:
+                print("design")
+                Chaos_Window(base, analytics, device_id, rule_0)
+        draw_text('Design', lable_font, (100, 10, 100), WIN, x, y)
 
 
-        pygame.draw.rect(WIN, (10, 100, 10), size_2)
-        pygame.draw.rect(WIN, (10, 100, 10), size_3)
-        pygame.draw.rect(WIN, (10, 100, 10), size_5)
-        pygame.draw.rect(WIN, (10, 100, 10), size_10)
-        pygame.draw.rect(WIN, (0, 0, 0), size_2_i)
-        pygame.draw.rect(WIN, (0, 0, 0), size_3_i)
-        pygame.draw.rect(WIN, (0, 0, 0), size_5_i)
-        pygame.draw.rect(WIN, (0, 0, 0), size_10_i)
-        draw_text(' small', main_font, (10, 100, 10), WIN, WIDTH / 2 - 300, 400)
-        draw_text(' medium', main_font, (10, 100, 10), WIN, WIDTH / 2 - 300, 500)
-        draw_text(' large', main_font, (10, 100, 10), WIN, WIDTH / 2 - 300, 600)
-        draw_text(' X-large', main_font, (10, 100, 10), WIN, WIDTH / 2 - 300, 700)
-        draw_text('Cell Size', main_font, (10, 100, 10), WIN, WIDTH / 2 - 280, 340)
-        pygame.draw.rect(WIN, (10, 100, 10), underline_2)
-
-        # pygame.draw.rect(WIN, (100, 10, 10), binary)
-        # pygame.draw.rect(WIN, (100, 10, 10), ternary)
-        # pygame.draw.rect(WIN, (100, 10, 10), quaternary)
-        # pygame.draw.rect(WIN, (0, 0, 0), binary_i)
-        # pygame.draw.rect(WIN, (0, 0, 0), ternary_i)
-        # pygame.draw.rect(WIN, (0, 0, 0), quaternary_i)
-        # draw_text(' Two', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 400)
-        # draw_text(' Three', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 500)
-        # draw_text(' Four', main_font, (100, 10, 10), WIN, WIDTH/2 + 100, 600)
-        # draw_text('Number of Colors', main_font, (100, 10, 10), WIN, WIDTH/2 + 80, 340)
-        # pygame.draw.rect(WIN, (100, 10, 10), underline_1)
-
+        #color choice
+        x = 300
+        y = 350
+        color_rect = pygame.Rect(x, y, 200, 50)
+        color_rect_i = pygame.Rect(x, y, 197, 43)
         pygame.draw.rect(WIN, (100, 10, 10), color_rect)
         pygame.draw.rect(WIN, (0, 0, 0), color_rect_i)
-        draw_text('<place mouse-pointer on box to type;', small_font, (100, 10, 10), WIN, WIDTH / 2 + 350, 400)
-        draw_text('choose a single number between 2 and 9', small_font, (100, 10, 10), WIN, WIDTH / 2 + 360, 425)
-
-        pygame.draw.rect(WIN, (100, 10, 100), vel_rect)
-        pygame.draw.rect(WIN, (0, 0, 0), vel_rect_i)
-        draw_text('<place mouse-pointer on box to type;', small_font, (100, 10, 100), WIN, WIDTH / 2 + 350, 500)
-        draw_text('numbers between 1-10 recommended', small_font, (100, 10, 100), WIN, WIDTH / 2 + 360, 525)
-
-        pygame.draw.rect(WIN, (10, 10, 100), enter)
-        pygame.draw.rect(WIN, (0, 0, 0), enter_i)
-        draw_text(' Enter', main_font, (10, 10, 100), WIN, WIDTH / 2 + 100, 700)
-
-        draw_text('Instructions:', small_font, (200, 200, 200), WIN, 50, 225)
-        draw_text('1. Choose a cell-size. [GREEN]', small_font, (200, 200, 200), WIN, 50, 275)
-        draw_text('     -Start with X-large to be safe. Smaller cells', text_font, (200, 200, 200), WIN, 50, 315)
-        draw_text('         may cause issues on slower computers.', text_font, (200, 200, 200), WIN, 50, 340)
-        draw_text('2. Choose the number of cell colors. [RED]', small_font, (200, 200, 200), WIN, 50, 375)
-        draw_text('3. Set a desired speed. [PURPLE]', small_font, (200, 200, 200), WIN, 50, 425)
-        draw_text('4. Press Enter [BLUE]', small_font, (200, 200, 200), WIN, 50, 475)
-        draw_text('     The program will have loaded once you see Step & Count', text_font, (200, 200, 200), WIN, 50,
-                  525)
-        draw_text('     in the top right, and Rule in the bottom left.', text_font, (200, 200, 200), WIN, 50, 550)
-        draw_text('     Typing has no effect until the first row of colored', text_font, (200, 200, 200), WIN, 50, 575)
-        draw_text('     cells reach the bottom of the page.', text_font, (200, 200, 200), WIN, 50, 600)
-        draw_text('     Two cell colors uses the keys (asdf jkl;) to change the rules.', text_font, (200, 200, 200),
-                  WIN, 50, 625)
-        draw_text('     For three colors+, the best effects are seen while typing full sentences', text_font,
-                  (200, 200, 200), WIN, 50, 650)
-        draw_text('     Press the escape key to exit the program at any time.', text_font, (200, 200, 200), WIN, 50,
-                  675)
-        draw_text('     Enjoy!', text_font, (200, 200, 200), WIN, 50, 700)
-        draw_text('Command Menu (Advanced Technique)', small_font, (200, 200, 200), WIN, 50, 750)
-        draw_text(
-            '     Press shift & enter keys, at the same time, to activate. A white box will appear in the top left corner of the screen.',
-            text_font, (200, 200, 200), WIN, 50, 800)
-        draw_text(
-            '     Once the desired command is typed into the box, press the shift & enter keys again to input the command and close the box.',
-            text_font, (200, 200, 200), WIN, 50, 825)
-        draw_text(
-            '     All commands are lowercase or integer values, spaces matter, and invalid commands will return a warning in the type field',
-            text_font, (200, 200, 200), WIN, 50, 850)
-        draw_text(
-            '     To save the designs found during a session input(write) or (name *desired-name*). names longer than one word must be separated by a -',
-            text_font, (200, 200, 200), WIN, 50, 875)
-        draw_text('     All values are accepted as inputs and will change the rule accordingly', text_font,
-                  (200, 200, 200), WIN, 50, 900)
-
-        if size_2.collidepoint((mx, my)):
-            if click:
-                print("size_2")
-                pixel_res = 2
-                draw_text(' small', main_font, (255, 255, 255), WIN, WIDTH / 2 - 300, 400)
-        if size_3.collidepoint((mx, my)):
-            if click:
-                print("size_3")
-                pixel_res = 3
-                draw_text(' medium', main_font, (255, 255, 255), WIN, WIDTH / 2 - 300, 500)
-        if size_5.collidepoint((mx, my)):
-            if click:
-                print("size_5")
-                pixel_res = 5
-                draw_text(' large', main_font, (255, 255, 255), WIN, WIDTH / 2 - 300, 600)
-        if size_10.collidepoint((mx, my)):
-            if click:
-                print("size_10")
-                pixel_res = 10
-                draw_text(' X-large', main_font, (255, 255, 255), WIN, WIDTH / 2 - 300, 700)
-
-        # if binary.collidepoint((mx, my)):
-        #     if click:
-        #         print("binary")
-        #         base = 2
-        #         draw_text(' Two', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 400)
-        # if ternary.collidepoint((mx, my)):
-        #     if click:
-        #         print("ternary")
-        #         base = 3
-        #         draw_text(' Three', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 500)
-        # if quaternary.collidepoint((mx, my)):
-        #     if click:
-        #         print("quaternary")
-        #         base = 4
-        #         draw_text(' Four', main_font, (255, 255, 255), WIN, WIDTH / 2 + 100, 600)
-
+        draw_text('<mouse over red boxes to type;', small_font, (100, 10, 10), WIN, x + 210, y)
+        draw_text('choose a single number between 2 and 9', small_font, (100, 10, 10), WIN, x + 220, y + 25)
         if color_rect.collidepoint((mx, my)):
-            draw_text('Colors:', main_font, (100, 10, 10), WIN, WIDTH / 2 + 100, 400)
-            WIN.blit(text_surface_c, (WIDTH / 2 + 200, 400))
+            draw_text('Colors:', main_font, (100, 10, 10), WIN, x, y)
+            WIN.blit(text_surface_c, (x + 100, y))
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -1517,14 +1888,22 @@ def menu():
                         input_text_c += '0'
                     if event.key == K_BACKSPACE:
                         input_text_c = input_text_c[:len(input_text_c) - 1]
+                    print('color')
                     print(input_text_c)
 
             if len(input_text_c) > 0:
                 base = int(input_text_c)
 
-        if vel_rect.collidepoint((mx, my)):
-            draw_text('Speed:', main_font, (100, 10, 100), WIN, WIDTH / 2 + 100, 500)
-            WIN.blit(text_surface_v, (WIDTH / 2 + 200, 500))
+        #initial rule
+        y = 450
+        rule_rect = pygame.Rect(x, y, 200, 50)
+        rule_rect_i = pygame.Rect(x, y, 197, 43)
+        pygame.draw.rect(WIN, (100, 10, 10), rule_rect)
+        pygame.draw.rect(WIN, (0, 0, 0), rule_rect_i)
+        draw_text('<choose any number', small_font, (100, 10, 10), WIN, x + 220, y)
+        if rule_rect.collidepoint((mx, my)):
+            draw_text('Rule:', main_font, (100, 10, 10), WIN, x, y)
+            WIN.blit(text_surface_v, (x + 70, y))
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -1550,20 +1929,20 @@ def menu():
                         input_text_v += '0'
                     if event.key == K_BACKSPACE:
                         input_text_v = input_text_v[:len(input_text_v) - 1]
+                    print("rule")
                     print(input_text_v)
 
             if len(input_text_v) > 0:
-                cell_vel = int(input_text_v)
+                rule_0 = int(input_text_v)
 
-
-        if enter.collidepoint((mx, my)):
-            if click:
-                print("enter")
-                print("pixel_res")
-                print(pixel_res)
-                draw_text('Enter', main_font, (255, 255, 255), WIN, WIDTH / 2 - 100, 800)
-                Chaos_Window(base, pixel_res, cell_vel, analytics, device_id)
-
+        #analytics
+        y = 550
+        analytics_button = pygame.Rect(x, y, 200, 50)
+        analytics_button_i = pygame.Rect(x, y, 197, 43)
+        pygame.draw.rect(WIN, (0, 192, 192), analytics_button)
+        pygame.draw.rect(WIN, (0, 0, 0), analytics_button_i)
+        draw_text('<click blue boxes to toggle', small_font, (0, 192, 192), WIN, x + 210, y)
+        draw_text('analytics: 0 off - 1 on', small_font, (0, 192, 192), WIN, x + 250, y + 25)
         if analytics_button.collidepoint((mx, my)):
             if click:
                 print('analytics on')
@@ -1576,7 +1955,255 @@ def menu():
 
                     analytics = 0
 
-            draw_text('analytics: ' + str(analytics), main_font, (0, 192, 192), WIN, WIDTH / 2 + 480, 300)
+            draw_text('analytics: ' + str(analytics), main_font, (0, 192, 192), WIN, x, y)
+
+
+        #####print#####
+        x = 1200
+        y = 250
+        print_r = pygame.Rect(x, y, 200, 70)
+        print_i = pygame.Rect(x, y, 197, 65)
+        pygame.draw.rect(WIN, (100, 10, 100), print_r)
+        pygame.draw.rect(WIN, (0, 0, 0), print_i)
+        if print_r.collidepoint((mx, my)):
+            if click:
+                print("print")
+                synthesize(chosen_journal, color_list, bookmarks, reflection, center_seed, scales)
+                print("synthesized")
+                print()
+        draw_text('Print', lable_font, (100, 10, 100), WIN, x, y)
+
+        #journals
+        x = 1200
+        y = 350
+        journal_button = pygame.Rect(x, y, 200, 50)
+        journal_button_i = pygame.Rect(x, y, 197, 43)
+        pygame.draw.rect(WIN, (232, 96, 10), journal_button)
+        pygame.draw.rect(WIN, (0, 0, 0), journal_button_i)
+        draw_text('click for journals>', small_font, (232, 96, 10), WIN, x - 190, y + 5)
+        draw_text(str(chosen_journal), main_font, (232, 96, 10), WIN, x, y)
+        if journal_button.collidepoint((mx, my)):
+            if click:
+                print('choose a journal')
+
+                if j_choice == 0:
+
+                    j_choice = 1
+                    c_choice = 0
+
+                else:
+
+                    j_choice = 0
+        if j_choice == 1:
+            for j in range(len(journals)):
+                x = 1450
+                y = 250 + (60*j)
+                j_button = pygame.Rect(x, y, 200, 40)
+                j_button_i = pygame.Rect(x, y, 197, 35)
+                pygame.draw.rect(WIN, (232, 96, 10), j_button)
+                pygame.draw.rect(WIN, (0, 0, 0), j_button_i)
+                draw_text(str(journals[j]), small_font, (232, 96, 10), WIN, x, y)
+
+                if j_button.collidepoint((mx, my)):
+                    if click:
+                        chosen_journal = str(journals[j])
+
+        #colors
+        x = 1200
+        y = 450
+        color_button = pygame.Rect(x, y, 200, 50)
+        color_button_i = pygame.Rect(x, y, 197, 43)
+        pygame.draw.rect(WIN, (10, 224, 96), color_button)
+        pygame.draw.rect(WIN, (0, 0, 0), color_button_i)
+        draw_text('click for colors>', small_font, (10, 224, 96), WIN, x - 190, y + 5)
+        if color_button.collidepoint((mx, my)):
+            if click:
+                print('choose a color')
+
+                if c_choice == 0:
+
+                    c_choice = 1
+                    j_choice = 0
+
+                else:
+
+                    c_choice = 0
+        if c_choice == 1:
+
+            draw_text(str(input_text_rgb), main_font, (10, 224, 96), WIN, x, y)
+
+            for c in range(len(color_list)):
+                x = 1450
+                y = 250 + (60*c)
+                box_color = []
+                for co in color_list[c]:
+                    box_color.append(co*255)
+
+                c_button = pygame.Rect(x, y, 250, 40)
+                c_button_i = pygame.Rect(x, y, 197, 35)
+                pygame.draw.rect(WIN, box_color, c_button)
+                pygame.draw.rect(WIN, (0, 0, 0), c_button_i)
+                draw_text(str(color_list[c]), small_font, (10, 224, 96), WIN, x, y)
+
+
+                if c_button_i.collidepoint((mx, my)):
+
+
+                    for event in pygame.event.get():
+
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == K_1:
+                                input_text_rgb += '1'
+                            if event.key == K_2:
+                                input_text_rgb += '2'
+                            if event.key == K_3:
+                                input_text_rgb += '3'
+                            if event.key == K_4:
+                                input_text_rgb += '4'
+                            if event.key == K_5:
+                                input_text_rgb += '5'
+                            if event.key == K_6:
+                                input_text_rgb += '6'
+                            if event.key == K_7:
+                                input_text_rgb += '7'
+                            if event.key == K_8:
+                                input_text_rgb += '8'
+                            if event.key == K_9:
+                                input_text_rgb += '9'
+                            if event.key == K_0:
+                                input_text_rgb += '0'
+                            if event.key == K_COMMA:
+                                input_text_rgb += ','
+                            if event.key == K_PERIOD:
+                                input_text_rgb += '.'
+                            if event.key == K_BACKSPACE:
+                                input_text_rgb = input_text_rgb[:len(input_text_rgb) - 1]
+                            print("rgb")
+                            print(input_text_rgb)
+
+                        if event.type == MOUSEBUTTONDOWN:
+                            if event.button == 1:
+                                click = True
+
+                    if click == True:
+
+                        try:
+                            s_rgb = input_text_rgb.split(',')
+                            n_rgb = []
+
+                            print(s_rgb)
+                            for s in s_rgb:
+                                n_rgb.append(float(s))
+                            print(n_rgb)
+                            color_list[c] = tuple(n_rgb)
+
+                        except:
+                            continue
+
+
+            draw_text('^(r, g, b) values from 0-1', small_font, (10, 224, 96), WIN, x + 27, y + 50)
+            draw_text('mouse over to type', small_font, (10, 224, 96), WIN, x + 57, y + 80)
+            draw_text('click to change', small_font, (10, 224, 96), WIN, x + 72, y + 110)
+
+        #bookmarks
+        x = 1200
+        y = 550
+        bookmark_rect = pygame.Rect(x, y, 200, 50)
+        bookmark_rect_i = pygame.Rect(x, y, 197, 43)
+        pygame.draw.rect(WIN, (100, 10, 10), bookmark_rect)
+        pygame.draw.rect(WIN, (0, 0, 0), bookmark_rect_i)
+        draw_text('mouse over for bookmarks>', small_font, (100, 10, 10), WIN, x - 300, y + 5)
+        if bookmark_rect.collidepoint((mx, my)):
+            draw_text(str(input_text_bk), main_font, (100, 10, 10), WIN, x, y)
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == K_1:
+                        input_text_bk += '1'
+                    if event.key == K_2:
+                        input_text_bk += '2'
+                    if event.key == K_3:
+                        input_text_bk += '3'
+                    if event.key == K_4:
+                        input_text_bk += '4'
+                    if event.key == K_5:
+                        input_text_bk += '5'
+                    if event.key == K_6:
+                        input_text_bk += '6'
+                    if event.key == K_7:
+                        input_text_bk += '7'
+                    if event.key == K_8:
+                        input_text_bk += '8'
+                    if event.key == K_9:
+                        input_text_bk += '9'
+                    if event.key == K_0:
+                        input_text_bk += '0'
+                    if event.key == K_COMMA:
+                        input_text_bk += ','
+                    if event.key == K_BACKSPACE:
+                        input_text_bk = input_text_bk[:len(input_text_bk) - 1]
+                    print("bookmark")
+                    print(input_text_bk)
+        else:
+            if len(input_text_bk) > 0:
+                bookmarks_s = input_text_bk.split(',')
+                bookmarks = []
+                for b in bookmarks_s:
+                    bookmarks.append(int(b))
+            else:
+                bookmarks = []
+
+        #reflect
+        x = 1200
+        y = 650
+        reflect_button = pygame.Rect(x, y, 200, 50)
+        reflect_button_i = pygame.Rect(x, y, 197, 43)
+        pygame.draw.rect(WIN, (0, 192, 192), reflect_button)
+        pygame.draw.rect(WIN, (0, 0, 0), reflect_button_i)
+        draw_text('reflection: 0 off - 1 top - 2 bottom >', small_font, (0, 192, 192), WIN, x - 400, y)
+        if reflect_button.collidepoint((mx, my)):
+            if click:
+                print('reflected')
+
+                reflection += 1
+                reflection = reflection %3
+
+            draw_text('reflection: ' + str(reflection), main_font, (0, 192, 192), WIN, x, y)
+
+        #scales
+        x = 1200
+        y = 750
+        for s in range(2):
+            for c in range(2):
+                scale_rect = pygame.Rect(x + c*90 + 20, y + s*55 - 10, 50, 50)
+                scale_rect_i = pygame.Rect(x + c*90 + 20, y + s*55 - 10, 48, 46)
+                pygame.draw.rect(WIN, (100, 10, 10), scale_rect)
+                pygame.draw.rect(WIN, (0, 0, 0), scale_rect_i)
+                draw_text('length scale>', small_font, (100, 10, 10), WIN, x - 150, y + 20)
+                draw_text('<width scale', small_font, (100, 10, 10), WIN, x + 190, y + 20)
+                draw_text(str(scales[s + c * 2]), main_font, (100, 10, 10), WIN, x + c * 90 + 35, y + s * 55 - 10)
+                if scale_rect.collidepoint((mx, my)):
+                    for event in pygame.event.get():
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == K_1:
+                                scales[s + c*2] = 1
+                            if event.key == K_2:
+                                scales[s + c*2] = 2
+                            if event.key == K_3:
+                                scales[s + c*2] = 3
+                            if event.key == K_4:
+                                scales[s + c*2] = 4
+                            if event.key == K_5:
+                                scales[s + c*2] = 5
+                            if event.key == K_6:
+                                scales[s + c*2] = 6
+                            if event.key == K_7:
+                                scales[s + c*2] = 7
+                            if event.key == K_8:
+                                scales[s + c*2] = 8
+                            if event.key == K_9:
+                                scales[s + c*2] = 9
+
 
 
         click = False
@@ -1595,132 +2222,11 @@ def menu():
         mainClock.tick(60)
 
 
-#pygame.midi interface
 
-def print_device_into():
-    pygame.midi.init()
-    _print_device_info()
-    pygame.midi.quit()
-
-def _print_device_info():
-    for i in range(pygame.midi.get_count()):
-        r = pygame.midi.get_device_info(i)
-        (interf, name, input, output, opened) = r
-
-        in_out = ""
-        if input:
-            in_out = "(input)"
-        if output:
-            in_out = "(output)"
-
-        print(
-            "%2i: interface :%s:, name :%s:, opened :%s:  %s"
-            % (i, interf, name, opened, in_out)
-        )
-
-def input_main(device_id=None):
-
-    pygame.init()
-    pygame.fastevent.init()
-    event_get = pygame.fastevent.get
-    event_post = pygame.fastevent.post
-
-    #rtmidi init
-    # midiout = rtmidi.MidiOut()
-    # available_ports = midiout.get_port_name(1)
-    # print(" ")
-    # print("midiout")
-    # print(midiout)
-    # print("available ports")
-    # print(available_ports)
-    #
-    # if available_ports:
-    #     midiout.open_port(1)
-    # else:
-    #     midiout.open_virtual_port('My virtual output')
-
-    pygame.midi.init()
-
-    print(" ")
-    print("device info")
-    _print_device_info()
-
-    if device_id is None:
-        input_id = pygame.midi.get_default_input_id()
-    else:
-        input_id = device_id
-
-    print(' ')
-    print("using input_id :%s:" % input_id)
-    i = pygame.midi.Input(input_id)
-
-    # print('i')
-    # print(i)
-    #
-    # print(" ")
-    # print("device info")
-    # _print_device_info()
-
-    pygame.display.set_mode((1, 1))
-    going = True
-
-    while going:
-        events = event_get()
-        for e in events:
-
-            # print(" ")
-            # print('e')
-            # print(e)
-            # print(type(e))
+menu()
 
 
-            if e.type in [pygame.QUIT]:
-                going = False
-            if e.type in [pygame.KEYDOWN]:
-                going = False
-            if e.type in [pygame.midi.MIDIIN]:
-
-                # print(e)
-
-                clean_e = str(e)[21:-3]
-                list_e = clean_e.split(',')
-                ev = []
-                for l in list_e:
-                    ev.append(int(l.split(':')[1]))
-
-                # print(" ")
-                # print("ev")
-                # print(ev)
-                # print(e)
-
-                # if ev[0] == 144:
-                #     midiout.send_noteon(ev[0], ev[1], ev[2])
-                # elif ev[0] == 128:
-                #     midiout.send_noteoff(ev[0], ev[1])
-
-        if i.poll():
-
-            # print(' ')
-            # print('i')
-            # print(i)
-
-            midi_events = i.read(10)
-            midi_evs = pygame.midi.midis2events(midi_events, i.device_id)
-
-            for m_e in midi_evs:
-                event_post(m_e)
-
-    del i
-    pygame.midi.quit()
-
-
-# input_main()
-
-
-# menu()
-
-
-Chaos_Window(3, 1, -1)
+# Chaos_Window(3, 1, -1, 21621)
 
 
 
