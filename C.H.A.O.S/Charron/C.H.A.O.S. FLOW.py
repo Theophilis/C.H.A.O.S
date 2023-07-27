@@ -268,7 +268,7 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
+WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
 # WIDTH, HEIGHT = 800, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
@@ -611,7 +611,7 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
             # print("bookmarks")
             # print(bookmarks[x], bookmarks[x + 1])
 
-            if bookmarks[x] == bookmarks[x + 1]:
+            if bookmarks[x+1] - bookmarks[x] < 2:
                 continue
             journal_bookmark = journal_key[bookmarks[x]:bookmarks[x + 1]]
             # print(journal_bookmark)
@@ -1830,7 +1830,7 @@ def menu():
         t_line = pygame.Rect(WIDTH / 2 - 633, 200, 1360, 2)
         pygame.draw.rect(WIN, (10, 100, 10), t_line)
         mx, my = pygame.mouse.get_pos()
-        journals = os.listdir("journals")
+        journals = os.listdir("journals")[1:]
 
         #inputs
         text_surface_c = main_font.render(input_text_c, True, (100, 10, 10))
@@ -1846,6 +1846,8 @@ def menu():
         pygame.draw.rect(WIN, (0, 0, 0), design_i)
         if design.collidepoint((mx, my)):
             if click:
+                draw_text('L04D1N6', TITLE_FONT, (255, 255, 255), WIN, WIDTH / 2 - 200, HEIGHT / 2 - 200)
+                pygame.display.update()
                 print("design")
                 Chaos_Window(base, analytics, device_id, rule_0)
         draw_text('Design', lable_font, (100, 10, 100), WIN, x, y)
@@ -1968,6 +1970,8 @@ def menu():
         if print_r.collidepoint((mx, my)):
             if click:
                 print("print")
+                draw_text('L04D1N6', TITLE_FONT, (255, 255, 255), WIN, WIDTH / 2 - 200, HEIGHT / 2 - 200)
+                pygame.display.update()
                 synthesize(chosen_journal, color_list, bookmarks, reflection, center_seed, scales)
                 print("synthesized")
                 print()
