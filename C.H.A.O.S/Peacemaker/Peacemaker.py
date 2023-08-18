@@ -356,7 +356,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     chord_shift = {0:0, 1:12, 2:0, 3:0, 4:24, 5:12, 6:24, 7:12, 8:12, 9:36}
     scale_shift = {0:0, 1:2, 2:4, 3:5, 4:7, 5:9, 6:11, 7:12}
-    chord_types = {0:(16, 19), 1:(16, 22), 2:(15, 19)}
+    chord_types = {0:(15, 18), 1:(15, 19), 2:(16, 19), 3:(16, 20), 4:(17, 20), 5:(17, 21), 6:(18, 21), 7:(18, 22), 8:(19, 22)}
 
     def redraw_window():
 
@@ -397,16 +397,36 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                                           bar_width, int(bar_height * ((midi_weights_1[x] / zero_out))))
                         pygame.draw.rect(WIN, value_color[x], bar)
 
-        if pce == 1:
+        if pce > 0:
             draw_text(str(value_letter[right_letter]), TITLE_FONT, (10, 100, 10), WIN, WIDTH - 64, 0)
             draw_text(str(value_letter[left_letter]), TITLE_FONT, (10, 100, 10), WIN, 32, 0)
             draw_text(voice, TITLE_FONT, (10, 100, 10), WIN, WIDTH/2, HEIGHT/2)
 
-            hp_0 = pygame.Rect(0, HEIGHT/2, WIDTH, 1)
-            pygame.draw.rect(WIN, value_color[int(beat%16/4)+1], hp_0)
-            hp_1 = pygame.Rect(WIDTH/2, 0, 1, HEIGHT)
-            pygame.draw.rect(WIN, value_color[int(beat%16/4)+1], hp_1)
+            cross_0 = pygame.Rect((glove_values[0]*14), HEIGHT/2, int(glove_values[2]/64) * 160 + 7, 1)
+            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], cross_0)
+            cross_0 = pygame.Rect(WIDTH/2, HEIGHT - (glove_values[1]*7), 1, int(glove_values[2]/64) * 160 + 7)
+            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], cross_0)
 
+            cross_0 = pygame.Rect((glove_values[12] * 14), HEIGHT / 2, int(glove_values[14] / 64) * 160 + 7, 1)
+            pygame.draw.rect(WIN, value_color[int(beat / 4) % 4 + 1], cross_0)
+            cross_0 = pygame.Rect(WIDTH / 2, HEIGHT - (glove_values[13] * 7), 1, int(glove_values[14] / 64) * 160 + 7)
+            pygame.draw.rect(WIN, value_color[int(beat / 4) % 4 + 1], cross_0)
+
+            speed_0 = pygame.Rect(16, 0, 2, glove_values[23]*(HEIGHT/127))
+            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], speed_0)
+            speed_1 = pygame.Rect(WIDTH-16, 0, 2, glove_values[11]*(HEIGHT/127))
+            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], speed_1)
+
+            weight_0 = pygame.Rect(8, 0, 2, (weight[1]+1) * (HEIGHT/3))
+            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], weight_0)
+            weight_1 = pygame.Rect(WIDTH-8, 0, 2, (weight[0]+1) * (HEIGHT/3))
+            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], weight_1)
+
+            for x in range(3):
+                tick_0 = pygame.Rect(0, x*(HEIGHT/3) + 1, 48, 4)
+                pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], tick_0)
+                tick_1 = pygame.Rect(WIDTH - 48, x*(HEIGHT/3) + 1, 48, 4)
+                pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], tick_1)
 
         pygame.display.update()
 
@@ -418,7 +438,22 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
     def kick(c):
-        path = r'audio\kick-0.mp3'
+        path = r'audio\kick\kick_0.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
+
+    def clap(c):
+        path = r'audio\clap\clap_0.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
+
+    def rise(c):
+        path = r'audio\rise\rise_4b.mp3'
+        mixer.music.load(path)
+        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
+
+    def hat(c):
+        path = r'audio\hat\hat_0.mp3'
         mixer.music.load(path)
         pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
@@ -472,27 +507,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
     post_color = {v: k for k, v in color_post.items()}
-    def glove(glove_values):
 
-        # print()
+    def glove(glove_values, invert=0):
 
-        # print(glove_values)
+        if invert == 1:
+            for x in range(5):
+                glove_values[x + 6] = 127 - glove_values[x+6]
+
 
         midi_colors = []
         new_rule = []
-
-        value_g = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (
-                int(glove_values[8] / 64) * 2 ** 2) + (
-                          int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
-        # print(value_g)
-
-        # if glove_values[2] > 64:
-        #     if value_0 == 17:
-        #         for x in range(canvas_rows):
-        #                 for y in range(canvas_row_width):
-        #                     canvas[x, y] = 0
-        #
-        #         phrase = '
 
         midpoint = 64
 
@@ -508,7 +532,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             else:
                 midi_colors.append(0)
 
+
         midi_colors.append(max(midi_colors))
+
 
         mc_total = sum(midi_colors)
 
@@ -601,23 +627,29 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     right_letter = 0
     left_letter = 0
     voice = ' '
+    v_time = []
 
     #Peacekeeper
     pce = 2
     cad = []
-    tempo = 0
+    tempo = 1
+    tmp_0 = 0
     beat = 0
     b_0 = 0
+    weight = [0,0]
 
         #1
-    measure = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    measure = [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
     toggles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     wake = [0, 0, 0, 0, 0]
 
         #2
+    kit = [0, 0, 0, 0]
     sin_lp_s = 0
     me_0 = 0
     my_0 = 0
+    rl_0 = 0
+    ll_0 = 0
 
             #loops
     sin_lp_0 = sin_8(0, 1)
@@ -630,9 +662,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     sin_lp_7 = sin_8(28, 8)
     sin_lp_8 = sin_8(31, 9)
     sin_lp_9 = sin_8(36, 10)
-
-    g1_size = 0
-    g2_size = 0
 
 
     #input maps
@@ -997,62 +1026,115 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         if pce == 2:
 
+
+            #brush
             g1_size = 0
             g2_size = 0
-
             for x in range(5):
                 g1_size += glove_values[6 + x]
                 g2_size += glove_values[18 + x]
-
             brush_min_0 = int(g1_size/16) + 2
             brush_min_1 = int(g2_size/16) + 2
 
-            if brush_min_0 < 4 or brush_min_1 < 4:
-                pause = 1
-            else:
-                pause = 0
 
+            #octant
             my = int(glove_values[0]/64) + int((glove_values[1])/64)*2 + int(glove_values[2]/64)*4
             me = int(glove_values[12]/64) + int((glove_values[13])/64)*2 + int(glove_values[14]/64)*4
+            mu = (int((127 - glove_values[0])/64) + int((127 - glove_values[1])/64)*2 + int((127 - glove_values[2])/64)*4 + 10 - me)%8
+            my = mu
             scale = 12
-
             t_1 = int(time.time()-t_0)
             if t_1%8 == 0 and t_1 != sin_lp_s:
-                sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
-                sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
-                sin_lp_2 = sin_8(chord_types[my%3][0] + scale_shift[me] + scale, 3, volume[2])
-                sin_lp_3 = sin_8(chord_types[my%3][1] + scale_shift[me] + scale, 4, volume[3])
-                sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
 
-                sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[1])
-                sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[2])
-                sin_lp_7 = sin_8(12 + chord_types[my%3][0] + scale_shift[me] + scale, 8, volume[3])
-                sin_lp_8 = sin_8(12 + chord_types[my%3][1] + scale_shift[me] + scale, 9, volume[4])
-                sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[5])
+                if weight[1] == 0:
+                    sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
+                    sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
+                    sin_lp_2 = sin_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
+                    sin_lp_3 = sin_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
+                    sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
+                elif weight[1] == 1:
+                    sin_lp_0 = saw_8(0 + scale_shift[me] + scale, 1, volume[0])
+                    sin_lp_1 = saw_8(12 + scale_shift[me] + scale, 2, volume[1])
+                    sin_lp_2 = saw_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
+                    sin_lp_3 = saw_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
+                    sin_lp_4 = saw_8(24 + scale_shift[me] + scale, 5, volume[4])
+                elif weight[1] == 2:
+                    sin_lp_0 = sqr_8(0 + scale_shift[me] + scale, 1, volume[0])
+                    sin_lp_1 = sqr_8(12 + scale_shift[me] + scale, 2, volume[1])
+                    sin_lp_2 = sqr_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
+                    sin_lp_3 = sqr_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
+                    sin_lp_4 = sqr_8(24 + scale_shift[me] + scale, 5, volume[4])
+
+                if weight[0] == 0:
+                    sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[5])
+                    sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[6])
+                    sin_lp_7 = sin_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
+                    sin_lp_8 = sin_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
+                    sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[9])
+                elif weight[0] == 1:
+                    sin_lp_5 = saw_8(12 + scale_shift[me] + scale, 6, volume[5])
+                    sin_lp_6 = saw_8(24 + scale_shift[me] + scale, 7, volume[4])
+                    sin_lp_7 = saw_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
+                    sin_lp_8 = saw_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
+                    sin_lp_9 = saw_8(36 + scale_shift[me] + scale, 10, volume[9])
+                elif weight[0] == 2:
+                    sin_lp_5 = sqr_8(12 + scale_shift[me] + scale, 6, volume[5])
+                    sin_lp_6 = sqr_8(24 + scale_shift[me] + scale, 7, volume[6])
+                    sin_lp_7 = sqr_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
+                    sin_lp_8 = sqr_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
+                    sin_lp_9 = sqr_8(36 + scale_shift[me] + scale, 10, volume[9])
 
                 sin_lp_s = t_1
-                print(t_1)
-                print(volume)
-
+                # print(t_1)
+                # print(volume)
             if me_0 != me or my_0 != my:
+                if me_0 != me:
+                    weight[1] = int(glove_values[23]/42)
+                if my_0 != my:
+                    weight[0] = int(glove_values[11]/42)
+
                 me_0 = me
                 my_0 = my
-                eb = HEIGHT
 
-                sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
-                sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
-                sin_lp_2 = sin_8(chord_types[my%3][0] + scale_shift[me] + scale, 3, volume[2])
-                sin_lp_3 = sin_8(chord_types[my%3][1] + scale_shift[me] + scale, 4, volume[3])
-                sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
+                if weight[1] == 0:
+                    sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
+                    sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
+                    sin_lp_2 = sin_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
+                    sin_lp_3 = sin_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
+                    sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
+                elif weight[1] == 1:
+                    sin_lp_0 = saw_8(0 + scale_shift[me] + scale, 1, volume[0])
+                    sin_lp_1 = saw_8(12 + scale_shift[me] + scale, 2, volume[1])
+                    sin_lp_2 = saw_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
+                    sin_lp_3 = saw_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
+                    sin_lp_4 = saw_8(24 + scale_shift[me] + scale, 5, volume[4])
+                elif weight[1] == 2:
+                    sin_lp_0 = sqr_8(0 + scale_shift[me] + scale, 1, volume[0])
+                    sin_lp_1 = sqr_8(12 + scale_shift[me] + scale, 2, volume[1])
+                    sin_lp_2 = sqr_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
+                    sin_lp_3 = sqr_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
+                    sin_lp_4 = sqr_8(24 + scale_shift[me] + scale, 5, volume[4])
 
-                sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[1])
-                sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[2])
-                sin_lp_7 = sin_8(12 + chord_types[my%3][0] + scale_shift[me] + scale, 8, volume[3])
-                sin_lp_8 = sin_8(12 + chord_types[my%3][1] + scale_shift[me] + scale, 9, volume[4])
-                sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[5])
+                if weight[0] == 0:
+                    sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[5])
+                    sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[6])
+                    sin_lp_7 = sin_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
+                    sin_lp_8 = sin_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
+                    sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[9])
+                elif weight[0] == 1:
+                    sin_lp_5 = saw_8(12 + scale_shift[me] + scale, 6, volume[5])
+                    sin_lp_6 = saw_8(24 + scale_shift[me] + scale, 7, volume[4])
+                    sin_lp_7 = saw_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
+                    sin_lp_8 = saw_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
+                    sin_lp_9 = saw_8(36 + scale_shift[me] + scale, 10, volume[9])
+                elif weight[0] == 2:
+                    sin_lp_5 = sqr_8(12 + scale_shift[me] + scale, 6, volume[5])
+                    sin_lp_6 = sqr_8(24 + scale_shift[me] + scale, 7, volume[6])
+                    sin_lp_7 = sqr_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
+                    sin_lp_8 = sqr_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
+                    sin_lp_9 = sqr_8(36 + scale_shift[me] + scale, 10, volume[9])
 
                 sin_lp_s = t_1
-
             for x in range(5):
                 volume[x + 5] = glove_values[6+x]/128
                 volume[x] = glove_values[18+x]/128
@@ -1068,128 +1150,130 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             sin_lp_8.set_volume(volume[8])
             sin_lp_9.set_volume(volume[9])
 
-        if pce == 3:
 
-            g1_size = 0
-            g2_size = 0
-
+            #voice
+            wait = 0
             for x in range(5):
-                g1_size += glove_values[6 + x]
-                g2_size += glove_values[18 + x]
+                if glove_values[6+x] > 32 and glove_values[6+x] < 96:
+                    wait = 1
+                    # print("wait")
+                    # print(x)
+            if wait == 0 and glove_values[11] + glove_values[23] < 8:
+                right_letter = int(glove_values[6] / 64) + int(glove_values[7] / 64) * 2 + int(glove_values[8] / 64) * 4 + int(glove_values[9] / 64) * 8 + int(glove_values[10] / 64) * 16
+                left_letter = int(glove_values[18] / 64) + int(glove_values[19] / 64) * 2 + int(glove_values[20] / 64) * 4 + int(glove_values[21] / 64) * 8 + int(glove_values[22] / 64) * 16
 
-            brush_min_0 = g1_size
-            brush_min_1 = g2_size
-
-            my = int(glove_values[0]/64) + int((glove_values[1])/64)*2 + int(glove_values[2]/64)*4
-            me = int(glove_values[12]/64) + int((glove_values[13])/64)*2 + int(glove_values[14]/64)*4
-            scale = 12
-
-            t_1 = int(time.time()-t_0)
-            if t_1%8 == 0 and t_1 != sin_lp_s:
-
-                #sin
-                sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
-                sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
-                sin_lp_2 = sin_8(chord_types[my%3][0] + scale_shift[me] + scale, 3, volume[2])
-                sin_lp_3 = sin_8(chord_types[my%3][1] + scale_shift[me] + scale, 4, volume[3])
-                sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
-                sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[1])
-                sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[2])
-                sin_lp_7 = sin_8(12 + chord_types[my%3][0] + scale_shift[me] + scale, 8, volume[3])
-                sin_lp_8 = sin_8(12 + chord_types[my%3][1] + scale_shift[me] + scale, 9, volume[4])
-                sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[5])
+                # print(left_letter, right_letter)
 
 
-                # #saw
-                # saw_lp_0 = saw_8(0 + scale_shift[me] + scale, 11, volume[0])
-                # saw_lp_1 = saw_8(12 + scale_shift[me] + scale, 12, volume[1])
-                # saw_lp_2 = saw_8(chord_types[my%3][0] + scale_shift[me] + scale, 13, volume[2])
-                # saw_lp_3 = saw_8(chord_types[my%3][1] + scale_shift[me] + scale, 14, volume[3])
-                # saw_lp_4 = saw_8(24 + scale_shift[me] + scale, 15, volume[4])
-                # saw_lp_5 = saw_8(12 + scale_shift[me] + scale, 16, volume[1])
-                # saw_lp_6 = saw_8(24 + scale_shift[me] + scale, 17, volume[2])
-                # saw_lp_7 = saw_8(12 + chord_types[my%3][0] + scale_shift[me] + scale, 18, volume[3])
-                # saw_lp_8 = saw_8(12 + chord_types[my%3][1] + scale_shift[me] + scale, 19, volume[4])
-                # saw_lp_9 = saw_8(36 + scale_shift[me] + scale, 20, volume[5])
+            #speak
+            if right_letter != rl_0 or left_letter != ll_0:
+                # print(left_letter, right_letter)
+                rl_0 = right_letter
+                ll_0 = left_letter
+                if right_letter == left_letter:
+                    voice += value_letter[right_letter]
+                    v_time.append(time.time() - t_0)
 
-                sin_lp_s = t_1
-                print(t_1)
-                print(volume)
+                    if right_letter == 17:
 
-            if me_0 != me or my_0 != my:
-                me_0 = me
-                my_0 = my
-                eb = HEIGHT
+                        print('voice')
+                        print(voice)
 
-                #sin
-                sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
-                sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
-                sin_lp_2 = sin_8(chord_types[my%3][0] + scale_shift[me] + scale, 3, volume[2])
-                sin_lp_3 = sin_8(chord_types[my%3][1] + scale_shift[me] + scale, 4, volume[3])
-                sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
-                sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[1])
-                sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[2])
-                sin_lp_7 = sin_8(12 + chord_types[my%3][0] + scale_shift[me] + scale, 8, volume[3])
-                sin_lp_8 = sin_8(12 + chord_types[my%3][1] + scale_shift[me] + scale, 9, volume[4])
-                sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[5])
+                        eb = int(HEIGHT/2)
 
-                # #saw
-                # saw_lp_0 = saw_8(0 + scale_shift[me] + scale, 11, volume[0])
-                # saw_lp_1 = saw_8(12 + scale_shift[me] + scale, 12, volume[1])
-                # saw_lp_2 = saw_8(chord_types[my%3][0] + scale_shift[me] + scale, 13, volume[2])
-                # saw_lp_3 = saw_8(chord_types[my%3][1] + scale_shift[me] + scale, 14, volume[3])
-                # saw_lp_4 = saw_8(24 + scale_shift[me] + scale, 15, volume[4])
-                # saw_lp_5 = saw_8(12 + scale_shift[me] + scale, 16, volume[1])
-                # saw_lp_6 = saw_8(24 + scale_shift[me] + scale, 17, volume[2])
-                # saw_lp_7 = saw_8(12 + chord_types[my%3][0] + scale_shift[me] + scale, 18, volume[3])
-                # saw_lp_8 = saw_8(12 + chord_types[my%3][1] + scale_shift[me] + scale, 19, volume[4])
-                # saw_lp_9 = saw_8(36 + scale_shift[me] + scale, 20, volume[5])
+                        if voice == ' beat.':
+                            for x in range(1, len(v_time)):
+                                # print(v_time[-x], v_time[-x-1])
+                                # print(v_time[-x] - v_time[-x-1])
+                                v_time[-x] = v_time[-x] - v_time[-x-1]
 
-                sin_lp_s = t_1
+                            print(v_time)
+                            for v in v_time[1:]:
+                                tempo += v
 
-            for x in range(5):
-                volume[x + 5] = glove_values[6+x]/128
-                volume[x] = glove_values[18+x]/128
+                            print(tempo)
 
-            sin_lp_0.set_volume(volume[0])
-            sin_lp_1.set_volume(volume[1])
-            sin_lp_2.set_volume(volume[2])
-            sin_lp_3.set_volume(volume[3])
-            sin_lp_4.set_volume(volume[4])
-            sin_lp_5.set_volume(volume[5])
-            sin_lp_6.set_volume(volume[6])
-            sin_lp_7.set_volume(volume[7])
-            sin_lp_8.set_volume(volume[8])
-            sin_lp_9.set_volume(volume[9])
+                            tempo = tempo/(len(v_time)-1)
 
-            # if glove_values[11]>42 or glove_values[23] > 42:
-            #     saw_lp_0.set_volume(volume[0])
-            #     saw_lp_1.set_volume(volume[1])
-            #     saw_lp_2.set_volume(volume[2])
-            #     saw_lp_3.set_volume(volume[3])
-            #     saw_lp_4.set_volume(volume[4])
-            #     saw_lp_5.set_volume(volume[5])
-            #     saw_lp_6.set_volume(volume[6])
-            #     saw_lp_7.set_volume(volume[7])
-            #     saw_lp_8.set_volume(volume[8])
-            #     saw_lp_9.set_volume(volume[9])
-            # else:
-            #     saw_lp_0.set_volume(0)
-            #     saw_lp_1.set_volume(0)
-            #     saw_lp_2.set_volume(0)
-            #     saw_lp_3.set_volume(0)
-            #     saw_lp_4.set_volume(0)
-            #     saw_lp_5.set_volume(0)
-            #     saw_lp_6.set_volume(0)
-            #     saw_lp_7.set_volume(0)
-            #     saw_lp_8.set_volume(0)
-            #     saw_lp_9.set_volume(0)
+                            print(tempo)
+
+                        if voice == ' kick.':
+                            for x in range(4):
+                                measure[x*4].append(1)
+                            kit[0] = 1
+
+                        if voice == ' hat.':
+                            for x in range(8):
+                                measure[x*2 + 1].append(2)
+                            kit[2] = 1
+
+                        if voice == ' clap.':
+                            for x in range(4):
+                                measure[x*4 + 2].append(3)
+                            kit[1] = 1
+
+                        if voice == ' rise.':
+                            print('rise')
+                            measure[0].append(4)
+                            kit[3] = 1
+
+                        if voice == ' hush.':
+                            measure = [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
+                            for x in range(len(kit)):
+                                kit[x] = 0
+
+                        if voice == ' dance.':
+
+                            for x in range(4):
+                                measure[x*4].append(1)
+                            kit[0] = 1
+
+                            for x in range(8):
+                                measure[x*2 + 1].append(2)
+                            kit[2] = 1
+
+                            for x in range(4):
+                                measure[x*4 + 2].append(3)
+                            kit[1] = 1
+
+                        voice = ' '
+                        v_time = []
+
+
+            #tempo
+            if time.time()-tmp_0 > tempo/4:
+
+                # print('beat')
+                # print(tempo)
+                # print(time.time()-tmp_0)
+
+                beat += 1
+                tmp_0 = time.time()
+
+
+            #beat
+            if beat != b_0:
+                b_0 = beat
+                # print(beat)
+
+                for b in measure[beat%len(measure)]:
+                    if b == 1:
+                        kick(10)
+                    if b == 2:
+                        hat(11)
+                    if b == 3:
+                        clap(12)
+            if beat%16 == 0 and kit[3] == 1:
+                print('risen')
+                rise(13)
+                kit[3] = 0
 
 
         if eb > 0:
             zero = np.zeros((1, canvas_row_width, 3), dtype='uint8')
             eb = eb - 1
             canvas[eb] = zero
+            canvas[-eb] = zero
 
 
         #mitosis
@@ -1601,8 +1685,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
                 elif event.key == pygame.K_PERIOD:
 
-                    sqr_8(wu, 1)
+                    # sqr_8(wu, 1)
+                    # kick(1)
 
+                    hat(2)
+                    if wu%4 == 0:
+                        kick(1)
+                    if wu%4 == 2:
+                        clap(1)
+                    if wu%8 == 0:
+                        rise(3)
                     wu += 1
                     print("wu")
                     print(wu)
@@ -1720,7 +1812,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     # print(d_rule_0[list(d_rule_0.keys())[x]], i_rule_0[x])
                     d_rule_0[list(d_rule_0.keys())[x]] = i_rule_0[x]
 
-                full_rule, midi_weights_1 = glove(glove_values[12:])
+                full_rule, midi_weights_1 = glove(glove_values[12:], 1)
                 i_rule_1 = full_rule
                 spin += int(glove_values[23]/spin_speed)
                 for x in range((glove_values[23] + spin) % bbv):
