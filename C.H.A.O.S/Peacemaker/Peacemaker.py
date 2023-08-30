@@ -1,53 +1,24 @@
 # C.H.A.O.S
 
-import numpy as np
-from datetime import datetime
-import random
-import pygame
-import os
-import pickle
-import sys
-import pygame.midi
-import time
-from collections import deque
-import math
 
+
+import sys
+import time
+import pygame
+import pygame.midi
+import numpy as np
 from pygame import mixer
+from collections import deque
+from datetime import datetime
 
 
 sys.setrecursionlimit(999999999)
-
 pygame.font.init()
-
 pygame.mixer.init()
 pygame.mixer.set_num_channels(64)
 
-length = 8
-# number of times given rule is applied and number of initial rows generated
-width = length * 2 + 1
-# number of cells in a row
-rule = 90
-# number who's x_base transformation gives the rules dictionary its values
 view = 3
 # size of the view window that scans a row for rule application
-base = 3
-# numerical base of the rule set. number of colors each cell can be
-start = length
-# position for a row 0 cell value 1
-direction = 0
-
-
-# if ^ = 0 view scans from left to right: else view scans right to left
-
-
-#####to do#####
-# translate complex numbers (pi, phi, e) to a base n digit sequence(where n is the number of possible rule states to be called).
-##Then, trigger a rotation of a rule state based on the rule position given by the digit in the complex number
-
-# add a record feature and button to menu. allows for recorder of all key inputs in a text file.
-
-
-#####map#####
 
 def base_x(n, b):
     e = n // b
@@ -58,7 +29,6 @@ def base_x(n, b):
         return str(q)
     else:
         return base_x(e, b) + str(q)
-
 
 def decimal(n, b):
 
@@ -75,7 +45,6 @@ def decimal(n, b):
         place += 1
 
     return value
-
 
 def rule_gen(rule, base=2):
 
@@ -124,54 +93,6 @@ def rule_gen(rule, base=2):
 
     return rules, int_rule[:base ** view]
 
-
-def rule_gen_2(rule, base, length):
-    rules = dict()
-
-    if base == 2:
-        int_rule = bin(rule).replace('0b', '')
-
-    else:
-        int_rule = base_x(rule, base)
-
-    x = int_rule[::-1]
-
-    while len(x) < length:
-        x += '0'
-
-    bnr = x[::-1]
-    int_rul = list(bnr)
-    int_rule = []
-    for i in int_rul:
-        int_rule.append(int(i))
-
-    for x in reversed(range(len(int_rule))):
-        key = tuple(base_x(x, base)[-view:])
-
-        # print(" ")
-        # print("key")
-        # print(key)
-        if len(key) < view:
-            diff = view - len(key)
-            key = list(key)
-
-            for y in range(diff):
-                key.insert(0, str(0))
-
-        key = "".join(key)
-        # print(" ")
-        # print(x)
-        # print("int_rule_x")
-        # print(int_rule)
-        # print(int_rule[x])
-        rules[tuple(key)] = int(int_rule[-x - 1])
-    # print("")
-    # print("rules")
-    # print(rules)
-
-    return rules, int_rule
-
-
 def viewer_1d(row, y, view, v_0, color_value):
 
     # print('view')
@@ -216,63 +137,6 @@ def viewer_1d(row, y, view, v_0, color_value):
         return v_0
 
 
-def viewer_1d_1(row, y, view, v_0, color_value, color_value_1):
-
-    # print('view')
-    # print(view)
-    # print("v_0_v")
-    # print(v_0)
-    # print(len(v_0))
-
-    if len(v_0) % 2 == 1:
-
-        if y + len(v_0) > len(row) - 1:
-
-            v_0.append('0')
-
-        else:
-
-            v_0.append(str(color_value[tuple(row[y + int(len(v_0) / 2) + 1])]))
-
-    else:
-
-        if y - len(v_0) < -1:
-
-            v_0.insert(0, '0')
-
-        else:
-
-            try:
-                v_0.insert(0, str(color_value[tuple(row[int(y - len(v_0) / 2)])]))
-
-            except:
-                v_0.insert(0, str(color_value_1[tuple(row[int(y - len(v_0) / 2)])]))
-
-    view -= 1
-
-    if view == 0:
-
-        return v_0
-
-    else:
-
-        v_0 = viewer_1d(row, y, view, v_0, color_value)
-
-        return v_0
-
-
-def Color_cells_1d(d_rule, cell_row_width, row_0):
-
-    # print("")
-    # print("row_0")
-    # print(row_0)
-
-    row_1 = np.zeros((1, cell_row_width), dtype='int8')
-
-    row_1[0] = [d_rule[tuple(viewer_1d(row_0, x, view, []))] for x in range(len(row_0))]
-
-    return row_1
-
 
 #####game#####
 
@@ -283,32 +147,21 @@ current_display = pygame.display.Info()
 WIDTH, HEIGHT = current_display.current_w - 50, current_display.current_h - 100
 # WIDTH, HEIGHT = 400, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
-                 'd': 12, 'f': 13,
-                 'g': 14, 'h': 15, 'j': 16, 'k': 17, 'l': 18, 'z': 19, 'x': 20, 'c': 21, 'v': 22, 'b': 23, 'n': 24,
-                 'm': 25, ' ': 26}
+
 
 pygame.display.set_caption("C.H.A.O.S")
 
 click = False
 
 
-def Chaos_Window(base, cell_vel, analytics, device_id=-1):
+def Chaos_Window(base, device_id=-1):
 
     print("base")
     print(base)
     print("device_id")
     print(device_id)
     p_m_i = 0
-
-    #window
-    if analytics == 1:
-
-        CELL_WIDTH = HEIGHT
-
-    else:
-
-        CELL_WIDTH = WIDTH
+    mixer.init()
 
     #colors
     color_0 = (0, 0, 0)
@@ -320,27 +173,17 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     color_6 = (255, 0, 0)
     color_7 = (0, 255, 0)
     color_8 = (0, 0, 255)
-
-    color_list = [0, 0, 0, 32, 32, 32, 255, 0, 255, 0, 255, 255, 255, 255, 0, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0,255]
-
     if base < 5:
 
         value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3}
         color_value = {v:k for k, v in value_color.items()}
-
     else:
 
         value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
                       6:color_6, 7:color_7, 8:color_8}
         color_value = {v:k for k, v in value_color.items()}
 
-    # numerical
-    letter_values = {' ': 0, 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11,
-                     'l': 12, 'm': 13,
-                     'n': 14, 'o': 15, 'p': 16, 'q': 17, 'r': 18, 's': 19, 't': 20, 'u': 21, 'v': 22, 'w': 23, 'x': 24,
-                     'y': 25, 'z': 26, '.': 27, ',': 28, '"': 29, '(': 30, ')': 31}
-
-    # frequency
+    #dicts
     letter_values = {' ': 0, 'a': 1, 'i': 2, 't': 3,
                      's': 4, 'c': 5, 'd': 6, 'm': 7,
                      'g': 8, 'f': 9, 'w': 10, 'v': 11,
@@ -349,14 +192,10 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                      'x': 20, 'k': 21, 'y': 22, 'b': 23,
                      'h': 24, 'p': 25, 'u': 26, 'l': 27,
                      'n': 28, 'o': 29, 'r': 30, 'e': 31}
-
     value_letter = {v: k for k, v in letter_values.items()}
-
-    color_post = {0: 1, 1: 5, 2: 2, 3: 6, 4: 3, 5: 7, 6: 4, 7: 8, 8: 0}
-
-    chord_shift = {0:0, 1:12, 2:0, 3:0, 4:24, 5:12, 6:24, 7:12, 8:12, 9:36}
     scale_shift = {0:0, 1:2, 2:4, 3:5, 4:7, 5:9, 6:11, 7:12}
     chord_types = {0:(15, 18), 1:(15, 19), 2:(16, 19), 3:(16, 20), 4:(17, 20), 5:(17, 21), 6:(18, 21), 7:(18, 22), 8:(19, 22)}
+    tone = {0:'in_', 1:'qr_', 2:'aw_'}
 
     def redraw_window():
 
@@ -382,7 +221,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         pygame.draw.rect(WIN, value_color[i_rule_1[x + 27 * y]], bar)
 
 
-            if g_brush == 4:
+            if g_brush == 1:
                 for x in range(len(midi_weights_0)):
 
                         bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(midi_weights_0) - 4*bar_width,
@@ -398,84 +237,58 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         pygame.draw.rect(WIN, value_color[x], bar)
 
         if pce > 0:
+
+
             draw_text(str(value_letter[right_letter]), TITLE_FONT, (10, 100, 10), WIN, WIDTH - 64, 0)
             draw_text(str(value_letter[left_letter]), TITLE_FONT, (10, 100, 10), WIN, 32, 0)
-            draw_text(voice, TITLE_FONT, (10, 100, 10), WIN, WIDTH/2, HEIGHT/2)
+            draw_text(voice, text_font, (10, 100, 10), WIN, WIDTH/2, 40)
 
-            cross_0 = pygame.Rect((glove_values[0]*14), HEIGHT/2, int(glove_values[2]/64) * 160 + 7, 1)
-            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], cross_0)
-            cross_0 = pygame.Rect(WIDTH/2, HEIGHT - (glove_values[1]*7), 1, int(glove_values[2]/64) * 160 + 7)
-            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], cross_0)
+            draw_text(str(path), main_font, (10, 100, 10), WIN, WIDTH / 2, 200)
+            draw_text(str(tempo), main_font, (10, 100, 10), WIN, WIDTH / 2, 300)
 
-            cross_0 = pygame.Rect((glove_values[12] * 14), HEIGHT / 2, int(glove_values[14] / 64) * 160 + 7, 1)
-            pygame.draw.rect(WIN, value_color[int(beat / 4) % 4 + 1], cross_0)
-            cross_0 = pygame.Rect(WIDTH / 2, HEIGHT - (glove_values[13] * 7), 1, int(glove_values[14] / 64) * 160 + 7)
-            pygame.draw.rect(WIN, value_color[int(beat / 4) % 4 + 1], cross_0)
 
-            speed_0 = pygame.Rect(16, 0, 2, glove_values[23]*(HEIGHT/127))
-            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], speed_0)
-            speed_1 = pygame.Rect(WIDTH-16, 0, 2, glove_values[11]*(HEIGHT/127))
-            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], speed_1)
+            cross_0 = pygame.Rect((glove_values[0]*14), HEIGHT/2, int(glove_values[2]/64) * 160 + 7, glove_values[11] + 1)
+            pygame.draw.rect(WIN, value_color[int(path[0]/2)%9], cross_0)
+            cross_0 = pygame.Rect(WIDTH/2, HEIGHT - (glove_values[1]*7), glove_values[11] + 1, int(glove_values[2]/64) * 160 + 7)
+            pygame.draw.rect(WIN, value_color[int(path[0]/2)%9], cross_0)
 
-            weight_0 = pygame.Rect(8, 0, 2, (weight[1]+1) * (HEIGHT/3))
-            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], weight_0)
-            weight_1 = pygame.Rect(WIDTH-8, 0, 2, (weight[0]+1) * (HEIGHT/3))
-            pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], weight_1)
+            cross_1 = pygame.Rect((glove_values[12] * 14), HEIGHT / 2, int(glove_values[14] / 64) * 160 + 7, glove_values[23] + 1)
+            pygame.draw.rect(WIN, value_color[int(path[1]/2)%9], cross_1)
+            cross_1 = pygame.Rect(WIDTH / 2, HEIGHT - (glove_values[13] * 7), glove_values[23] + 1, int(glove_values[14] / 64) * 160 + 7)
+            pygame.draw.rect(WIN, value_color[int(path[1]/2)%9], cross_1)
 
-            for x in range(3):
-                tick_0 = pygame.Rect(0, x*(HEIGHT/3) + 1, 48, 4)
-                pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], tick_0)
-                tick_1 = pygame.Rect(WIDTH - 48, x*(HEIGHT/3) + 1, 48, 4)
-                pygame.draw.rect(WIN, value_color[int(beat/4)%4+1], tick_1)
+            if drum == 1:
+
+                for x in range(16):
+                    beat_0 = pygame.Rect(WIDTH/4 + (WIDTH/32 * x) + 25, HEIGHT/16, 25, 50)
+                    pygame.draw.rect(WIN, value_color[measure[x][0]], beat_0)
+
+                    beat_1 = pygame.Rect(WIDTH/4 + (WIDTH/32 * x), HEIGHT/16, 25, 50)
+                    pygame.draw.rect(WIN, value_color[measure[x][1]], beat_1)
+
+                    if beat%16 == x:
+                        beat_0 = pygame.Rect(WIDTH / 4 + (WIDTH / 32 * x) + 1, HEIGHT/16 + 1, 47, 47)
+                        pygame.draw.rect(WIN, value_color[0], beat_0)
+                        draw_text(str(round(tempo, 3)), text_font, (255, 255, 255), WIN, WIDTH / 4 + (WIDTH / 32 * x) + 2, HEIGHT/16 + 1)
+
 
         pygame.display.update()
 
         return cv_pos
 
-    def hh(n, c):
-        path = r'audio\hh-' + str(n) + '.mp3'
-        mixer.music.load(path)
-        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
-
-    def kick(c):
-        path = r'audio\kick\kick_0.mp3'
-        mixer.music.load(path)
-        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
-
-    def clap(c):
-        path = r'audio\clap\clap_0.mp3'
-        mixer.music.load(path)
-        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
-
-    def rise(c):
-        path = r'audio\rise\rise_4b.mp3'
-        mixer.music.load(path)
-        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
-
-    def hat(c):
-        path = r'audio\hat\hat_0.mp3'
-        mixer.music.load(path)
-        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
-
-    def shake(c):
-        path = r'audio\shake-0.mp3'
-        mixer.music.load(path)
-        pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
-
-    def saw(n, c):
-        path = r'audio\saw\saw_' + str(n) + '.mp3'
-        mixer.music.load(path)
-        w = pygame.mixer.Sound(path)
-        pygame.mixer.Channel(c).play(w)
-
-    def sin_l(n, c, v=0):
-        path = r'audio\sin_l\sin_' + str(n) + '.mp3'
-        mixer.music.load(path)
-        w = pygame.mixer.Sound(path)
-        w.set_volume(v)
-        pygame.mixer.Channel(c).play(w)
-
-        return w
+    def drum_track(n, c):
+        if n == 1:
+            path = r'audio\hat\hat_0.mp3'
+            mixer.music.load(path)
+            pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
+        if n == 2:
+            path = r'audio\clap\clap_0.mp3'
+            mixer.music.load(path)
+            pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
+        if n == 3:
+            path = r'audio\kick\kick_0.mp3'
+            mixer.music.load(path)
+            pygame.mixer.Channel(c).play(pygame.mixer.Sound(path))
 
     def sin_8(n, c, v=0):
         path = r'audio\sin_8\sin_' + str(n) + '.mp3'
@@ -486,17 +299,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
         return w
 
-    def saw_8(n, c, v=0):
-        path = r'audio\saw_8\saw_' + str(n) + '.mp3'
-        mixer.music.load(path)
-        w = pygame.mixer.Sound(path)
-        w.set_volume(v)
-        pygame.mixer.Channel(c).play(w)
+    def loop_8(n, c, lvl, v=0):
 
-        return w
+        n = n%60
 
-    def sqr_8(n, c, v=0):
-        path = r'audio\sqr_8\sqr_' + str(n) + '.mp3'
+        path = r'audio\loop_8\s' + str(tone[int(lvl/4)%3]) + str(n) + '.mp3'
         mixer.music.load(path)
         w = pygame.mixer.Sound(path)
         w.set_volume(v)
@@ -548,10 +355,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
         midi_weights = midi_colors[::]
-        # for x in range(len(i_rule_0)):
-        #     if midi_colors[x%len(midi_colors)] > 0:
-        #         midi_colors[x%len(midi_colors)] -= 1
-        #         new_rule.append(color_post[x%(len(midi_colors)-1)])
 
         sorted_weights = []
         for x in range(len(midi_weights)):
@@ -608,18 +411,16 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     run = 1
     rule = 30
     pause = 0
-    start = 0
     step = 0
-    origin_rule = 0
     wu = 0
     volume = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     bv = base ** view
     bbv = base ** base ** view
     t_0 = time.time()
 
-
     #eb
     eb = 0
+    zero_r = np.zeros((1, WIDTH, 3), dtype='uint8')
 
     #input augments
     midi_inputs = 1
@@ -630,38 +431,33 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     v_time = []
 
     #Peacekeeper
-    pce = 2
-    cad = []
+    pce = 1
+    drum = 0
+    key = 0
+    lvl = 0
     tempo = 1
-    tmp_0 = 0
     beat = 0
-    b_0 = 0
-    weight = [0,0]
 
-        #1
-    measure = [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
-    toggles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    wake = [0, 0, 0, 0, 0]
-
-        #2
-    kit = [0, 0, 0, 0]
-    sin_lp_s = 0
+    measure = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+    sand = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    path = [0, 0]
     me_0 = 0
     my_0 = 0
-    rl_0 = 0
-    ll_0 = 0
+    xyz_0 = [0, 0, 0]
+    xyz_1 = [0, 0, 0]
+    hits = [0, 0]
 
             #loops
-    sin_lp_0 = sin_8(0, 1)
-    sin_lp_1 = sin_8(12, 2)
-    sin_lp_2 = sin_8(16, 3)
-    sin_lp_3 = sin_8(19, 4)
-    sin_lp_4 = sin_8(24, 5)
-    sin_lp_5 = sin_8(12, 6)
-    sin_lp_6 = sin_8(24, 7)
-    sin_lp_7 = sin_8(28, 8)
-    sin_lp_8 = sin_8(31, 9)
-    sin_lp_9 = sin_8(36, 10)
+    lp_0 = sin_8(0, 1)
+    lp_1 = sin_8(12, 2)
+    lp_2 = sin_8(16, 3)
+    lp_3 = sin_8(19, 4)
+    lp_4 = sin_8(24, 5)
+    lp_5 = sin_8(12, 6)
+    lp_6 = sin_8(24, 7)
+    lp_7 = sin_8(28, 8)
+    lp_8 = sin_8(31, 9)
+    lp_9 = sin_8(36, 10)
 
 
     #input maps
@@ -670,13 +466,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     x_position_g1v = 12
     y_position_g1v = 13
 
-    cell_vel = 1
-
-    #micro_brush
-    mixer.init()
 
     #streams
-    streams = 3
+    streams = 1
     stream_buffer = 2
 
     stream_direction_0 = deque(maxlen=stream_buffer)
@@ -692,11 +484,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     last_x_1 = 0
     last_y_1 = 0
 
-    #record keeping
-    journal = dict()
-    page = []
-    rule_point = list()
-
     #ui
     ui_on = 0
     ui_scale = 14
@@ -704,25 +491,19 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     bar_width = ui_scale + int(ui_scale / 1)
     cv_pos = 0
 
-
     midi_weights_0 = []
     midi_weights_1 = []
 
-
     #glove emthods
-    g_brush = 4
+    g_brush = 1
     number_of_sensors = 12
-
     zero_out = 3200
     spin_speed = 8
-
-    #chaos console
-    input_box = 0
-    v_input = ''
+    spin = 0
 
     #cell design
-    canvas_rows = int(HEIGHT) + 1
-    canvas_row_width = int(CELL_WIDTH)
+    canvas_rows = int(HEIGHT)
+    canvas_row_width = int(WIDTH)
 
     brush_width = 100
     brush_height = 100
@@ -731,8 +512,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
     brush_min_0 = 14
     brush_min_1 = 14
-
-    spin = 0
 
     cell_row_width = brush_width
     cell_rows = brush_height
@@ -752,40 +531,19 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     cells_a = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
     cells_b = np.zeros((cell_rows, cell_row_width, 3), dtype='uint8')
 
-    if start == 0:
+    cells_a[0, int(cell_row_width / 2)] = value_color[1]
+    cells_b[0, int(cell_row_width / 2)] = value_color[1]
 
-        cells_a[0, int(cell_row_width / 2)] = value_color[1]
-        cells_b[0, int(cell_row_width / 2)] = value_color[1]
-
-    else:
-
-        #fix this
-
-        cells_a[0] = rule_gen_2(start, base, cell_row_width)[1]
-
-
-    # print("")
-    # print(cells_a)
-
-    # print("")
-    # print("genisis")
-    # print(cells_a)
 
     for x in range(cell_rows - 1):
 
         cells_a = np.roll(cells_a, 1, 0)
         cells_b = np.roll(cells_b, 1, 0)
-        # cells_a[0] = Color_cells_1d(d_rule, cell_row_width, cells_a[1])
 
         for y in range(cell_row_width):
 
             cells_a[0, y] = value_color[d_rule_0[tuple(viewer_1d(cells_a[1], y, view, [], color_value))]]
             cells_a[0, y] = value_color[d_rule_1[tuple(viewer_1d(cells_b[1], y, view, [], color_value))]]
-
-    # print("")
-    # print('value_color')
-    # print(cells_a)
-
 
     if midi_inputs == 1:
 
@@ -811,18 +569,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             p_m_i = pygame.midi.Input(device_id)
 
         glove_values = [x for x in range(gloves * number_of_sensors)]
-        glove_sums = [x for x in range(gloves)]
 
         print("")
         print("glove_values")
         print(glove_values)
 
-        mode_brake = 0
-        x_brake = 0
-        y_brake = 0
-        z_brake = 0
-        l_brake = 0
-        r_brake = 0
 
         if device_id > 0:
 
@@ -840,47 +591,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     for m_e in midi_evs:
                         event_post(m_e)
 
-    if origin_rule == 0:
-
-        magnify = 4
-        colors = 1
-        step_size = int(base ** view / (base - 1) / magnify)
-
-        # print("")
-        # print("step_size")
-        # print(step_size)
-        # print(base ** view)
-        # print(base - 1)
-
-        o_r = rule_gen(0, base)[1]
-
-        # print(o_r)
-
-        for x in range(int((base ** view) / step_size) + 1):
-
-            # print("step_size * x")
-            # print(step_size * x)
-            # print("current place")
-            # print(-((step_size * x + 1) % bv))
-
-            if x > 0:
-
-                o_r[-((step_size * x + 1) % bv)] = x % colors + 1
-
-            else:
-
-                o_r[-((step_size * x + 1) % bv)] = 1
-
-
-        o_r[-1] = 1
-
-        origin_rule = decimal(o_r, base)
-
-        print("")
-        print("origin rule")
-        print(o_r)
-        print(origin_rule)
-
     print(" ")
     print("d_rule")
     print(d_rule_0, d_rule_1)
@@ -895,137 +605,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         redraw_window()
 
         if pce == 1:
-            # print(glove_values[6:11])
-
-            brush_min_0 = int(glove_values[2] / 4) + 2
-            brush_min_1 = int(glove_values[14] / 4) + 2
-            me = int(glove_values[2]/64) + int(abs((glove_values[0] - 127)/64))*2 + int(glove_values[1]/64)*4
-            my = int(glove_values[14]/64) + int((glove_values[12])/64)*2 + int(glove_values[13]/64)*4
-            scale = 12
-            # print(my)
-
-
-            if int(glove_values[6]/64) != toggles[0]:
-                toggles[0] = int(glove_values[6]/64)
-                if toggles[0] == 1:
-                    eb = HEIGHT
-                    sin_l(0 + scale_shift[me] + scale, 0 + wake[0])
-                    wake[0] += 1
-                    wake[0] = wake[0]%4
-            if int(glove_values[7]/64) != toggles[1]:
-                toggles[1] = int(glove_values[7]/64)
-                if toggles[1] == 1:
-                    sin_l(12 + scale_shift[me] + scale, 4 + wake[1])
-                    wake[1] += 1
-                    wake[1] = wake[1]%4
-            if int(glove_values[8]/64) != toggles[2]:
-                toggles[2] = int(glove_values[8]/64)
-                if toggles[2] == 1:
-                    sin_l(chord_types[my%3][0] + scale_shift[me] + scale, 8 + wake[2])
-                    wake[2] += 1
-                    wake[2] = wake[2]%4
-            if int(glove_values[9]/64) != toggles[3]:
-                toggles[3] = int(glove_values[9]/64)
-                if toggles[3] == 1:
-                    sin_l(chord_types[my%3][1] + scale_shift[me] + scale, 12 + wake[3])
-                    wake[3] += 1
-                    wake[3] = wake[3]%4
-            if int(glove_values[10]/64) != toggles[4]:
-                toggles[4] = int(glove_values[10]/64)
-                if toggles[4] == 1:
-                    sin_l(24 + scale_shift[me] + scale, 16 + wake[4])
-                    wake[4] += 1
-                    wake[4] = wake[4]%4
-
-            if int(glove_values[18]/64) != toggles[5]:
-                toggles[5] = int(glove_values[18]/64)
-                if toggles[5] == 1:
-                    eb = HEIGHT
-                    saw(0 + scale_shift[me], 0 + wake[0])
-                    wake[0] += 1
-                    wake[0] = wake[0]%4
-            if int(glove_values[19]/64) != toggles[6]:
-                toggles[6] = int(glove_values[19]/64)
-                if toggles[6] == 1:
-                    saw(12 + scale_shift[me], 4 + wake[1])
-                    wake[1] += 1
-                    wake[1] = wake[1]%4
-            if int(glove_values[20]/64) != toggles[7]:
-                toggles[7] = int(glove_values[20]/64)
-                if toggles[7] == 1:
-                    saw(chord_types[my%3][0] + scale_shift[me], 8 + wake[2])
-                    wake[2] += 1
-                    wake[2] = wake[2]%4
-            if int(glove_values[21]/64) != toggles[8]:
-                toggles[8] = int(glove_values[21]/64)
-                if toggles[8] == 1:
-                    saw(chord_types[my%3][1] + scale_shift[me], 12 + wake[3])
-                    wake[3] += 1
-                    wake[3] = wake[3]%4
-            if int(glove_values[22]/64) != toggles[9]:
-                toggles[9] = int(glove_values[22]/64)
-                if toggles[9] == 1:
-                    saw(24 + scale_shift[me], 16 + wake[4])
-                    wake[4] += 1
-                    wake[4] = wake[4]%4
-
-            right_letter = int(glove_values[6]/64) + int(glove_values[7]/64)*2 + int(glove_values[8]/64)*4 + int(glove_values[9]/64)*8 + int(glove_values[10]/64)*16
-            left_letter = int(glove_values[18]/64) + int(glove_values[19]/64)*2 + int(glove_values[20]/64)*4 + int(glove_values[21]/64)*8 + int(glove_values[22]/64)*16
-
-            if right_letter == left_letter and glove_values[11] < 2:
-                if voice[-1] != value_letter[right_letter]:
-                    voice += value_letter[right_letter]
-                    cad.append(time.time())
-                    # print()
-                    # print(voice)
-                    # print(cad)
-                if right_letter == 0 and len(voice)>1:
-                    if voice == ' beat ':
-                        c_0 = cad[0]
-                        # print()
-                        # print("apply")
-                        for x in range(len(cad)):
-                            cad[x] = cad[x]-c_0
-                            # print(cad[x])
-                        # print('tempo')
-                        for x in range(len(cad)-1):
-                            # print(cad[x+1]-cad[x])
-                            tempo += cad[x+1]-cad[x]
-
-                        tempo = tempo/len(cad)/4
-                        # print(cad)
-                        print()
-                        print("tempo")
-                        print(tempo)
-                    if voice == ' kick ':
-                        for x in range(4):
-                            measure[x*4] = 1
-                    if voice == ' high ':
-                        for x in range(4):
-                            measure[x*4+2] = 2
-                    if voice == ' shake ':
-                        for x in range(2):
-                            measure[x*8 + 4] = 3
-
-                    voice = ' '
-                    cad = []
-
-                    print(measure)
-
-            if tempo > 0:
-                beat = int((time.time()-t_0)/tempo)
-
-                if b_0 != beat:
-                    b_0 = beat
-                    if measure[b_0%16] == 1 or measure[b_0%16] == 3:
-                        kick(20)
-                    if measure[b_0%16] == 2:
-                        hh(beat%2, 21)
-                    if measure[b_0%16] == 3:
-                        shake(22)
-
-        if pce == 2:
-
 
             #brush
             g1_size = 0
@@ -1033,247 +612,145 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             for x in range(5):
                 g1_size += glove_values[6 + x]
                 g2_size += glove_values[18 + x]
-            brush_min_0 = int(g1_size/16) + 2
-            brush_min_1 = int(g2_size/16) + 2
 
+            brush_min_0 = int(g1_size/32) + 2
+            brush_min_1 = int(g2_size/32) + 2
 
             #octant
+            scale = 12
             my = int(glove_values[0]/64) + int((glove_values[1])/64)*2 + int(glove_values[2]/64)*4
             me = int(glove_values[12]/64) + int((glove_values[13])/64)*2 + int(glove_values[14]/64)*4
             mu = (int((127 - glove_values[0])/64) + int((127 - glove_values[1])/64)*2 + int((127 - glove_values[2])/64)*4 + 10 - me)%8
             my = mu
-            scale = 12
-            t_1 = int(time.time()-t_0)
-            if t_1%8 == 0 and t_1 != sin_lp_s:
 
-                if weight[1] == 0:
-                    sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
-                    sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
-                    sin_lp_2 = sin_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
-                    sin_lp_3 = sin_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
-                    sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
-                elif weight[1] == 1:
-                    sin_lp_0 = saw_8(0 + scale_shift[me] + scale, 1, volume[0])
-                    sin_lp_1 = saw_8(12 + scale_shift[me] + scale, 2, volume[1])
-                    sin_lp_2 = saw_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
-                    sin_lp_3 = saw_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
-                    sin_lp_4 = saw_8(24 + scale_shift[me] + scale, 5, volume[4])
-                elif weight[1] == 2:
-                    sin_lp_0 = sqr_8(0 + scale_shift[me] + scale, 1, volume[0])
-                    sin_lp_1 = sqr_8(12 + scale_shift[me] + scale, 2, volume[1])
-                    sin_lp_2 = sqr_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
-                    sin_lp_3 = sqr_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
-                    sin_lp_4 = sqr_8(24 + scale_shift[me] + scale, 5, volume[4])
+            if glove_values[11] > 8:
+                for x in range(5):
+                    if glove_values[6 + x] < 8:
+                        sand[x] = 0
+                        continue
+                    sand[x] += int(glove_values[6 + x]/8) * int(glove_values[11]/4)
 
-                if weight[0] == 0:
-                    sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[5])
-                    sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[6])
-                    sin_lp_7 = sin_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
-                    sin_lp_8 = sin_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
-                    sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[9])
-                elif weight[0] == 1:
-                    sin_lp_5 = saw_8(12 + scale_shift[me] + scale, 6, volume[5])
-                    sin_lp_6 = saw_8(24 + scale_shift[me] + scale, 7, volume[4])
-                    sin_lp_7 = saw_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
-                    sin_lp_8 = saw_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
-                    sin_lp_9 = saw_8(36 + scale_shift[me] + scale, 10, volume[9])
-                elif weight[0] == 2:
-                    sin_lp_5 = sqr_8(12 + scale_shift[me] + scale, 6, volume[5])
-                    sin_lp_6 = sqr_8(24 + scale_shift[me] + scale, 7, volume[6])
-                    sin_lp_7 = sqr_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
-                    sin_lp_8 = sqr_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
-                    sin_lp_9 = sqr_8(36 + scale_shift[me] + scale, 10, volume[9])
+                if my != my_0:
+                    my_0 = my
+                    path[0] += 1
+                    for x in range(3):
+                        if xyz_0[x] != int(glove_values[x]/64):
+                            xyz_0[x] = int(glove_values[x]/64)
+                            hits[0] = x + 1
 
-                sin_lp_s = t_1
-                # print(t_1)
-                # print(volume)
-            if me_0 != me or my_0 != my:
-                if me_0 != me:
-                    weight[1] = int(glove_values[23]/42)
-                if my_0 != my:
-                    weight[0] = int(glove_values[11]/42)
+            else:
+                if max(sand[:5]) > 0 and max(sand[:5]) > 128:
 
-                me_0 = me
-                my_0 = my
+                    ma = int(max(sand[:5])/2 + 1)
+                    lvl += ma
+                    lvl = lvl/2
 
-                if weight[1] == 0:
-                    sin_lp_0 = sin_8(0 + scale_shift[me] + scale, 1, volume[0])
-                    sin_lp_1 = sin_8(12 + scale_shift[me] + scale, 2, volume[1])
-                    sin_lp_2 = sin_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
-                    sin_lp_3 = sin_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
-                    sin_lp_4 = sin_8(24 + scale_shift[me] + scale, 5, volume[4])
-                elif weight[1] == 1:
-                    sin_lp_0 = saw_8(0 + scale_shift[me] + scale, 1, volume[0])
-                    sin_lp_1 = saw_8(12 + scale_shift[me] + scale, 2, volume[1])
-                    sin_lp_2 = saw_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
-                    sin_lp_3 = saw_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
-                    sin_lp_4 = saw_8(24 + scale_shift[me] + scale, 5, volume[4])
-                elif weight[1] == 2:
-                    sin_lp_0 = sqr_8(0 + scale_shift[me] + scale, 1, volume[0])
-                    sin_lp_1 = sqr_8(12 + scale_shift[me] + scale, 2, volume[1])
-                    sin_lp_2 = sqr_8(chord_types[my][0] + scale_shift[me] + scale, 3, volume[2])
-                    sin_lp_3 = sqr_8(chord_types[my][1] + scale_shift[me] + scale, 4, volume[3])
-                    sin_lp_4 = sqr_8(24 + scale_shift[me] + scale, 5, volume[4])
-
-                if weight[0] == 0:
-                    sin_lp_5 = sin_8(12 + scale_shift[me] + scale, 6, volume[5])
-                    sin_lp_6 = sin_8(24 + scale_shift[me] + scale, 7, volume[6])
-                    sin_lp_7 = sin_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
-                    sin_lp_8 = sin_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
-                    sin_lp_9 = sin_8(36 + scale_shift[me] + scale, 10, volume[9])
-                elif weight[0] == 1:
-                    sin_lp_5 = saw_8(12 + scale_shift[me] + scale, 6, volume[5])
-                    sin_lp_6 = saw_8(24 + scale_shift[me] + scale, 7, volume[4])
-                    sin_lp_7 = saw_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
-                    sin_lp_8 = saw_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
-                    sin_lp_9 = saw_8(36 + scale_shift[me] + scale, 10, volume[9])
-                elif weight[0] == 2:
-                    sin_lp_5 = sqr_8(12 + scale_shift[me] + scale, 6, volume[5])
-                    sin_lp_6 = sqr_8(24 + scale_shift[me] + scale, 7, volume[6])
-                    sin_lp_7 = sqr_8(12 + chord_types[my][0] + scale_shift[me] + scale, 8, volume[7])
-                    sin_lp_8 = sqr_8(12 + chord_types[my][1] + scale_shift[me] + scale, 9, volume[8])
-                    sin_lp_9 = sqr_8(36 + scale_shift[me] + scale, 10, volume[9])
-
-                sin_lp_s = t_1
-            for x in range(5):
-                volume[x + 5] = glove_values[6+x]/128
-                volume[x] = glove_values[18+x]/128
-
-            sin_lp_0.set_volume(volume[0])
-            sin_lp_1.set_volume(volume[1])
-            sin_lp_2.set_volume(volume[2])
-            sin_lp_3.set_volume(volume[3])
-            sin_lp_4.set_volume(volume[4])
-            sin_lp_5.set_volume(volume[5])
-            sin_lp_6.set_volume(volume[6])
-            sin_lp_7.set_volume(volume[7])
-            sin_lp_8.set_volume(volume[8])
-            sin_lp_9.set_volume(volume[9])
-
-
-            #voice
-            wait = 0
-            for x in range(5):
-                if glove_values[6+x] > 32 and glove_values[6+x] < 96:
-                    wait = 1
-                    # print("wait")
-                    # print(x)
-            if wait == 0 and glove_values[11] + glove_values[23] < 8:
-                right_letter = int(glove_values[6] / 64) + int(glove_values[7] / 64) * 2 + int(glove_values[8] / 64) * 4 + int(glove_values[9] / 64) * 8 + int(glove_values[10] / 64) * 16
-                left_letter = int(glove_values[18] / 64) + int(glove_values[19] / 64) * 2 + int(glove_values[20] / 64) * 4 + int(glove_values[21] / 64) * 8 + int(glove_values[22] / 64) * 16
-
-                # print(left_letter, right_letter)
-
-
-            #speak
-            if right_letter != rl_0 or left_letter != ll_0:
-                # print(left_letter, right_letter)
-                rl_0 = right_letter
-                ll_0 = left_letter
-                if right_letter == left_letter:
+                    right_letter = int(sand[0]/ma) + int(sand[1]/ma) * 2 + int(sand[2]/ma) * 4 + int(sand[3]/ma) * 8 + int(sand[4]/ma) * 16
                     voice += value_letter[right_letter]
-                    v_time.append(time.time() - t_0)
+                    v_time.append(time.time())
 
-                    if right_letter == 17:
+                    lp_0 = loop_8(12 + scale + scale_shift[me], 0, path[0], volume[0])
+                    lp_1 = loop_8(24 + scale + scale_shift[me], 1, path[0], volume[1])
+                    lp_2 = loop_8(12 + chord_types[my][0] + scale + scale_shift[me], 2, path[0], volume[2])
+                    lp_3 = loop_8(12 + chord_types[my][1] + scale + scale_shift[me], 3, path[0], volume[3])
+                    lp_4 = loop_8(36 + scale + scale_shift[me], 4, path[0], volume[4])
+                    path[0] = 0
 
-                        print('voice')
-                        print(voice)
+                sand[0] = 0
+                sand[1] = 0
+                sand[2] = 0
+                sand[3] = 0
+                sand[4] = 0
 
-                        eb = int(HEIGHT/2)
+            if glove_values[23] > 8:
+                for x in range(5):
+                    if glove_values[18 + x] < 8:
+                        sand[x+5] = 0
+                        continue
+                    sand[x+5] += int(glove_values[18 + x]/8)  * int(glove_values[23]/4)
 
-                        if voice == ' beat.':
-                            for x in range(1, len(v_time)):
-                                # print(v_time[-x], v_time[-x-1])
-                                # print(v_time[-x] - v_time[-x-1])
-                                v_time[-x] = v_time[-x] - v_time[-x-1]
+                if me != me_0:
+                    me_0 = me
+                    path[1] += 1
+                    for x in range(3):
+                        if xyz_1[x] != int(glove_values[x + 12]/64):
+                            xyz_1[x] = int(glove_values[x + 12]/64)
+                            hits[1] = x + 1
+            else:
 
-                            print(v_time)
-                            for v in v_time[1:]:
-                                tempo += v
+                if max(sand[5:10]) > 0 and max(sand[5:10]) > 128:
 
-                            print(tempo)
+                    ma = int(max(sand[5:10])/2 + 1)
+                    lvl += ma
+                    lvl = lvl/2
 
-                            tempo = tempo/(len(v_time)-1)
+                    left_letter = int(sand[5]/ma) + int(sand[6]/ma) * 2 + int(sand[7]/ma) * 4 + int(sand[8]/ma) * 8 + int(sand[9]/ma) * 16
+                    voice += value_letter[left_letter]
 
-                            print(tempo)
+                    lp_5 = loop_8(0 + scale + scale_shift[me], 5, path[1], volume[5])
+                    lp_6 = loop_8(12 + scale + scale_shift[me], 6, path[1], volume[6])
+                    lp_7 = loop_8(chord_types[my][0] + scale + scale_shift[me], 7, path[1], volume[7])
+                    lp_8 = loop_8(chord_types[my][1] + scale + scale_shift[me], 8, path[1], volume[8])
+                    lp_9 = loop_8(24 + scale + scale_shift[me], 9, path[1], volume[9])
+                    path[1] = 0
 
-                        if voice == ' kick.':
-                            for x in range(4):
-                                measure[x*4].append(1)
-                            kit[0] = 1
+                sand[5] = 0
+                sand[6] = 0
+                sand[7] = 0
+                sand[8] = 0
+                sand[9] = 0
 
-                        if voice == ' hat.':
-                            for x in range(8):
-                                measure[x*2 + 1].append(2)
-                            kit[2] = 1
+            if right_letter == left_letter and right_letter == 17:
+                if voice == 'beat.':
+                    for x in range(len(v_time) - 1):
+                        print(v_time[x+1] - v_time[x])
+                        tempo += v_time[x + 1] - v_time[x]
+                    tempo = tempo/len(v_time)
+                    v_time = []
+                if voice == 'drum.':
+                    drum += 1
+                    drum = drum%2
 
-                        if voice == ' clap.':
-                            for x in range(4):
-                                measure[x*4 + 2].append(3)
-                            kit[1] = 1
-
-                        if voice == ' rise.':
-                            print('rise')
-                            measure[0].append(4)
-                            kit[3] = 1
-
-                        if voice == ' hush.':
-                            measure = [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]]
-                            for x in range(len(kit)):
-                                kit[x] = 0
-
-                        if voice == ' dance.':
-
-                            for x in range(4):
-                                measure[x*4].append(1)
-                            kit[0] = 1
-
-                            for x in range(8):
-                                measure[x*2 + 1].append(2)
-                            kit[2] = 1
-
-                            for x in range(4):
-                                measure[x*4 + 2].append(3)
-                            kit[1] = 1
-
-                        voice = ' '
-                        v_time = []
+                eb = HEIGHT
+                voice = ''
 
 
-            #tempo
-            if time.time()-tmp_0 > tempo/4:
+            for x in range(5):
+                volume[x] = glove_values[6+x]/128
+                volume[x + 5] = glove_values[18+x]/128
 
-                # print('beat')
-                # print(tempo)
-                # print(time.time()-tmp_0)
-
-                beat += 1
-                tmp_0 = time.time()
-
+            lp_0.set_volume(volume[0])
+            lp_1.set_volume(volume[1])
+            lp_2.set_volume(volume[2])
+            lp_3.set_volume(volume[3])
+            lp_4.set_volume(volume[4])
+            lp_5.set_volume(volume[5])
+            lp_6.set_volume(volume[6])
+            lp_7.set_volume(volume[7])
+            lp_8.set_volume(volume[8])
+            lp_9.set_volume(volume[9])
 
             #beat
-            if beat != b_0:
-                b_0 = beat
-                # print(beat)
+            if drum == 1:
+                if time.time() - t_0 > tempo:
+                    t_0 = time.time()
+                    beat += 1
 
-                for b in measure[beat%len(measure)]:
-                    if b == 1:
-                        kick(10)
-                    if b == 2:
-                        hat(11)
-                    if b == 3:
-                        clap(12)
-            if beat%16 == 0 and kit[3] == 1:
-                print('risen')
-                rise(13)
-                kit[3] = 0
+                    if hits[0] > 0:
+                        drum_track(hits[0], 10)
+                        measure[beat%16][0] = hits[0]
+                        hits[0] = 0
+                    if hits[1] > 0:
+                        drum_track(hits[1], 11)
+                        measure[beat % 16][1] = hits[1]
+                        hits[1] = 0
+
 
 
         if eb > 0:
-            zero = np.zeros((1, canvas_row_width, 3), dtype='uint8')
             eb = eb - 1
-            canvas[eb] = zero
-            canvas[-eb] = zero
+            canvas[eb] = zero_r
+            canvas[-eb] = zero_r
 
 
         #mitosis
@@ -1307,29 +784,18 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             cell_vel_0 = brush_width_0
             cell_vel_1 = brush_width_1
 
-
             for y in range(cell_vel_0):
 
                 cells_a = np.rot90(cells_a, stream_direction_0[step % stream_buffer % len(stream_direction_0)], (0, 1))
 
-
                 cells_a = np.roll(cells_a, 1, 0)
 
                 if g_brush == 1:
-                    for x in range(len(cells_a[0])):
-                        cells_a[(0 + momentum[stream_direction_0[step % stream_buffer % len(stream_direction_0)]]) % (len(cells_a[0]) - 1), x] = value_color[d_rule[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
-
-                if g_brush >= 2:
 
                     for x in range(len(cells_a[0])):
                         cells_a[(0 + momentum[stream_direction_0[step % stream_buffer % len(stream_direction_0)]]) % (
                                     len(cells_a[0]) - 1), x] = value_color[
                              d_rule_0[tuple(viewer_1d(cells_a[1], x, view, [], color_value))]]
-
-                    for x in range(len(cells_b[0])):
-                        cells_b[(0 + momentum[stream_direction_0[step % stream_buffer % len(stream_direction_0)]]) % (
-                                len(cells_b[0]) - 1), x] = value_color[
-                            d_rule_1[tuple(viewer_1d(cells_b[1], x, view, [], color_value))]]
 
                 if len(stream_direction_0) > 0:
 
@@ -1339,39 +805,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     # cells_a = np.rot90(cells_a, 2, (0, 1))
                     # cells_a = np.rot90(cells_a, 1, (0, 1))
 
-
-                line = tuple(color_value[tuple(v)] for v in cells_a[0])
-                page.append(line)
-
-
-                rule = str()
-                for ir in i_rule_0:
-                    rule += str(ir)
-                rule = (rule, datetime.now())
-
-                if i_rule_0 != rule_point:
-                    # print()
-                    # print()
-                    # print("align")
-                    # print("i_rule & rule_point")
-                    # print(i_rule)
-                    # print(rule_point)
-                    rule_point = i_rule_0[::]
-                    # print()
-                    # print("i_rule & rule_point")
-                    # print(i_rule)
-                    # print(rule_point)
-
-                    if rule not in journal:
-                        journal[rule] = []
-                        journal[rule].append(page)
-
-                    else:
-                        journal[rule].append(page)
-
-                    page = []
-
                 step += 1
+
             for y in range(cell_vel_1):
 
                 cells_b = np.rot90(cells_b, stream_direction_1[step % stream_buffer % len(stream_direction_1)], (0, 1))
@@ -1379,12 +814,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 cells_b = np.roll(cells_b, 1, 0)
 
                 if g_brush == 1:
-                    for x in range(len(cells_b[0])):
-                        cells_b[(0 + momentum[stream_direction_1[step % stream_buffer % len(stream_direction_1)]]) % (
-                                    len(cells_b[0]) - 1), x] = value_color[
-                            d_rule[tuple(viewer_1d(cells_b[1], x, view, [], color_value))]]
-
-                if g_brush >= 2:
 
                     for x in range(len(cells_b[0])):
                         cells_b[(0 + momentum[stream_direction_1[step % stream_buffer % len(stream_direction_1)]]) % (
@@ -1398,36 +827,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     # cells_a = np.rot90(cells_a, 3, (0, 1))
                     # cells_a = np.rot90(cells_a, 2, (0, 1))
                     # cells_a = np.rot90(cells_a, 1, (0, 1))
-
-                line = tuple(color_value[tuple(v)] for v in cells_b[0])
-                page.append(line)
-
-                rule = str()
-                for ir in i_rule_0:
-                    rule += str(ir)
-                rule = (rule, datetime.now())
-
-                if i_rule_0 != rule_point:
-                    # print()
-                    # print()
-                    # print("align")
-                    # print("i_rule & rule_point")
-                    # print(i_rule)
-                    # print(rule_point)
-                    rule_point = i_rule_0[::]
-                    # print()
-                    # print("i_rule & rule_point")
-                    # print(i_rule)
-                    # print(rule_point)
-
-                    if rule not in journal:
-                        journal[rule] = []
-                        journal[rule].append(page)
-
-                    else:
-                        journal[rule].append(page)
-
-                    page = []
 
                 step += 1
 
@@ -1554,177 +953,25 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
 
-                #console commands
-                elif event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-
-                    if input_box == 0:
-
-                        input_box = 1
-
-                    else:
-
-                        if len(v_input) != 0:
-
-                            input_list = v_input.split()
-
-                            # print(" ")
-                            # print("input_list")
-                            # print(input_list)
-                            # print(len(input_list))
-                            # print(len(input_list[0]))
-
-                            if len(input_list) > 1:
-
-                                if input_list[0] == 'base':
-
-                                    print("##########based##########")
-
-                                    base = int(input_list[1])
-                                    bv = base ** view
-
-                                    step_size = int(base ** view / (base - 1) / magnify)
-                                    o_r = rule_gen(0, base)[1]
-                                    for x in range(int((base ** view) / step_size) + 1):
-
-                                        if x > 0:
-
-                                            o_r[-((step_size * x + 1) % bv)] = x % colors + 1
-
-                                        else:
-
-                                            o_r[-((step_size * x + 1) % bv)] = 1
-                                    o_r[-1] = 1
-                                    origin_rule = decimal(o_r, base)
-                                    ir_height = base
-
-                                    # colors
-                                    if base < 5:
-
-                                        value_color = {0: (0, 0, 0), 1: (255, 0, 255), 2: (0, 255, 255),
-                                                       3: (255, 255, 0), 4: (192, 192, 192), 5: (255, 0, 0),
-                                                       6: (0, 255, 0), 7: (0, 0, 255)}
-                                        color_value = {v: k for k, v in value_color.items()}
-
-                                    else:
-
-                                        value_color = {0: (0, 0, 0), 1: (32, 32, 32), 2: (255, 0, 255),
-                                                       3: (0, 255, 255), 4: (255, 255, 0), 5: (192, 192, 192),
-                                                       6: (255, 0, 0), 7: (0, 255, 0), 8: (0, 0, 255)}
-                                        color_value = {v: k for k, v in value_color.items()}
-
-                                    print("origin rule")
-                                    print(o_r)
-                                    print(origin_rule)
-
-                                    d_rule, i_rule = rule_gen(origin_rule, base)
-
-                                    print("d_rule, i_rule")
-                                    print(d_rule)
-                                    print(i_rule)
-                                    print("new_row")
-                                    print(rule_gen_2(origin_rule, base, cell_row_width)[1])
-
-                                    # mitosis
-                                    for x in range(cell_vel):
-
-                                        cells_a = np.roll(cells_a, 1, 0)
-
-                                        clunk = 0
-
-                                        for y in rule_gen_2(origin_rule, base, cell_row_width)[1]:
-
-                                            cells_a[0, clunk] = value_color[y]
-
-                                            clunk += 1
-
-                                elif input_list[0] == 'name':
-                                    j_name = input_list[1]
-
-                                    write = 1
-
-                                elif input_list[0] == 't-clear':
-
-                                    trigger_0 = 0
-                                    trigger_1 = 0
-                                    trigger_2 = 0
-                                    trigger_3 = 0
-                                    trigger_4 = 0
-                                    trigger_5 = 0
-                                    trigger_6 = 0
-                                    trigger_7 = 0
-                                    trigger_8 = 0
-
-                                elif input_list[0] == 'dam':
-
-                                    stream_direction = deque(maxlen=stream_buffer)
-
-
-                            elif v_input == 'write':
-
-                                write = 1
-
-                            elif input_list[0] == 'invalid':
-
-                                v_input = ''
-
-                            else:
-
-                                try:
-
-                                    d_rule, i_rule = rule_gen(int(v_input), base)
-
-                                except:
-
-                                    v_input = 'invalid'
-
-                                    continue
-
-                            v_input = ''
-
-                        input_box = 0
-
                 elif event.key == pygame.K_PERIOD:
 
                     # sqr_8(wu, 1)
                     # kick(1)
 
-                    hat(2)
-                    if wu%4 == 0:
-                        kick(1)
-                    if wu%4 == 2:
-                        clap(1)
-                    if wu%8 == 0:
-                        rise(3)
+                    loop_8(wu, 0, 20, 10, 1)
                     wu += 1
                     print("wu")
                     print(wu)
 
                 elif event.key == pygame.K_UP:
 
-                    volume = volume + .1
-                    sin_lp_1.set_volume(volume)
-                    print(volume)
-
-                elif event.key == pygame.K_RIGHT:
-
-                    stream_direction.append(1)
-
-                    # print("right")
-                    # print(stream_direction)
+                    key = key + 1
+                    print(key)
 
                 elif event.key == pygame.K_DOWN:
 
-                    volume = volume - .1
-                    sin_lp_1.set_volume(volume)
-                    print(volume)
-
-                elif event.key == pygame.K_LEFT:
-
-                    stream_direction.append(3)
-
-                    # print('left')
-                    # print(stream_direction)
-
+                    key = key - 1
+                    print(key)
 
             #midi
             elif event.type in [pygame.midi.MIDIIN]:
@@ -1758,16 +1005,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             # print()
             # print(glove_values)
 
-            value_0 = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (
-                    int(glove_values[8] / 64) * 2 ** 2) + (
-                              int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
-
-            value_1 = (int(glove_values[18] / 64) * 2 ** 0) + (int(glove_values[19] / 64) * 2 ** 1) + (
-                    int(glove_values[20] / 64) * 2 ** 2) + (
-                              int(glove_values[21] / 64) * 2 ** 3) + (int(glove_values[22] / 64) * 2 ** 4)
 
             # stream direction
-            if streams == 3:
+            if streams == 1:
 
                 if last_x_0 > brush_x_0:
                     stream_direction_0.append(1)
@@ -1797,7 +1037,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 last_y_1 = brush_y_1
 
 
-            if g_brush == 4:
+            if g_brush == 1:
 
                 # print(glove_values)
 
@@ -2335,7 +1575,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(9, 1, 0, 1)
+Chaos_Window(9, 1)
 
 
 
