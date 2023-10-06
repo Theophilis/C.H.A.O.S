@@ -249,32 +249,21 @@ def Chaos_Window(base, device_id=-1):
             draw_text(voice_l[1], text_font, (10, 100, 10), WIN, WIDTH/4, 40)
 
             cross_0 = pygame.Rect((glove_values[0]*14), HEIGHT/2, int(glove_values[2]/64) * 160 + 7, glove_values[11] + 3)
-            pygame.draw.rect(WIN, value_color[int(path[0]/2 + 5)%9], cross_0)
+            pygame.draw.rect(WIN, value_color[mc_0], cross_0)
             cross_0 = pygame.Rect(WIDTH/2, HEIGHT - (glove_values[1]*7), glove_values[11] + 3, int(glove_values[2]/64) * 160 + 7)
-            pygame.draw.rect(WIN, value_color[int(path[0]/2 + 5)%9], cross_0)
+            pygame.draw.rect(WIN, value_color[mc_0], cross_0)
 
             cross_1 = pygame.Rect((glove_values[12] * 14), HEIGHT / 2, int(glove_values[14] / 64) * 160 + 7, glove_values[23] + 3)
-            pygame.draw.rect(WIN, value_color[int(path[1]/2 + 1)%9], cross_1)
+            pygame.draw.rect(WIN, value_color[mc_1], cross_1)
             cross_1 = pygame.Rect(WIDTH / 2, HEIGHT - (glove_values[13] * 7), glove_values[23] + 3, int(glove_values[14] / 64) * 160 + 7)
-            pygame.draw.rect(WIN, value_color[int(path[1]/2 + 1)%9], cross_1)
-
-
-            if drum == 1:
-
-                for x in range(16):
-                    beat_0 = pygame.Rect(WIDTH/4 + (WIDTH/32 * x) + 25, HEIGHT/16, 25, 50)
-                    pygame.draw.rect(WIN, value_color[measure[x][0]], beat_0)
-
-                    beat_1 = pygame.Rect(WIDTH/4 + (WIDTH/32 * x), HEIGHT/16, 25, 50)
-                    pygame.draw.rect(WIN, value_color[measure[x][1]], beat_1)
-
-                    if beat%16 == x:
-                        beat_0 = pygame.Rect(WIDTH / 4 + (WIDTH / 32 * x) + 1, HEIGHT/16 + 1, 47, 47)
-                        pygame.draw.rect(WIN, value_color[0], beat_0)
-                        draw_text(str(round(tempo, 3)), text_font, (255, 255, 255), WIN, WIDTH / 4 + (WIDTH / 32 * x) + 2, HEIGHT/16 + 1)
+            pygame.draw.rect(WIN, value_color[mc_1], cross_1)
 
             if pce == 2:
-                draw_text(str((scale_lable[thumb%12], scale_lable[pointer%12], scale_lable[middle%12], scale_lable[ring%12], scale_lable[pinky%12])), main_font, (255, 255, 255), WIN, WIDTH / 2 - 115, HEIGHT - 100)
+                draw_text(str((scale_lable[thumb%12], scale_lable[pointer%12], scale_lable[middle%12], scale_lable[ring%12], scale_lable[pinky%12])), small_font, (255, 255, 255), WIN, WIDTH / 2 - 120, HEIGHT - 50)
+                draw_text(str(heat[:5]), small_font, (255, 255, 255), WIN,
+                          WIDTH / 2 + WIDTH/4 - 60, HEIGHT - 50)
+                draw_text(str(heat[5:]), small_font, (255, 255, 255), WIN,
+                          WIDTH / 4 - 60, HEIGHT - 50)
 
                 motion_0 = pygame.Rect(WIDTH / 2 + 16, HEIGHT / 2, 32, 32)
                 pygame.draw.rect(WIN, value_color[mc_0], motion_0)
@@ -303,7 +292,7 @@ def Chaos_Window(base, device_id=-1):
 
         n = n%60
 
-        path = r'audio\loop_8\s' + str(tone[int(lvl/4)%3]) + str(n) + '.mp3'
+        path = r'audio\loop_8\s' + str(tone[lvl%3]) + str(n) + '.mp3'
         mixer.music.load(path)
         w = pygame.mixer.Sound(path)
         w.set_volume(v)
@@ -435,31 +424,24 @@ def Chaos_Window(base, device_id=-1):
     pce = 2
     drum = 0
     key = 0
-    lvl = 0
     tempo = 1
     beat = 0
     speed = 8
     mc_0, mc_1 = 0, 0
 
-    measure = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+        #gloves
     sand = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    path = [0, 0]
-    me_0 = 0
-    my_0 = 0
-    xyz_0 = [0, 0, 0]
-    xyz_1 = [0, 0, 0]
-    hits = [0, 0]
-
-    #drums
+    heat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    echo = [[], []]
+    me_0 = [0, 0]
+    my_0 = [0, 0]
     thumb = 0
     pointer = 0
     middle = 0
     ring = 0
     pinky = 0
 
-    snap = [0, 0]
-
-            #loops
+        #loops
     lp_0 = loop_8(0, 1)
     lp_1 = loop_8(12, 2)
     lp_2 = loop_8(16, 3)
@@ -616,147 +598,6 @@ def Chaos_Window(base, device_id=-1):
 
         redraw_window()
 
-        if pce == 1:
-
-            #brush
-            g1_size = 0
-            g2_size = 0
-            for x in range(5):
-                g1_size += glove_values[6 + x]
-                g2_size += glove_values[18 + x]
-
-            brush_min_0 = int(g1_size/32) + 2
-            brush_min_1 = int(g2_size/32) + 2
-
-            #octant
-            scale = 12
-            my = int(glove_values[0]/64) + int((glove_values[1])/64)*2 + int(glove_values[2]/64)*4
-            me = int(glove_values[12]/64) + int((glove_values[13])/64)*2 + int(glove_values[14]/64)*4
-            mu = (int((127 - glove_values[0])/64) + int((127 - glove_values[1])/64)*2 + int((127 - glove_values[2])/64)*4 + 10 - me)%8
-            my = mu
-
-            if glove_values[11] > 16:
-                for x in range(5):
-                    if glove_values[6 + x] < 8:
-                        sand[x] = 0
-                        continue
-                    sand[x] += int(glove_values[6 + x]/8) * int(glove_values[11]/4)
-
-                if my != my_0:
-                    my_0 = my
-                    path[0] += 1
-                    for x in range(3):
-                        if xyz_0[x] != int(glove_values[x]/64):
-                            xyz_0[x] = int(glove_values[x]/64)
-                            hits[0] = x + 1
-
-            else:
-                if max(sand[:5]) > 0 and max(sand[:5]) > 128:
-
-                    ma = int(max(sand[:5])/2 + 1)
-                    lvl += ma
-                    lvl = lvl/2
-
-                    right_letter = int(sand[0]/ma) + int(sand[1]/ma) * 2 + int(sand[2]/ma) * 4 + int(sand[3]/ma) * 8 + int(sand[4]/ma) * 16
-                    voice += value_letter[right_letter]
-                    v_time.append(time.time())
-
-                    lp_0 = loop_8(12 + scale + scale_shift[me], 0, path[0], volume[0])
-                    lp_1 = loop_8(24 + scale + scale_shift[me], 1, path[0], volume[1])
-                    lp_2 = loop_8(12 + chord_types[my][0] + scale + scale_shift[me], 2, path[0], volume[2])
-                    lp_3 = loop_8(12 + chord_types[my][1] + scale + scale_shift[me], 3, path[0], volume[3])
-                    lp_4 = loop_8(36 + scale + scale_shift[me], 4, path[0], volume[4])
-                    path[0] = 0
-
-                sand[0] = 0
-                sand[1] = 0
-                sand[2] = 0
-                sand[3] = 0
-                sand[4] = 0
-
-            if glove_values[23] > 16:
-                for x in range(5):
-                    if glove_values[18 + x] < 8:
-                        sand[x+5] = 0
-                        continue
-                    sand[x+5] += int(glove_values[18 + x]/8)  * int(glove_values[23]/4)
-
-                if me != me_0:
-                    me_0 = me
-                    path[1] += 1
-                    for x in range(3):
-                        if xyz_1[x] != int(glove_values[x + 12]/64):
-                            xyz_1[x] = int(glove_values[x + 12]/64)
-                            hits[1] = x + 1
-            else:
-
-                if max(sand[5:10]) > 0 and max(sand[5:10]) > 128:
-
-                    ma = int(max(sand[5:10])/2 + 1)
-                    lvl += ma
-                    lvl = lvl/2
-
-                    left_letter = int(sand[5]/ma) + int(sand[6]/ma) * 2 + int(sand[7]/ma) * 4 + int(sand[8]/ma) * 8 + int(sand[9]/ma) * 16
-                    voice += value_letter[left_letter]
-
-                    lp_5 = loop_8(0 + scale + scale_shift[me], 5, path[1], volume[5])
-                    lp_6 = loop_8(12 + scale + scale_shift[me], 6, path[1], volume[6])
-                    lp_7 = loop_8(chord_types[my][0] + scale + scale_shift[me], 7, path[1], volume[7])
-                    lp_8 = loop_8(chord_types[my][1] + scale + scale_shift[me], 8, path[1], volume[8])
-                    lp_9 = loop_8(24 + scale + scale_shift[me], 9, path[1], volume[9])
-                    path[1] = 0
-
-                sand[5] = 0
-                sand[6] = 0
-                sand[7] = 0
-                sand[8] = 0
-                sand[9] = 0
-
-            if right_letter == left_letter and right_letter == 17:
-                if voice == 'beat.':
-                    for x in range(len(v_time) - 1):
-                        print(v_time[x+1] - v_time[x])
-                        tempo += v_time[x + 1] - v_time[x]
-                    tempo = tempo/len(v_time)
-                    v_time = []
-                if voice == 'drum.':
-                    drum += 1
-                    drum = drum%2
-
-                eb = HEIGHT
-                voice = ''
-
-
-            for x in range(5):
-                volume[x] = glove_values[6+x]/128
-                volume[x + 5] = glove_values[18+x]/128
-
-            lp_0.set_volume(volume[0])
-            lp_1.set_volume(volume[1])
-            lp_2.set_volume(volume[2])
-            lp_3.set_volume(volume[3])
-            lp_4.set_volume(volume[4])
-            lp_5.set_volume(volume[5])
-            lp_6.set_volume(volume[6])
-            lp_7.set_volume(volume[7])
-            lp_8.set_volume(volume[8])
-            lp_9.set_volume(volume[9])
-
-            #beat
-
-            if time.time() - t_0 > tempo:
-                t_0 = time.time()
-                beat += 1
-
-                if drum == 1:
-                    if hits[0] > 0:
-                        drum_track(hits[0], 10)
-                        measure[beat%16][0] = hits[0]
-                        hits[0] = 0
-                    if hits[1] > 0:
-                        drum_track(hits[1], 11)
-                        measure[beat % 16][1] = hits[1]
-                        hits[1] = 0
 
         if pce == 2:
 
@@ -781,7 +622,6 @@ def Chaos_Window(base, device_id=-1):
             ring = 12 + scale + me*2 + 6 + r_dict[my] + int(glove_values[2]/64)
             pinky = 12 + scale + me*2 + 12 - p_dict[my] + int(glove_values[2]/64)
 
-            # print(pointer - 24, middle - 24, ring - 24, pinky - 24)
 
             if glove_values[11] > speed:
                 mc_0 = 5
@@ -791,16 +631,16 @@ def Chaos_Window(base, device_id=-1):
                         sand[x] = 0
                         continue
 
-                if my != my_0:
-                    my_0 = my
-                    path[0] += 1
-                    for x in range(3):
-                        if xyz_0[x] != int(glove_values[x]/64):
-                            xyz_0[x] = int(glove_values[x]/64)
-                            hits[0] = x + 1
             else:
                 mc_0 = 0
                 if max(sand[:5]) > 0 and max(sand[:5]) > 128:
+
+                    #heat
+                    for x in range(5):
+                        if sand[x] > 0:
+                            heat[x] += 1
+                        else:
+                            heat[x] = 0
 
                     ma = int(max(sand[:5])/2 + 1)
 
@@ -808,18 +648,25 @@ def Chaos_Window(base, device_id=-1):
                     voice_l[0] += value_letter[right_letter]
                     v_time.append(time.time())
 
-                    lp_0 = loop_8(thumb + 12, 0, path[0], volume[0])
-                    lp_1 = loop_8(pointer + 12, 1, path[0], volume[1])
-                    lp_2 = loop_8(middle + 12, 2, path[0], volume[2])
-                    lp_3 = loop_8(ring + 12, 3, path[0], volume[3])
-                    lp_4 = loop_8(pinky + 12, 4, path[0], volume[4])
-                    path[0] = 0
-                    lp_5 = loop_8(thumb, 5, path[1], volume[5])
-                    lp_6 = loop_8(pointer, 6, path[1], volume[6])
-                    lp_7 = loop_8(middle, 7, path[1], volume[7])
-                    lp_8 = loop_8(ring, 8, path[1], volume[8])
-                    lp_9 = loop_8(pinky, 9, path[1], volume[9])
-                    path[1] = 0
+                    lp_0 = loop_8(thumb + 12, 0, int(heat[0]/8), volume[0])
+                    lp_1 = loop_8(pointer + 12, 1, int(heat[1]/8), volume[1])
+                    lp_2 = loop_8(middle + 12, 2, int(heat[2]/8), volume[2])
+                    lp_3 = loop_8(ring + 12, 3, int(heat[3]/8), volume[3])
+                    lp_4 = loop_8(pinky + 12, 4, int(heat[4]/8), volume[4])
+                    lp_5 = loop_8(thumb, 5, int(heat[5]/8), volume[5])
+                    lp_6 = loop_8(pointer, 6, int(heat[6]/8), volume[6])
+                    lp_7 = loop_8(middle, 7, int(heat[7]/8), volume[7])
+                    lp_8 = loop_8(ring, 8, int(heat[8]/8), volume[8])
+                    lp_9 = loop_8(pinky, 9, int(heat[9]/8), volume[9])
+
+                if my != my_0[0]:
+                    my_0[0] = my
+                    echo[0].append(time.time() - my_0[1])
+                    my_0[1] = time.time()
+                    tempo = echo[0][-1]
+                    print('')
+                    print("echo_0")
+                    print(echo[0])
 
                 sand[0] = 0
                 sand[1] = 0
@@ -835,34 +682,41 @@ def Chaos_Window(base, device_id=-1):
                         continue
                     sand[x+5] += int(glove_values[18 + x]/8)  * int(glove_values[23]/4)
 
-                if me != me_0:
-                    me_0 = me
-                    path[1] += 1
-                    for x in range(3):
-                        if xyz_1[x] != int(glove_values[x + 12]/64):
-                            xyz_1[x] = int(glove_values[x + 12]/64)
-                            hits[1] = x + 1
             else:
                 mc_1 = 0
                 if max(sand[5:10]) > 0 and max(sand[5:10]) > 128:
+
+                    #heat
+                    for x in range(5):
+                        if sand[x + 5] > 0:
+                            heat[x + 5] += 1
+                        else:
+                            heat[x + 5] = 0
 
                     ma = int(max(sand[5:10])/2 + 1)
 
                     left_letter = int(sand[5]/ma) + int(sand[6]/ma) * 2 + int(sand[7]/ma) * 4 + int(sand[8]/ma) * 8 + int(sand[9]/ma) * 16
                     voice_l[1] += value_letter[left_letter]
 
-                    lp_0 = loop_8(thumb + 12, 0, path[0], volume[0])
-                    lp_1 = loop_8(pointer + 12, 1, path[0], volume[1])
-                    lp_2 = loop_8(middle + 12, 2, path[0], volume[2])
-                    lp_3 = loop_8(ring + 12, 3, path[0], volume[3])
-                    lp_4 = loop_8(pinky + 12, 4, path[0], volume[4])
-                    path[0] = 0
-                    lp_5 = loop_8(thumb, 5, path[1], volume[5])
-                    lp_6 = loop_8(pointer, 6, path[1], volume[6])
-                    lp_7 = loop_8(middle, 7, path[1], volume[7])
-                    lp_8 = loop_8(ring, 8, path[1], volume[8])
-                    lp_9 = loop_8(pinky, 9, path[1], volume[9])
-                    path[1] = 0
+                    lp_0 = loop_8(thumb + 12, 0, int(heat[0]/8), volume[0])
+                    lp_1 = loop_8(pointer + 12, 1, int(heat[1]/8), volume[1])
+                    lp_2 = loop_8(middle + 12, 2, int(heat[2]/8), volume[2])
+                    lp_3 = loop_8(ring + 12, 3, int(heat[3]/8), volume[3])
+                    lp_4 = loop_8(pinky + 12, 4, int(heat[4]/8), volume[4])
+                    lp_5 = loop_8(thumb, 5, int(heat[5]/8), volume[5])
+                    lp_6 = loop_8(pointer, 6, int(heat[6]/8), volume[6])
+                    lp_7 = loop_8(middle, 7, int(heat[7]/8), volume[7])
+                    lp_8 = loop_8(ring, 8, int(heat[8]/8), volume[8])
+                    lp_9 = loop_8(pinky, 9, int(heat[9]/8), volume[9])
+
+                if me != me_0[0]:
+                    me_0[0] = me
+                    echo[1].append(time.time() - me_0[1])
+                    me_0[1] = time.time()
+                    tempo = echo[1][-1]
+                    print('')
+                    print('echo_1')
+                    print(echo[1])
 
                 sand[5] = 0
                 sand[6] = 0
@@ -870,19 +724,12 @@ def Chaos_Window(base, device_id=-1):
                 sand[8] = 0
                 sand[9] = 0
 
-            if right_letter == left_letter and right_letter == 17:
-                if voice == 'beat.':
-                    for x in range(len(v_time) - 1):
-                        print(v_time[x+1] - v_time[x])
-                        tempo += v_time[x + 1] - v_time[x]
-                    tempo = tempo/len(v_time)
-                    v_time = []
-                if voice == 'drum.':
-                    drum += 1
-                    drum = drum%2
 
+            if right_letter == left_letter and right_letter == 17:
                 eb = HEIGHT
-                voice = ''
+                voice_l = ['', '']
+                heat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                echo = [[], []]
 
 
             for x in range(5):
@@ -902,18 +749,9 @@ def Chaos_Window(base, device_id=-1):
 
             #beat
             if time.time() - t_0 > tempo:
+                drum_track(1, 11)
                 t_0 = time.time()
                 beat += 1
-
-                if drum == 1:
-                    if hits[0] > 0:
-                        drum_track(hits[0], 10)
-                        measure[beat%16][0] = hits[0]
-                        hits[0] = 0
-                    if hits[1] > 0:
-                        drum_track(hits[1], 11)
-                        measure[beat % 16][1] = hits[1]
-                        hits[1] = 0
 
 
 
