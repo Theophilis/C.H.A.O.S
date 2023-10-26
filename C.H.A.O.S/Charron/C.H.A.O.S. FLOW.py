@@ -763,7 +763,7 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
         # print(synthesis)
 
         file = str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[1]) + '_width' + str(
-            scales[2]) + '-' + str(scales[3]) + '_Colors-' + str(color_list_label) + '-' + str(reflect)
+            scales[2]) + '-' + str(scales[3]) + '_Colors-' + str(color_list_label) + '-' + str(reflect) + '-' + str(center_seed)
         path_name = os.path.join(path, file)
 
         ax = plt.gca()
@@ -1243,14 +1243,20 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
                         v_input += str(v)
 
 
-
                 elif event.key == pygame.K_TAB:
+                    d_rule, i_rule = rule_gen(rule_0, base)
+                    #
+
+                elif event.key == pygame.K_PERIOD:
+
+
                     bookmarks.append(len(list(journal.keys())))
                     print("")
                     print("bookmarks")
                     print(bookmarks)
 
                     step_0 = step
+
 
 
                 elif event.key == pygame.K_1:
@@ -1324,10 +1330,7 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
 
                     v_input += "-"
 
-                elif event.key == pygame.K_PERIOD:
 
-                    d_rule, i_rule = rule_gen(rule_0, base)
-                    #
 
 
 
@@ -1830,7 +1833,7 @@ def menu():
         t_line = pygame.Rect(WIDTH / 2 - 633, 200, 1360, 2)
         pygame.draw.rect(WIN, (10, 100, 10), t_line)
         mx, my = pygame.mouse.get_pos()
-        journals = os.listdir("journals")[1:]
+        journals = os.listdir("journals")
 
         #inputs
         text_surface_c = main_font.render(input_text_c, True, (100, 10, 10))
@@ -2207,6 +2210,27 @@ def menu():
                                 scales[s + c*2] = 8
                             if event.key == K_9:
                                 scales[s + c*2] = 9
+
+        #center seed
+        x = 900
+        y = 775
+        cs_rect = pygame.Rect(x+25, y, 25, 50)
+        cs_rect_i = pygame.Rect(x+50, y, 25, 50)
+        pygame.draw.rect(WIN, (10, 100, 100), cs_rect)
+        pygame.draw.rect(WIN, (100, 10, 100), cs_rect_i)
+        draw_text('center seed', small_font, (10, 200, 200), WIN, x - 100, y)
+        draw_text(str(center_seed[1]), main_font, (255, 255, 255), WIN, x+42, y)
+        if cs_rect.collidepoint((mx, my)):
+            if click:
+                print('click')
+
+                center_seed[1] += 1
+
+        if cs_rect_i.collidepoint((mx, my)):
+            if click:
+                print('click')
+
+                center_seed[1] -= 1
 
 
 
