@@ -249,14 +249,14 @@ def Chaos_Window(base, device_id=-1):
             draw_text(voice_l[1], text_font, (10, 100, 10), WIN, WIDTH/4, 40)
 
             cross_0 = pygame.Rect((glove_values[0]*14), HEIGHT/2, int(glove_values[2]/64) * 160 + 7, glove_values[11] + 3)
-            pygame.draw.rect(WIN, value_color[mc_0], cross_0)
+            pygame.draw.rect(WIN, value_color[5], cross_0)
             cross_0 = pygame.Rect(WIDTH/2, HEIGHT - (glove_values[1]*7), glove_values[11] + 3, int(glove_values[2]/64) * 160 + 7)
-            pygame.draw.rect(WIN, value_color[mc_0], cross_0)
+            pygame.draw.rect(WIN, value_color[5], cross_0)
 
             cross_1 = pygame.Rect((glove_values[12] * 14), HEIGHT / 2, int(glove_values[14] / 64) * 160 + 7, glove_values[23] + 3)
-            pygame.draw.rect(WIN, value_color[mc_1], cross_1)
+            pygame.draw.rect(WIN, value_color[5], cross_1)
             cross_1 = pygame.Rect(WIDTH / 2, HEIGHT - (glove_values[13] * 7), glove_values[23] + 3, int(glove_values[14] / 64) * 160 + 7)
-            pygame.draw.rect(WIN, value_color[mc_1], cross_1)
+            pygame.draw.rect(WIN, value_color[5], cross_1)
 
             if pce == 2:
                 draw_text(str((scale_lable[thumb%12], scale_lable[pointer%12], scale_lable[middle%12], scale_lable[ring%12], scale_lable[pinky%12])), small_font, (255, 255, 255), WIN, WIDTH / 2 - 120, HEIGHT - 50)
@@ -428,6 +428,7 @@ def Chaos_Window(base, device_id=-1):
     beat = 0
     speed = 8
     mc_0, mc_1 = 0, 0
+    strike = [0, 0]
 
         #gloves
     sand = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -624,6 +625,7 @@ def Chaos_Window(base, device_id=-1):
 
 
             if glove_values[11] > speed:
+                strike[0] = 1
                 mc_0 = 5
                 for x in range(5):
                     sand[x] += int(glove_values[6 + x]/8) * int(glove_values[11]/4)
@@ -667,6 +669,9 @@ def Chaos_Window(base, device_id=-1):
                     print('')
                     print("echo_0")
                     print(echo[0])
+                    for x in range(10):
+                        if heat[x] > 8:
+                            heat[x] = heat[x] - 8
 
                 sand[0] = 0
                 sand[1] = 0
@@ -675,6 +680,7 @@ def Chaos_Window(base, device_id=-1):
                 sand[4] = 0
 
             if glove_values[23] > speed:
+                strike[1] = 1
                 mc_1 = 5
                 for x in range(5):
                     if glove_values[18 + x] < 8:
@@ -718,6 +724,10 @@ def Chaos_Window(base, device_id=-1):
                     print('echo_1')
                     print(echo[1])
 
+                    for x in range(10):
+                        if heat[x] > 8:
+                            heat[x] = heat[x] - 8
+
                 sand[5] = 0
                 sand[6] = 0
                 sand[7] = 0
@@ -748,10 +758,14 @@ def Chaos_Window(base, device_id=-1):
             lp_9.set_volume(volume[9])
 
             #beat
-            if time.time() - t_0 > tempo:
-                drum_track(1, 11)
+            if time.time() - t_0 > tempo/4:
+                print(strike)
+                print(strike[0] + strike[1])
+                drum_track(strike[0] + strike[1] + 1, 11)
                 t_0 = time.time()
                 beat += 1
+                strike = [0, 0]
+
 
 
 
@@ -1584,7 +1598,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(9, 1)
+Chaos_Window(9, 2)
 
 
 
