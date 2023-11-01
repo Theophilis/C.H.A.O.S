@@ -193,8 +193,16 @@ def Chaos_Window(base, device_id=-1):
                      'h': 24, 'p': 25, 'u': 26, 'l': 27,
                      'n': 28, 'o': 29, 'r': 30, 'e': 31}
     value_letter = {v: k for k, v in letter_values.items()}
-    scale_shift = {0:0, 1:2, 2:4, 3:5, 4:7, 5:9, 6:11, 7:12}
-    chord_types = {0:(15, 18), 1:(15, 19), 2:(16, 19), 3:(16, 20), 4:(17, 20), 5:(17, 21), 6:(18, 21), 7:(18, 22), 8:(19, 22)}
+    metabet_6 = {0: ' ', 1: 't', 2: '0', 3: 'n', 4: 'h', 5: 'd', 6: 'u', 7: 'm', 8: 'w', 9: 'y', 10: 'b', 11: 'k',
+                 12: 'j', 13: 'z', 14: ",",
+                 15: 'th', 16: 'in', 17: 'an', 18: 'nd', 19: 'en', 20: 'ou', 21: 'ha', 22: 'or', 23: 'is', 24: 'es',
+                 25: 'the', 26: 'ing',
+                 27: 'hat', 28: 'tha', 29: 'for', 30: 'ion', 31: 'was', 32: 'you', 33: 'ter', 34: 'ent', 35: 'ere',
+                 36: 'his', 37: 'her',
+                 38: 'and', 39: 'ng', 40: 'hi', 41: 'it', 42: 'to', 43: 'ed', 44: 'at', 45: 'on', 46: 're', 47: 'er',
+                 48: 'he', 49: "'",
+                 50: '.', 51: 'q', 52: 'x', 53: 'v', 54: 'p', 55: 'g', 56: 'f', 57: 'c', 58: 'l', 59: 'r', 60: 's',
+                 61: 'i', 62: 'a', 63: 'e'}
     r_dict = {0:0, 1:1, 2:1, 3:1}
     p_dict = {0:0, 1:0, 2:0, 3:2}
     tone = {0:'in_', 1:'qr_', 2:'aw_'}
@@ -258,6 +266,18 @@ def Chaos_Window(base, device_id=-1):
             cross_1 = pygame.Rect(WIDTH / 2, HEIGHT - (glove_values[13] * 7), glove_values[23] + 3, int(glove_values[14] / 64) * 160 + 7)
             pygame.draw.rect(WIN, value_color[5], cross_1)
 
+            if pce == 1:
+                draw_text(str((scale_lable[thumb%12], scale_lable[pointer%12], scale_lable[middle%12], scale_lable[ring%12], scale_lable[pinky%12])), small_font, (255, 255, 255), WIN, WIDTH / 2 - 120, HEIGHT - 50)
+                draw_text(str(heat[:5]), small_font, (255, 255, 255), WIN,
+                          WIDTH / 2 + WIDTH/4 - 60, HEIGHT - 50)
+                draw_text(str(heat[5:]), small_font, (255, 255, 255), WIN,
+                          WIDTH / 4 - 60, HEIGHT - 50)
+
+                motion_0 = pygame.Rect(WIDTH / 2 + 16, HEIGHT / 2, 32, 32)
+                pygame.draw.rect(WIN, value_color[mc_0%6], motion_0)
+                motion_1 = pygame.Rect(WIDTH / 2 - 16, HEIGHT / 2, 32, 32)
+                pygame.draw.rect(WIN, value_color[mc_1%6], motion_1)
+
             if pce == 2:
                 draw_text(str((scale_lable[thumb%12], scale_lable[pointer%12], scale_lable[middle%12], scale_lable[ring%12], scale_lable[pinky%12])), small_font, (255, 255, 255), WIN, WIDTH / 2 - 120, HEIGHT - 50)
                 draw_text(str(heat[:5]), small_font, (255, 255, 255), WIN,
@@ -266,9 +286,9 @@ def Chaos_Window(base, device_id=-1):
                           WIDTH / 4 - 60, HEIGHT - 50)
 
                 motion_0 = pygame.Rect(WIDTH / 2 + 16, HEIGHT / 2, 32, 32)
-                pygame.draw.rect(WIN, value_color[mc_0], motion_0)
+                pygame.draw.rect(WIN, value_color[mc_0%6], motion_0)
                 motion_1 = pygame.Rect(WIDTH / 2 - 16, HEIGHT / 2, 32, 32)
-                pygame.draw.rect(WIN, value_color[mc_1], motion_1)
+                pygame.draw.rect(WIN, value_color[mc_1%6], motion_1)
 
         pygame.display.update()
 
@@ -394,6 +414,17 @@ def Chaos_Window(base, device_id=-1):
 
 
         return paint_brush, sorted_weights
+
+    def erosion():
+        for x in range(5):
+            sand[x] += int(glove_values[6 + x] / 8) * int((glove_values[11]+glove_values[23]) / 4)
+            sand[x + 5] += int(glove_values[18 + x] / 8) * int((glove_values[11]+glove_values[23]) / 4)
+            if glove_values[6 + x] < 8:
+                sand[x] = 0
+                heat[x] = 0
+            if glove_values[18 + x] < 8:
+                sand[x + 5] = 0
+                heat[x + 5] = 0
 
 
     #active variables
@@ -600,7 +631,7 @@ def Chaos_Window(base, device_id=-1):
         redraw_window()
 
 
-        if pce == 2:
+        if pce == 1:
 
             #brush
             g1_size = 0
@@ -766,7 +797,226 @@ def Chaos_Window(base, device_id=-1):
                 beat += 1
                 strike = [0, 0]
 
+        if pce == 2:
 
+            #brush
+            g1_size = 0
+            g2_size = 0
+            for x in range(5):
+                g1_size += sum(heat[:5])
+                g2_size += sum(heat[5::])
+
+            brush_min_0 = int(g1_size/8) + 2
+            brush_min_1 = int(g2_size/8) + 2
+
+            #octant
+            scale = 12
+            my = int(glove_values[0]/64) + int((glove_values[1])/64)*2
+            me = int(glove_values[12]/64) + int((glove_values[13])/64)*2 + int(glove_values[14]/64)*4
+
+            thumb = scale + me*2 + int(glove_values[2]/64)
+            pointer = 12 + scale + me*2 + int(glove_values[2]/64)
+            middle = 12 + scale + me*2 + 3 + int(glove_values[1]/64) + int(glove_values[2]/64)
+            ring = 12 + scale + me*2 + 6 + r_dict[my] + int(glove_values[2]/64)
+            pinky = 12 + scale + me*2 + 12 - p_dict[my] + int(glove_values[2]/64)
+
+
+            if glove_values[11] > speed or glove_values[23] > speed:
+                strike[0] = int(glove_values[11]/8)
+                strike[1] = int(glove_values[23]/8)
+                mc_0 = int(glove_values[11]/8) * 5
+                mc_1 = int(glove_values[23]/8) * 5
+                erosion()
+
+            else:
+                mc_0 = 0
+                mc_1 = 0
+
+                if max(sand) > 256:
+                    #heat
+                    for x in range(10):
+                        if sand[x] > 0:
+                            heat[x] += 1
+                        else:
+                            heat[x] = 0
+
+                    ma = int(max(sand)/2 + 1)
+
+                    right_letter = int(sand[0]/ma) + int(sand[1]/ma) * 2 + int(sand[2]/ma) * 4 + int(sand[3]/ma) * 8 + int(sand[4]/ma) * 16
+                    voice_l[0] += value_letter[right_letter]
+                    left_letter = int(sand[5]/ma) + int(sand[6]/ma) * 2 + int(sand[7]/ma) * 4 + int(sand[8]/ma) * 8 + int(sand[9]/ma) * 16
+                    voice_l[1] += value_letter[left_letter]
+                    meta_letter = int(sand[0]/ma) + int(sand[1]/ma)*2 + int(sand[2]/ma)*16 + int(sand[5]/ma)*4 + int(sand[6]/ma)*8 + int(sand[7]/ma)*32
+                    print(int(sand[0]/ma) + int(sand[1]/ma)*2 + int(sand[2]/ma)*16 + int(sand[1]/ma)*4 + int(sand[2]/ma)*8 + int(sand[1]/ma)*32)
+                    print(meta_letter)
+                    voice += metabet_6[meta_letter]
+                    v_time.append(time.time())
+
+                    lp_0 = loop_8(thumb + 12, 0, int(heat[0]/8), volume[0])
+                    lp_1 = loop_8(pointer + 12, 1, int(heat[1]/8), volume[1])
+                    lp_2 = loop_8(middle + 12, 2, int(heat[2]/8), volume[2])
+                    lp_3 = loop_8(ring + 12, 3, int(heat[3]/8), volume[3])
+                    lp_4 = loop_8(pinky + 12, 4, int(heat[4]/8), volume[4])
+                    lp_5 = loop_8(thumb, 5, int(heat[5]/8), volume[5])
+                    lp_6 = loop_8(pointer, 6, int(heat[6]/8), volume[6])
+                    lp_7 = loop_8(middle, 7, int(heat[7]/8), volume[7])
+                    lp_8 = loop_8(ring, 8, int(heat[8]/8), volume[8])
+                    lp_9 = loop_8(pinky, 9, int(heat[9]/8), volume[9])
+
+                    if my + int(glove_values[2]/64) != my_0[0] + int(glove_values[2]/64):
+                        my_0[0] = my+ int(glove_values[2]/64)
+                        echo[0].append(time.time() - my_0[1])
+                        my_0[1] = time.time()
+                        tempo = echo[0][-1]
+                        print('')
+                        print("echo_0")
+                        print(echo[0])
+
+                    elif me != me_0[0]:
+                        me_0[0] = me
+                        echo[1].append(time.time() - me_0[1])
+                        me_0[1] = time.time()
+                        tempo = echo[1][-1]
+                        print('')
+                        print('echo_1')
+                        print(echo[1])
+
+                    sand[0] = 0
+                    sand[1] = 0
+                    sand[2] = 0
+                    sand[3] = 0
+                    sand[4] = 0
+                    sand[5] = 0
+                    sand[6] = 0
+                    sand[7] = 0
+                    sand[8] = 0
+                    sand[9] = 0
+
+
+
+
+            # if glove_values[11] < speed:
+            #     mc_0 = 0
+            #     if max(sand) > 128:
+            #
+            #         #heat
+            #         for x in range(5):
+            #             if sand[x] > 0:
+            #                 heat[x] += 1
+            #             else:
+            #                 heat[x] = 0
+            #
+            #         ma = int(max(sand[:5])/2 + 1)
+            #
+            #         right_letter = int(sand[0]/ma) + int(sand[1]/ma) * 2 + int(sand[2]/ma) * 4 + int(sand[3]/ma) * 8 + int(sand[4]/ma) * 16
+            #         voice_l[0] += value_letter[right_letter]
+            #         left_letter = int(sand[5]/ma) + int(sand[6]/ma) * 2 + int(sand[7]/ma) * 4 + int(sand[8]/ma) * 8 + int(sand[9]/ma) * 16
+            #         voice_l[1] += value_letter[left_letter]
+            #         v_time.append(time.time())
+            #
+            #         lp_0 = loop_8(thumb + 12, 0, int(heat[0]/8), volume[0])
+            #         lp_1 = loop_8(pointer + 12, 1, int(heat[1]/8), volume[1])
+            #         lp_2 = loop_8(middle + 12, 2, int(heat[2]/8), volume[2])
+            #         lp_3 = loop_8(ring + 12, 3, int(heat[3]/8), volume[3])
+            #         lp_4 = loop_8(pinky + 12, 4, int(heat[4]/8), volume[4])
+            #         lp_5 = loop_8(thumb, 5, int(heat[5]/8), volume[5])
+            #         lp_6 = loop_8(pointer, 6, int(heat[6]/8), volume[6])
+            #         lp_7 = loop_8(middle, 7, int(heat[7]/8), volume[7])
+            #         lp_8 = loop_8(ring, 8, int(heat[8]/8), volume[8])
+            #         lp_9 = loop_8(pinky, 9, int(heat[9]/8), volume[9])
+            #
+            #     if my != my_0[0]:
+            #         my_0[0] = my
+            #         echo[0].append(time.time() - my_0[1])
+            #         my_0[1] = time.time()
+            #         tempo = echo[0][-1]
+            #         print('')
+            #         print("echo_0")
+            #         print(echo[0])
+            #
+            #
+            #     sand[0] = 0
+            #     sand[1] = 0
+            #     sand[2] = 0
+            #     sand[3] = 0
+            #     sand[4] = 0
+            #
+            #
+            # if glove_values[23] < speed:
+            #     mc_1 = 0
+            #     if max(sand) > 128:
+            #
+            #         #heat
+            #         for x in range(5):
+            #             if sand[x + 5] > 0:
+            #                 heat[x + 5] += 1
+            #             else:
+            #                 heat[x + 5] = 0
+            #
+            #         ma = int(max(sand[5:10])/2 + 1)
+            #
+            #         left_letter = int(sand[5]/ma) + int(sand[6]/ma) * 2 + int(sand[7]/ma) * 4 + int(sand[8]/ma) * 8 + int(sand[9]/ma) * 16
+            #         voice_l[1] += value_letter[left_letter]
+            #
+            #         lp_0 = loop_8(thumb + 12, 0, int(heat[0]/8), volume[0])
+            #         lp_1 = loop_8(pointer + 12, 1, int(heat[1]/8), volume[1])
+            #         lp_2 = loop_8(middle + 12, 2, int(heat[2]/8), volume[2])
+            #         lp_3 = loop_8(ring + 12, 3, int(heat[3]/8), volume[3])
+            #         lp_4 = loop_8(pinky + 12, 4, int(heat[4]/8), volume[4])
+            #         lp_5 = loop_8(thumb, 5, int(heat[5]/8), volume[5])
+            #         lp_6 = loop_8(pointer, 6, int(heat[6]/8), volume[6])
+            #         lp_7 = loop_8(middle, 7, int(heat[7]/8), volume[7])
+            #         lp_8 = loop_8(ring, 8, int(heat[8]/8), volume[8])
+            #         lp_9 = loop_8(pinky, 9, int(heat[9]/8), volume[9])
+            #
+            #     if me != me_0[0]:
+            #         me_0[0] = me
+            #         echo[1].append(time.time() - me_0[1])
+            #         me_0[1] = time.time()
+            #         tempo = echo[1][-1]
+            #         print('')
+            #         print('echo_1')
+            #         print(echo[1])
+            #
+            #
+            #     sand[5] = 0
+            #     sand[6] = 0
+            #     sand[7] = 0
+            #     sand[8] = 0
+            #     sand[9] = 0
+
+
+            if right_letter == left_letter and right_letter == 17:
+                eb = HEIGHT
+                voice = ''
+                voice_l = ['', '']
+                heat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                echo = [[], []]
+
+
+            for x in range(5):
+                volume[x] = (glove_values[6+x] - glove_values[11])/128
+                volume[x + 5] = (glove_values[18+x] - glove_values[23])/128
+
+            lp_0.set_volume(volume[0])
+            lp_1.set_volume(volume[1])
+            lp_2.set_volume(volume[2])
+            lp_3.set_volume(volume[3])
+            lp_4.set_volume(volume[4])
+            lp_5.set_volume(volume[5])
+            lp_6.set_volume(volume[6])
+            lp_7.set_volume(volume[7])
+            lp_8.set_volume(volume[8])
+            lp_9.set_volume(volume[9])
+
+            #beat
+            if time.time() - t_0 > tempo/4:
+                # print(strike)
+                # print(strike[0] + strike[1])
+                drum_track(strike[0] + strike[1] + 1, 11)
+                t_0 = time.time()
+                beat += 1
+                strike = [0, 0]
 
 
         if eb > 0:
