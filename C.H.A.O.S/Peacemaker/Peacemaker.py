@@ -193,7 +193,7 @@ def Chaos_Window(base, device_id=-1):
                      'h': 24, 'p': 25, 'u': 26, 'l': 27,
                      'n': 28, 'o': 29, 'r': 30, 'e': 31}
     value_letter = {v: k for k, v in letter_values.items()}
-    metabet_6 = {0: ' ', 1: 't', 2: '0', 3: 'n', 4: 'h', 5: 'd', 6: 'u', 7: 'm', 8: 'w', 9: 'y', 10: 'b', 11: 'k',
+    metabet_6 = {0: ' ', 1: 't', 2: 'o', 3: 'n', 4: 'h', 5: 'd', 6: 'u', 7: 'm', 8: 'w', 9: 'y', 10: 'b', 11: 'k',
                  12: 'j', 13: 'z', 14: ",",
                  15: 'th', 16: 'in', 17: 'an', 18: 'nd', 19: 'en', 20: 'ou', 21: 'ha', 22: 'or', 23: 'is', 24: 'es',
                  25: 'the', 26: 'ing',
