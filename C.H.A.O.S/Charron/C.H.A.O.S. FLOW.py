@@ -785,7 +785,7 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
         plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
         plt.close()
 
-def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
+def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
     print("base")
     print(base)
@@ -817,7 +817,7 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
 
     if base < 5:
 
-        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3}
+        value_color = {0:color_0, 1:color_2, 2:color_3, 3:color_4}
         color_value = {v:k for k, v in value_color.items()}
 
     elif base < 11:
@@ -849,17 +849,6 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
 
             [pygame.draw.rect(WIN, value_color[i_rule[rule_models.index(cell)]], cell) for cell in rule_models]
 
-            for x in range(len(right_triggers)):
-
-                #right triggers
-                bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(right_triggers) -50, int(HEIGHT/2),
-                                  bar_width, int(bar_height * ((right_triggers[x] / zero_out))))
-                pygame.draw.rect(WIN, value_color[(x + 1) % base], bar)
-
-                #left triggers
-                bar = pygame.Rect(int(WIDTH) + bar_width * x - bar_width * len(left_triggers) -50, int(HEIGHT/2) + bar_height + int(bar_height/2),
-                                  bar_width, int(bar_height * ((left_triggers[x] / zero_out))))
-                pygame.draw.rect(WIN, value_color[(x + 1) % base], bar)
 
 
         step_label_b = main_font.render(f"5T3P: {step}", 1, (255, 255, 255))
@@ -935,23 +924,14 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
 
     #input augments
     midi_inputs = 0
-    gloves = 1
+    if gloves > 0:
+        midi_inputs = 1
+        device_id = 1
 
-
-    #glove emthods
-    g_char = 0
-    g_rule = 0
-    g_words = 1
 
     number_of_sensors = 12
+    g_letter = 2
 
-    zero_out = 6400
-    zero_full = zero_out*9
-    high_trigger = 80
-    low_trigger = 48
-    left_triggers = [0 for x in range(8)]
-    right_triggers = [0 for x in range(8)]
-    t_change_scale = 4
 
     #chaos console
     input_box = 0
@@ -1014,7 +994,7 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
             p_m_i = pygame.midi.Input(device_id)
 
         glove_values = [x for x in range(gloves * number_of_sensors)]
-        glove_sums = [x for x in range(gloves)]
+
 
         print("")
         print("glove_values")
@@ -1512,192 +1492,21 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
                     # print(ev)
                     glove_values[ev[1] + number_of_sensors] = ev[2]
 
-        #glove application
-        if midi_inputs > 0:
-            # print()
-            # print(glove_values)
+        # glove_application
+        if gloves > 0:
+            if g_letter == 1:
+                g_sum = sum(glove_values)
+                i_rule[g_sum % bv] += 1
+                i_rule[g_sum % bv] = i_rule[g_sum % bv] % base
+                d_rule[list(d_rule.keys())[g_sum % bv]] = i_rule[g_sum % bv]
+            if g_letter == 2:
+                for x in range(base):
+                    if glove_values[(6+x)%number_of_sensors] > 32:
+                        g_sum = sum(glove_values) + x * base
+                        i_rule[g_sum % bv] = x
+                        d_rule[list(d_rule.keys())[g_sum % bv]] = i_rule[g_sum % bv]
 
-            for x in range(len(glove_sums)):
-                glove_sums[x] = 0
-
-            for x in range(number_of_sensors):
-                #right
-                glove_sums[0] += glove_values[x]
-
-                if gloves == 2:
-                    #left
-                    glove_sums[1] += glove_values[x + 11]
-
-
-            if g_char > 0:
-
-                for x in range(len(glove_sums)):
-                    i_rule[glove_sums[x] % bv] = (i_rule[glove_sums[x] % bv] + 1) % base
-                    d_rule[list(d_rule.keys())[glove_sums[x] % bv]] = i_rule[glove_sums[x] % bv]
-
-            if g_rule > 0:
-
-                rule_build = 0
-
-                for x in range(len(glove_values)):
-
-                    rule_build += glove_values[x] * 127 ** x
-
-                print(rule_build)
-
-                rule_build = rule_build % bbv
-
-                d_rule, i_rule = rule_gen(rule_build, base)
-
-            if g_words > 0:
-
-                #trigger detection
-                for x in range(4):
-
-                    if glove_values[7 + x] > high_trigger:
-
-                        # print("R-high" + str(x))
-                        right_triggers[x] += int((glove_values[7 + x] - high_trigger)/t_change_scale)
-                        right_triggers[x + 4] -= int((glove_values[7 + x] - high_trigger)/t_change_scale/2)
-
-                    elif glove_values[7 + x] < low_trigger:
-
-                        # print('R-low' + str(x))
-                        right_triggers[x + 4] += int((low_trigger - glove_values[7 + x])/t_change_scale)
-                        right_triggers[x] -= int((low_trigger - glove_values[7 + x])/t_change_scale/2)
-
-                    if gloves == 2:
-
-                        if glove_values[19 + x] > high_trigger:
-
-                            # print("L-high" + str(x))
-                            left_triggers[x] += int((glove_values[19 + x] - high_trigger)/t_change_scale)
-                            left_triggers[x + 4] -= int((glove_values[19 + x] - high_trigger)/t_change_scale/2)
-
-                        elif glove_values[19 + x] < low_trigger:
-
-                            # print('L-low' + str(x))
-                            left_triggers[x + 4] += int((low_trigger - glove_values[19 + x])/t_change_scale)
-                            left_triggers[x] -= int((low_trigger - glove_values[19 + x])/t_change_scale/2)
-
-                #trigger zero
-                for x in range(8):
-                    if right_triggers[x] < 0 or right_triggers[x] > zero_out:
-                        right_triggers[x] = 0
-
-                    if left_triggers[x] < 0 or left_triggers[x] > zero_out:
-                        left_triggers[x] = 0
-
-                #trigger sort
-                left_sorted = [left_triggers.index(x) for x in sorted(left_triggers[::], reverse=True)]
-                right_sorted = [right_triggers.index(x) for x in sorted(right_triggers[::], reverse=True)]
-
-                #trigger sum
-                t_sums = [left_triggers[left_sorted[0]] + 1, right_triggers[right_sorted[0]] + 1]
-                for x in range(8):
-                    t_sums[0] += right_triggers[x]
-                    t_sums[1] += left_triggers[x]
-
-                #trigger percentage
-                right_percentages = [right_triggers[x]/t_sums[0] for x in range(8)]
-                left_percentages = [left_triggers[x]/t_sums[1] for x in range(8)]
-
-                #char distribution
-                char_size = int(bv / rule_window_scale)
-                right_char = [int(right_percentages[x] * int(char_size * (t_sums[0]/zero_full))) for x in range(8)]
-                left_char = [int(left_percentages[x] * int(char_size * (t_sums[1]/zero_full))) for x in range(8)]
-
-                # print()
-
-                # print('left_triggers')
-                # print(left_triggers)
-                # print("right_triggers")
-                # print(right_triggers)
-
-                # print("char_size")
-                # print(char_size)
-
-                # print('left_sorted')
-                # print(left_sorted)
-                # print("right_sorted")
-                # print(right_sorted)
-
-
-                # print('t_sums')
-                # print(t_sums)
-                #
-                # print('left_percentages')
-                # print(left_percentages)
-                # print('right_percentages')
-                # print(right_percentages)
-
-                # print('left_char')
-                # print(left_char)
-                # print('right_char')
-                # print(right_char)
-
-                left_used = []
-                right_used = []
-
-                left_palette = []
-                right_palette = []
-
-                #palette fill
-                for x in range(8):
-
-                    if left_sorted[x] not in left_used:
-                        for y in range(left_char[left_sorted[x]]):
-                            left_palette.append(left_sorted[x])
-                        left_used.append(left_sorted[x])
-
-                    if right_sorted[x] not in right_used:
-                        for y in range(right_char[right_sorted[x]]):
-                            right_palette.append(right_sorted[x])
-                        right_used.append(right_sorted[x])
-
-                #rule paint
-                for x in range(len(right_palette)):
-
-                    steps = 0
-                    scan = 0
-
-                    place = (glove_sums[0] + x + steps) % bv - 1
-
-                    while scan == 0:
-
-                        if i_rule[place] != right_palette[x]:
-                            i_rule[place] = right_palette[x]
-                            d_rule[list(d_rule.keys())[place]] = right_palette[x]
-                            scan = 1
-                        else:
-                            steps += 1
-
-                        if steps == int(bv / rule_window_scale):
-                            i_rule[place] = right_palette[x]
-                            d_rule[list(d_rule.keys())[place]] = right_palette[x]
-                            scan = 1
-                if gloves == 2:
-                    for x in range(len(left_palette)):
-
-                        steps = 0
-                        scan = 0
-
-                        place = (glove_sums[1] + x + steps) % bv - 1
-
-                        while scan == 0:
-
-                            if i_rule[place] != left_palette[x]:
-                                i_rule[place] = left_palette[x]
-                                d_rule[list(d_rule.keys())[place]] = left_palette[x]
-                                scan = 1
-                            else:
-                                steps += 1
-
-                            if steps == int(bv/rule_window_scale):
-                                i_rule[place] = left_palette[x]
-                                d_rule[list(d_rule.keys())[place]] = left_palette[x]
-                                scan = 1
-
+        #glove_application
 
         #midi clean up
         if device_id > 0:
@@ -1716,6 +1525,7 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
                     for m_e in midi_evs:
                         event_post(m_e)
 
+    pygame.midi.quit()
 
     #journal write
     if write == 1:
@@ -1746,12 +1556,13 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0):
 def menu():
 
     click = False
-    device_id = None
+    device_id = 1
     analytics = 0
     reflection = 0
     rule_0 = 0
     base = 0
-    midi = 0
+    midi = 1
+    gloves = 0
 
     #inputs
     input_text_c = ''
@@ -1786,44 +1597,6 @@ def menu():
     pygame.init()
     pygame.fastevent.init()
 
-    if midi == 1:
-        pygame.midi.init()
-
-        print(" ")
-        print("device info")
-        _print_device_info()
-
-        mc = pygame.midi.get_count()
-        print("mc")
-        print(mc)
-
-        ports = dict()
-
-        print("")
-        print("mdi")
-        for m in range(pygame.midi.get_count()):
-
-
-            mdi = pygame.midi.get_device_info(m)
-            print(mdi)
-
-            ports[m] = str(mdi[1])
-
-
-
-
-        if device_id is None:
-            input_id = pygame.midi.get_default_input_id()
-        else:
-            input_id = device_id
-
-        print(' ')
-        print("using input_id :%s:" % input_id)
-        p_m_i = pygame.midi.Input(input_id)
-        device_id = -1
-    else:
-        #
-        device_id = -1
 
     while True:
 
@@ -1852,7 +1625,7 @@ def menu():
                 draw_text('L04D1N6', TITLE_FONT, (255, 255, 255), WIN, WIDTH / 2 - 200, HEIGHT / 2 - 200)
                 pygame.display.update()
                 print("design")
-                Chaos_Window(base, analytics, device_id, rule_0)
+                Chaos_Window(base, analytics, device_id, rule_0, gloves)
         draw_text('Design', lable_font, (100, 10, 100), WIN, x, y)
 
 
@@ -1961,6 +1734,30 @@ def menu():
                     analytics = 0
 
             draw_text('analytics: ' + str(analytics), main_font, (0, 192, 192), WIN, x, y)
+
+        #gloves
+        x = 300
+        y = 775
+        glove_rect = pygame.Rect(x+25, y, 25, 50)
+        glove_rect_i = pygame.Rect(x+50, y, 25, 50)
+        pygame.draw.rect(WIN, (10, 100, 100), glove_rect)
+        pygame.draw.rect(WIN, (100, 10, 100), glove_rect_i)
+        draw_text('glove seed', small_font, (10, 200, 200), WIN, x - 100, y)
+        draw_text(str(gloves), main_font, (255, 255, 255), WIN, x+42, y)
+        if glove_rect.collidepoint((mx, my)):
+            if click:
+                print('click')
+
+                gloves += 1
+        if glove_rect_i.collidepoint((mx, my)):
+            if click:
+                print('click')
+
+                gloves -= 1
+        if gloves > 2:
+            gloves = 2
+        if gloves < 0:
+            gloves = 0
 
 
         #####print#####

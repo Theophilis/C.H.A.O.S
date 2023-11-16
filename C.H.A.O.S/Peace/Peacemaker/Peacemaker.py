@@ -627,7 +627,6 @@ def Chaos_Window(base, device_id=-1):
 
     #main loop
     while run == 1:
-
         redraw_window()
 
 
@@ -813,6 +812,7 @@ def Chaos_Window(base, device_id=-1):
             scale = 12
             my = int(glove_values[0]/64) + int((glove_values[1])/64)*2
             me = int(glove_values[12]/64) + int((glove_values[13])/64)*2 + int(glove_values[14]/64)*4
+
 
             thumb = scale + me*2 + int(glove_values[2]/64)
             pointer = 12 + scale + me*2 + int(glove_values[2]/64)
@@ -1848,7 +1848,7 @@ def input_main(device_id=None):
 # menu()
 
 
-Chaos_Window(9, 2)
+Chaos_Window(9, 1)
 
 
 
