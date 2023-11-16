@@ -22,19 +22,20 @@ def Chaos_Window():
     print(HEIGHT, WIDTH)
 
     run = 1
-    rule = 90
-    base = 2
+    rule = 21621
+    base = 8
     view = 3
     bv = base ** view
     bbv = base ** base ** view
     click_s = 5
 
+
     path = []
     p_mem = (0, 0)
-    direction = 0
+    direction = [0, 0]
     click_color = np.zeros((click_s**2), dtype='uint8')
 
-    value_color = {0:(0, 0, 0), 1:(255, 255, 255), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255), 6:(255, 0, 255), 7:(255, 255, 255)}
+    value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255), 6:(255, 0, 255), 7:(255, 255, 255)}
 
     rule_d = {}
     height = HEIGHT
@@ -42,25 +43,34 @@ def Chaos_Window():
     width_3 = width*3
     height_3 = height*3
     block_a = width_3 * height
-    tile_h = 101
-    tile_w = 101
+    step_h = int(HEIGHT/127)
+    step_w = int(WIDTH/127)
+    step_w3 = step_w*3
+    step_a = step_w*step_h*3
+    tile_h = int(HEIGHT/127)*9
+    tile_w = int(WIDTH/127)*9
     tile_w3 = tile_w*3
     tile_a = tile_w*tile_h*3
 
+    print(tile_h)
+    print(tile_w)
+
     block = np.zeros((height*width*3), dtype='uint8')
-    block[int(width/2*3)-1] = 255
-    block[int(width/2*3)] = 255
-    block[int(width/2*3)+1] = 255
+    block[int(width/2*3)-1] = value_color[1][0]
+    block[int(width/2*3)] = value_color[1][1]
+    block[int(width/2*3)+1] = value_color[1][2]
 
     tile = np.zeros((tile_h*tile_w*3), dtype='uint8')
-    tile[int(tile_w/2*3)-1] = 255
-    tile[int(tile_w/2*3)] = 255
-    tile[int(tile_w/2*3)+1] = 255
+    tile[int(tile_w/2*3)-1] = value_color[1][0]
+    tile[int(tile_w/2*3)] = value_color[1][1]
+    tile[int(tile_w/2*3)+1] = value_color[1][2]
 
 
     xset = 650
     yset = 300
 
+    heat_depth = 1
+    tide = 0
 
     def draw_text(text, font, color_dt, surface, x, y):
         textobj = font.render(text, 1, color_dt)
@@ -223,7 +233,7 @@ def Chaos_Window():
     midi_inputs = 1
     gloves = 2
     number_of_sensors = 12
-    device_id = 2
+    device_id = 1
 
     if midi_inputs == 1:
 
@@ -274,6 +284,8 @@ def Chaos_Window():
 
     while run == 1:
 
+        path.append((glove_values[0], glove_values[1]))
+
         mx, my = pygame.mouse.get_pos()
 
         WIN.fill((0, 0, 0))
@@ -282,31 +294,7 @@ def Chaos_Window():
             np.rot90(np.reshape(block, (height, width, 3)), 1, (1, 0))), (0, 0))
 
 
-        draw_text(str(rule), TITLE_FONT, (10, 100, 10), WIN, WIDTH - 100, 10)
-
-        draw_text(str(path), main_font, (10, 100, 10), WIN, 500, 100)
-
-        for x in range(click_s):
-            for y in range(click_s):
-                p = y+x*4
-
-                corner = pygame.Rect(x*tile_w + xset, y*tile_h + yset, 15, 15)
-                pygame.draw.rect(WIN, (click_color[p] + 64, click_color[p], click_color[p]), corner)
-                if corner.collidepoint((mx, my)):
-                    if click:
-                        for z in range(8):
-                            path.append((x, y))
-
-                        if x != p_mem[0]:
-                            direction = 0
-                            print('dire 0')
-
-                        elif y != p_mem[1]:
-                            direction = 1
-                            print('dire 1')
-                        p_mem = (x, y)
-                        click_color[y+x*4] = 128
-                        click = False
+        draw_text(str(rule), TITLE_FONT, (10, 100, 10), WIN, WIDTH/2, 10)
 
 
         pygame.display.update()
@@ -372,24 +360,30 @@ def Chaos_Window():
                     if dir == 0:
                         path = path[1::]
 
-                        p_0 = p[0] * tile_w3
-                        p_1 = p[1] * width_3 * tile_h
+                        p_0 = p[0] * step_w3 - int(step_w/2)*3
+                        p_1 = p[1] * width_3 * step_h
                         p_ = p_0 + p_1
 
                         # block to tile
                         for x in range(tile_h):
-                            tile[x * tile_w3:x * tile_w3 + tile_w3] = block[p_ + x * width_3:p_ + x * width_3 + tile_w3]
+                            try:
+                                tile[x * tile_w3:x * tile_w3 + tile_w3] = block[p_ + x * width_3:p_ + x * width_3 + tile_w3]
+                            except:
+                                continue
 
-                        tile[int(tile_w / 2 * 3) - 1] = 255
-                        tile[int(tile_w / 2 * 3)] = 255
-                        tile[int(tile_w / 2 * 3) + 1] = 255
+                        tile[int(tile_w / 2 * 3) - 1] = value_color[1][1]
+                        tile[int(tile_w / 2 * 3)] = value_color[1][2]
+                        tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
                         # tile mitosis
                         tile = mitosis(tile, rule_d, tile_w, tile_w3)
 
                         # tile to block
                         for x in range(tile_h):
-                            block[p_ + x * width_3:p_ + x * width_3 + tile_w3] = tile[x * tile_w3:x * tile_w3 + tile_w3]
+                            try:
+                                block[p_ + x * width_3:p_ + x * width_3 + tile_w3] = tile[x * tile_w3:x * tile_w3 + tile_w3]
+                            except:
+                                continue
 
 
                         #mirror
@@ -397,36 +391,45 @@ def Chaos_Window():
 
                         # block to tile
                         for x in range(tile_h):
-                            tile[tile_a - (x + 1) * tile_w3:tile_a - (x + 1) * tile_w3 + tile_w3] = block[p_ + x * width_3:p_ + x * width_3 + tile_w3]
+                            try:
+                                tile[tile_a - (x + 1) * tile_w3:tile_a - (x + 1) * tile_w3 + tile_w3] = block[p_ + x * width_3:p_ + x * width_3 + tile_w3]
+                            except:
+                                continue
 
-                        tile[int(tile_w / 2 * 3) - 1] = 255
-                        tile[int(tile_w / 2 * 3)] = 255
-                        tile[int(tile_w / 2 * 3) + 1] = 255
+                        tile[int(tile_w / 2 * 3) - 1] = value_color[1][0]
+                        tile[int(tile_w / 2 * 3)] = value_color[1][1]
+                        tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
                         # tile mitosis
                         tile = mitosis(tile, rule_d, tile_w, tile_w3)
 
                         #tile to block
                         for x in range(tile_h):
-                            block[p_ + x * width_3:p_ + x * width_3 + tile_w3] = tile[tile_a - (x+1) * tile_w3:tile_a - (x+1) * tile_w3 + tile_w3]
+                            try:
+                                block[p_ + x * width_3:p_ + x * width_3 + tile_w3] = tile[tile_a - (x+1) * tile_w3:tile_a - (x+1) * tile_w3 + tile_w3]
+                            except:
+                                continue
 
                         return block, tile, path
 
                     if dir == 1:
                         path = path[1::]
 
-                        p_0 = p[0] * tile_w3
-                        p_1 = p[1] * width_3 * tile_h
+                        p_0 = p[0] * step_w3
+                        p_1 = p[1] * width_3 * step_h - width_3*int(step_h/2)
                         p_ = p_0 + p_1
 
                         # block to tile
                         for x in range(tile_h):
                             for y in range(tile_w):
-                                tile[x * tile_w3+ y*3:x * tile_w3+ y*3 + 3] = block[p_ + y * width_3 + x*3:p_ + y * width_3 + x*3 + 3]
+                                try:
+                                    tile[x * tile_w3+ y*3:x * tile_w3+ y*3 + 3] = block[p_ + y * width_3 + x*3:p_ + y * width_3 + x*3 + 3]
+                                except:
+                                    continue
 
-                        tile[int(tile_w / 2 * 3) - 1] = 255
-                        tile[int(tile_w / 2 * 3)] = 255
-                        tile[int(tile_w / 2 * 3) + 1] = 255
+                        tile[int(tile_w / 2 * 3) - 1] = value_color[1][0]
+                        tile[int(tile_w / 2 * 3)] = value_color[1][1]
+                        tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
                         # tile mitosis
                         tile = mitosis(tile, rule_d, tile_w, tile_w3)
@@ -434,7 +437,10 @@ def Chaos_Window():
                         # tile to block
                         for x in range(tile_h):
                             for y in range(tile_w):
-                                block[p_ + y * width_3 + x*3:p_ + y * width_3 + x*3 + 3] = tile[x * tile_w3+ y*3:x * tile_w3+ y*3 + 3]
+                                try:
+                                    block[p_ + y * width_3 + x*3:p_ + y * width_3 + x*3 + 3] = tile[x * tile_w3+ y*3:x * tile_w3+ y*3 + 3]
+                                except:
+                                    continue
 
 
                         #mirror
@@ -448,9 +454,9 @@ def Chaos_Window():
                                 except:
                                     continue
 
-                        tile[int(tile_w / 2 * 3) - 1] = 255
-                        tile[int(tile_w / 2 * 3)] = 255
-                        tile[int(tile_w / 2 * 3) + 1] = 255
+                        tile[int(tile_w / 2 * 3) - 1] = value_color[1][0]
+                        tile[int(tile_w / 2 * 3)] = value_color[1][1]
+                        tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
                         # tile mitosis
                         tile = mitosis(tile, rule_d, tile_w, tile_w3)
@@ -465,12 +471,20 @@ def Chaos_Window():
 
                         return block, tile, path
 
-                block, tile, path = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, path, direction)
-
+                block, tile, path = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, path, direction[0])
 
 
 
             # block = mitosis(block, rule_d, width, width_3)
+
+        #rulings
+        if heat_depth == 1:
+            # print("")
+            # print(glove_values[0]*glove_values[1]%bv)
+            # print(int(glove_values[2]/(127/base)%base))
+            tide += int(base/2)
+            rule_d[list(rule_d.keys())[(glove_values[0]*glove_values[1]+tide)%bv]] = value_color[int(glove_values[2]/(127/base)%base)]
+
 
         #midi clean up
         if device_id > 0:
