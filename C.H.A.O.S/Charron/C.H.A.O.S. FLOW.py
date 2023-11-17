@@ -1457,6 +1457,13 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
                         input_box = 0
 
+                    bookmarks.append(len(list(journal.keys())))
+                    print("")
+                    print("bookmarks")
+                    print(bookmarks)
+
+                    step_0 = step
+
                 if event.key == pygame.K_RETURN:
 
                     pause += 1
