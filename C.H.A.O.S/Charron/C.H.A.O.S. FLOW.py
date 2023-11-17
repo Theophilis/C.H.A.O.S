@@ -1597,6 +1597,25 @@ def menu():
     pygame.init()
     pygame.fastevent.init()
 
+    pygame.init()
+    pygame.midi.init()
+    pygame.fastevent.init()
+    event_post = pygame.fastevent.post
+
+    # rtmidi init
+    print(" ")
+    print("device info")
+    _print_device_info()
+
+    input_id = device_id
+    print("input_id")
+    print(input_id)
+
+    print(' ')
+    print("using input_id :%s:" % input_id)
+    pygame.midi.get_device_info(input_id)
+    p_m_i = pygame.midi.Input(device_id)
+
 
     while True:
 
@@ -1625,6 +1644,8 @@ def menu():
                 draw_text('L04D1N6', TITLE_FONT, (255, 255, 255), WIN, WIDTH / 2 - 200, HEIGHT / 2 - 200)
                 pygame.display.update()
                 print("design")
+                print(device_id)
+                pygame.midi.quit()
                 Chaos_Window(base, analytics, device_id, rule_0, gloves)
         draw_text('Design', lable_font, (100, 10, 100), WIN, x, y)
 
@@ -1736,8 +1757,8 @@ def menu():
             draw_text('analytics: ' + str(analytics), main_font, (0, 192, 192), WIN, x, y)
 
         #gloves
-        x = 400
-        y = 650
+        x = 140
+        y = 400
         glove_rect = pygame.Rect(x+25, y, 25, 50)
         glove_rect_i = pygame.Rect(x+50, y, 25, 50)
         pygame.draw.rect(WIN, (10, 100, 100), glove_rect)
@@ -1758,6 +1779,65 @@ def menu():
             gloves = 2
         if gloves < 0:
             gloves = 0
+
+        #device id
+        if gloves > 0:
+
+            pygame.midi.init()
+
+            x = 140
+            y = 500
+            dvid_rect = pygame.Rect(x+25, y, 25, 50)
+            dvid_rect_i = pygame.Rect(x+50, y, 25, 50)
+            pygame.draw.rect(WIN, (10, 100, 100), dvid_rect)
+            pygame.draw.rect(WIN, (100, 10, 100), dvid_rect_i)
+            draw_text('device_id', small_font, (10, 200, 200), WIN, x - 100, y)
+            draw_text(str(device_id), main_font, (255, 255, 255), WIN, x+42, y)
+            if dvid_rect.collidepoint((mx, my)):
+                if click:
+                    print('click')
+
+                    device_id += 1
+            if dvid_rect_i.collidepoint((mx, my)):
+                if click:
+                    print('click')
+
+                    device_id -= 1
+            if device_id < 0:
+                device_id = 0
+
+            for i in range(pygame.midi.get_count()):
+                r = pygame.midi.get_device_info(i)
+                (interf, name, input, output, opened) = r
+
+                in_out = ""
+                if input:
+                    in_out = "(input)"
+                if output:
+                    in_out = "(output)"
+
+                midi_lable_0 = "%2i:%s:, %s"% (i, name, in_out)
+                midi_lable_1 = 3
+
+                x = 150
+                y = 620 + i * 60
+                midi_button = pygame.Rect(x, y, 400, 50)
+                midi_button_i = pygame.Rect(x, y, 395, 43)
+                pygame.draw.rect(WIN, (192, 128, 0), midi_button)
+                pygame.draw.rect(WIN, (0, 0, 0), midi_button_i)
+                draw_text(str(midi_lable_0), small_font, (192, 128, 0), WIN, x, y)
+                if analytics_button.collidepoint((mx, my)):
+                    if click:
+                        print('analytics on')
+
+                        if analytics == 0:
+
+                            analytics = 1
+
+                        else:
+
+                            analytics = 0
+
 
 
         #####print#####
