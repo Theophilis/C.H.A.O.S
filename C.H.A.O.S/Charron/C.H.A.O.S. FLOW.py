@@ -1736,13 +1736,13 @@ def menu():
             draw_text('analytics: ' + str(analytics), main_font, (0, 192, 192), WIN, x, y)
 
         #gloves
-        x = 300
-        y = 775
+        x = 400
+        y = 650
         glove_rect = pygame.Rect(x+25, y, 25, 50)
         glove_rect_i = pygame.Rect(x+50, y, 25, 50)
         pygame.draw.rect(WIN, (10, 100, 100), glove_rect)
         pygame.draw.rect(WIN, (100, 10, 100), glove_rect_i)
-        draw_text('glove seed', small_font, (10, 200, 200), WIN, x - 100, y)
+        draw_text('gloves', small_font, (10, 200, 200), WIN, x - 70, y)
         draw_text(str(gloves), main_font, (255, 255, 255), WIN, x+42, y)
         if glove_rect.collidepoint((mx, my)):
             if click:
