@@ -22,21 +22,22 @@ def Chaos_Window():
     print(HEIGHT, WIDTH)
 
     run = 1
-    rule = 21621
+    rule = 90
     base = 8
     view = 3
     bv = base ** view
     bbv = base ** base ** view
 
 
-    path = [(0, 0), (0, 0)]
-    g_mem = [0, 0]
-    g_scale = 4
-    direction = [0, 0]
+    path = [(0, 0), (0, 0), (0, 0), (0, 0)]
+    g_mem = [0, 0, 0, 0]
+    g_scale = 8
+    direction = [0, 0, 0, 0]
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255), 6:(255, 0, 255), 7:(255, 255, 255)}
 
     rule_d = {}
+    rule_d2 = {}
 
     #block
     height = HEIGHT
@@ -58,6 +59,28 @@ def Chaos_Window():
     tile[int(tile_w/2*3)-1] = value_color[1][0]
     tile[int(tile_w/2*3)] = value_color[1][1]
     tile[int(tile_w/2*3)+1] = value_color[1][2]
+
+    # mountosis
+    mheight = 31
+    mwidth = mheight
+    mwidth_3 = mwidth * 3
+    mheight_3 = mheight * 3
+    mount_a = mwidth_3 * mheight
+    mount = np.zeros((mheight * mwidth * 3), dtype='uint8')
+    mount[int(mwidth / 2 * 3) - 1] = 255
+    mount[int(mwidth / 2 * 3)] = 255
+    mount[int(mwidth / 2 * 3) + 1] = 255
+
+    slope = {'slope':0, 0:{}, 1:{}, 2:{}, 3:{}}
+    print(slope)
+    for x in range(mwidth):
+        for y in range(mheight):
+            slope[0][(x, y)] = (x, y)
+            slope[1][(x, y)] = (mheight - 1 - x, y)
+            slope[2][(x, y)] = (y, mheight - 1 - x)
+            slope[3][(x, y)] = (mwidth - 1 - y, x)
+
+
 
     #step
     step_h = int(HEIGHT/127)
@@ -338,13 +361,14 @@ def Chaos_Window():
 
 
     rule_d = rule_gen(rule_d, rule, base, view)
+    rule_d2 = rule_gen(rule_d2, rule, base, view)
 
 
     #input augments
     midi_inputs = 1
-    gloves = 1
+    gloves = 2
     number_of_sensors = 12
-    device_id = 1
+    device_id = 2
 
     if midi_inputs == 1:
 
@@ -393,20 +417,96 @@ def Chaos_Window():
                         event_post(m_e)
 
 
+    #########construction#########
+
+    def mitosis(block, rule_d, width, width_3):
+        block = np.roll(block, width_3)
+
+        for x in range(width):
+            x3 = x*3
+            hood = tuple(block[width_3-3+x3:width_3+6+x3])
+            dojo = rule_d[hood]
+
+            block[0+x3] = dojo[0]
+            block[1+x3] = dojo[1]
+            block[2+x3] = dojo[2]
+
+        return block
+
+    def ridge(kaldera, magma, rule_d, width):
+
+        for x in range(width):
+            kaldera = np.roll(kaldera, 3)
+            magma[:3] = rule_d[tuple(kaldera[:3 * view])]
+            magma = np.roll(magma, 3)
+
+        return magma
+
+    def trek(mount, rule_d, width, width_3):
+
+        kaldera = mount[:width_3]
+        magma = np.zeros((width_3), dtype='uint8')
+        magma = ridge(kaldera, magma, rule_d, width)
+        mount = np.roll(mount, width_3)
+        mount[:width_3] = magma
+
+        return mount
+
+    def carve(block, mount, path, rule_d, mheight, mwidth, mwidth_3, slope):
+
+
+        for x in range(mheight):
+
+            block[1000000 * 3 + x * width_3:1000000 * 3 + mwidth_3 + x * width_3] = mount[x * mwidth_3:x * mwidth_3 + mwidth_3]
+
+
+            # for y in range(mwidth):
+            #     xs, ys = slope[0][x, y]
+            #     # print(xs, ys)
+            #
+            #     alt = xs * mwidth_3 + ys
+            #     hood = 1000000 * 3 + xs * width_3 + ys
+            #     mount[alt] = block[hood]
+
+
+            block[100000 * 3 + x * width_3:100000 * 3 + mwidth_3 + x * width_3] = mount[x * mwidth_3:x * mwidth_3 + mwidth_3]
+
+
+        mount = trek(mount, rule_d, mwidth, mwidth_3)
+
+
+
+        return block, mount
+
+
+
+    block, mount = carve(block, mount, path, rule_d, mheight, mwidth, mwidth_3, slope)
+
+
+
+
+
+    # print()
+    # print("mount")
+    # print(mount)
+    # print(rule_d)
+    # mount = mitosis(mount, rule_d, mwidth, mwidth_3)
+    # print(mount)
+
+
     while run == 1:
 
         mx, my = pygame.mouse.get_pos()
 
         WIN.fill((0, 0, 0))
 
+        # block, mount = carve(block, mount, path, rule_d, mheight, mwidth, mwidth_3, slope)
+
+
         WIN.blit(pygame.surfarray.make_surface(
             np.rot90(np.reshape(block, (height, width, 3)), 1, (1, 0))), (0, 0))
 
-        #color
-        x = int(WIDTH/2) - 250
-        y = 20
-        color_button = pygame.Rect(x, y, 500, 10)
-        pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
+
 
 
         pygame.display.update()
@@ -462,14 +562,53 @@ def Chaos_Window():
                     rule -= 1
                     rule_d = rule_gen(rule_d, rule, base, view, 1)
 
+                if event.key == pygame.K_F1:
+                    block = np.zeros((height * width * 3), dtype='uint8')
+                    block[int(width / 2 * 3) - 1] = value_color[1][0]
+                    block[int(width / 2 * 3)] = value_color[1][1]
+                    block[int(width / 2 * 3) + 1] = value_color[1][2]
+
         #mitosis
         if gloves > 0:
+            # color
+            x = int(WIDTH / 2) - 250
+            y = 20
+            color_button = pygame.Rect(x + 250, y, 500, 10)
+            pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
+            color_button = pygame.Rect(x - 250, y, 500, 10)
+            pygame.draw.rect(WIN, value_color[int(glove_values[14] / (127 / base) % base)], color_button)
 
-            if glove_values[5]>8:
-                if int(glove_values[5]/g_scale+1) != g_mem[0]:
-                    g_mem[0] = int(glove_values[5]/g_scale+1)
-                    tile_h = int(glove_values[5]/g_scale+1) * 3
-                    tile_w = int(glove_values[5]/g_scale+1) * 3
+            size_r = 7
+
+            if int(glove_values[size_r]/g_scale+1) != g_mem[0]:
+                g_mem[0] = int(glove_values[size_r]/g_scale+1)
+                tile_h = int(glove_values[size_r]/g_scale+1) * 3
+                tile_w = int(glove_values[size_r]/g_scale+1) * 3
+                tile_w3 = tile_w * 3
+                tile_a = tile_w * tile_h * 3
+                tile = np.zeros((tile_h * tile_w * 3), dtype='uint8')
+                tile[int(tile_w / 2 * 3) - 1] = value_color[1][0]
+                tile[int(tile_w / 2 * 3)] = value_color[1][1]
+                tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
+
+            path[1] = path[0]
+            path[0] = (glove_values[0], glove_values[1])
+
+            if path[0][0] != path[1][0]:
+                direction[0] = 0
+            if path[0][1] != path[1][1]:
+                direction[0] = 1
+            direction[1] = direction[0]
+
+            block, tile = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, path[0], direction)
+
+            if gloves > 1:
+                size_l = 19
+
+                if int(glove_values[size_l] / g_scale + 1) != g_mem[2]:
+                    g_mem[2] = int(glove_values[size_l] / g_scale + 1)
+                    tile_h = int(glove_values[size_l] / g_scale + 1) * 3
+                    tile_w = int(glove_values[size_l] / g_scale + 1) * 3
                     tile_w3 = tile_w * 3
                     tile_a = tile_w * tile_h * 3
                     tile = np.zeros((tile_h * tile_w * 3), dtype='uint8')
@@ -477,28 +616,50 @@ def Chaos_Window():
                     tile[int(tile_w / 2 * 3)] = value_color[1][1]
                     tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
-                path[1] = path[0]
-                path[0] = (glove_values[0], glove_values[1])
+                path[3] = path[2]
+                path[2] = (glove_values[12], glove_values[13])
 
-                if path[0][0] != path[1][0]:
-                    direction[0] = 0
-                if path[0][1] != path[1][1]:
-                    direction[0] = 1
-                direction[1] = direction[0]
+                if path[2][0] != path[3][0]:
+                    direction[2] = 0
+                if path[2][1] != path[3][1]:
+                    direction[2] = 1
+                direction[3] = direction[2]
 
-                block, tile = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, path[0], direction)
+                block, tile = tiletosis(block, tile, rule_d2, tile_w, tile_w3, tile_h, path[2], direction)
+
+
+            #rulings
+            if heat_depth == 1:
+                ts = 7
+                # print("")
+                # print(glove_values[0]*glove_values[1]%bv)
+                # print(int(glove_values[2]/(127/base)%base))
+                for x in range(int(glove_values[6]/ts + 1)):
+                    tide += int(glove_values[11])
+
+                    depth_r = int(glove_values[2]/(127/base)%base)
+                    if depth_r == 8:
+                        depth_r = tide%8
+
+                    rule_d[list(rule_d.keys())[(glove_values[0] * glove_values[1] + (tide * x)) % bv]] = value_color[depth_r]
 
 
 
-            # block = mitosis(block, rule_d, width, width_3)
+                if gloves > 1:
+                    for x in range(int(glove_values[16]/ts + 1)):
+                        tide += int(glove_values[23])
 
-        #rulings
-        if heat_depth == 1:
-            # print("")
-            # print(glove_values[0]*glove_values[1]%bv)
-            # print(int(glove_values[2]/(127/base)%base))
-            tide += int(glove_values[11])
-            rule_d[list(rule_d.keys())[(glove_values[0]*glove_values[1]+tide)%bv]] = value_color[int(glove_values[2]/(127/base)%base)]
+                        depth_l = int(glove_values[14] / (127 / base) % base)
+                        if depth_l == 8:
+                            depth_l = tide%8
+
+                        rule_d2[list(rule_d2.keys())[(glove_values[12] * glove_values[13] + (tide * x)) % bv]] = \
+                        value_color[depth_l]
+
+
+
+
+
 
 
         #midi clean up
@@ -520,11 +681,7 @@ def Chaos_Window():
 
 
 
-
-
-
-
-
-
-
 Chaos_Window()
+
+
+
