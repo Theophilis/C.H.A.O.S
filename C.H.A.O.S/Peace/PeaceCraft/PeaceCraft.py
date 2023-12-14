@@ -366,7 +366,7 @@ def Chaos_Window():
 
     #input augments
     midi_inputs = 1
-    gloves = 2
+    gloves = 1
     number_of_sensors = 12
     device_id = 2
 
@@ -575,10 +575,9 @@ def Chaos_Window():
             y = 20
             color_button = pygame.Rect(x + 250, y, 500, 10)
             pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
-            color_button = pygame.Rect(x - 250, y, 500, 10)
-            pygame.draw.rect(WIN, value_color[int(glove_values[14] / (127 / base) % base)], color_button)
 
-            size_r = 7
+
+            size_r = 5
 
             if int(glove_values[size_r]/g_scale+1) != g_mem[0]:
                 g_mem[0] = int(glove_values[size_r]/g_scale+1)
@@ -604,6 +603,9 @@ def Chaos_Window():
 
             if gloves > 1:
                 size_l = 19
+
+                color_button = pygame.Rect(x - 250, y, 500, 10)
+                pygame.draw.rect(WIN, value_color[int(glove_values[14] / (127 / base) % base)], color_button)
 
                 if int(glove_values[size_l] / g_scale + 1) != g_mem[2]:
                     g_mem[2] = int(glove_values[size_l] / g_scale + 1)
