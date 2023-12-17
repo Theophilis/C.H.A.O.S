@@ -1,6 +1,6 @@
 import pickle
 
-text = open('library/Holy Bible,.txt', 'r')
+text = open('library/bible-niv.txt', 'r')
 read = text.read()
 
 lyrics = read.split('\n')
@@ -12,8 +12,10 @@ read = read.translate({ord('?'): None})
 read = read.translate({ord('!'): None})
 read = read.translate({ord(','): None})
 read = read.translate({ord("'"): None})
+read = read.translate({ord('"'): None})
 read = read.translate({ord('('): None})
 read = read.translate({ord(')'): None})
+read = read.translate({ord('-'): ' '})
 
 
 
@@ -44,34 +46,20 @@ for s in splits:
 print(uniques)
 print(len(uniques))
 
-filename = 'library/holy_bible_words'
+filename = 'library/niv_bible_words'
 outfile = open(filename, 'wb')
 pickle.dump(uniques, outfile)
 outfile.close
 
-filename = 'library/holy_bible_words'
+filename = 'library/niv_bible_words'
 infile = open(filename, "rb")
 lexicon = pickle.load(infile)
 infile.close
 
-
-filename = 'library/holy_bible_lyrics'
-outfile = open(filename, 'wb')
-pickle.dump(lyrics, outfile)
-outfile.close
-
-filename = 'library/holy_bible_lyrics'
-infile = open(filename, "rb")
-metalex = pickle.load(infile)
-infile.close
 
 print()
 print(lexicon)
 print(len(lexicon))
 
 if uniques == lexicon:
-    print("true")
-
-
-if lyrics == metalex:
     print("true")

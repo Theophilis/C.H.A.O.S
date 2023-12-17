@@ -268,7 +268,7 @@ pygame.init()
 pygame.display.init()
 
 current_display = pygame.display.Info()
-WIDTH , HEIGHT = current_display.current_w - 100, current_display.current_h - 200
+WIDTH , HEIGHT = current_display.current_w - 50, current_display.current_h - 100
 # WIDTH, HEIGHT = 800, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, 'a': 10, 's': 11,
@@ -1563,12 +1563,12 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 def menu():
 
     click = False
-    device_id = 1
+    device_id = 0
     analytics = 0
     reflection = 0
     rule_0 = 0
     base = 0
-    midi = 1
+    midi = 0
     gloves = 0
 
     #inputs
@@ -1604,24 +1604,25 @@ def menu():
     pygame.init()
     pygame.fastevent.init()
 
-    pygame.init()
-    pygame.midi.init()
-    pygame.fastevent.init()
-    event_post = pygame.fastevent.post
+    if midi > 0:
+        pygame.init()
+        pygame.midi.init()
+        pygame.fastevent.init()
+        event_post = pygame.fastevent.post
 
-    # rtmidi init
-    print(" ")
-    print("device info")
-    _print_device_info()
+        # rtmidi init
+        print(" ")
+        print("device info")
+        _print_device_info()
 
-    input_id = device_id
-    print("input_id")
-    print(input_id)
+        input_id = device_id
+        print("input_id")
+        print(input_id)
 
-    print(' ')
-    print("using input_id :%s:" % input_id)
-    pygame.midi.get_device_info(input_id)
-    p_m_i = pygame.midi.Input(device_id)
+        print(' ')
+        print("using input_id :%s:" % input_id)
+        pygame.midi.get_device_info(input_id)
+        p_m_i = pygame.midi.Input(device_id)
 
 
     while True:

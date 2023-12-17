@@ -46,21 +46,14 @@ def Chaos_Window():
 
     phrase = 'edward conlon cadden maclean'
 
-    filename = 'library/holy_bible_words'
+    filename = 'library/niv_bible_words'
     infile = open(filename, "rb")
     lexicon = pickle.load(infile)
     infile.close
 
-    filename = 'library/holy_bible_lyrics'
-    infile = open(filename, "rb")
-    metalex = pickle.load(infile)
-    infile.close
-
-    text = open('library/Holy Bible,.txt', 'r')
+    text = open('library/bible-niv.txt', 'r')
     text = text.read()
 
-    for x in range(10):
-        print(metalex[x])
 
     points = {0: 0, 1: 0}
     board = [0, 0]
@@ -235,6 +228,7 @@ def Chaos_Window():
 
                 else:
                     valid = 1
+                    return alphabet, bigrams, phrase_c, points, valid
 
                 points[turn] += sum
                 board[turn] = sum
@@ -386,6 +380,11 @@ def Chaos_Window():
 
                     turn_0 = turn
 
+                    while phrase[0] == ' ':
+                        phrase = phrase[1:]
+                    while phrase[-1] == ' ':
+                        phrase = phrase[:-1]
+
                     if ' ' in phrase:
                         alphabet, bigrams, phrase, points, valid = sing(text, lexicon, alphabet, bigrams, phrase, points,
                                                                          turn, valid)
@@ -393,6 +392,7 @@ def Chaos_Window():
                     else:
                         alphabet, bigrams, phrase, points, valid = speak(lexicon, alphabet, bigrams, phrase, points, turn, valid)
 
+                    phrase = phrase.lower()
                     history[turn].append(phrase)
 
                     turn += 1
@@ -560,7 +560,7 @@ def Chaos_Window():
                     phrase += 'z'
 
                 elif event.key == pygame.K_SPACE:
-                    phrase += ' '
+                        phrase += ' '
 
                 elif event.key == pygame.K_PERIOD:
                     phrase += '.'
@@ -579,6 +579,12 @@ def Chaos_Window():
 
                 elif event.key == pygame.K_SEMICOLON:
                     phrase += ';'
+
+                elif event.key == pygame.K_QUOTE and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    phrase += '"'
+
+                elif event.key == pygame.K_QUOTE:
+                    phrase += "'"
 
 
 
