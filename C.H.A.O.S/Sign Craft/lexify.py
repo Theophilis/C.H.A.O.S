@@ -30,7 +30,7 @@ read = read.translate({ord('7'): None})
 read = read.translate({ord('8'): None})
 read = read.translate({ord('9'): None})
 
-read = read.lower()
+# read = read.lower()
 
 uniques = []
 
