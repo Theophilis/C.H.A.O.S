@@ -45,6 +45,7 @@ def Chaos_Window():
     history = {0:[], 1:[]}
 
     phrase = 'edward conlon cadden maclean'
+    ripple = ''
 
     filename = 'library/niv_bible_words'
     infile = open(filename, "rb")
@@ -83,7 +84,9 @@ def Chaos_Window():
         textrect.topleft = (x, y)
         surface.blit(textobj, textrect)
 
-    def speak(lexicon, alphabet, bigrams, phrase, points, turn, valid):
+    def speak(lexicon, alphabet, bigrams, phrase, ripple, points, turn, valid):
+
+        phrase_c = phrase[::]
 
         phrase = phrase.translate({ord(':'): None})
         phrase = phrase.translate({ord(';'): None})
@@ -112,10 +115,32 @@ def Chaos_Window():
         if phrase in history[0] or phrase in history[1]:
             valid = 1
 
-            return alphabet, bigrams, phrase, points, valid
+            return alphabet, bigrams, phrase, ripple, points, valid
 
         if phrase in lexicon:
             valid =3
+
+            left = 0
+            right = 0
+            if phrase_c in text:
+
+                look_behind = text.index(phrase_c)
+                look_ahead = text.index(phrase_c)
+                while left == 0 or right == 0:
+
+                    if text[look_behind] == '.':
+                        left = look_behind
+                    else:
+                        look_behind = look_behind - 1
+
+                    if text[look_ahead] == '.':
+                        right = look_ahead
+                    else:
+                        look_ahead = look_ahead + 1
+
+            print(left)
+            print(text[left:right])
+            ripple = text[left:right]
 
             for x in range(len(phrase)):
                 alphabet[phrase[x]] += 1
@@ -149,9 +174,12 @@ def Chaos_Window():
         else:
             valid = 1
 
-        return alphabet, bigrams, phrase, points, valid
+        return alphabet, bigrams, phrase, ripple, points, valid
 
-    def sing(text, lexicon, alphabet, bigrams, phrase, points, turn, valid):
+    def sing(text, lexicon, alphabet, bigrams, phrase, ripple, points, turn, valid):
+
+        print()
+        print(phrase)
 
         phrase_c = phrase[::]
 
@@ -161,10 +189,28 @@ def Chaos_Window():
             return alphabet, bigrams, phrase, points, valid
 
         if phrase in text:
-            print()
-            print('found')
-            print('phrase')
-            print(phrase)
+
+
+            left = 0
+            right = 0
+            look_behind = text.index(phrase)
+            look_ahead = text.index(phrase)
+            while left == 0 or right == 0:
+
+                if text[look_behind] == '.':
+                    left = look_behind
+                else:
+                    look_behind = look_behind - 1
+
+                if text[look_ahead] == '.':
+                    right = look_ahead
+                else:
+                    look_ahead = look_ahead + 1
+
+            print(left)
+            print(text[left:right])
+            ripple = text[left:right]
+
             phrase = phrase.translate({ord(':'): None})
             phrase = phrase.translate({ord(';'): None})
             phrase = phrase.translate({ord('.'): None})
@@ -228,12 +274,12 @@ def Chaos_Window():
 
                 else:
                     valid = 1
-                    return alphabet, bigrams, phrase_c, points, valid
+                    return alphabet, bigrams, phrase_c, ripple, points, valid
 
                 points[turn] += sum
                 board[turn] = sum
 
-        return alphabet, bigrams, phrase_c, points, valid
+        return alphabet, bigrams, phrase_c, ripple, points, valid
 
 
 
@@ -246,6 +292,12 @@ def Chaos_Window():
 
         phrase_t = main_font.render('{' + str(phrase) + '}', True, (255, 255, 255))
         WIN.blit(phrase_t, (width_2 - int(phrase_t.get_width()/2), height_2))
+
+
+        row_width = 80
+        for x in range(int(len(ripple)/row_width) + 1):
+            ripple_t = small_font.render('{' + str(ripple[x*row_width:(x+1)*row_width]) + '}', True, (255, 255, 255))
+            WIN.blit(ripple_t, (width_2 - int(ripple_t.get_width()/2), height_4 + height_16 + x * ripple_t.get_height()))
 
         valid_sign = pygame.Rect(width_2 - 50,height_32, 100, 100)
         pygame.draw.rect(WIN, value_color[valid], valid_sign)
@@ -380,17 +432,23 @@ def Chaos_Window():
 
                     turn_0 = turn
 
-                    while phrase[0] == ' ':
-                        phrase = phrase[1:]
-                    while phrase[-1] == ' ':
-                        phrase = phrase[:-1]
+                    try:
+                        while phrase[0] == ' ':
+                            phrase = phrase[1:]
+                        while phrase[-1] == ' ':
+                            phrase = phrase[:-1]
+                    except:
+                        continue
+
 
                     if ' ' in phrase:
-                        alphabet, bigrams, phrase, points, valid = sing(text, lexicon, alphabet, bigrams, phrase, points,
-                                                                         turn, valid)
+                        alphabet, bigrams, phrase, ripple, points, valid = sing(text, lexicon, alphabet, bigrams, phrase, ripple,
+
+                                                                            points, turn, valid)
+
 
                     else:
-                        alphabet, bigrams, phrase, points, valid = speak(lexicon, alphabet, bigrams, phrase, points, turn, valid)
+                        alphabet, bigrams, phrase, ripple, points, valid = speak(lexicon, alphabet, bigrams, phrase, ripple, points, turn, valid)
 
                     phrase = phrase.lower()
                     history[turn].append(phrase)

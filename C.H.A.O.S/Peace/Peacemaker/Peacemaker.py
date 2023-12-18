@@ -1009,14 +1009,14 @@ def Chaos_Window(base, device_id=-1):
             lp_8.set_volume(volume[8])
             lp_9.set_volume(volume[9])
 
-            #beat
-            if time.time() - t_0 > tempo/4:
-                # print(strike)
-                # print(strike[0] + strike[1])
-                drum_track(strike[0] + strike[1] + 1, 11)
-                t_0 = time.time()
-                beat += 1
-                strike = [0, 0]
+            # #beat
+            # if time.time() - t_0 > tempo/4:
+            #     # print(strike)
+            #     # print(strike[0] + strike[1])
+            #     drum_track(strike[0] + strike[1] + 1, 11)
+            #     t_0 = time.time()
+            #     beat += 1
+            #     strike = [0, 0]
 
 
         if eb > 0:
