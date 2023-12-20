@@ -1,7 +1,7 @@
 import time
 import pygame
 import pygame.midi
-import pickle
+import math
 
 #####game#####
 
@@ -50,6 +50,7 @@ def Chaos_Window():
     text = open('library/bible-niv.txt', 'r')
     text = text.read()
     lessons = text.split('\n')
+    callendar = int(math.sqrt(len(lessons))) + 1
     current_lesson = 2
     clock = [0, 0]
     clock[0] = time.time()
@@ -82,6 +83,18 @@ def Chaos_Window():
             WIN.blit(phrase_t,
                      (width_2 - int(phrase_t.get_width() / 2), height_2 + height_4 + x * phrase_t.get_height()))
 
+
+        print(len(lessons))
+        for x in range(callendar):
+            for y in range(callendar):
+
+                if x + y*callendar <current_lesson:
+                    lesson_sign = pygame.Rect(50 + 1*x, 50 + 2*y, 1, 1)
+                    pygame.draw.rect(WIN, value_color[6], lesson_sign)
+
+                else:
+                    lesson_sign = pygame.Rect(50 + 1*x, 50 + 2*y, 1, 1)
+                    pygame.draw.rect(WIN, value_color[5], lesson_sign)
 
 
 
@@ -251,6 +264,38 @@ def Chaos_Window():
 
                 elif event.key == pygame.K_z and pygame.key.get_mods() & pygame.KMOD_SHIFT:
                     phrase += 'Z'
+
+                elif event.key == pygame.K_9 and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    phrase += '('
+
+                elif event.key == pygame.K_0 and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    phrase += ')'
+
+                elif event.key == pygame.K_1 and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    phrase += '!'
+
+                #number
+                elif event.key == pygame.K_0:
+                    phrase += '0'
+                elif event.key == pygame.K_1:
+                    phrase += '1'
+                elif event.key == pygame.K_2:
+                    phrase += '2'
+                elif event.key == pygame.K_3:
+                    phrase += '3'
+                elif event.key == pygame.K_4:
+                    phrase += '4'
+                elif event.key == pygame.K_5:
+                    phrase += '5'
+                elif event.key == pygame.K_6:
+                    phrase += '6'
+                elif event.key == pygame.K_7:
+                    phrase += '7'
+                elif event.key == pygame.K_8:
+                    phrase += '8'
+                elif event.key == pygame.K_9:
+                    phrase += '9'
+
 
                 #lower
                 elif event.key == pygame.K_a:
