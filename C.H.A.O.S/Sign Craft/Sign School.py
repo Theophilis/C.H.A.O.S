@@ -3,6 +3,22 @@ import pygame
 import pygame.midi
 import math
 
+def _print_device_info():
+    for i in range(pygame.midi.get_count()):
+        r = pygame.midi.get_device_info(i)
+        (interf, name, input, output, opened) = r
+
+        in_out = ""
+        if input:
+            in_out = "(input)"
+        if output:
+            in_out = "(output)"
+
+        print(
+            "%2i: interface :%s:, name :%s:, opened :%s:  %s"
+            % (i, interf, name, opened, in_out)
+        )
+
 #####game#####
 
 pygame.init()
@@ -36,6 +52,90 @@ def Chaos_Window():
     level = 2
     valid = 0
 
+    #midi
+    gloves = 1
+    glove_sensors = 12
+    glove_values = [0 for x in range(gloves * glove_sensors)]
+
+    #input augments
+    midi_inputs = 1
+    gloves = 1
+    number_of_sensors = 12
+    device_id = 1
+
+    if midi_inputs == 1:
+
+        pygame.init()
+        pygame.midi.init()
+        pygame.fastevent.init()
+        event_post = pygame.fastevent.post
+
+        #rtmidi init
+        if device_id >= 0:
+
+            print(" ")
+            print("device info")
+            _print_device_info()
+
+            input_id = device_id
+            print("input_id")
+            print(input_id)
+
+            print(' ')
+            print("using input_id :%s:" % input_id)
+            pygame.midi.get_device_info(input_id)
+            p_m_i = pygame.midi.Input(device_id)
+
+        glove_values = [x for x in range(gloves * number_of_sensors)]
+
+        print("")
+        print("glove_values")
+        print(glove_values)
+
+
+        if device_id > 0:
+
+            if midi_inputs == 1:
+
+                if p_m_i.poll():
+
+                    # print(' ')
+                    # print('i')
+                    # print(i)
+
+                    midi_events = p_m_i.read(999)
+                    midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
+
+                    for m_e in midi_evs:
+                        event_post(m_e)
+
+    #bet
+    bet = 1
+    beat = time.time()
+    digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+                     's': 4, 'c': 5, 'd': 6, 'm': 7,
+                     'g': 8, 'f': 9, 'w': 10, 'v': 11,
+                     'z': 12, 'q': 13, ',': 14, '"': 15,
+                     '/': 16, '.': 17, ';': 18, 'j': 19,
+                     'x': 20, 'k': 21, 'y': 22, 'b': 23,
+                     'h': 24, 'p': 25, 'u': 26, 'l': 27,
+                     'n': 28, 'o': 29, 'r': 30, 'e': 31}
+    tebigid = {v: k for k, v in digibet.items()}
+    metabet_6 = {0: ' ', 1: 't', 2: 'o', 3: 'n', 4: 'h', 5: 'd', 6: 'u', 7: 'm', 8: 'w', 9: 'y', 10: 'b', 11: 'k',
+                 12: 'j', 13: 'z', 14: ",",
+                 15: 'th', 16: 'in', 17: 'an', 18: 'nd', 19: 'en', 20: 'ou', 21: 'ha', 22: 'or', 23: 'is', 24: 'es',
+                 25: 'the', 26: 'ing',
+                 27: 'hat', 28: 'tha', 29: 'for', 30: 'ion', 31: 'was', 32: 'you', 33: 'ter', 34: 'ent', 35: 'ere',
+                 36: 'his', 37: 'her',
+                 38: 'and', 39: 'ng', 40: 'hi', 41: 'it', 42: 'to', 43: 'ed', 44: 'at', 45: 'on', 46: 're', 47: 'er',
+                 48: 'he', 49: "'",
+                 50: '.', 51: 'q', 52: 'x', 53: 'v', 54: 'p', 55: 'g', 56: 'f', 57: 'c', 58: 'l', 59: 'r', 60: 's',
+                 61: 'i', 62: 'a', 63: 'e'}
+    tebatem_6 = {v: k for k, v in metabet_6.items()}
+    hourglass = [0, 0, 0, 0, 0]
+    hand = [0, 0, 0, 0, 0]
+    focus = 0
+
 
     walls = {0:'.', 1:'\n'}
 
@@ -51,7 +151,7 @@ def Chaos_Window():
     text = text.read()
     lessons = text.split('\n')
     callendar = int(math.sqrt(len(lessons))) + 1
-    current_lesson = 2
+    current = 2
     clock = [0, 0]
     clock[0] = time.time()
 
@@ -63,16 +163,60 @@ def Chaos_Window():
 
     while run == 1:
 
+        WIN.fill((0, 0, 0))
         mx, my = pygame.mouse.get_pos()
         time_0 = round(time.time() - clock[0], 3)
 
+
+        #bet
+        if bet == 1:
+
+            letter = 0
+            for x in range(5):
+
+                if glove_values[6 + x] > 63:
+                    hand[x] = 1
+                else:
+                    hand[x] = 0
+
+                letter += hand[x] * 2**x
+
+            if lessons[current][focus].lower() == tebigid[letter]:
+                phrase += lessons[current][focus]
+                focus += 1
+
+
+
+            gv_t = main_font.render(str(glove_values), True, (255, 255, 255))
+            WIN.blit(gv_t, (width_2 - int(gv_t.get_width() / 2), height_8))
+
+            hg_t = main_font.render(str(hourglass), True, (255, 255, 255))
+            WIN.blit(hg_t, (width_2 - int(hg_t.get_width() / 2), height_8 + gv_t.get_height()))
+
+            let_t = main_font.render(str(hand), True, (255, 255, 255))
+            WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height() + hg_t.get_height()))
+
+            let_t = main_font.render(str(tebigid[letter]), True, (255, 255, 255))
+            WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height()*8))
+
+
+
+
+
+
+
         #display
-        WIN.fill((0, 0, 0))
+
 
         row_width = 80
-        for x in range(int(len(lessons[current_lesson]) / row_width) + 1):
-            lesson_t = main_font.render('{' + str(lessons[current_lesson][x*row_width:(x+1)*row_width]) + '}', True,
-                                         (255, 255, 255))
+        for x in range(int(len(lessons[current]) / row_width) + 1):
+
+            focus_color = (255, 255, 255)
+
+
+
+            lesson_t = main_font.render('{' + str(lessons[current][x*row_width:(x+1)*row_width]) + '}', True,
+                                         focus_color)
             WIN.blit(lesson_t,
                      (width_2 - int(lesson_t.get_width() / 2), height_4 + x * lesson_t.get_height()))
 
@@ -88,7 +232,7 @@ def Chaos_Window():
         for x in range(callendar):
             for y in range(callendar):
 
-                if x + y*callendar <current_lesson:
+                if x + y*callendar <current:
                     lesson_sign = pygame.Rect(50 + 1*x, 50 + 2*y, 1, 1)
                     pygame.draw.rect(WIN, value_color[6], lesson_sign)
 
@@ -96,17 +240,15 @@ def Chaos_Window():
                     lesson_sign = pygame.Rect(50 + 1*x, 50 + 2*y, 1, 1)
                     pygame.draw.rect(WIN, value_color[5], lesson_sign)
 
-
-
         valid_sign = pygame.Rect(width_2 - 50,height_32, 100, 100)
         pygame.draw.rect(WIN, value_color[valid], valid_sign)
         time_t = TITLE_FONT.render(str(time_0), True, (255, 255, 255))
         WIN.blit(time_t, (width_2, height_32))
 
-
-
-
         pygame.display.update()
+
+
+
 
         #inputs
         for event in pygame.event.get():
@@ -127,7 +269,9 @@ def Chaos_Window():
 
                 elif event.key == pygame.K_RETURN:
 
-                    if phrase == lessons[current_lesson]:
+                    focus = 0
+
+                    if phrase == lessons[current]:
                         valid = 3
                     else:
                         valid = 1
@@ -136,17 +280,17 @@ def Chaos_Window():
                     clock[0] = time.time()
 
                     if valid == 3:
-                        current_lesson += 1
+                        current += 1
 
                     phrase = ''
 
 
 
                 elif event.key == pygame.K_LEFT:
-                    current_lesson -= 1
+                    current -= 1
 
                 elif event.key == pygame.K_RIGHT:
-                    current_lesson += 1
+                    current += 1
 
                 elif event.key == pygame.K_UP:
                     ripple_show += 1
@@ -412,6 +556,51 @@ def Chaos_Window():
 
                 elif event.key == pygame.K_BACKSPACE:
                     phrase = phrase[:-1]
+
+            #midi
+            elif event.type in [pygame.midi.MIDIIN]:
+
+                # print(event)
+
+                clean_e = str(event)[21:-3]
+                # print(clean_e)
+                list_e = clean_e.split(',')
+                ev = []
+                # print(list_e)
+
+                for l in list_e:
+
+                    ev.append(int(l.split(':')[1]))
+
+
+                if ev[0] == 176:
+                    # print('right')
+                    # print(ev)
+                    glove_values[ev[1]] = ev[2]
+
+                if ev[0] == 177:
+                    # print('left')
+                    # print(ev)
+                    glove_values[ev[1] + glove_sensors] = ev[2]
+
+
+
+        #midi clean up
+        if device_id > 0:
+
+            if midi_inputs == 1:
+
+                if p_m_i.poll():
+
+                    # print(' ')
+                    # print('i')
+                    # print(i)
+
+                    midi_events = p_m_i.read(1024)
+                    midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
+
+                    for m_e in midi_evs:
+                        event_post(m_e)
 
 
 Chaos_Window()
