@@ -63,51 +63,55 @@ def Chaos_Window():
     number_of_sensors = 12
     device_id = 1
 
-    if midi_inputs == 1:
+    try:
+        if midi_inputs == 1:
 
-        pygame.init()
-        pygame.midi.init()
-        pygame.fastevent.init()
-        event_post = pygame.fastevent.post
+            pygame.init()
+            pygame.midi.init()
+            pygame.fastevent.init()
+            event_post = pygame.fastevent.post
 
-        #rtmidi init
-        if device_id >= 0:
+            #rtmidi init
+            if device_id >= 0:
 
-            print(" ")
-            print("device info")
-            _print_device_info()
+                print(" ")
+                print("device info")
+                _print_device_info()
 
-            input_id = device_id
-            print("input_id")
-            print(input_id)
+                input_id = device_id
+                print("input_id")
+                print(input_id)
 
-            print(' ')
-            print("using input_id :%s:" % input_id)
-            pygame.midi.get_device_info(input_id)
-            p_m_i = pygame.midi.Input(device_id)
+                print(' ')
+                print("using input_id :%s:" % input_id)
+                pygame.midi.get_device_info(input_id)
+                p_m_i = pygame.midi.Input(device_id)
 
-        glove_values = [x for x in range(gloves * number_of_sensors)]
+            glove_values = [x for x in range(gloves * number_of_sensors)]
 
-        print("")
-        print("glove_values")
-        print(glove_values)
+            print("")
+            print("glove_values")
+            print(glove_values)
 
 
-        if device_id > 0:
+            if device_id > 0:
 
-            if midi_inputs == 1:
+                if midi_inputs == 1:
 
-                if p_m_i.poll():
+                    if p_m_i.poll():
 
-                    # print(' ')
-                    # print('i')
-                    # print(i)
+                        # print(' ')
+                        # print('i')
+                        # print(i)
 
-                    midi_events = p_m_i.read(999)
-                    midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
+                        midi_events = p_m_i.read(999)
+                        midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
 
-                    for m_e in midi_evs:
-                        event_post(m_e)
+                        for m_e in midi_evs:
+                            event_post(m_e)
+    except:
+        midi_inputs = 0
+
 
     #bet
     bet = 1
