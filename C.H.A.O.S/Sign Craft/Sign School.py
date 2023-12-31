@@ -2,6 +2,7 @@ import time
 import pygame
 import pygame.midi
 import math
+import pickle
 
 def _print_device_info():
     for i in range(pygame.midi.get_count()):
@@ -58,7 +59,7 @@ def Chaos_Window():
     glove_values = [0 for x in range(gloves * glove_sensors)]
 
     #input augments
-    midi_inputs = 1
+    midi_inputs = 0
     gloves = 1
     number_of_sensors = 12
     device_id = 1
@@ -140,9 +141,8 @@ def Chaos_Window():
     hand = [0, 0, 0, 0, 0]
     focus = 0
 
-
+    #phrase
     walls = {0:'.', 1:'\n'}
-
     phrase = 'edward conlon cadden maclean'
     phrase_c = ''
     ripple_show = 0
@@ -150,7 +150,7 @@ def Chaos_Window():
     hail_mary = 0
 
 
-
+    #text
     text = open('library/bible-niv.txt', 'r')
     text = text.read()
     lessons = text.split('\n')
@@ -159,6 +159,18 @@ def Chaos_Window():
     clock = [0, 0]
     clock[0] = time.time()
 
+    #records
+    record = 1
+    record_name = 'edward_niv'
+    try:
+        filename = 'records/' + record_name
+        infile = open(filename, "rb")
+        records = pickle.load(infile)
+        infile.close
+    except:
+        records = {}
+        for x in range(len(lessons)):
+            records[x] = 999
 
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255), 6:(255, 0, 255), 7:(255, 255, 255)}
@@ -191,21 +203,20 @@ def Chaos_Window():
 
 
 
-            gv_t = main_font.render(str(glove_values), True, (255, 255, 255))
-            WIN.blit(gv_t, (width_2 - int(gv_t.get_width() / 2), height_8))
-
-            hg_t = main_font.render(str(hourglass), True, (255, 255, 255))
-            WIN.blit(hg_t, (width_2 - int(hg_t.get_width() / 2), height_8 + gv_t.get_height()))
-
-            let_t = main_font.render(str(hand), True, (255, 255, 255))
-            WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height() + hg_t.get_height()))
+            # gv_t = main_font.render(str(glove_values), True, (255, 255, 255))
+            # WIN.blit(gv_t, (width_2 - int(gv_t.get_width() / 2), height_8))
+            #
+            # hg_t = main_font.render(str(hourglass), True, (255, 255, 255))
+            # WIN.blit(hg_t, (width_2 - int(hg_t.get_width() / 2), height_8 + gv_t.get_height()))
+            #
+            # let_t = main_font.render(str(hand), True, (255, 255, 255))
+            # WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height() + hg_t.get_height()))
 
             let_t = main_font.render(str(tebigid[letter]), True, (255, 255, 255))
-            WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height()*8))
+            WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8))
 
 
-
-
+        #records
 
 
 
@@ -232,7 +243,7 @@ def Chaos_Window():
                      (width_2 - int(phrase_t.get_width() / 2), height_2 + height_4 + x * phrase_t.get_height()))
 
 
-        print(len(lessons))
+        # print(len(lessons))
         for x in range(callendar):
             for y in range(callendar):
 
@@ -248,6 +259,9 @@ def Chaos_Window():
         pygame.draw.rect(WIN, value_color[valid], valid_sign)
         time_t = TITLE_FONT.render(str(time_0), True, (255, 255, 255))
         WIN.blit(time_t, (width_2, height_32))
+
+        record_t = TITLE_FONT.render(str(records[current]), True, (255, 255, 255))
+        WIN.blit(record_t, (width_2, height_32 + record_t.get_height()))
 
         pygame.display.update()
 
@@ -283,10 +297,25 @@ def Chaos_Window():
                     clock[1] = clock[0]
                     clock[0] = time.time()
 
+                    #records
                     if valid == 3:
+
+                        if record == 1:
+
+                            if time_0 < records[current]:
+                                records[current] = time_0
+                                valid = 4
+
+                            filename = 'records/' + record_name
+                            outfile = open(filename, 'wb')
+                            pickle.dump(records, outfile)
+                            outfile.close
+
                         current += 1
 
                     phrase = ''
+
+
 
 
 
