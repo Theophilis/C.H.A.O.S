@@ -52,6 +52,7 @@ def Chaos_Window():
     run = 1
     level = 2
     valid = 0
+    view = 1
 
     #midi
     gloves = 1
@@ -167,10 +168,17 @@ def Chaos_Window():
         infile = open(filename, "rb")
         records = pickle.load(infile)
         infile.close
+        current = records['current']
+
+        print("current")
+        print(current)
+        print(records[current])
     except:
         records = {}
         for x in range(len(lessons)):
             records[x] = 999
+
+        records['current'] = current
 
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255), 6:(255, 0, 255), 7:(255, 255, 255)}
@@ -286,6 +294,8 @@ def Chaos_Window():
                     run = 2
 
                 elif event.key == pygame.K_RETURN:
+
+                    records['current'] = current
 
                     focus = 0
 
