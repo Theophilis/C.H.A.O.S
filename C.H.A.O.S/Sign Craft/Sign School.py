@@ -231,7 +231,7 @@ def Chaos_Window():
         #display
 
 
-        row_width = 80
+        row_width = 64
         for x in range(int(len(lessons[current]) / row_width) + 1):
 
             focus_color = (255, 255, 255)
@@ -243,12 +243,12 @@ def Chaos_Window():
             WIN.blit(lesson_t,
                      (width_2 - int(lesson_t.get_width() / 2), height_4 + x * lesson_t.get_height()))
 
-        row_width = 80
+        row_width = 64
         for x in range(int(len(phrase) / row_width) + 1):
             phrase_t = main_font.render('{' + str(phrase[x*row_width:(x+1)*row_width]) + '}', True,
                                          (255, 255, 255))
             WIN.blit(phrase_t,
-                     (width_2 - int(phrase_t.get_width() / 2), height_2 + height_4 + x * phrase_t.get_height()))
+                     (width_2 - int(phrase_t.get_width() / 2), height_2 + height_8 + x * phrase_t.get_height()))
 
 
         # print(len(lessons))

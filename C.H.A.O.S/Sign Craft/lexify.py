@@ -63,3 +63,4 @@ print(len(lexicon))
 
 if uniques == lexicon:
     print("true")
+
