@@ -35,7 +35,29 @@ main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
 lable_font = pygame.font.SysFont("leelawadeeuisemilight", 48)
 TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
+
+
 def Chaos_Window():
+    def bin_gen(n, b, p):
+        def base_x(n, b):
+            e = n // b
+            q = n % b
+            if n == 0:
+                return '0'
+            elif e == 0:
+                return str(q)
+            else:
+                return base_x(e, b) + str(q)
+
+        bin = base_x(n, b)
+
+        while len(bin) < p:
+            bin = '0' + bin
+        return bin
+
+
+
+
 
     print(HEIGHT, WIDTH)
     width_2 = int(WIDTH/2)
@@ -116,7 +138,7 @@ def Chaos_Window():
 
 
     #bet
-    bet = 1
+    bet = 2
     beat = time.time()
     digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
                      's': 4, 'c': 5, 'd': 6, 'm': 7,
@@ -127,6 +149,13 @@ def Chaos_Window():
                      'h': 24, 'p': 25, 'u': 26, 'l': 27,
                      'n': 28, 'o': 29, 'r': 30, 'e': 31}
     tebigid = {v: k for k, v in digibet.items()}
+    filename = 'bets/metabet'
+    infile = open(filename, "rb")
+    metabet = pickle.load(infile)
+    infile.close
+    metabetu = {v: k for k, v in metabet.items()}
+    print(metabet)
+    print(metabetu)
     metabet_6 = {0: ' ', 1: 't', 2: 'o', 3: 'n', 4: 'h', 5: 'd', 6: 'u', 7: 'm', 8: 'w', 9: 'y', 10: 'b', 11: 'k',
                  12: 'j', 13: 'z', 14: ",",
                  15: 'th', 16: 'in', 17: 'an', 18: 'nd', 19: 'en', 20: 'ou', 21: 'ha', 22: 'or', 23: 'is', 24: 'es',
@@ -193,36 +222,78 @@ def Chaos_Window():
 
 
         #bet
-        if bet == 1:
+        if bet > 0:
+            if bet == 1:
 
-            letter = 0
-            for x in range(5):
+                letter = 0
+                for x in range(5):
 
-                if glove_values[6 + x] > 63:
-                    hand[x] = 1
+                    if glove_values[6 + x] > 63:
+                        hand[x] = 1
+                    else:
+                        hand[x] = 0
+
+                    letter += hand[x] * 2**x
+
+                if lessons[current][focus].lower() == tebigid[letter]:
+                    phrase += lessons[current][focus]
+                    focus += 1
+
+
+
+                # gv_t = main_font.render(str(glove_values), True, (255, 255, 255))
+                # WIN.blit(gv_t, (width_2 - int(gv_t.get_width() / 2), height_8))
+                #
+                # hg_t = main_font.render(str(hourglass), True, (255, 255, 255))
+                # WIN.blit(hg_t, (width_2 - int(hg_t.get_width() / 2), height_8 + gv_t.get_height()))
+                #
+                # let_t = main_font.render(str(hand), True, (255, 255, 255))
+                # WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height() + hg_t.get_height()))
+
+                let_t = main_font.render(str(tebigid[letter]), True, (255, 255, 255))
+                WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8))
+
+            if bet == 2:
+                lcp = lessons[current][len(phrase)%len(lessons[current]):len(phrase)%len(lessons[current])+3]
+                gram = metabet[lcp[0]]
+
+                if lcp[:2] in metabet:
+                    bigram = metabet[lcp[:2]]
                 else:
-                    hand[x] = 0
+                    bigram = 0
 
-                letter += hand[x] * 2**x
-
-            if lessons[current][focus].lower() == tebigid[letter]:
-                phrase += lessons[current][focus]
-                focus += 1
-
+                if lcp in metabet:
+                    trigram = metabet[lcp]
+                else:
+                    trigram = 0
 
 
-            # gv_t = main_font.render(str(glove_values), True, (255, 255, 255))
-            # WIN.blit(gv_t, (width_2 - int(gv_t.get_width() / 2), height_8))
-            #
-            # hg_t = main_font.render(str(hourglass), True, (255, 255, 255))
-            # WIN.blit(hg_t, (width_2 - int(hg_t.get_width() / 2), height_8 + gv_t.get_height()))
-            #
-            # let_t = main_font.render(str(hand), True, (255, 255, 255))
-            # WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height() + hg_t.get_height()))
+                record_t = main_font.render('{' + str(lcp) + '}', True, (255, 255, 255))
+                WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2 - 80))
 
-            let_t = main_font.render(str(tebigid[letter]), True, (255, 255, 255))
-            WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8))
 
+                bin_1 = bin_gen(gram, 2, 10)
+                bin_2 = bin_gen(bigram, 2, 10)
+                bin_3 = bin_gen(trigram, 2, 10)
+
+                def bin_print(bin, x, y, size):
+                    lb2 = int(len(bin)/2)
+
+
+
+                    for z in range(lb2):
+                        digit = pygame.Rect(x + (size+1)*z, y, size, size)
+                        pygame.draw.rect(WIN, value_color[(int(bin[z])+1)*3], digit)
+
+                        digit = pygame.Rect(x + (size+1)*z + (size+1)*(lb2+1), y, size, size)
+                        pygame.draw.rect(WIN, value_color[(int(bin[lb2 + lb2-z-1])+1)*3], digit)
+
+
+                    # print(bin)
+
+                bin_print(bin_1, width_2, height_2, 20)
+                bin_print(bin_2, width_2, height_2 + 25, 20)
+                bin_print(bin_3, width_2, height_2 + 50, 20)
 
         #records
 
@@ -322,6 +393,9 @@ def Chaos_Window():
                             outfile.close
 
                         current += 1
+
+                    print(lessons[current])
+                    print(phrase)
 
                     phrase = ''
 
@@ -647,3 +721,4 @@ def Chaos_Window():
 
 
 Chaos_Window()
+
