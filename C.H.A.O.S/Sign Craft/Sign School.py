@@ -269,31 +269,35 @@ def Chaos_Window():
 
 
                 record_t = main_font.render('{' + str(lcp) + '}', True, (255, 255, 255))
-                WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2 - 80))
+                WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2))
 
 
                 bin_1 = bin_gen(gram, 2, 10)
                 bin_2 = bin_gen(bigram, 2, 10)
                 bin_3 = bin_gen(trigram, 2, 10)
 
-                def bin_print(bin, x, y, size):
+                def bin_print(bin, x, y, size, space=1):
                     lb2 = int(len(bin)/2)
 
 
 
                     for z in range(lb2):
-                        digit = pygame.Rect(x + (size+1)*z, y, size, size)
+                        digit = pygame.Rect(x + (size+space)*z, y, size, size)
                         pygame.draw.rect(WIN, value_color[(int(bin[z])+1)*3], digit)
 
-                        digit = pygame.Rect(x + (size+1)*z + (size+1)*(lb2+1), y, size, size)
+                        digit = pygame.Rect(x + (size+space)*z + (size+1)*(lb2+1), y, size, size)
                         pygame.draw.rect(WIN, value_color[(int(bin[lb2 + lb2-z-1])+1)*3], digit)
 
 
                     # print(bin)
 
-                bin_print(bin_1, width_2, height_2, 20)
-                bin_print(bin_2, width_2, height_2 + 25, 20)
-                bin_print(bin_3, width_2, height_2 + 50, 20)
+                bp_size = 20
+                space = 2
+                bp_offset = (int(len(bin_1)/2))*(bp_size+space)
+
+                bin_print(bin_1, width_2-300 - bp_offset, height_2 + 80, bp_size, space)
+                bin_print(bin_2, width_2 - bp_offset, height_2 + 80, bp_size, 2)
+                bin_print(bin_3, width_2+300 - bp_offset, height_2 + 80, bp_size, space)
 
         #records
 
