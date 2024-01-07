@@ -276,17 +276,31 @@ def Chaos_Window():
                 bin_2 = bin_gen(bigram, 2, 10)
                 bin_3 = bin_gen(trigram, 2, 10)
 
+
+                record_t = main_font.render('{' + str(bin_1) + '}', True, (255, 255, 255))
+                WIN.blit(record_t, (width_2 - 400, height_2 + 40))
+
+                record_t = main_font.render('{' + str(bin_2) + '}', True, (255, 255, 255))
+                WIN.blit(record_t, (width_2 - 100, height_2 + 40))
+
+                record_t = main_font.render('{' + str(bin_3) + '}', True, (255, 255, 255))
+                WIN.blit(record_t, (width_2 + 200, height_2 + 40))
+
                 def bin_print(bin, x, y, size, space=1):
                     lb2 = int(len(bin)/2)
 
 
 
                     for z in range(lb2):
+
+                        color_0 = ((int(bin[z])+1)*100, (int(bin[z])+1)*100, (int(bin[z])+1)*100)
+                        color_1 = ((int(bin[lb2 +lb2-z-1])+1)*100, (int(bin[lb2 +lb2-z-1])+1)*100, (int(bin[lb2 +lb2-z-1])+1)*100)
+
                         digit = pygame.Rect(x + (size+space)*z, y, size, size)
-                        pygame.draw.rect(WIN, value_color[(int(bin[z])+1)*3], digit)
+                        pygame.draw.rect(WIN, color_0, digit)
 
                         digit = pygame.Rect(x + (size+space)*z + (size+1)*(lb2+1), y, size, size)
-                        pygame.draw.rect(WIN, value_color[(int(bin[lb2 + lb2-z-1])+1)*3], digit)
+                        pygame.draw.rect(WIN, color_1, digit)
 
 
                     # print(bin)
