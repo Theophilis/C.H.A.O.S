@@ -1560,6 +1560,8 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
         # print(len(journal))
 
+
+
 def menu():
 
     click = False
@@ -1633,7 +1635,11 @@ def menu():
         t_line = pygame.Rect(WIDTH / 2 - 633, 200, 1360, 2)
         pygame.draw.rect(WIN, (10, 100, 10), t_line)
         mx, my = pygame.mouse.get_pos()
-        journals = os.listdir("journals")
+
+        try:
+            journals = os.listdir("journals")
+        except:
+            os.mkdir('journals')
 
         #inputs
         text_surface_c = main_font.render(input_text_c, True, (100, 10, 10))
