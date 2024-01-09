@@ -313,11 +313,6 @@ def Chaos_Window():
 
 
                     for z in range(lb2):
-                        # digit = pygame.Rect(x + (size+space)*z, y, size, size)
-                        # pygame.draw.rect(WIN, value_color[(int(bin[z])+1)*3], digit)
-                        #
-                        # digit = pygame.Rect(x + (size+space)*z + (size+1)*(lb2+1), y, size, size)
-                        # pygame.draw.rect(WIN, value_color[(int(bin[lb2 + lb2-z-1])+1)*3], digit)
 
                         color_0 = ((int(bin[z]))*192 + 63, (int(bin[z]))*192 + 63, (int(bin[z]))*192 + 63)
                         color_1 = ((int(bin[lb2 +lb2-z-1]))*192 + 63, (int(bin[lb2 +lb2-z-1]))*192 + 63, (int(bin[lb2 +lb2-z-1]))*192 + 63)
