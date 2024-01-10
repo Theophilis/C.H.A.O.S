@@ -216,12 +216,27 @@ def Chaos_Window():
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255), 6:(255, 0, 255), 7:(255, 255, 255)}
 
 
+    #mend
+    mend = 0
 
     while run == 1:
 
         WIN.fill((0, 0, 0))
         mx, my = pygame.mouse.get_pos()
         time_0 = round(time.time() - clock[0], 3)
+
+        #mend
+        x = width_2 + width_4 + width_8
+        y = height_2
+        design = pygame.Rect(x, y, 200, 70)
+        design_i = pygame.Rect(x, y, 197, 65)
+        pygame.draw.rect(WIN, (100, 10, 100), design)
+        pygame.draw.rect(WIN, (0, 0, 0), design_i)
+        if design.collidepoint((mx, my)):
+            if click:
+                mend = 1
+        
+
 
 
         #bet
