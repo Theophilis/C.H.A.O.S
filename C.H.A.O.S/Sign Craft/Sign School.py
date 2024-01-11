@@ -235,7 +235,7 @@ def Chaos_Window():
         if design.collidepoint((mx, my)):
             if click:
                 mend = 1
-        
+
 
 
 
