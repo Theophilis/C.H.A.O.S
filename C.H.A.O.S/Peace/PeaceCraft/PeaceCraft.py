@@ -31,7 +31,7 @@ def Chaos_Window():
 
     path = [(0, 0), (0, 0), (0, 0), (0, 0)]
     g_mem = [0, 0, 0, 0]
-    g_scale = 8
+    g_scale = 7
     direction = [0, 0, 0, 0]
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255), 6:(255, 0, 255), 7:(255, 255, 255)}
@@ -368,7 +368,7 @@ def Chaos_Window():
     midi_inputs = 1
     gloves = 1
     number_of_sensors = 12
-    device_id = 2
+    device_id = 1
 
     if midi_inputs == 1:
 
@@ -506,7 +506,10 @@ def Chaos_Window():
         WIN.blit(pygame.surfarray.make_surface(
             np.rot90(np.reshape(block, (height, width, 3)), 1, (1, 0))), (0, 0))
 
-
+        x = int(WIDTH / 2) - 500
+        y = 20
+        color_button = pygame.Rect(x + 250, y, 500, 10)
+        pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
 
 
         pygame.display.update()
@@ -577,7 +580,7 @@ def Chaos_Window():
             pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
 
 
-            size_r = 5
+            size_r = 7
 
             if int(glove_values[size_r]/g_scale+1) != g_mem[0]:
                 g_mem[0] = int(glove_values[size_r]/g_scale+1)
