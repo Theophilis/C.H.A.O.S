@@ -84,7 +84,7 @@ print(tri_cap)
 
 
 # #metabet
-digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+digibet = {'space': 0, 'a': 1, 'i': 2, 't': 3,
            's': 4, 'c': 5, 'd': 6, 'm': 7,
            'g': 8, 'f': 9, 'w': 10, 'v': 11,
            'z': 12, 'q': 13, ',': 14, '0': 15,
@@ -93,19 +93,19 @@ digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
            'h': 24, 'p': 25, 'u': 26, 'l': 27,
            'n': 28, 'o': 29, 'r': 30, 'e': 31}
 
-DIGIBET = {' ': 0, 'A': 1, 'I': 2, 'T': 3,
+DIGIBET = {'space1': 0, 'A': 1, 'I': 2, 'T': 3,
            'S': 4, 'C': 5, 'D': 6, 'M': 7,
            'G': 8, 'F': 9, 'W': 10, 'V': 11,
-           'Z': 12, 'Q': 13, ';': 14, '0': 15,
+           'Z': 12, 'Q': 13, ';': 14, ' ': 15,
            '!': 16, ':': 17, "'": 18, 'J': 19,
            'X': 20, 'K': 21, 'Y': 22, 'B': 23,
            'H': 24, 'P': 25, 'U': 26, 'L': 27,
            'N': 28, 'O': 29, 'R': 30, 'E': 31}
 
 numbet = ['1', '3', '5', '7', '9', '+', '[', '*',
-          '@', '{', '%', '<', '/', '|', 'next', 'last',
+          '(', '{', ')', '<', '/', '|', 'enter', 'last',
           'back', '$', '>', '^', '}', '#',
-          '&', ']', '=', '-', 'enter', '8', '6', '4', '2']
+          '&', ']', '=', '-', 'next', '8', '6', '4', '2']
 
 
 digibetu = {v: k for k, v in digibet.items()}
@@ -118,10 +118,13 @@ print()
 for x in range(32):
     letters.append([])
     letters[x].append((digibetu[x], 0))
+
+    #caps
     if x == 0:
         for y in range(31):
             letters[x].append((DIGIBETU[y+1], y+1))
 
+    #special characters
     elif x == 15:
         for y in range(31):
             letters[x].append((numbet[y], y+1))
@@ -203,17 +206,19 @@ for x in range(32):
 # print(metabet)
 #
 #
+metabet = {v: k for k, v in metabet_10.items()}
+
 filename = 'bets/metabet_10'
 outfile = open(filename, 'wb')
-pickle.dump(metabet_10, outfile)
+pickle.dump(metabet, outfile)
 outfile.close
 
 filename = 'bets/metabet_10'
 infile = open(filename, "rb")
-metabet_10 = pickle.load(infile)
+metabet = pickle.load(infile)
 infile.close
 
 print()
 for x in range(32):
-    print(list(metabet_10.items())[x*32:(x+1)*32])
+    print(list(metabet.items())[x*32:(x+1)*32])
 

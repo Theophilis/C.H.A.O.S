@@ -148,7 +148,7 @@ def Chaos_Window():
                      'h': 24, 'p': 25, 'u': 26, 'l': 27,
                      'n': 28, 'o': 29, 'r': 30, 'e': 31}
     tebigid = {v: k for k, v in digibet.items()}
-    filename = 'bets/metabet'
+    filename = 'bets/metabet_10'
     infile = open(filename, "rb")
     metabet = pickle.load(infile)
     infile.close
@@ -172,6 +172,7 @@ def Chaos_Window():
     focus = 0
     letter_value = 0
     letter = ''
+    specials = [495, 527, 559, 879]
 
     #phrase
     walls = {0:'.', 1:'\n'}
@@ -225,16 +226,7 @@ def Chaos_Window():
         mx, my = pygame.mouse.get_pos()
         time_0 = round(time.time() - clock[0], 3)
 
-        #mend
-        x = width_2 + width_4 + width_8
-        y = height_2
-        design = pygame.Rect(x, y, 200, 70)
-        design_i = pygame.Rect(x, y, 197, 65)
-        pygame.draw.rect(WIN, (100, 10, 100), design)
-        pygame.draw.rect(WIN, (0, 0, 0), design_i)
-        if design.collidepoint((mx, my)):
-            if click:
-                mend = 1
+
 
 
 
@@ -273,33 +265,10 @@ def Chaos_Window():
 
             if bet == 2:
 
-                if midi_inputs > 0:
-                    for x in range(int(bet_length/2)):
-                        hourglass[x] += glove_values[6+x]
-                        hourglass[x+int(bet_length/2)] += glove_values[18+x]
-
-                        if glove_values[6+x] == 0:
-                            hourglass[x] = 0
-                        if glove_values[18+x] == 0:
-                            hourglass[x+5] = 0
-
-                    if int(time_0) != time_1:
-                        time_1 = int(time_0)
-                        letter_value = 0
-
-                        for x in range(bet_length):
-
-                            if hourglass[x] > 0:
-                                letter_value += 1*2**x
-
-                        letter = metabetu[letter_value]
-
-
-
-
-
-
-                lcp = lessons[current][len(phrase)%len(lessons[current]):len(phrase)%len(lessons[current])+3]
+                try:
+                    lcp = lessons[current][len(phrase)%len(lessons[current]):len(phrase)%len(lessons[current])+3]
+                except:
+                    current += 1
                 gram = metabet[lcp[0]]
 
                 if lcp[:2] in metabet:
@@ -349,8 +318,120 @@ def Chaos_Window():
                 bp_offset = (int(len(bin_1)/2))*(bp_size+space)
 
                 bin_print(bin_1, width_2-300 - bp_offset, height_2 + height_8, bp_size, space, 4)
+                bin_t = main_font.render(str(lcp[0]), True, (255, 255, 255))
+                WIN.blit(bin_t, ( width_2-200 - bp_offset, height_2 + height_8))
+
                 bin_print(bin_2, width_2 - bp_offset, height_2 + height_8, bp_size, space, 4)
+                bin_t = main_font.render(str(lcp[:2]), True, (255, 255, 255))
+                WIN.blit(bin_t, ( width_2+100 - bp_offset, height_2 + height_8))
+
                 bin_print(bin_3, width_2+300 - bp_offset, height_2 + height_8, bp_size, space, 4)
+                bin_t = main_font.render(str(lcp), True, (255, 255, 255))
+                WIN.blit(bin_t, ( width_2+400 - bp_offset, height_2 + height_8))
+
+                if midi_inputs > 0:
+
+                    # hourglass
+                    for x in range(int(bet_length / 2)):
+                        hourglass[x] = glove_values[6 + x]
+                        hourglass[x + int(bet_length / 2)] = glove_values[18 + x]
+
+                    mid = int((max(hourglass) - min(hourglass)) / 2)
+
+                    for y in range(bet_length):
+                        if hourglass[y] < mid:
+                            hourglass[y] = 0
+                        else:
+                            hourglass[y] = 1
+
+                    # second
+                    if int(time_0) != time_1:
+                        time_1 = int(time_0)
+                        letter_value = 0
+
+                        for x in range(bet_length):
+
+                            if hourglass[x] > 0:
+                                letter_value += 1 * 2 ** x
+
+                        letter = metabetu[letter_value]
+
+                        if letter_value == gram:
+                            phrase += metabetu[gram]
+                        elif letter_value == bigram:
+                            phrase += metabetu[bigram]
+                        elif letter_value == trigram:
+                            phrase += metabetu[trigram]
+                        elif letter == 'next':
+                            current += 1
+                        elif letter == 'last':
+                            current -= 1
+                        elif letter == 'back':
+                            phrase = phrase[:-1]
+                        elif letter == 'enter':
+                            print()
+                            print(lessons[current])
+                            print(len(lessons[current]))
+                            print(phrase)
+                            print(len(phrase))
+
+                            records['current'] = current
+
+                            focus = 0
+
+                            if phrase == lessons[current]:
+                                valid = 3
+                            else:
+                                valid = 1
+
+                            clock[1] = clock[0]
+                            clock[0] = time.time()
+
+                            # records
+                            if valid == 3:
+
+                                if record == 1:
+
+                                    if time_0 < records[current]:
+                                        records[current] = time_0
+                                        valid = 4
+
+                                    filename = 'records/' + record_name
+                                    outfile = open(filename, 'wb')
+                                    pickle.dump(records, outfile)
+                                    outfile.close
+
+                                current += 1
+
+                            phrase = ''
+
+
+
+                    #displays
+                    record_t = main_font.render(str(mid), True, (255, 255, 255))
+                    WIN.blit(record_t, (width_2 - int(record_t.get_width() / 2), height_2))
+
+                    record_t = main_font.render(str(hourglass), True, (255, 255, 255))
+                    WIN.blit(record_t, (width_2 - int(record_t.get_width() / 2), height_2 + int(record_t.get_height())))
+
+                    record_t = main_font.render(str(time_1), True, (255, 255, 255))
+                    WIN.blit(record_t,
+                             (width_2 - int(record_t.get_width() / 2), height_16))
+
+                    record_t = main_font.render(str(letter_value), True, (255, 255, 255))
+                    WIN.blit(record_t,
+                             (width_2 - int(record_t.get_width() / 2), height_2 - int(record_t.get_height()) * 2))
+
+                    record_t = main_font.render(str(metabetu[letter_value]), True, (255, 255, 255))
+                    WIN.blit(record_t,
+                             (width_2 - int(record_t.get_width() / 2), height_2 - int(record_t.get_height()) * 4))
+
+
+                    for s in range(len(specials)):
+                        bin_s = bin_gen(specials[s], 2, 10)
+                        bin_print(bin_s, WIDTH- width_8, height_4 + s*height_8, bp_size, space, 4)
+                        special_t = main_font.render(str(metabetu[specials[s]]), True, (255, 255, 255))
+                        WIN.blit(special_t,(WIDTH- width_16, height_4 + s*height_8))
 
 
         #display
@@ -394,21 +475,6 @@ def Chaos_Window():
         record_t = main_font.render(str(records[current]), True, (255, 255, 255))
         WIN.blit(record_t, (width_2 + width_4 + width_8, height_32 + record_t.get_height()))
 
-        if midi_inputs > 0:
-            record_t = main_font.render(str(glove_values), True, (255, 255, 255))
-            WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2))
-
-            record_t = main_font.render(str(hourglass), True, (255, 255, 255))
-            WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2 + int(record_t.get_height())))
-
-            record_t = main_font.render(str(time_1), True, (255, 255, 255))
-            WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2 - int(record_t.get_height())*3))
-
-            record_t = main_font.render(str(letter_value), True, (255, 255, 255))
-            WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2 - int(record_t.get_height())*2))
-            record_t = main_font.render(str(metabetu[letter_value]), True, (255, 255, 255))
-            WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2 - int(record_t.get_height())*4))
-
         pygame.display.update()
 
 
@@ -432,6 +498,13 @@ def Chaos_Window():
                     run = 2
 
                 elif event.key == pygame.K_RETURN:
+
+                    print()
+                    print(lessons[current])
+                    print(phrase)
+
+                    print(len(lessons[current]))
+                    print(len(phrase))
 
                     records['current'] = current
 
@@ -460,9 +533,6 @@ def Chaos_Window():
                             outfile.close
 
                         current += 1
-
-                    print(lessons[current])
-                    print(phrase)
 
                     phrase = ''
 
@@ -733,6 +803,12 @@ def Chaos_Window():
 
                 elif event.key == pygame.K_MINUS:
                     phrase += "-"
+
+                elif event.key == pygame.K_LEFTBRACKET:
+                    phrase += '['
+
+                elif event.key == pygame.K_RIGHTBRACKET:
+                    phrase += ']'
 
 
 
