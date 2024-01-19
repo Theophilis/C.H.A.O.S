@@ -1,4 +1,0 @@
-brush size glove value @ 565
-micro brush @ 579
-max brush size @ 649
-color triggers @ 622-624
