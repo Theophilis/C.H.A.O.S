@@ -93,6 +93,24 @@ digibet = {'space': 0, 'a': 1, 'i': 2, 't': 3,
            'h': 24, 'p': 25, 'u': 26, 'l': 27,
            'n': 28, 'o': 29, 'r': 30, 'e': 31}
 
+digispace = {'space': 0, 'a ': 1, 'i ': 2, 't ': 3,
+           's ': 4, 'c ': 5, 'd ': 6, 'm ': 7,
+           'g ': 8, 'f ': 9, 'w ': 10, 'v ': 11,
+           'z ': 12, 'q ': 13, ',': 14, '0': 15,
+           '?': 16, '.': 17, '"': 18, 'j ': 19,
+           'x ': 20, 'k ': 21, 'y ': 22, 'b ': 23,
+           'h ': 24, 'p ': 25, 'u ': 26, 'l ': 27,
+           'n ': 28, 'o ': 29, 'r ': 30, 'e ': 31}
+
+spacedig = {'space1': 0, ' a': 1, ' i': 2, ' t': 3,
+           ' s': 4, ' c': 5, ' d': 6, ' m': 7,
+           ' g': 8, ' f': 9, ' w': 10, ' v': 11,
+           ' z': 12, ' q': 13, ';': 14, ' ': 15,
+           '!': 16, ':': 17, "'": 18, ' j': 19,
+           ' x': 20, ' k': 21, ' y': 22, ' b': 23,
+           ' h': 24, ' p': 25, ' u': 26, ' l': 27,
+           ' n': 28, ' o': 29, ' r': 30, ' e': 31}
+
 DIGIBET = {'space1': 0, 'A': 1, 'I': 2, 'T': 3,
            'S': 4, 'C': 5, 'D': 6, 'M': 7,
            'G': 8, 'F': 9, 'W': 10, 'V': 11,
@@ -107,9 +125,13 @@ numbet = ['1', '3', '5', '7', '9', '+', '[', '*',
           'back', '$', '>', '^', '}', '#',
           '&', ']', '=', '-', 'next', '8', '6', '4', '2']
 
+pure_letter = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
 
 digibetu = {v: k for k, v in digibet.items()}
 DIGIBETU = {v: k for k, v in DIGIBET.items()}
+digispaceu = {v: k for k, v in digispace.items()}
+spacedigu = {v: k for k, v in spacedig.items()}
 
 letters = []
 used = []
@@ -117,12 +139,12 @@ used = []
 print()
 for x in range(32):
     letters.append([])
-    letters[x].append((digibetu[x], 0))
+    letters[x].append((digispaceu[x], 0))
 
     #caps
     if x == 0:
         for y in range(31):
-            letters[x].append((DIGIBETU[y+1], y+1))
+            letters[x].append((spacedigu[y+1], y+1))
 
     #special characters
     elif x == 15:
@@ -132,7 +154,13 @@ for x in range(32):
     else:
         for y in range(31):
             y = y+1
-            if digibetu[x] + digibetu[y] in list(engrams[2].keys()):
+            if digibetu[x] == digibetu[y] and digibetu[x] in pure_letter:
+                letters[x].append((digibetu[x].upper(), y))
+                print()
+                print(x)
+                print(y)
+                print((digibetu[x].upper(), y))
+            elif digibetu[x] + digibetu[y] in list(engrams[2].keys()):
                 letters[x].append((digibetu[x] + digibetu[y], y))
             else:
                 # print(y)
@@ -141,6 +169,11 @@ for x in range(32):
                         letters[x].append((t, y))
                         used.append(t)
                         break
+                    elif digibetu[x] in t and t not in used:
+                        letters[x].append((t, y))
+                        used.append(t)
+                        break
+
         z=0
         while len(letters[x]) < 32:
             t = list(engrams[3].keys())[z]
