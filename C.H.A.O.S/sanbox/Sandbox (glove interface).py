@@ -255,7 +255,7 @@ def Chaos_Window(device_id=-1):
     number_of_sensors = 12
     glove_values = [x for x in range(gloves * number_of_sensors)]
 
-    #server
+    #network
     PORT = 21621
     SERVER = "127.0.0.1"
     ADDR = (SERVER, PORT)

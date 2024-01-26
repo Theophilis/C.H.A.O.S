@@ -134,6 +134,7 @@ def Chaos_Window():
                             event_post(m_e)
     except:
         midi_inputs = 0
+        print('fuck')
 
 
     #bet
@@ -178,6 +179,7 @@ def Chaos_Window():
     walls = {0:'.', 1:'\n'}
     phrase = 'edward conlon cadden maclean'
     phrase_c = ''
+    phrase_1 = ''
     ripple_show = 0
     wall = 0
     hail_mary = 0
@@ -213,7 +215,9 @@ def Chaos_Window():
 
         records['current'] = current
 
-
+    #settings
+    settings = 0
+    mend = 0
 
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255),
@@ -441,18 +445,55 @@ def Chaos_Window():
                         pygame.draw.rect(WIN, value_color[hourglass[4-x+5]*8], finger_sign)
 
 
-        #display
+        # #display
+        # row_width = 64
+        # for x in range(int(len(lessons[current]) / row_width) + 1):
+        #
+        #     focus_color = (255, 255, 255)
+        #
+        #     lesson_t = main_font.render('{' + str(lessons[current][x*row_width:(x+1)*row_width]) + '}', True,
+        #                                  focus_color)
+        #     WIN.blit(lesson_t,
+        #              (width_2 - int(lesson_t.get_width() / 2), height_8 + x * lesson_t.get_height()))
+
+        text_color = value_color[7]
+        text_valid = value_color[3]
+        text_wrong = value_color[1]
+        x_place = 0
+        y_place = 0
         row_width = 64
-        for x in range(int(len(lessons[current]) / row_width) + 1):
 
-            focus_color = (255, 255, 255)
+        lesson_t = main_font.render(str('{'), True,
+                                    text_color)
+        WIN.blit(lesson_t,
+                 (width_4 + x_place-11, height_4 + y_place))
+        for x in range(len(lessons[current])):
 
+            try:
+                if phrase[x] == lessons[current][x]:
+                    letter_color = text_valid
+                else:
+                    letter_color = text_wrong
+            except:
+                letter_color = text_color
 
+            x_pos = width_4 + x_place
+            y_pos =  height_4 + y_place
+            lesson_t = main_font.render(str(lessons[current][x]), True, letter_color)
+            WIN.blit(lesson_t,(x_pos, y_pos))
 
-            lesson_t = main_font.render('{' + str(lessons[current][x*row_width:(x+1)*row_width]) + '}', True,
-                                         focus_color)
-            WIN.blit(lesson_t,
-                     (width_2 - int(lesson_t.get_width() / 2), height_8 + x * lesson_t.get_height()))
+            if x == len(phrase):
+                valid_sign = pygame.Rect(x_pos, y_pos + lesson_t.get_height(), lesson_t.get_width(), 3)
+                pygame.draw.rect(WIN, letter_color, valid_sign)
+
+            x_place += lesson_t.get_width()
+
+            if x % row_width == 0 and x != 0:
+                x_place = 0
+                y_place += lesson_t.get_height()
+
+        lesson_t = main_font.render(str('}'), True, text_color)
+        WIN.blit(lesson_t,(width_4 + x_place+11, height_4 + y_place))
 
         #phrase
         row_width = 64
@@ -475,16 +516,46 @@ def Chaos_Window():
                     lesson_sign = pygame.Rect(50 + 1*x, 50 + 2*y, 1, 1)
                     pygame.draw.rect(WIN, value_color[5], lesson_sign)
 
-        valid_sign = pygame.Rect(width_2 - 32 + width_4 + width_8,height_32, 64, 64)
+        x = WIDTH - width_8
+        y = height_32
+        valid_sign = pygame.Rect(x, y, 64, 64)
         pygame.draw.rect(WIN, value_color[valid], valid_sign)
+        record_t = main_font.render(str(valid), True, (255, 255, 255))
+        WIN.blit(record_t, (x, y + height_8))
+        if valid_sign.collidepoint((mx, my)):
+            valid = 2
+            record_t = main_font.render(str(valid), True, (255, 255, 255))
+            WIN.blit(record_t, (x, y))
+            if click:
+                settings = 1
+                valid = 5
+
         time_t = main_font.render(str(time_0), True, (255, 255, 255))
         WIN.blit(time_t, (width_2 + width_4 + width_8, height_32))
 
         record_t = main_font.render(str(records[current]), True, (255, 255, 255))
         WIN.blit(record_t, (width_2 + width_4 + width_8, height_32 + record_t.get_height()))
 
-        pygame.display.update()
 
+        #settings
+        if settings == 1:
+            x = WIDTH - width_8
+            y = height_2
+            mend_button = pygame.Rect(x, y, 200, 50)
+            mend_button_i = pygame.Rect(x, y, 197, 43)
+            pygame.draw.rect(WIN, (0, 192, 192), mend_button)
+            pygame.draw.rect(WIN, (0, 64, 63), mend_button_i)
+            if mend_button.collidepoint((mx, my)):
+                record_t = main_font.render('mend', True, (255, 255, 255))
+                WIN.blit(record_t, (x, y))
+                if click:
+                    print('mend')
+
+                    if mend == 0:
+                        mend = 1
+                        phrase = phrase_1[::]
+                    if mend == 1:
+                        lessons[current] = phrase
 
 
 
@@ -542,7 +613,10 @@ def Chaos_Window():
 
                         current += 1
 
+                    phrase_1 = phrase[::]
                     phrase = ''
+                    settings = 0
+                    men = 0
 
 
 
@@ -869,6 +943,9 @@ def Chaos_Window():
 
                     for m_e in midi_evs:
                         event_post(m_e)
+
+
+        pygame.display.update()
 
 
 Chaos_Window()
