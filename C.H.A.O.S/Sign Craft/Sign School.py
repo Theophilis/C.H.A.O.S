@@ -3,6 +3,10 @@ import pygame
 import pygame.midi
 import math
 import pickle
+from pygame import mixer
+
+pygame.mixer.init()
+pygame.mixer.set_num_channels(64)
 
 def _print_device_info():
     for i in range(pygame.midi.get_count()):
@@ -38,6 +42,9 @@ TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
 
 def Chaos_Window():
+
+    mixer.init()
+
     def bin_gen(n, b, p):
         def base_x(n, b):
             e = n // b
@@ -54,6 +61,21 @@ def Chaos_Window():
         while len(bin) < p:
             bin = '0' + bin
         return bin
+
+
+    tone = {0:'in_', 1:'qr_', 2:'aw_'}
+
+    def loop_8(n, c, lvl = 0, v=0):
+
+        n = n%60
+
+        path = r'audio\loop_8\s' + str(tone[lvl%3]) + str(n) + '.mp3'
+        mixer.music.load(path)
+        w = pygame.mixer.Sound(path)
+        w.set_volume(v)
+        pygame.mixer.Channel(c).play(w)
+
+        return w
 
 
 
@@ -218,6 +240,9 @@ def Chaos_Window():
     #settings
     settings = 0
     mend = 0
+
+    #sound
+    wu = 1
 
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255),
@@ -445,17 +470,7 @@ def Chaos_Window():
                         pygame.draw.rect(WIN, value_color[hourglass[4-x+5]*8], finger_sign)
 
 
-        # #display
-        # row_width = 64
-        # for x in range(int(len(lessons[current]) / row_width) + 1):
-        #
-        #     focus_color = (255, 255, 255)
-        #
-        #     lesson_t = main_font.render('{' + str(lessons[current][x*row_width:(x+1)*row_width]) + '}', True,
-        #                                  focus_color)
-        #     WIN.blit(lesson_t,
-        #              (width_2 - int(lesson_t.get_width() / 2), height_8 + x * lesson_t.get_height()))
-
+        #lessons current
         text_color = value_color[7]
         text_valid = value_color[3]
         text_wrong = value_color[1]
@@ -480,6 +495,8 @@ def Chaos_Window():
             x_pos = width_4 + x_place
             y_pos =  height_4 + y_place
             lesson_t = main_font.render(str(lessons[current][x]), True, letter_color)
+            if letter_color == text_wrong and lessons[current][x] == ' ':
+                lesson_t = main_font.render(str(phrase[x]), True, letter_color)
             WIN.blit(lesson_t,(x_pos, y_pos))
 
             if x == len(phrase):
@@ -494,14 +511,6 @@ def Chaos_Window():
 
         lesson_t = main_font.render(str('}'), True, text_color)
         WIN.blit(lesson_t,(width_4 + x_place+11, height_4 + y_place))
-
-        #phrase
-        row_width = 64
-        for x in range(int(len(phrase) / row_width) + 1):
-            phrase_t = small_font.render('{' + str(phrase[x*row_width:(x+1)*row_width]) + '}', True,
-                                         (255, 255, 255))
-            WIN.blit(phrase_t,
-                     (width_2 - int(phrase_t.get_width() / 2), height_2 + height_8 + x * phrase_t.get_height()))
 
 
         # print(len(lessons))
@@ -556,6 +565,14 @@ def Chaos_Window():
                         phrase = phrase_1[::]
                     if mend == 1:
                         lessons[current] = phrase
+
+            # phrase
+            row_width = 64
+            for x in range(int(len(phrase) / row_width) + 1):
+                phrase_t = small_font.render('{' + str(phrase[x * row_width:(x + 1) * row_width]) + '}', True,
+                                             (255, 255, 255))
+                WIN.blit(phrase_t,
+                         (width_2 - int(phrase_t.get_width() / 2), height_2 + height_8 + x * phrase_t.get_height()))
 
 
 
@@ -619,7 +636,13 @@ def Chaos_Window():
                     men = 0
 
 
+                elif event.key == pygame.K_F1:
 
+
+                    loop_8(wu, 1, 0, 10)
+                    wu += 1
+                    print("wu")
+                    print(wu)
 
 
                 elif event.key == pygame.K_LEFT:
