@@ -97,7 +97,8 @@ def Chaos_Window():
     run = 1
     level = 2
     valid = 0
-    view = 1
+    strokes = 1
+    cross = 0
 
     #midi
     gloves = 2
@@ -105,7 +106,7 @@ def Chaos_Window():
     glove_values = [0 for x in range(gloves * glove_sensors)]
 
     #input augments
-    midi_inputs = 0
+    midi_inputs = 1
     device_id = 1
 
     try:
@@ -158,9 +159,12 @@ def Chaos_Window():
         midi_inputs = 0
         print('fuck')
 
+    #sound
+    harp = 1
+    wu = 1
 
     #bet
-    bet = 2
+    bet = 1
     beat = time.time()
     digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
                      's': 4, 'c': 5, 'd': 6, 'm': 7,
@@ -216,6 +220,7 @@ def Chaos_Window():
     clock = [0, 0]
     clock[0] = time.time()
     time_1 = int(clock[0])
+    time_05 = int(clock[0])
 
     #records
     record = 1
@@ -241,8 +246,8 @@ def Chaos_Window():
     settings = 0
     mend = 0
 
-    #sound
-    wu = 1
+
+
 
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255),
@@ -259,64 +264,31 @@ def Chaos_Window():
 
         #bet
         if bet > 0:
+
             if bet == 1:
 
-                letter = 0
-                for x in range(5):
-
-                    if glove_values[6 + x] > 63:
-                        hand[x] = 1
-                    else:
-                        hand[x] = 0
-
-                    letter += hand[x] * 2**x
-
-                if lessons[current][focus].lower() == tebigid[letter]:
-                    phrase += lessons[current][focus]
-                    focus += 1
-
-
-
-                # gv_t = main_font.render(str(glove_values), True, (255, 255, 255))
-                # WIN.blit(gv_t, (width_2 - int(gv_t.get_width() / 2), height_8))
-                #
-                # hg_t = main_font.render(str(hourglass), True, (255, 255, 255))
-                # WIN.blit(hg_t, (width_2 - int(hg_t.get_width() / 2), height_8 + gv_t.get_height()))
-                #
-                # let_t = main_font.render(str(hand), True, (255, 255, 255))
-                # WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8 + gv_t.get_height() + hg_t.get_height()))
-
-                let_t = main_font.render(str(tebigid[letter]), True, (255, 255, 255))
-                WIN.blit(let_t, (width_2 - int(let_t.get_width() / 2), height_8))
-
-            if bet == 2:
-
+                #current
                 try:
                     lcp = lessons[current][len(phrase)%len(lessons[current]):len(phrase)%len(lessons[current])+3]
                 except:
                     current += 1
-                gram = metabet[lcp[0].upper()]
 
+                #grams
+                gram = metabet[lcp[0].upper()]
                 if lcp[:2] in metabet:
                     bigram = metabet[lcp[:2]]
+                    #
                 else:
                     bigram = 0
-
+                    #
                 if lcp in metabet:
                     trigram = metabet[lcp]
+                    #
                 else:
                     trigram = 0
+                    #
 
-
-                # record_t = main_font.render('{' + str(lcp) + '}', True, (255, 255, 255))
-                # WIN.blit(record_t, (width_2 - int(record_t.get_width()/2), height_2))
-
-
-                bin_1 = bin_gen(gram, 2, 10)
-                bin_2 = bin_gen(bigram, 2, 10)
-                bin_3 = bin_gen(trigram, 2, 10)
-
-
+                #bin
                 def bin_print(bin, x, y, size, space=1, length = 1):
                     lb2 = int(len(bin)/2)
 
@@ -338,26 +310,29 @@ def Chaos_Window():
 
 
                     # print(bin)
+                bin_1 = bin_gen(gram, 2, 10)
+                bin_2 = bin_gen(bigram, 2, 10)
+                bin_3 = bin_gen(trigram, 2, 10)
 
                 bp_size = 8
                 space = 2
                 bp_offset = (int(len(bin_1)/2))*(bp_size+space)
-
-
-                bin_height =  height_2
+                bin_height = height_2 + height_8
+                bin_width = width_2
 
                 bin_print(bin_1, width_2-300 - bp_offset, bin_height, bp_size, space, 4)
                 bin_t = main_font.render(str(lcp[0]), True, (255, 255, 255))
-                WIN.blit(bin_t, ( width_2-200 - bp_offset, bin_height))
+                WIN.blit(bin_t, (bin_width-200 - bp_offset, bin_height))
 
                 bin_print(bin_2, width_2 - bp_offset, bin_height, bp_size, space, 4)
                 bin_t = main_font.render(str(lcp[:2]), True, (255, 255, 255))
-                WIN.blit(bin_t, ( width_2+100 - bp_offset, bin_height))
+                WIN.blit(bin_t, (bin_width+100 - bp_offset, bin_height))
 
                 bin_print(bin_3, width_2+300 - bp_offset, bin_height, bp_size, space, 4)
                 bin_t = main_font.render(str(lcp), True, (255, 255, 255))
-                WIN.blit(bin_t, ( width_2+400 - bp_offset, bin_height))
+                WIN.blit(bin_t, (bin_width+400 - bp_offset, bin_height))
 
+                #gloves
                 if midi_inputs > 0:
 
                     # hourglass
@@ -375,6 +350,10 @@ def Chaos_Window():
 
                     # second
                     if int(time_0) != time_1:
+                        
+                        strokes += 1
+                        strokes = strokes % 8
+
                         time_1 = int(time_0)
                         letter_value = 0
 
@@ -434,18 +413,51 @@ def Chaos_Window():
 
                             phrase = ''
 
+                    else:
+                        time_05 = int(round(time_0 - time_1, 2)*100)
+                        cross = abs(strokes%2*100 - time_05)*2
 
+                    #cross
+                    circle_scale = 8
+                    cross_height = height_8 + height_32
+                    cross_width = width_2
 
-                    #displays
+                    ##center circle
+                    x = cross_width
+                    y = cross_height - int(cross/10)
+                    pygame.draw.circle(WIN, value_color[(strokes+4)%8], (x, y), cross/circle_scale*3)
 
-                    record_t = main_font.render(str(time_1), True, (255, 255, 255))
-                    WIN.blit(record_t,
-                             (width_2 - int(record_t.get_width() / 2), height_16))
+                    ##cross arms
+                    x = cross_width - int(cross/8)/2
+                    y = cross_height - int(cross)/2
+                    cross_a = pygame.Rect(x, y, cross/8, cross)
+                    pygame.draw.rect(WIN, value_color[strokes], cross_a)
+                    ##cross legs
+                    x = cross_width - int(cross)/2
+                    y = cross_height - int(cross/6)
+                    cross_l = pygame.Rect(x, y, cross, cross/8)
+                    pygame.draw.rect(WIN, value_color[strokes], cross_l)
+
+                    ##top/bot circle
+                    x = cross_width
+                    y = cross_height - int(cross/2)
+                    pygame.draw.circle(WIN, value_color[(strokes+2)%8], (x, y), cross/circle_scale)
+                    x = cross_width
+                    y = cross_height + int(cross/2)
+                    pygame.draw.circle(WIN, value_color[(strokes+2)%8], (x, y), cross/circle_scale)
+                    ##left/right circle
+                    x = cross_width - int(cross/2)
+                    y = cross_height - int(cross/10)
+                    pygame.draw.circle(WIN, value_color[(strokes+6)%8], (x, y), cross/circle_scale)
+                    x = cross_width + int(cross/2)
+                    y = cross_height - int(cross/10)
+                    pygame.draw.circle(WIN, value_color[(strokes+6)%8], (x, y), cross/circle_scale)
+
 
 
                     record_t = main_font.render(str(metabetu[letter_value]), True, (255, 255, 255))
                     WIN.blit(record_t,
-                             (width_2 - int(record_t.get_width() / 2), height_2 - height_16))
+                             (width_2 - int(record_t.get_width() / 2), height_2 - height_16 + height_8))
 
 
                     for s in range(len(specials)):
@@ -477,11 +489,13 @@ def Chaos_Window():
         x_place = 0
         y_place = 0
         row_width = 64
+        current_height = height_4 + height_16
+        current_width = width_4
 
         lesson_t = main_font.render(str('{'), True,
                                     text_color)
         WIN.blit(lesson_t,
-                 (width_4 + x_place-11, height_4 + y_place))
+                 (current_width + x_place-11, current_height + y_place))
         for x in range(len(lessons[current])):
 
             try:
@@ -492,8 +506,8 @@ def Chaos_Window():
             except:
                 letter_color = text_color
 
-            x_pos = width_4 + x_place
-            y_pos =  height_4 + y_place
+            x_pos = current_width + x_place
+            y_pos = current_height + y_place
             lesson_t = main_font.render(str(lessons[current][x]), True, letter_color)
             if letter_color == text_wrong and lessons[current][x] == ' ':
                 lesson_t = main_font.render(str(phrase[x]), True, letter_color)
@@ -510,7 +524,7 @@ def Chaos_Window():
                 y_place += lesson_t.get_height()
 
         lesson_t = main_font.render(str('}'), True, text_color)
-        WIN.blit(lesson_t,(width_4 + x_place+11, height_4 + y_place))
+        WIN.blit(lesson_t,(current_width + x_place+11, current_height + y_place))
 
 
         # print(len(lessons))
@@ -525,12 +539,11 @@ def Chaos_Window():
                     lesson_sign = pygame.Rect(50 + 1*x, 50 + 2*y, 1, 1)
                     pygame.draw.rect(WIN, value_color[5], lesson_sign)
 
-        x = WIDTH - width_8
+        #valid sign
+        x = WIDTH - width_16
         y = height_32
         valid_sign = pygame.Rect(x, y, 64, 64)
         pygame.draw.rect(WIN, value_color[valid], valid_sign)
-        record_t = main_font.render(str(valid), True, (255, 255, 255))
-        WIN.blit(record_t, (x, y + height_8))
         if valid_sign.collidepoint((mx, my)):
             valid = 2
             record_t = main_font.render(str(valid), True, (255, 255, 255))
