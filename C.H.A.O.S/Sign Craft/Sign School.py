@@ -78,9 +78,6 @@ def Chaos_Window():
         return w
 
 
-
-
-
     print(HEIGHT, WIDTH)
     width_2 = int(WIDTH/2)
     width_3 = int(WIDTH/3)
@@ -98,7 +95,9 @@ def Chaos_Window():
     level = 2
     valid = 0
     strokes = 1
+    pulse = 1
     cross = 0
+    power = [0, 0]
 
     #midi
     gloves = 2
@@ -106,7 +105,7 @@ def Chaos_Window():
     glove_values = [0 for x in range(gloves * glove_sensors)]
 
     #input augments
-    midi_inputs = 1
+    midi_inputs = 0
     device_id = 1
 
     try:
@@ -160,12 +159,16 @@ def Chaos_Window():
         print('fuck')
 
     #sound
-    harp = 1
+    harp = 0
     wu = 1
+
+
+    lp_0 = loop_8(0, 0)
+    lp_1 = loop_8(0, 0)
+    lp_2 = loop_8(0, 0)
 
     #bet
     bet = 1
-    beat = time.time()
     digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
                      's': 4, 'c': 5, 'd': 6, 'm': 7,
                      'g': 8, 'f': 9, 'w': 10, 'v': 11,
@@ -174,7 +177,7 @@ def Chaos_Window():
                      'x': 20, 'k': 21, 'y': 22, 'b': 23,
                      'h': 24, 'p': 25, 'u': 26, 'l': 27,
                      'n': 28, 'o': 29, 'r': 30, 'e': 31}
-    tebigid = {v: k for k, v in digibet.items()}
+    digibetu = {v: k for k, v in digibet.items()}
     filename = 'bets/metabet_10'
     infile = open(filename, "rb")
     metabet = pickle.load(infile)
@@ -195,11 +198,9 @@ def Chaos_Window():
     bet_length = 10
     tebatem_6 = {v: k for k, v in metabet_6.items()}
     hourglass = [0 for x in range(bet_length)]
-    hand = [0, 0, 0, 0, 0]
-    focus = 0
     letter_value = 0
-    letter = ''
     specials = [495, 527, 559, 879]
+    capture = 0
 
     #phrase
     walls = {0:'.', 1:'\n'}
@@ -247,12 +248,12 @@ def Chaos_Window():
     mend = 0
 
 
-
-
-
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255),
                    6:(255, 0, 255), 7:(255, 255, 255), 8:(127, 127, 127)}
 
+    value_color_16 = {0:(0, 0, 0), 1:(127, 0, 0), 2:(255, 0, 0), 3:(255, 127, 0), 4:(255, 255, 0), 5:(127, 255, 0),
+                      6:(0, 255, 0), 7:(0, 255, 127), 8:(0, 255, 255), 9:(0, 127, 255), 10:(0, 0, 255), 11:(127, 0, 255),
+                      12:(255, 0, 255), 13:(255, 0, 127), 14:(127, 127, 127), 15:(255, 255, 255)}
 
     while run == 1:
 
@@ -260,7 +261,99 @@ def Chaos_Window():
         mx, my = pygame.mouse.get_pos()
         time_0 = round(time.time() - clock[0], 3)
 
+        # second
+        if int(time_0) != time_1:
 
+            strokes += 1
+            strokes = strokes % len(value_color_16)
+
+            time_1 = int(time_0)
+            capture = 1
+        else:
+            time_05 = int(round(time_0 - time_1, 2) * 100)
+            cross = abs(strokes % 2 * 100 - time_05) * 2
+
+        #pulse
+        if pulse > 0:
+
+            # cross
+            circle_scale = 8
+            cross_height = height_8 + height_32
+            cross_width = width_2
+
+            if settings == 1:
+                for c in range(len(value_color_16)):
+                    x = width_8 + width_16
+                    y = height_8 + height_32*c
+                    cross_a = pygame.Rect(x, y, 32, 32)
+                    pygame.draw.rect(WIN, value_color_16[c], cross_a)
+
+            #toptri
+            if power[0] > 3:
+                x = cross_width
+                y = cross_height - cross/2
+                cross_23 = cross*2/3
+                line_width = int(cross/16)
+                pygame.draw.line(WIN, value_color_16[(strokes + 2)%16],  (x, y), (x+cross_23, y+cross_23), line_width)
+                pygame.draw.line(WIN, value_color_16[(strokes + 2)%16],  (x, y), (x-cross_23, y+cross_23), line_width)
+                pygame.draw.line(WIN, value_color_16[(strokes + 6)%16],  (x-cross_23, y+cross_23), (x+cross_23, y+cross_23), int(line_width*2/3))
+
+            #bottri
+            if power[0] > 4:
+                x = cross_width
+                y = cross_height - cross/2
+                cross_23 = cross*2/3
+                line_width = int(cross/16)
+                pygame.draw.line(WIN, value_color_16[(strokes + 14)%16],  (x, y+cross), (x+cross_23, y+cross-cross_23), line_width)
+                pygame.draw.line(WIN, value_color_16[(strokes + 14)%16],  (x, y+cross), (x-cross_23, y+cross-cross_23), line_width)
+                pygame.draw.line(WIN, value_color_16[(strokes + 10)%16],  (x-cross_23, y+cross/3), (x+cross_23, y+cross/3), int(line_width*2/3))
+
+            ##center circle
+            if power[0] > 2:
+                x = cross_width
+                y = cross_height - int(cross / 10)
+                pygame.draw.circle(WIN, value_color_16[(strokes + 8) % 16], (x, y), cross / circle_scale * 2)
+
+            ##cross arms
+            x = cross_width - int(cross / 8) / 2
+            y = cross_height - int(cross) / 2
+            cross_a = pygame.Rect(x, y, cross / 8, cross)
+            pygame.draw.rect(WIN, value_color_16[strokes], cross_a)
+
+            ##cross legs
+            x = cross_width - int(cross) / 2
+            y = cross_height - int(cross / 6)
+            cross_l = pygame.Rect(x, y, cross, cross / 8)
+            pygame.draw.rect(WIN, value_color_16[strokes], cross_l)
+
+            #bottri
+            if power[0] > 4:
+                x = cross_width
+                y = cross_height - cross/2
+                cross_23 = cross*2/3
+                line_width = int(cross/16)
+                pygame.draw.line(WIN, value_color_16[(strokes + 14)%16],  (x, y+cross), (x+cross_23, y+cross-cross_23), line_width)
+                pygame.draw.line(WIN, value_color_16[(strokes + 14)%16],  (x, y+cross), (x-cross_23, y+cross-cross_23), line_width)
+                pygame.draw.line(WIN, value_color_16[(strokes + 10)%16],  (x-cross_23, y+cross/3), (x+cross_23, y+cross/3), int(line_width*2/3))
+
+
+
+            ##top/bot circle
+            if power[0] > 0:
+                x = cross_width
+                y = cross_height - int(cross / 2)
+                pygame.draw.circle(WIN, value_color_16[(strokes + 4) % 16], (x, y), cross / circle_scale)
+                x = cross_width
+                y = cross_height + int(cross / 2)
+                pygame.draw.circle(WIN, value_color_16[(strokes + 4) % 16], (x, y), cross / circle_scale)
+            ##left/right circle
+            if power[0] > 1:
+                x = cross_width - int(cross / 2)
+                y = cross_height - int(cross / 10)
+                pygame.draw.circle(WIN, value_color_16[(strokes + 12) % 16], (x, y), cross / circle_scale)
+                x = cross_width + int(cross / 2)
+                y = cross_height - int(cross / 10)
+                pygame.draw.circle(WIN, value_color_16[(strokes + 12) % 16], (x, y), cross / circle_scale)
 
         #bet
         if bet > 0:
@@ -332,155 +425,120 @@ def Chaos_Window():
                 bin_t = main_font.render(str(lcp), True, (255, 255, 255))
                 WIN.blit(bin_t, (bin_width+400 - bp_offset, bin_height))
 
-                #gloves
-                if midi_inputs > 0:
+            # gloves
+            if midi_inputs > 0:
 
-                    # hourglass
-                    for x in range(int(bet_length / 2)):
-                        hourglass[x] = glove_values[6 + x]
-                        hourglass[x + int(bet_length / 2)] = glove_values[18 + x]
 
-                    mid = int((max(hourglass) - min(hourglass)) / 2)
+                # hourglass
+                for x in range(int(bet_length / 2)):
+                    hourglass[x] = glove_values[6 + x]
+                    hourglass[x + int(bet_length / 2)] = glove_values[18 + x]
 
-                    for y in range(bet_length):
-                        if hourglass[y] < mid:
-                            hourglass[y] = 0
-                        else:
-                            hourglass[y] = 1
+                mid = int((max(hourglass) - min(hourglass)) / 2)
 
-                    # second
-                    if int(time_0) != time_1:
-                        
-                        strokes += 1
-                        strokes = strokes % 8
-
-                        time_1 = int(time_0)
-                        letter_value = 0
-
-                        for x in range(bet_length):
-
-                            if hourglass[x] > 0:
-                                letter_value += 1 * 2 ** x
-
-                        letter = metabetu[letter_value]
-
-                        if letter_value == gram:
-                            phrase += lcp[0]
-                        elif letter_value == bigram:
-                            phrase += metabetu[bigram]
-                        elif letter_value == trigram:
-                            phrase += metabetu[trigram]
-                        elif letter == 'next':
-                            current += 1
-                        elif letter == 'last':
-                            current -= 1
-                        elif letter == 'back':
-                            phrase = phrase[:-1]
-                        elif letter == 'enter':
-                            print()
-                            print(lessons[current])
-                            print(len(lessons[current]))
-                            print(phrase)
-                            print(len(phrase))
-
-                            records['current'] = current
-
-                            focus = 0
-
-                            if phrase == lessons[current]:
-                                valid = 3
-                            else:
-                                valid = 1
-
-                            clock[1] = clock[0]
-                            clock[0] = time.time()
-
-                            # records
-                            if valid == 3:
-
-                                if record == 1:
-
-                                    if time_0 < records[current]:
-                                        records[current] = time_0
-                                        valid = 4
-
-                                    filename = 'records/' + record_name
-                                    outfile = open(filename, 'wb')
-                                    pickle.dump(records, outfile)
-                                    outfile.close
-
-                                current += 1
-
-                            phrase = ''
-
+                for y in range(bet_length):
+                    if hourglass[y] < mid:
+                        hourglass[y] = 0
                     else:
-                        time_05 = int(round(time_0 - time_1, 2)*100)
-                        cross = abs(strokes%2*100 - time_05)*2
+                        hourglass[y] = 1
 
-                    #cross
-                    circle_scale = 8
-                    cross_height = height_8 + height_32
-                    cross_width = width_2
+                # second
+                if capture == 1:
 
-                    ##center circle
-                    x = cross_width
-                    y = cross_height - int(cross/10)
-                    pygame.draw.circle(WIN, value_color[(strokes+4)%8], (x, y), cross/circle_scale*3)
+                    capture = 0
+                    letter_value = 0
+                    r_value = hourglass[0] + hourglass[1]*2 + hourglass[2]*4 + hourglass[3]*8 + hourglass[4]*16
+                    l_value = hourglass[5] + hourglass[6]*2 + hourglass[7]*4 + hourglass[8]*8 + hourglass[9]*16
 
-                    ##cross arms
-                    x = cross_width - int(cross/8)/2
-                    y = cross_height - int(cross)/2
-                    cross_a = pygame.Rect(x, y, cross/8, cross)
-                    pygame.draw.rect(WIN, value_color[strokes], cross_a)
-                    ##cross legs
-                    x = cross_width - int(cross)/2
-                    y = cross_height - int(cross/6)
-                    cross_l = pygame.Rect(x, y, cross, cross/8)
-                    pygame.draw.rect(WIN, value_color[strokes], cross_l)
+                    for x in range(bet_length):
 
-                    ##top/bot circle
-                    x = cross_width
-                    y = cross_height - int(cross/2)
-                    pygame.draw.circle(WIN, value_color[(strokes+2)%8], (x, y), cross/circle_scale)
-                    x = cross_width
-                    y = cross_height + int(cross/2)
-                    pygame.draw.circle(WIN, value_color[(strokes+2)%8], (x, y), cross/circle_scale)
-                    ##left/right circle
-                    x = cross_width - int(cross/2)
-                    y = cross_height - int(cross/10)
-                    pygame.draw.circle(WIN, value_color[(strokes+6)%8], (x, y), cross/circle_scale)
-                    x = cross_width + int(cross/2)
-                    y = cross_height - int(cross/10)
-                    pygame.draw.circle(WIN, value_color[(strokes+6)%8], (x, y), cross/circle_scale)
+                        if hourglass[x] > 0:
+                            letter_value += 1 * 2 ** x
 
 
+                    letter = metabetu[letter_value]
 
-                    record_t = main_font.render(str(metabetu[letter_value]), True, (255, 255, 255))
-                    WIN.blit(record_t,
-                             (width_2 - int(record_t.get_width() / 2), height_2 - height_16 + height_8))
+                    if letter_value == gram:
+                        phrase += lcp[0]
+                        power[0] += 1
+                    elif letter_value == bigram:
+                        phrase += metabetu[bigram]
+                        power[0] += 2
+                    elif letter_value == trigram:
+                        phrase += metabetu[trigram]
+                        power[0] += 3
+                    elif letter == 'next':
+                        current += 1
+                    elif letter == 'last':
+                        current -= 1
+                    elif letter == 'back':
+                        phrase = phrase[:-1]
+                    elif letter == 'enter':
+                        print()
+                        print(lessons[current])
+                        print(len(lessons[current]))
+                        print(phrase)
+                        print(len(phrase))
 
+                        records['current'] = current
 
-                    for s in range(len(specials)):
-                        bin_s = bin_gen(specials[s], 2, 10)
-                        bin_print(bin_s, WIDTH- width_8, height_4 + s*height_8, bp_size, space, 4)
-                        special_t = main_font.render(str(metabetu[specials[s]]), True, (255, 255, 255))
-                        WIN.blit(special_t,(WIDTH- width_16, height_4 + s*height_8))
+                        focus = 0
 
+                        if phrase == lessons[current]:
+                            valid = 3
+                            power[0] += 1
+                        else:
+                            valid = 1
+                            power[0] = 0
 
-                    #fingers
-                    f_width = 64
-                    f_buffer = 8
-                    f_x = width_2 + width_8
-                    f_y = HEIGHT
-                    for x in range(5):
+                        clock[1] = clock[0]
+                        clock[0] = time.time()
 
-                        finger_sign = pygame.Rect(f_x+(f_width+f_buffer)*x, f_y - glove_values[6+x], f_width, glove_values[6+x])
-                        pygame.draw.rect(WIN, value_color[hourglass[x]*8], finger_sign)
+                        # records
+                        if valid == 3:
 
-                        finger_sign = pygame.Rect(f_x - width_4 - (5*(f_width+f_buffer)) + f_buffer + (f_width+f_buffer)*x,
-                                                 f_y - glove_values[18+4-x], f_width, glove_values[18+4-x])
-                        pygame.draw.rect(WIN, value_color[hourglass[4-x+5]*8], finger_sign)
+                            if record == 1:
 
+                                if time_0 < records[current]:
+                                    records[current] = time_0
+                                    valid = 4
+
+                                filename = 'records/' + record_name
+                                outfile = open(filename, 'wb')
+                                pickle.dump(records, outfile)
+                                outfile.close
+
+                            current += 1
+
+                        phrase = ''
+                    else:
+                        power[0] = 0
+
+                record_t = main_font.render(str(metabetu[letter_value]), True, (255, 255, 255))
+                WIN.blit(record_t, (width_2 - int(record_t.get_width() / 2), height_2 - height_16 + height_8))
+
+                for s in range(len(specials)):
+                    bin_s = bin_gen(specials[s], 2, 10)
+                    bin_print(bin_s, WIDTH - width_8, height_4 + s * height_8, bp_size, space, 4)
+                    special_t = main_font.render(str(metabetu[specials[s]]), True, (255, 255, 255))
+                    WIN.blit(special_t, (WIDTH - width_16, height_4 + s * height_8))
+
+                # fingers
+                record_t = main_font.render(str((r_value, l_value)), True, (255, 255, 255))
+                WIN.blit(record_t,(width_2, height_2 + height_16 + height_8))
+                f_width = 64
+                f_buffer = 8
+                f_x = width_2 + width_8
+                f_y = HEIGHT
+                for x in range(5):
+                    finger_sign = pygame.Rect(f_x + (f_width + f_buffer) * x, f_y - glove_values[6 + x], f_width,
+                                              glove_values[6 + x])
+                    pygame.draw.rect(WIN, value_color[hourglass[x] * 8], finger_sign)
+
+                    finger_sign = pygame.Rect(
+                        f_x - width_4 - (5 * (f_width + f_buffer)) + f_buffer + (f_width + f_buffer) * x,
+                        f_y - glove_values[18 + 4 - x], f_width, glove_values[18 + 4 - x])
+                    pygame.draw.rect(WIN, value_color[hourglass[4 - x + 5] * 8], finger_sign)
 
         #lessons current
         text_color = value_color[7]
@@ -601,7 +659,15 @@ def Chaos_Window():
                     click = True
 
             #keyboard
+
             elif event.type == pygame.KEYDOWN:
+
+                def type(phrase, letter):
+                    print("letter")
+
+                    phrase += letter
+
+                    return phrase
 
                 if event.key == pygame.K_ESCAPE:
                     run = 2
@@ -621,8 +687,11 @@ def Chaos_Window():
 
                     if phrase == lessons[current]:
                         valid = 3
+                        power[0] += 1
                     else:
                         valid = 1
+                        power[0] = 0
+
 
                     clock[1] = clock[0]
                     clock[0] = time.time()
@@ -667,6 +736,7 @@ def Chaos_Window():
                 elif event.key == pygame.K_UP:
                     ripple_show += 1
                     ripple_show = ripple_show % 2
+                    power[0] += 1
 
                 elif event.key == pygame.K_DOWN:
                     print('wall')
@@ -701,6 +771,7 @@ def Chaos_Window():
 
                         ripple = text[left:right]
 
+                    power[0] -= 1
 
                 #upper
                 elif event.key == pygame.K_a and pygame.key.get_mods() & pygame.KMOD_SHIFT:
@@ -811,6 +882,7 @@ def Chaos_Window():
                     phrase += '8'
                 elif event.key == pygame.K_9:
                     phrase += '9'
+
 
 
                 #lower
