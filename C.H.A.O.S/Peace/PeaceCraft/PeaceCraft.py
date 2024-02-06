@@ -27,6 +27,7 @@ def Chaos_Window():
     view = 3
     bv = base ** view
     bbv = base ** base ** view
+    mandala = 1
 
 
     path = [(0, 0), (0, 0), (0, 0), (0, 0)]
@@ -604,6 +605,10 @@ def Chaos_Window():
 
             block, tile = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, path[0], direction)
 
+            if mandala == 1:
+                mandala_path = [127-path[0][0], 127-path[0][1]]
+                block, tile = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, mandala_path, direction)
+
             if gloves > 1:
                 size_l = 19
 
@@ -632,6 +637,9 @@ def Chaos_Window():
 
                 block, tile = tiletosis(block, tile, rule_d2, tile_w, tile_w3, tile_h, path[2], direction)
 
+                if mandala == 1:
+                    mandala_path = [127 - path[1][0], 127 - path[1][1]]
+                    block, tile = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, mandala_path, direction)
 
             #rulings
             if heat_depth == 1:
@@ -660,10 +668,6 @@ def Chaos_Window():
 
                         rule_d2[list(rule_d2.keys())[(glove_values[12] * glove_values[13] + (tide * x)) % bv]] = \
                         value_color[depth_l]
-
-
-
-
 
 
 
