@@ -36,17 +36,18 @@ def Chaos_Window():
     view = 3
     bv = base ** view
     rule_d = {}
-    shade = 1
+    shade = 255
     mwidth = 31
     mheight = mwidth
     mwidth_3 = mwidth * 3
+    dis = mwidth
     map_a = mwidth_3 * mheight
     map = [0 for n in range(mheight * mwidth * 3)]
     map[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3] = shade
     map[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 1] = shade
     map[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 2] = shade
 
-    value_color = {0: (0, 0, 0), 1: (shade, shade, shade), 2: (shade, shade, 0), 3: (0, shade, 0), 4: (0, shade, shade),
+    value_color = {0: (0, 0, 0), 1: (shade, 255, 255), 2: (shade, shade, 0), 3: (0, shade, 0), 4: (0, shade, shade),
                    5: (0, 0, shade),
                    6: (shade, 0, shade), 7: (shade, shade, shade)}
 
@@ -79,30 +80,50 @@ def Chaos_Window():
     rule_d = rule_gen(rule_d, rule, base, view)
 
     print(rule_d)
-    print_map(map, mwidth, mheight)
+    # print_map(map, mwidth, mheight)
 
     def hortosis(map, width, height, width_3, pos, dis=1, lr=0):
 
-        # print()
-        # print("hortosis")
+        # print('hortosis')
+        # print_map(map, width, height)
+        # print(width, height, width_3)
+        # print(pos, dis)
 
         # left
         if lr == 0:
 
+
+
             for d in range(dis):
-                d = d
+                town = map[pos[1] * width_3:pos[1] * width_3 + width * 3]
+                town_a = len(town)
+                # print()
+                # print(d)
                 c = int((dis - d) / dis) * width_3
+                # print(c)
                 cord = (pos[0] + pos[1] * width + d - int(dis / 2)) * 3
+                cord_0 = (pos[0]  + d - int(dis / 2)) * 3
+                # print(cord)
                 hood = (map[cord - 3 + c], map[cord - 2 + c], map[cord - 1 + c],
                         map[cord], map[cord + 1], map[cord + 2],
                         map[(cord + 3) % map_a], map[(cord + 4) % map_a], map[(cord + 5) % map_a])
-                house = rule_d[hood]
+
+                hood_0 = (town[cord_0 - 3 + c], town[cord_0 - 3 + c], town[cord_0 - 3 + c],
+                          town[cord_0], town[cord_0 + 1], town[cord_0 + 2],
+                          town[(cord_0 + 3) % town_a], town[(cord_0 + 4) % town_a], town[(cord_0 + 5) % town_a])
+                # print(hood)
+                house = rule_d[hood_0]
+                # print(house)
 
                 # print()
                 # print(d)
                 # print(int((dis-d)/dis))
+                # print(pos)
                 # print(cord)
+                # print(cord_0)
+                # print(town)
                 # print(hood)
+                # print(hood_0)
                 # print(house)
 
                 for x in range(int(height / 2)):
@@ -366,13 +387,13 @@ def Chaos_Window():
 
             # print_map(map, width, height)
 
-        print_map(map, width, height)
+        # print_map(map, width, height)
 
         return map
 
     pos = (int(mwidth / 2), int(mwidth / 2))
 
-    dis = 5
+
 
     def vertosis(map, width, height, width_3, pos, dis=1, du=0):
 
@@ -418,43 +439,42 @@ def Chaos_Window():
                 map[cord + 1] = house[1]
                 map[cord + 2] = house[2]
 
-            print_map(map, width, height)
+            # print_map(map, width, height)
 
         return map
 
-    pos = (int(mwidth / 2), int(mwidth / 2))
+    pos_m = (int(mwidth / 2), int(mheight / 2))
 
+    map_w = [255 for n in range(mheight * mwidth * 3)]
     # hv maps
     map_h = [0 for n in range(mheight * mwidth * 3)]
-    map_h[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3] = shade
-    map_h[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 1] = shade
-    map_h[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 2] = shade
+    map_h[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3] = value_color[1][0]
+    map_h[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 1] = value_color[1][1]
+    map_h[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 2] = value_color[1][2]
 
     map_v = [0 for n in range(mheight * mwidth * 3)]
-    map_v[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3] = shade
-    map_v[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 1] = shade
-    map_v[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 2] = shade
+    map_v[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3] = value_color[1][0]
+    map_v[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 1] = value_color[1][1]
+    map_v[(int(mwidth / 2) + int(mheight / 2) * mwidth) * 3 + 2] = value_color[1][2]
+
 
     print()
     print("h, v")
-    print_map(map_h, mwidth, mheight)
-    print_map(map_v, mwidth, mheight)
+    # print_map(map_h, mwidth, mheight)
+    # print_map(map_v, mwidth, mheight)
     print("round 1")
-    hortosis(map_h, mwidth, mheight, mwidth_3, pos, dis)
-    vertosis(map_v, mwidth, mheight, mwidth_3, pos, dis)
+    hortosis(map_h, mwidth, mheight, mwidth_3, pos_m, dis)
+    vertosis(map_v, mwidth, mheight, mwidth_3, pos_m, dis)
+    print_map(map_h, mwidth, mheight)
     print('round 2')
-    hortosis(map_h, mwidth, mheight, mwidth_3, pos, dis)
-    vertosis(map_v, mwidth, mheight, mwidth_3, pos, dis)
+    hortosis(map_h, mwidth, mheight, mwidth_3, pos_m, dis)
+    vertosis(map_v, mwidth, mheight, mwidth_3, pos_m, dis)
+    print_map(map_h, mwidth, mheight)
     print('round 3')
-    hortosis(map_h, mwidth, mheight, mwidth_3, pos, dis)
-    vertosis(map_v, mwidth, mheight, mwidth_3, pos, dis)
+    hortosis(map_h, mwidth, mheight, mwidth_3, pos_m, dis)
+    vertosis(map_v, mwidth, mheight, mwidth_3, pos_m, dis)
+    print_map(map_h, mwidth, mheight)
 
-
-
-
-
-
-    rule_d = {}
 
     #block
     height = HEIGHT
@@ -462,22 +482,45 @@ def Chaos_Window():
     width_3 = width*3
     height_3 = height*3
     block_a = width_3 * height
-    block = np.zeros((height*width*3), dtype='uint8')
-    block[int(width/2*3)-1] = value_color[1][0]
-    block[int(width/2*3)] = value_color[1][1]
-    block[int(width/2*3)+1] = value_color[1][2]
+    block = np.zeros((height, width, 3), dtype='uint8')
 
-    def graph(block, map, width_3, mwidth_3, mheight, pos):
-        print(graph)
+    def graph(block, map, mwidth_3, mwidth, mheight, pos):
+        # print(graph)
 
         for x in range(mheight):
-            for y in range(mwidth_3):
-                block[(x+100)*width_3 + (y + 100)] = map[x*mwidth_3 + y]
+            for y in range(mwidth):
+                block[(x+pos[1])%height, (y + pos[0])%width] = map[x*mwidth_3 + (y*3):x*mwidth_3 + (y*3)+3]
 
         return block
 
-    pos = (int(width/2), int(height/2))
-    block = graph(block, map_h, width_3, mwidth_3, mheight, pos)
+    def cut(block, mwidth_3, mwidth, mheight, pos, dis):
+        # print('cut')
+        # print(mwidth)
+
+        map_c = []
+        pos_h = (int(mwidth/2), int(mheight/2))
+
+        for x in range(mheight):
+            for y in range(mwidth):
+                map_c.append(block[(x + pos[1]) % height, (y + pos[0]) % width][0])
+                map_c.append(block[(x + pos[1]) % height, (y + pos[0]) % width][1])
+                map_c.append(block[(x + pos[1]) % height, (y + pos[0]) % width][2])
+
+        map_c[pos_h[1]*mwidth_3 + pos_h[0]*3] = shade
+        map_c[pos_h[1] * mwidth_3 + pos_h[0]*3+1] = shade
+        map_c[pos_h[1] * mwidth_3 + pos_h[0]*3+2] = shade
+
+        map_g = hortosis(map_c, mwidth, mheight, mwidth_3, pos_h, dis)
+
+
+        for x in range(mheight):
+            for y in range(mwidth):
+                block[(x + pos[1]) % height, (y + pos[0]) % width] = map_g[x * mwidth_3 + (y * 3):x * mwidth_3 + (y * 3) + 3]
+
+        return block
+
+    # pos = (int(width/2), int(height/2))
+    # block = graph(block, map_h, mwidth_3, mwidth, mheight, pos)
 
 
     def rule_gen(rule_d, rule, base, view, new=0):
@@ -673,11 +716,22 @@ def Chaos_Window():
 
         WIN.fill((0, 0, 0))
 
+        # pos_h = (int(width/2), int(height/2))
+        #
+        # hortosis(map_h, mwidth, int(mheight), mwidth_3, pos_m, dis)
+        # block = graph(block, map_h, mwidth_3, mwidth, mheight, pos_h)
+
+
+        pos_h = (int(width/2), int(height/2))
+        cut_s = 301
+        block = cut(block, cut_s*3, cut_s, cut_s, pos_h, cut_s)
 
 
 
         WIN.blit(pygame.surfarray.make_surface(
             np.rot90(np.reshape(block, (height, width, 3)), 1, (1, 0))), (0, 0))
+
+
 
 
         pygame.display.update()
@@ -756,6 +810,7 @@ def Chaos_Window():
 
                     for m_e in midi_evs:
                         event_post(m_e)
+
 
 
 
