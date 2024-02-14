@@ -25,7 +25,6 @@ def Chaos_Window():
     print(HEIGHT, WIDTH)
 
     run = 1
-    rule = 90
     base = 8
     view = 3
     bv = base ** view
@@ -494,8 +493,6 @@ def Chaos_Window():
         return block
 
     def cut(block, mwidth_3, mwidth, mheight, pos, dis):
-        # print('cut')
-        # print(mwidth)
 
         map_c = []
         pos_h = (int(mwidth/2), int(mheight/2))
@@ -510,8 +507,11 @@ def Chaos_Window():
         map_c[pos_h[1] * mwidth_3 + pos_h[0]*3+1] = shade
         map_c[pos_h[1] * mwidth_3 + pos_h[0]*3+2] = shade
 
+        print_map(map_c, mwidth, mheight)
+
         map_g = hortosis(map_c, mwidth, mheight, mwidth_3, pos_h, dis)
 
+        print_map(map_g, mwidth, mheight)
 
         for x in range(mheight):
             for y in range(mwidth):
@@ -521,6 +521,17 @@ def Chaos_Window():
 
     # pos = (int(width/2), int(height/2))
     # block = graph(block, map_h, mwidth_3, mwidth, mheight, pos)
+
+    def slice(block, pos, slope,depth):
+        print('slice')
+
+        for x in range(3, depth):
+
+            pos = (pos[0] + slope[0]*int(x/2), pos[1]+slope[1]*int(x/2))
+
+            block = cut(block, x*3, x, x, pos, x)
+
+        return block
 
 
     def rule_gen(rule_d, rule, base, view, new=0):
@@ -716,16 +727,20 @@ def Chaos_Window():
 
         WIN.fill((0, 0, 0))
 
+
+        rule += 1
+        rule = rule%bbv
+        rule_d = rule_gen(rule_d, rule, base, view)
+
+
         # pos_h = (int(width/2), int(height/2))
-        #
-        # hortosis(map_h, mwidth, int(mheight), mwidth_3, pos_m, dis)
-        # block = graph(block, map_h, mwidth_3, mwidth, mheight, pos_h)
+        # cut_s = 51
+        # block = cut(block, cut_s*3, cut_s, cut_s, pos_h, cut_s)
 
-
-        pos_h = (int(width/2), int(height/2))
-        cut_s = 301
-        block = cut(block, cut_s*3, cut_s, cut_s, pos_h, cut_s)
-
+        pos_h = (int(width/4), int(height/4))
+        cut_s = 31
+        slope = (1, 1)
+        block = slice(block, pos_h, slope, cut_s)
 
 
         WIN.blit(pygame.surfarray.make_surface(

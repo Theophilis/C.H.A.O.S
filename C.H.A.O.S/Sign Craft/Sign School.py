@@ -213,8 +213,9 @@ def Chaos_Window():
 
 
     #text
-    text = open('library/bible-niv.txt', 'r')
-    text = text.read()
+    text_name = 'bible-Theophilis.txt'
+    text_a = open('library/' + text_name, 'r')
+    text = text_a.read()
     lessons = text.split('\n')
     callendar = int(math.sqrt(len(lessons))) + 1
     current = 2
@@ -246,6 +247,7 @@ def Chaos_Window():
     #settings
     settings = 0
     mend = 0
+    replace = 0
 
 
     value_color = {0:(0, 0, 0), 1:(255, 0, 0), 2:(255, 255, 0), 3:(0, 255, 0), 4:(0, 255, 255), 5:(0, 0, 255),
@@ -637,13 +639,61 @@ def Chaos_Window():
                     if mend == 1:
                         lessons[current] = phrase
 
+            y = height_2 + height_16
+            replace_button = pygame.Rect(x, y, 200, 50)
+            replace_button_i = pygame.Rect(x, y, 197, 43)
+            pygame.draw.rect(WIN, (192, 0, 192), replace_button)
+            pygame.draw.rect(WIN, (63, 0, 63), replace_button_i)
+            if replace_button.collidepoint((mx, my)):
+                replace_t = main_font.render('replace', True, (255, 255, 255))
+                WIN.blit(replace_t, (x, y))
+                if click:
+                    print()
+                    print("replace")
+                    click = False
+
+                    replacements = phrase.split(':')
+                    phrase = ''
+                    print(replacements)
+
+
+                    try:
+                        if replacements[0] in text:
+                            valid = 6
+                        text = text.replace(replacements[0], replacements[1])
+                    except:
+                        continue
+
+                    with open('library/' + text_name, 'w') as file:
+                        file.write(text)
+                        file.close()
+
+                    text_a = open('library/' + text_name, 'r')
+                    text = text_a.read()
+                    lessons = text.split('\n')
+
+
+            y = height_2 + height_8
+            clear_button = pygame.Rect(x, y, 200, 50)
+            clear_button_i = pygame.Rect(x, y, 197, 43)
+            pygame.draw.rect(WIN, (0, 0, 192), clear_button)
+            pygame.draw.rect(WIN, (0, 0, 63), clear_button_i)
+            if clear_button.collidepoint((mx, my)):
+                clear_t = main_font.render('clear', True, (255, 255, 255))
+                WIN.blit(clear_t, (x, y))
+                if click:
+                    print("clear")
+                    click = False
+                    phrase = ''
+
+
             # phrase
             row_width = 64
             for x in range(int(len(phrase) / row_width) + 1):
                 phrase_t = small_font.render('{' + str(phrase[x * row_width:(x + 1) * row_width]) + '}', True,
                                              (255, 255, 255))
                 WIN.blit(phrase_t,
-                         (width_2 - int(phrase_t.get_width() / 2), height_2 + height_8 + x * phrase_t.get_height()))
+                         (width_2 - int(phrase_t.get_width() / 2), height_2 + height_4 + x * phrase_t.get_height()))
 
 
 
