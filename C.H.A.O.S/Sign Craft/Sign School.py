@@ -31,6 +31,7 @@ pygame.display.init()
 current_display = pygame.display.Info()
 WIDTH, HEIGHT = current_display.current_w - 50, current_display.current_h - 100
 # WIDTH, HEIGHT = 400, 400
+
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
