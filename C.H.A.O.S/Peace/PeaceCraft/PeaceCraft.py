@@ -42,6 +42,7 @@ def Chaos_Window():
 
     print(HEIGHT, WIDTH)
 
+    #basic
     run = 1
     rule = 90
     base = 8
@@ -49,6 +50,15 @@ def Chaos_Window():
     bv = base ** view
     bbv = base ** base ** view
     mandala = 1
+
+    #glove mappings
+    lr_map = 0
+    ud_map = 1
+    color_map = 2
+    brush_size = 7
+    paint_speed = 6
+    tide_map = 11
+
 
 
     path = [(0, 0), (0, 0), (0, 0), (0, 0)]
@@ -506,8 +516,6 @@ def Chaos_Window():
 
 
 
-
-
     # print()
     # print("mount")
     # print(mount)
@@ -533,7 +541,7 @@ def Chaos_Window():
         color_button = pygame.Rect(x + 245, y-2, 510, 24)
         pygame.draw.rect(WIN, value_color[7-mandala], color_button)
         color_button = pygame.Rect(x + 250, y, 500, 20)
-        pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
+        pygame.draw.rect(WIN, value_color[int(glove_values[color_map] / (127 / base) % base)], color_button)
 
         if color_button.collidepoint((mx, my)):
             if click:
@@ -613,16 +621,20 @@ def Chaos_Window():
                     block[int(width / 2 * 3)] = value_color[1][1]
                     block[int(width / 2 * 3) + 1] = value_color[1][2]
 
+                if event.key == pygame.K_m:
+                    mandala += 1
+                    mandala = mandala%2
+
         #mitosis
         if gloves > 0:
             # color
             x = int(WIDTH / 2) - 250
             y = 20
             color_button = pygame.Rect(x + 250, y, 500, 10)
-            pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
+            pygame.draw.rect(WIN, value_color[int(glove_values[color_map] / (127 / base) % base)], color_button)
 
 
-            size_r = 7
+            size_r = brush_size
 
             if int(glove_values[size_r]/g_scale+1) != g_mem[0]:
                 g_mem[0] = int(glove_values[size_r]/g_scale+1)
@@ -636,7 +648,7 @@ def Chaos_Window():
                 tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
             path[1] = path[0]
-            path[0] = (glove_values[0], glove_values[1])
+            path[0] = (glove_values[lr_map], glove_values[ud_map])
 
             if path[0][0] != path[1][0]:
                 direction[0] = 0
@@ -651,10 +663,10 @@ def Chaos_Window():
                 block, tile = tiletosis(block, tile, rule_d, tile_w, tile_w3, tile_h, mandala_path, direction)
 
             if gloves > 1:
-                size_l = 19
+                size_l = brush_size + 12
 
                 color_button = pygame.Rect(x - 250, y, 500, 10)
-                pygame.draw.rect(WIN, value_color[int(glove_values[14] / (127 / base) % base)], color_button)
+                pygame.draw.rect(WIN, value_color[int(glove_values[color_map + 12] / (127 / base) % base)], color_button)
 
                 if int(glove_values[size_l] / g_scale + 1) != g_mem[2]:
                     g_mem[2] = int(glove_values[size_l] / g_scale + 1)
@@ -668,7 +680,7 @@ def Chaos_Window():
                     tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
                 path[3] = path[2]
-                path[2] = (glove_values[12], glove_values[13])
+                path[2] = (glove_values[lr_map], glove_values[ud_map])
 
                 if path[2][0] != path[3][0]:
                     direction[2] = 0
@@ -688,26 +700,26 @@ def Chaos_Window():
                 # print("")
                 # print(glove_values[0]*glove_values[1]%bv)
                 # print(int(glove_values[2]/(127/base)%base))
-                for x in range(int(glove_values[6]/ts + 1)):
-                    tide += int(glove_values[11])
+                for x in range(int(glove_values[paint_speed]/ts + 1)):
+                    tide += int(glove_values[tide_map])
 
-                    depth_r = int(glove_values[2]/(127/base)%base)
+                    depth_r = int(glove_values[color_map]/(127/base)%base)
                     if depth_r == 8:
                         depth_r = tide%8
 
-                    rule_d[list(rule_d.keys())[(glove_values[0] * glove_values[1] + (tide * x)) % bv]] = value_color[depth_r]
+                    rule_d[list(rule_d.keys())[(glove_values[lr_map] * glove_values[ud_map] + (tide * x)) % bv]] = value_color[depth_r]
 
 
 
                 if gloves > 1:
-                    for x in range(int(glove_values[16]/ts + 1)):
-                        tide += int(glove_values[23])
+                    for x in range(int(glove_values[paint_speed + 12]/ts + 1)):
+                        tide += int(glove_values[tide_map + 12])
 
-                        depth_l = int(glove_values[14] / (127 / base) % base)
+                        depth_l = int(glove_values[color_map + 12] / (127 / base) % base)
                         if depth_l == 8:
                             depth_l = tide%8
 
-                        rule_d2[list(rule_d2.keys())[(glove_values[12] * glove_values[13] + (tide * x)) % bv]] = \
+                        rule_d2[list(rule_d2.keys())[(glove_values[lr_map] * glove_values[ud_map] + (tide * x)) % bv]] = \
                         value_color[depth_l]
 
 
