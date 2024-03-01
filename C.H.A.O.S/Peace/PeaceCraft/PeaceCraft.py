@@ -11,6 +11,27 @@ WIDTH, HEIGHT = current_display.current_w - 50, current_display.current_h - 100
 # WIDTH, HEIGHT = 400, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
+width_2 = int(WIDTH / 2)
+width_3 = int(WIDTH / 3)
+width_4 = int(WIDTH / 4)
+width_8 = int(WIDTH / 8)
+width_16 = int(WIDTH / 16)
+width_32 = int(WIDTH / 32)
+width_64 = int(WIDTH / 64)
+width_128 = int(WIDTH / 128)
+width_256 = int(WIDTH / 256)
+width_512 = int(WIDTH / 512)
+
+height_2 = int(HEIGHT / 2)
+height_4 = int(HEIGHT / 4)
+height_8 = int(HEIGHT / 8)
+height_16 = int(HEIGHT / 16)
+height_32 = int(HEIGHT / 32)
+height_64 = int(HEIGHT / 64)
+height_128 = int(HEIGHT / 128)
+height_256 = int(HEIGHT / 256)
+height_512 = int(HEIGHT / 512)
+
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
 small_font = pygame.font.SysFont("leelawadeeuisemilight", 24)
 main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
@@ -509,8 +530,28 @@ def Chaos_Window():
 
         x = int(WIDTH / 2) - 500
         y = 20
-        color_button = pygame.Rect(x + 250, y, 500, 10)
+        color_button = pygame.Rect(x + 245, y-2, 510, 24)
+        pygame.draw.rect(WIN, value_color[7-mandala], color_button)
+        color_button = pygame.Rect(x + 250, y, 500, 20)
         pygame.draw.rect(WIN, value_color[int(glove_values[2] / (127 / base) % base)], color_button)
+
+        if color_button.collidepoint((mx, my)):
+            if click:
+                mandala += 1
+                mandala = mandala%2
+
+        # x = WIDTH - width_8 - width_32
+        # y = height_4 + height_8
+        # integrate_button = pygame.Rect(x, y, width_8 - width_64, height_16)
+        # pygame.draw.rect(WIN, value_color[3], integrate_button)
+        # integrate_button = pygame.Rect(x + 2, y + 2, width_8 - width_64 - 4, height_16 - 4)
+        # pygame.draw.rect(WIN, value_color[0], integrate_button)
+        # if integrate_button.collidepoint((mx, my)):
+        #     record_t = main_font.render('integrate: ' + str(integrate), True, value_color[7])
+        #     WIN.blit(record_t, (x + width_128, y + height_128))
+        #     if click:
+        #         integrate = (integrate + 1) % 2
+        #         click = False
 
 
         pygame.display.update()

@@ -3,7 +3,6 @@ import pickle
 from struct import unpack
 import pygame
 import math
-import scipy as sp
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -42,6 +41,7 @@ height_64 = int(HEIGHT / 64)
 height_128 = int(HEIGHT / 128)
 height_256 = int(HEIGHT / 256)
 height_512 = int(HEIGHT / 512)
+
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
