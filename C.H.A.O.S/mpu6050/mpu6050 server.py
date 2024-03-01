@@ -1,8 +1,9 @@
 import socket
-import sys
+import pickle
 from struct import unpack
 import pygame
 import math
+import scipy as sp
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -27,11 +28,20 @@ width_4 = int(WIDTH / 4)
 width_8 = int(WIDTH / 8)
 width_16 = int(WIDTH / 16)
 width_32 = int(WIDTH / 32)
+width_64 = int(WIDTH / 64)
+width_128 = int(WIDTH / 128)
+width_256 = int(WIDTH / 256)
+width_512 = int(WIDTH / 512)
+
 height_2 = int(HEIGHT / 2)
 height_4 = int(HEIGHT / 4)
 height_8 = int(HEIGHT / 8)
 height_16 = int(HEIGHT / 16)
 height_32 = int(HEIGHT / 32)
+height_64 = int(HEIGHT / 64)
+height_128 = int(HEIGHT / 128)
+height_256 = int(HEIGHT / 256)
+height_512 = int(HEIGHT / 512)
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
@@ -47,21 +57,63 @@ value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4
 
 run = 1
 
+#quads
 poles = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
-angles = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 quadrants = [(1, 1), (1, 1), (1, 1)]
-pos = [0, 0, 0]
+
+#angles
+angles = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+tangles = [(0, 0), (0, 0), (0, 0)]
 xyz_dict = {0:'X:', 1:'Y:', 2:'Z:'}
-calibrations = {0:{}, 1:{}, 2:{}}
-for x in range(3):
-    for y in range(len(poles)):
-        calibrations[x][poles[y]] = {'pop':{}}
+
+#calibration
+calibrate = 0
+try:
+    filename = 'calibrations/mpu_6050_0'
+    infile = open(filename, "rb")
+    calibrations = pickle.load(infile)
+    infile.close
+except:
+    calibrations = {0:{}, 1:{}, 2:{}}
+    for x in range(3):
+        for y in range(len(poles)):
+            calibrations[x][poles[y]] = {'pop':{}}
+
+#lables
+lables = 1
+
+#integrations
+integrate = 1
+graphs_a = [[0], [0], [0], [0], [0], [0]]
+graphs_v = [[0], [0], [0]]
+graphs_s = [[0], [0], [0]]
+pos = [0, 0, 0]
 
 
-
-print(calibrations)
 
 clock = pygame.time.Clock()
+
+#active
+angle_step = 5
+angle_max = 1.5 * angle_step
+cali_round = 2
+
+#heat map
+scale = 12
+
+#calibration
+type = 'point'
+calibrate = 0
+try:
+    filename = 'calibrations/mpu_6050_0_' + type + '_step' + str(angle_step) + '_round' + str(cali_round)
+    infile = open(filename, "rb")
+    calibrations = pickle.load(infile)
+    infile.close
+except:
+    calibrations = {0:{}, 1:{}, 2:{}}
+    for x in range(3):
+        for y in range(len(poles)):
+            calibrations[x][poles[y]] = {'pop':{}}
 
 while run == 1:
 
@@ -77,13 +129,12 @@ while run == 1:
     A = [Ax, Ay, Az]
     G = [Gx, Gy, Gz]
 
-    angle_step = 10
+
     try:
         angles[0] = int(math.atan(Ay/Az)*angle_step)
         quadrants[0] = (int(Az / abs(Az)), int(Ay / abs(Ay)))
     except:
         continue
-
 
     try:
         angles[1] = int(math.atan(Ax/Az)*angle_step)
@@ -97,7 +148,7 @@ while run == 1:
     except:
         continue
 
-    cali_round = 2
+    #angles
     for x in range(3):
         Ar = round(A[x], cali_round)
         if angles[x] > angles[x+3]:
@@ -105,104 +156,255 @@ while run == 1:
         elif angles[x] < angles[x+6]:
             angles[x+6] = angles[x]
 
-        tangle = (angles[(x+1)%3], angles[(x+2)%3])
+        tangles[x] = (angles[(x+1)%3], angles[(x+2)%3])
+        if tangles[x] == (0, 0):
+            tangles0 = (0, 0, angles[x])
 
-        if tangle in calibrations[x][quadrants[x]]:
-            if Ar in calibrations[x][quadrants[x]][tangle]:
-                calibrations[x][quadrants[x]][tangle][Ar] += 1
+            if tangles0 == (0, 0, 0):
+                continue
             else:
-                calibrations[x][quadrants[x]][tangle][Ar] = 1
-
-        else:
-            calibrations[x][quadrants[x]][tangle] = {Ar:1}
-
-        cali_pop = sorted(calibrations[x][quadrants[x]][tangle].items(), key=lambda x: x[1], reverse=True)[0]
-        calibrations[x][quadrants[x]]['pop'][tangle] = cali_pop
-        calibrations[x][quadrants[x]]['pop'] = dict(sorted(calibrations[x][quadrants[x]]['pop'].items(), key=lambda x:x[0]))
+                tangles[x] = tangles0
 
 
+
+
+        if calibrate == 1:
+            if tangles[x] in calibrations[x][quadrants[x]]:
+                if Ar in calibrations[x][quadrants[x]][tangles[x]]:
+                    calibrations[x][quadrants[x]][tangles[x]][Ar] += 1
+                else:
+                    calibrations[x][quadrants[x]][tangles[x]][Ar] = 1
+
+            else:
+                calibrations[x][quadrants[x]][tangles[x]] = {Ar:1}
+
+            cali_pop = sorted(calibrations[x][quadrants[x]][tangles[x]].items(), key=lambda x: x[1], reverse=True)[0]
+            calibrations[x][quadrants[x]]['pop'][tangles[x]] = cali_pop
+            calibrations[x][quadrants[x]]['pop'] = dict(sorted(calibrations[x][quadrants[x]]['pop'].items(), key=lambda x:x[1][1], reverse=True))
+
+            filename = 'calibrations/mpu_6050_0_' + type + '_step' + str(angle_step) + '_round' + str(cali_round)
+            outfile = open(filename, 'wb')
+            pickle.dump(calibrations, outfile)
+            outfile.close
+
+    #graph
+    graph_max = 100
+    for x in range(3):
+
+
+        graphs_a[x].append(A[x]-calibrations[x][quadrants[x]]['pop'][tangles[x]][0])
+        graphs_a[x+3].append(calibrations[x][quadrants[x]]['pop'][tangles[x]][0])
+
+        if len(graphs_a[x]) > graph_max:
+            graphs_a[x] = graphs_a[x][1::]
+            graphs_a[x+3] = graphs_a[x+3][1::]
+
+        graphs_v[x].append(sum(graphs_a[x]))
+        if len(graphs_v[x]) > graph_max:
+            graphs_v[x] = graphs_v[x][1::]
+
+        graphs_s[x].append(sum(graphs_v[x]))
+        if len(graphs_s[x]) > graph_max:
+            graphs_s[x] = graphs_s[x][1::]
+
+        pos[x] += (graphs_s[x][-1]/100)
 
 
     #display
     time_t = main_font.render(str(int(clock.get_fps())), True, (255, 255, 255))
     WIN.blit(time_t, (WIDTH-width_16, height_16))
 
+    #lables
     for x in range(3):
 
-        time_t = text_font.render(str(calibrations[x][quadrants[x]]['pop']), True, (255, 255, 255))
-        WIN.blit(time_t, (width_16, height_4 + height_16*x))
+        #heat map
+        if calibrate == 1:
+            for y in range(len(poles)):
+                for z in range(len(calibrations[x][poles[y]]['pop'])):
+                    pop_cord = list(calibrations[x][poles[y]]['pop'].keys())[z]
+                    x0 = width_8 + width_16 + pop_cord[0]*scale + scale*40*x + scale*angle_max*poles[y][0]
+                    y0 = height_2 - pop_cord[1]*scale - scale*angle_max*poles[y][1]
+                    if len(pop_cord) > 2:
+                        x0 = width_4 + width_16 + width_32 + scale*angle_max*poles[y][0] + pop_cord[2]*scale
+                        y0 = height_4 + x*scale
+                    calibrate_button = pygame.Rect(x0, y0, scale, scale)
 
-        time_t = main_font.render('X:' + str(Ax), True, (255, 255, 255))
-        WIN.blit(time_t, (10, 10))
-        time_t = main_font.render('Y:' + str(Ay), True, (255, 255, 255))
-        WIN.blit(time_t, (10, 64))
-        time_t = main_font.render('Z:' + str(Az), True, (255, 255, 255))
-        WIN.blit(time_t, (10, 128))
+                    shade = (calibrations[x][poles[y]]['pop'][list(calibrations[x][poles[y]]['pop'].keys())[z]][1])
+                    color = (0, 0, shade)
+                    if shade > 255:
+                        color = (255, 255, 0)
+                        shade = 255
 
-        for x in range(3):
-            time_t = main_font.render(str(pos[x]), True, (255, 255, 255))
-            WIN.blit(time_t, (width_4, 10 + 64 * x))
+                    if quadrants[x] == poles[y] and pop_cord == tangles[x]:
+                        color = (255, 0, shade)
+                        if shade == 255:
+                            color = (0, 255, 0)
 
-        spacing = 64
 
-        for x in range(3):
-            tangle = (angles[(x + 1) % 3], angles[(x + 2) % 3])
-            time_t = main_font.render(xyz_dict[x], True, (255, 255, 255))
-            WIN.blit(time_t, (48, height_4 + height_4 + spacing * x))
+                    pygame.draw.rect(WIN, color, calibrate_button)
 
-            time_t = main_font.render(str(angles[x]), True, (255, 255, 255))
-            WIN.blit(time_t, (width_16, height_4 + height_4 + spacing * x))
 
-            time_t = main_font.render(str(angles[x + 3]), True, (255, 255, 255))
-            WIN.blit(time_t, (width_16 + width_16, height_4 + height_4 + spacing * x))
+        #graphs
+        if integrate == 1:
+            for y in range(len(graphs_a[x])):
+                graph_scale = 3
+                #acceleration & calibration
+                x0 = width_16 + y*graph_scale
+                y0 = height_4 - graphs_a[x][y]*graph_scale**2 + x*200
+                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
+                pygame.draw.rect(WIN, value_color[1], graph_point)
+                x0 = width_16 + y*graph_scale
+                y0 = height_4 - graphs_a[x+3][y]*graph_scale**2 + x*200
+                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
+                pygame.draw.rect(WIN, value_color[2], graph_point)
 
-            time_t = main_font.render(str(angles[x + 6]), True, (255, 255, 255))
-            WIN.blit(time_t, (width_16 + width_8, height_4 + height_4 + spacing * x))
+                graph_scale = 5
+                #velocity
+                x0 = width_8 + width_8 + y
+                y0 = height_4 - graphs_v[x][y]*2 + x*200
+                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
+                pygame.draw.rect(WIN, value_color[3 + x], graph_point)
 
-            time_t = main_font.render(str(quadrants[x]), True, (255, 255, 255))
-            WIN.blit(time_t, (width_4, height_2 + spacing * x))
+                graph_scale = 4
+                #speed
+                x0 = width_4 + width_8 + y
+                y0 = height_4 - graphs_s[x][y]/100 + x*200
+                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
+                pygame.draw.rect(WIN, value_color[6 + x], graph_point)
 
-            cali_pop = calibrations[x][quadrants[x]]['pop'][tangle]
+                graph_scale = 4
+                #pos
+                x0 = width_2 + pos[x]*100
+                y0 = height_4 + x*200
+                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
+                pygame.draw.rect(WIN, value_color[6 + x], graph_point)
 
-            time_t = main_font.render(str(cali_pop[0]),True, (255, 255, 255))
-            WIN.blit(time_t, (width_4 + width_16, height_2 + spacing * x))
-            time_t = main_font.render(str(cali_pop[1]),True, (255, 255, 255))
-            WIN.blit(time_t, (width_4 + width_16 +width_16, height_2 + spacing * x))
+        #values
+        if lables == 1:
+            time_t = main_font.render('X:' + str(Ax), True, (255, 255, 255))
+            WIN.blit(time_t, (10, 10))
+            time_t = main_font.render('Y:' + str(Ay), True, (255, 255, 255))
+            WIN.blit(time_t, (10, 64))
+            time_t = main_font.render('Z:' + str(Az), True, (255, 255, 255))
+            WIN.blit(time_t, (10, 128))
+
+            time_t = main_font.render(str(round(graphs_a[x][-1], 3)), True, (255, 255, 255))
+            WIN.blit(time_t, (width_8 + width_16, 10 + height_16*x))
+            time_t = main_font.render(str(round(graphs_v[x][-1], 3)), True, (255, 255, 255))
+            WIN.blit(time_t, (width_4, 10 + height_16*x))
+            time_t = main_font.render(str(round(graphs_s[x][-1], 3)), True, (255, 255, 255))
+            WIN.blit(time_t, (width_4 + width_16, 10 + height_16*x))
+
+
+            spacing = 64
+
+            #angles
+            x0 = width_2
+            for x in range(3):
+
+                time_t = main_font.render(xyz_dict[x], True, (255, 255, 255))
+                WIN.blit(time_t, (x0, height_128 + spacing * x))
+
+                time_t = main_font.render(str(angles[x]), True, (255, 255, 255))
+                WIN.blit(time_t, (x0 + width_16, height_128 + spacing * x))
+
+                time_t = main_font.render(str(angles[x + 3]), True, (255, 255, 255))
+                WIN.blit(time_t, (x0 + width_8, height_128 + spacing * x))
+
+                time_t = main_font.render(str(angles[x + 6]), True, (255, 255, 255))
+                WIN.blit(time_t, (x0 + width_8 + width_16, height_128 + spacing * x))
+
+                time_t = main_font.render(str(quadrants[x]), True, (255, 255, 255))
+                WIN.blit(time_t, (x0 + width_4, height_128 + spacing * x))
+
+                if calibrate == 1:
+                    cali_pop = calibrations[x][quadrants[x]]['pop'][tangles[x]]
+
+                    time_t = main_font.render(str(tangles[x]),True, (255, 255, 255))
+                    WIN.blit(time_t, (width_64, height_2 + height_4 + spacing * x))
+                    time_t = main_font.render(str(cali_pop[0]),True, (255, 255, 255))
+                    WIN.blit(time_t, (width_32 + width_16, height_2 + height_4 + spacing * x))
+                    time_t = main_font.render(str(cali_pop[1]),True, (255, 255, 255))
+                    WIN.blit(time_t, (width_32 + width_8, height_2 + height_4 + spacing * x))
+
+
+
 
     #acc angle
-
-    x = width_2
-    y = height_2 + height_4
+    x = width_8
+    y = height_2 + height_4 + height_8
     x_1 = x + Az*100
     y_1 = y - Ay*100
     pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
 
-    x = width_2 + width_8
-    y = height_2 + height_4
+    x = width_4
     x_1 = x + Az*100
     y_1 = y - Ax*100
     pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
 
-    x = width_2 + width_4
-    y = height_2 + height_4
+    x = width_4 + width_8
     x_1 = x + Ay*100
     y_1 = y - Ax*100
     pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
 
     for i in range(3):
-        tangle = (angles[(i+1)%3], angles[(i+2)%3])
 
-        x = width_2 + width_8*i
-        y = height_4
+        x = width_2 + width_8 + width_8*i
+        y = height_2 + height_4 + height_16
         x_1 = x
         y_1 = y - A[i]*100
         pygame.draw.line(WIN, value_color[4], (x, y), (x_1, y_1), 6)
 
-        x = width_2 + width_8*i
-        y = height_4
-        x_1 = x
-        y_1 = y - calibrations[i][quadrants[i]]['pop'][tangle][0]*100
-        pygame.draw.line(WIN, value_color[5], (x, y), (x_1, y_1), 4)
+        if calibrate == 1:
+            x = width_2 + width_8 + width_8*i
+            y = height_2 + height_4 + height_16
+            x_1 = x
+            y_1 = y - calibrations[i][quadrants[i]]['pop'][tangles[i]][0]*100
+            pygame.draw.line(WIN, value_color[5], (x, y), (x_1, y_1), 4)
+
+
+    #buttons
+    x = WIDTH - width_8 - width_32
+    y = height_8
+    calibrate_button = pygame.Rect(x, y, width_8 - width_64, height_16)
+    pygame.draw.rect(WIN, value_color[4], calibrate_button)
+    calibrate_button = pygame.Rect(x+2, y+2, width_8 - width_64-4, height_16-4)
+    pygame.draw.rect(WIN, value_color[0], calibrate_button)
+    if calibrate_button.collidepoint((mx, my)):
+        record_t = main_font.render('calibrate: ' + str(calibrate), True, value_color[7])
+        WIN.blit(record_t, (x+width_128, y+height_128))
+        if click:
+            calibrate = (calibrate + 1)%2
+            click = False
+
+    x = WIDTH - width_8 - width_32
+    y = height_8 + height_8
+    lable_button = pygame.Rect(x, y, width_8 - width_64, height_16)
+    pygame.draw.rect(WIN, value_color[5], lable_button)
+    lable_button = pygame.Rect(x+2, y+2, width_8 - width_64-4, height_16-4)
+    pygame.draw.rect(WIN, value_color[0], lable_button)
+    if lable_button.collidepoint((mx, my)):
+        record_t = main_font.render('lable: ' + str(lables), True, value_color[7])
+        WIN.blit(record_t, (x+width_128, y+height_128))
+        if click:
+            lables= (lables + 1)%2
+            click = False
+
+    x = WIDTH - width_8 - width_32
+    y = height_4 + height_8
+    integrate_button = pygame.Rect(x, y, width_8 - width_64, height_16)
+    pygame.draw.rect(WIN, value_color[3], integrate_button)
+    integrate_button = pygame.Rect(x+2, y+2, width_8 - width_64-4, height_16-4)
+    pygame.draw.rect(WIN, value_color[0], integrate_button)
+    if integrate_button.collidepoint((mx, my)):
+        record_t = main_font.render('integrate: ' + str(integrate), True, value_color[7])
+        WIN.blit(record_t, (x+width_128, y+height_128))
+        if click:
+            integrate= (integrate + 1)%2
+            click = False
+
+
+
 
 
     # inputs
