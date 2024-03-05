@@ -56,6 +56,8 @@ value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4
                6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127)}
 
 run = 1
+number_of_sensors = 2
+AC = [(0, 0, 0) for n in range(number_of_sensors)]
 
 #quads
 poles = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
@@ -80,15 +82,7 @@ except:
             calibrations[x][poles[y]] = {'pop':{}}
 
 #lables
-lables = 1
-
-#integrations
-integrate = 1
-graphs_a = [[0], [0], [0], [0], [0], [0]]
-graphs_v = [[0], [0], [0]]
-graphs_s = [[0], [0], [0]]
-pos = [0, 0, 0]
-
+lables = 0
 
 
 clock = pygame.time.Clock()
@@ -124,10 +118,11 @@ while run == 1:
     # Wait for message
     message, address = sock.recvfrom(4096)
 
-    Ax, Ay, Az, Gx, Gy, Gz = unpack('6f', message)
+    Ax, Ay, Az, channel = unpack('4f', message)
+    channel = int(channel)
+    AC[channel] = (Ax, Ay, Az)
 
-    A = [Ax, Ay, Az]
-    G = [Gx, Gy, Gz]
+    A = AC[int(channel)]
 
 
     try:
@@ -187,32 +182,13 @@ while run == 1:
             pickle.dump(calibrations, outfile)
             outfile.close
 
-    #graph
-    graph_max = 100
-    for x in range(3):
-
-
-        graphs_a[x].append(A[x]-calibrations[x][quadrants[x]]['pop'][tangles[x]][0])
-        graphs_a[x+3].append(calibrations[x][quadrants[x]]['pop'][tangles[x]][0])
-
-        if len(graphs_a[x]) > graph_max:
-            graphs_a[x] = graphs_a[x][1::]
-            graphs_a[x+3] = graphs_a[x+3][1::]
-
-        graphs_v[x].append(sum(graphs_a[x]))
-        if len(graphs_v[x]) > graph_max:
-            graphs_v[x] = graphs_v[x][1::]
-
-        graphs_s[x].append(sum(graphs_v[x]))
-        if len(graphs_s[x]) > graph_max:
-            graphs_s[x] = graphs_s[x][1::]
-
-        pos[x] += (graphs_s[x][-1]/100)
-
 
     #display
     time_t = main_font.render(str(int(clock.get_fps())), True, (255, 255, 255))
     WIN.blit(time_t, (WIDTH-width_16, height_16))
+
+    channel_t = main_font.render(str(channel), True, (255, 255, 255))
+    WIN.blit(channel_t, (WIDTH-width_16, height_32))
 
     #lables
     for x in range(3):
@@ -244,41 +220,6 @@ while run == 1:
                     pygame.draw.rect(WIN, color, calibrate_button)
 
 
-        #graphs
-        if integrate == 1:
-            for y in range(len(graphs_a[x])):
-                graph_scale = 3
-                #acceleration & calibration
-                x0 = width_16 + y*graph_scale
-                y0 = height_4 - graphs_a[x][y]*graph_scale**2 + x*200
-                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
-                pygame.draw.rect(WIN, value_color[1], graph_point)
-                x0 = width_16 + y*graph_scale
-                y0 = height_4 - graphs_a[x+3][y]*graph_scale**2 + x*200
-                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
-                pygame.draw.rect(WIN, value_color[2], graph_point)
-
-                graph_scale = 5
-                #velocity
-                x0 = width_8 + width_8 + y
-                y0 = height_4 - graphs_v[x][y]*2 + x*200
-                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
-                pygame.draw.rect(WIN, value_color[3 + x], graph_point)
-
-                graph_scale = 4
-                #speed
-                x0 = width_4 + width_8 + y
-                y0 = height_4 - graphs_s[x][y]/100 + x*200
-                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
-                pygame.draw.rect(WIN, value_color[6 + x], graph_point)
-
-                graph_scale = 4
-                #pos
-                x0 = width_2 + pos[x]*100
-                y0 = height_4 + x*200
-                graph_point = pygame.Rect(x0, y0, graph_scale, graph_scale)
-                pygame.draw.rect(WIN, value_color[6 + x], graph_point)
-
         #values
         if lables == 1:
             time_t = main_font.render('X:' + str(Ax), True, (255, 255, 255))
@@ -287,14 +228,6 @@ while run == 1:
             WIN.blit(time_t, (10, 64))
             time_t = main_font.render('Z:' + str(Az), True, (255, 255, 255))
             WIN.blit(time_t, (10, 128))
-
-            time_t = main_font.render(str(round(graphs_a[x][-1], 3)), True, (255, 255, 255))
-            WIN.blit(time_t, (width_8 + width_16, 10 + height_16*x))
-            time_t = main_font.render(str(round(graphs_v[x][-1], 3)), True, (255, 255, 255))
-            WIN.blit(time_t, (width_4, 10 + height_16*x))
-            time_t = main_font.render(str(round(graphs_s[x][-1], 3)), True, (255, 255, 255))
-            WIN.blit(time_t, (width_4 + width_16, 10 + height_16*x))
-
 
             spacing = 64
 
@@ -329,38 +262,32 @@ while run == 1:
 
 
 
+    def Acc_map(A, x, y):
+        for i in range(3):
 
-    #acc angle
-    x = width_8
-    y = height_2 + height_4 + height_8
-    x_1 = x + Az*100
-    y_1 = y - Ay*100
-    pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
-
-    x = width_4
-    x_1 = x + Az*100
-    y_1 = y - Ax*100
-    pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
-
-    x = width_4 + width_8
-    x_1 = x + Ay*100
-    y_1 = y - Ax*100
-    pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
-
-    for i in range(3):
-
-        x = width_2 + width_8 + width_8*i
-        y = height_2 + height_4 + height_16
-        x_1 = x
-        y_1 = y - A[i]*100
-        pygame.draw.line(WIN, value_color[4], (x, y), (x_1, y_1), 6)
-
-        if calibrate == 1:
-            x = width_2 + width_8 + width_8*i
-            y = height_2 + height_4 + height_16
+            if i > 0:
+                x += width_8
             x_1 = x
-            y_1 = y - calibrations[i][quadrants[i]]['pop'][tangles[i]][0]*100
-            pygame.draw.line(WIN, value_color[5], (x, y), (x_1, y_1), 4)
+            y_1 = y - A[i] * 100
+            pygame.draw.line(WIN, value_color[4], (x, y), (x_1, y_1), 6)
+
+            if i == 1:
+                x_1 = x + A[(i + 1) % 3] * 100
+                y_1 = y - A[(i + 2) % 3] * 100
+            else:
+                x_1 = x + A[(i + 2) % 3] * 100
+                y_1 = y - A[(i + 1) % 3] * 100
+
+            pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
+
+            if calibrate == 1:
+                x_1 = x
+                y_1 = y - calibrations[i][quadrants[i]]['pop'][tangles[i]][0] * 100
+                pygame.draw.line(WIN, value_color[5], (x, y), (x_1, y_1), 4)
+
+    for x in range(number_of_sensors):
+        Acc_map(AC[x], width_16 + (width_4+width_8)*x, height_4)
+
 
 
     #buttons
