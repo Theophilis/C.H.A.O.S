@@ -56,7 +56,7 @@ value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4
                6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127)}
 
 run = 1
-number_of_sensors = 2
+number_of_sensors = 8
 AC = [(0, 0, 0) for n in range(number_of_sensors)]
 
 #quads
@@ -286,7 +286,7 @@ while run == 1:
                 pygame.draw.line(WIN, value_color[5], (x, y), (x_1, y_1), 4)
 
     for x in range(number_of_sensors):
-        Acc_map(AC[x], width_16 + (width_4+width_8)*x, height_4)
+        Acc_map(AC[x], width_16 + (width_4+width_8)*(x%3), height_4 + height_4 * int(x/3))
 
 
 
