@@ -57,7 +57,7 @@ value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4
 
 run = 1
 number_of_sensors = 8
-AC = [(0, 0, 0) for n in range(number_of_sensors)]
+AC = [[(0, 0, 0), [(0, (1, 1)), (0, (1, 1)), (0, (1, 1))]] for n in range(number_of_sensors)]
 
 #quads
 poles = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
@@ -68,18 +68,6 @@ angles = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 tangles = [(0, 0), (0, 0), (0, 0)]
 xyz_dict = {0:'X:', 1:'Y:', 2:'Z:'}
 
-#calibration
-calibrate = 0
-try:
-    filename = 'calibrations/mpu_6050_0'
-    infile = open(filename, "rb")
-    calibrations = pickle.load(infile)
-    infile.close
-except:
-    calibrations = {0:{}, 1:{}, 2:{}}
-    for x in range(3):
-        for y in range(len(poles)):
-            calibrations[x][poles[y]] = {'pop':{}}
 
 #lables
 lables = 0
@@ -88,7 +76,7 @@ lables = 0
 clock = pygame.time.Clock()
 
 #active
-angle_step = 5
+angle_step = 1
 angle_max = 1.5 * angle_step
 cali_round = 2
 
@@ -96,18 +84,9 @@ cali_round = 2
 scale = 12
 
 #calibration
-type = 'point'
-calibrate = 0
-try:
-    filename = 'calibrations/mpu_6050_0_' + type + '_step' + str(angle_step) + '_round' + str(cali_round)
-    infile = open(filename, "rb")
-    calibrations = pickle.load(infile)
-    infile.close
-except:
-    calibrations = {0:{}, 1:{}, 2:{}}
-    for x in range(3):
-        for y in range(len(poles)):
-            calibrations[x][poles[y]] = {'pop':{}}
+calibrations = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+midpoints = [0, 0, 0, 0, 0]
+switch = [0, 0, 0, 0, 0]
 
 while run == 1:
 
@@ -120,215 +99,100 @@ while run == 1:
 
     Ax, Ay, Az, channel = unpack('4f', message)
     channel = int(channel)
-    AC[channel] = (Ax, Ay, Az)
+    AC[channel][0] = (Ax, Ay, Az)
 
-    A = AC[int(channel)]
+    A = AC[int(channel)][0]
 
 
     try:
-        angles[0] = int(math.atan(Ay/Az)*angle_step)
+        angles[0] = math.atan2(Ay, Az)
         quadrants[0] = (int(Az / abs(Az)), int(Ay / abs(Ay)))
+        AC[int(channel)][1][0] = (angles[0], quadrants[0])
     except:
         continue
 
     try:
-        angles[1] = int(math.atan(Ax/Az)*angle_step)
+        angles[1] = math.atan2(Ax, Az)
         quadrants[1] = (int(Az / abs(Az)), int(Ax / abs(Ax)))
+        AC[int(channel)][1][1] = (angles[1], quadrants[1])
     except:
         continue
 
     try:
-        angles[2] = int(math.atan(Ax/Ay)*angle_step)
+        angles[2] = math.atan2(Ax, Ay)
         quadrants[2] = (int(Ay / abs(Ay)), int(Ax / abs(Ax)))
+        AC[int(channel)][1][2] = (angles[2], quadrants[2])
     except:
         continue
 
-    #angles
-    for x in range(3):
-        Ar = round(A[x], cali_round)
-        if angles[x] > angles[x+3]:
-            angles[x+3] = angles[x]
-        elif angles[x] < angles[x+6]:
-            angles[x+6] = angles[x]
 
-        tangles[x] = (angles[(x+1)%3], angles[(x+2)%3])
-        if tangles[x] == (0, 0):
-            tangles0 = (0, 0, angles[x])
-
-            if tangles0 == (0, 0, 0):
-                continue
-            else:
-                tangles[x] = tangles0
-
-
-
-
-        if calibrate == 1:
-            if tangles[x] in calibrations[x][quadrants[x]]:
-                if Ar in calibrations[x][quadrants[x]][tangles[x]]:
-                    calibrations[x][quadrants[x]][tangles[x]][Ar] += 1
-                else:
-                    calibrations[x][quadrants[x]][tangles[x]][Ar] = 1
-
-            else:
-                calibrations[x][quadrants[x]][tangles[x]] = {Ar:1}
-
-            cali_pop = sorted(calibrations[x][quadrants[x]][tangles[x]].items(), key=lambda x: x[1], reverse=True)[0]
-            calibrations[x][quadrants[x]]['pop'][tangles[x]] = cali_pop
-            calibrations[x][quadrants[x]]['pop'] = dict(sorted(calibrations[x][quadrants[x]]['pop'].items(), key=lambda x:x[1][1], reverse=True))
-
-            filename = 'calibrations/mpu_6050_0_' + type + '_step' + str(angle_step) + '_round' + str(cali_round)
-            outfile = open(filename, 'wb')
-            pickle.dump(calibrations, outfile)
-            outfile.close
 
 
     #display
     time_t = main_font.render(str(int(clock.get_fps())), True, (255, 255, 255))
-    WIN.blit(time_t, (WIDTH-width_16, height_16))
+    WIN.blit(time_t, (WIDTH-width_32, height_128))
 
-    channel_t = main_font.render(str(channel), True, (255, 255, 255))
-    WIN.blit(channel_t, (WIDTH-width_16, height_32))
+    time_t = main_font.render(str(calibrations), True, (255, 255, 255))
+    WIN.blit(time_t, (width_8, height_4))
 
-    #lables
-    for x in range(3):
+    time_t = main_font.render(str(midpoints), True, (255, 255, 255))
+    WIN.blit(time_t, (width_8, height_4 + height_8))
 
-        #heat map
-        if calibrate == 1:
-            for y in range(len(poles)):
-                for z in range(len(calibrations[x][poles[y]]['pop'])):
-                    pop_cord = list(calibrations[x][poles[y]]['pop'].keys())[z]
-                    x0 = width_8 + width_16 + pop_cord[0]*scale + scale*40*x + scale*angle_max*poles[y][0]
-                    y0 = height_2 - pop_cord[1]*scale - scale*angle_max*poles[y][1]
-                    if len(pop_cord) > 2:
-                        x0 = width_4 + width_16 + width_32 + scale*angle_max*poles[y][0] + pop_cord[2]*scale
-                        y0 = height_4 + x*scale
-                    calibrate_button = pygame.Rect(x0, y0, scale, scale)
+    #fingers
+    for x in range(5):
+        x=x+3
+        A = AC[x][0]
+        for y in range(3):
+            x_0 = width_16 + (width_8+width_16)*(x-3)
+            y_0 = height_32 + y*height_16
 
-                    shade = (calibrations[x][poles[y]]['pop'][list(calibrations[x][poles[y]]['pop'].keys())[z]][1])
-                    color = (0, 0, shade)
-                    if shade > 255:
-                        color = (255, 255, 0)
-                        shade = 255
+            b0 = int(math.degrees(AC[x][1][y][0]))
 
-                    if quadrants[x] == poles[y] and pop_cord == tangles[x]:
-                        color = (255, 0, shade)
-                        if shade == 255:
-                            color = (0, 255, 0)
+            # value
+            A_t = text_font.render(str((b0)), True, (255, 255, 255))
+            WIN.blit(A_t, (x_0, y_0))
+
+            pygame.draw.line(WIN, value_color[4], (x_0, y_0), (x_0+b0, y_0), 2)
 
 
-                    pygame.draw.rect(WIN, color, calibrate_button)
+    for x in range(5):
+        if int(math.degrees(AC[x+3][1][0][0])) > midpoints[x]:
+            switch = 0
+        else:
+            switch = 1
 
-
-        #values
-        if lables == 1:
-            time_t = main_font.render('X:' + str(Ax), True, (255, 255, 255))
-            WIN.blit(time_t, (10, 10))
-            time_t = main_font.render('Y:' + str(Ay), True, (255, 255, 255))
-            WIN.blit(time_t, (10, 64))
-            time_t = main_font.render('Z:' + str(Az), True, (255, 255, 255))
-            WIN.blit(time_t, (10, 128))
-
-            spacing = 64
-
-            #angles
-            x0 = width_2
-            for x in range(3):
-
-                time_t = main_font.render(xyz_dict[x], True, (255, 255, 255))
-                WIN.blit(time_t, (x0, height_128 + spacing * x))
-
-                time_t = main_font.render(str(angles[x]), True, (255, 255, 255))
-                WIN.blit(time_t, (x0 + width_16, height_128 + spacing * x))
-
-                time_t = main_font.render(str(angles[x + 3]), True, (255, 255, 255))
-                WIN.blit(time_t, (x0 + width_8, height_128 + spacing * x))
-
-                time_t = main_font.render(str(angles[x + 6]), True, (255, 255, 255))
-                WIN.blit(time_t, (x0 + width_8 + width_16, height_128 + spacing * x))
-
-                time_t = main_font.render(str(quadrants[x]), True, (255, 255, 255))
-                WIN.blit(time_t, (x0 + width_4, height_128 + spacing * x))
-
-                if calibrate == 1:
-                    cali_pop = calibrations[x][quadrants[x]]['pop'][tangles[x]]
-
-                    time_t = main_font.render(str(tangles[x]),True, (255, 255, 255))
-                    WIN.blit(time_t, (width_64, height_2 + height_4 + spacing * x))
-                    time_t = main_font.render(str(cali_pop[0]),True, (255, 255, 255))
-                    WIN.blit(time_t, (width_32 + width_16, height_2 + height_4 + spacing * x))
-                    time_t = main_font.render(str(cali_pop[1]),True, (255, 255, 255))
-                    WIN.blit(time_t, (width_32 + width_8, height_2 + height_4 + spacing * x))
-
-
-
-    def Acc_map(A, x, y):
-        for i in range(3):
-
-            if i > 0:
-                x += width_8
-            x_1 = x
-            y_1 = y - A[i] * 100
-            pygame.draw.line(WIN, value_color[4], (x, y), (x_1, y_1), 6)
-
-            if i == 1:
-                x_1 = x + A[(i + 1) % 3] * 100
-                y_1 = y - A[(i + 2) % 3] * 100
-            else:
-                x_1 = x + A[(i + 2) % 3] * 100
-                y_1 = y - A[(i + 1) % 3] * 100
-
-            pygame.draw.line(WIN, value_color[3], (x, y), (x_1, y_1), 4)
-
-            if calibrate == 1:
-                x_1 = x
-                y_1 = y - calibrations[i][quadrants[i]]['pop'][tangles[i]][0] * 100
-                pygame.draw.line(WIN, value_color[5], (x, y), (x_1, y_1), 4)
-
-    for x in range(number_of_sensors):
-        Acc_map(AC[x], width_16 + (width_4+width_8)*(x%3), height_4 + height_4 * int(x/3))
+        x = width_2 + x*70
+        y = height_2
+        cali_high_sign = pygame.Rect(x, y, 64, 64)
+        pygame.draw.rect(WIN, value_color[switch*7], cali_high_sign)
 
 
 
     #buttons
-    x = WIDTH - width_8 - width_32
-    y = height_8
-    calibrate_button = pygame.Rect(x, y, width_8 - width_64, height_16)
-    pygame.draw.rect(WIN, value_color[4], calibrate_button)
-    calibrate_button = pygame.Rect(x+2, y+2, width_8 - width_64-4, height_16-4)
-    pygame.draw.rect(WIN, value_color[0], calibrate_button)
-    if calibrate_button.collidepoint((mx, my)):
-        record_t = main_font.render('calibrate: ' + str(calibrate), True, value_color[7])
-        WIN.blit(record_t, (x+width_128, y+height_128))
+    x = WIDTH - width_16
+    y = height_16
+    cali_high_sign = pygame.Rect(x, y, 64, 64)
+    pygame.draw.rect(WIN, value_color[4], cali_high_sign)
+    if cali_high_sign.collidepoint((mx, my)):
         if click:
-            calibrate = (calibrate + 1)%2
-            click = False
+            for x in range(5):
+                calibrations[x][1] = int(math.degrees(AC[x+3][1][0][0]))
+                midpoints[x] = calibrations[x][0] + int((calibrations[x][1] - calibrations[x][0])/2)
 
-    x = WIDTH - width_8 - width_32
-    y = height_8 + height_8
-    lable_button = pygame.Rect(x, y, width_8 - width_64, height_16)
-    pygame.draw.rect(WIN, value_color[5], lable_button)
-    lable_button = pygame.Rect(x+2, y+2, width_8 - width_64-4, height_16-4)
-    pygame.draw.rect(WIN, value_color[0], lable_button)
-    if lable_button.collidepoint((mx, my)):
-        record_t = main_font.render('lable: ' + str(lables), True, value_color[7])
-        WIN.blit(record_t, (x+width_128, y+height_128))
+    x = WIDTH - width_16
+    y = height_16 + 80
+    cali_low_sign = pygame.Rect(x, y, 64, 64)
+    pygame.draw.rect(WIN, value_color[6], cali_low_sign)
+    if cali_low_sign.collidepoint((mx, my)):
         if click:
-            lables= (lables + 1)%2
-            click = False
+            for x in range(5):
+                calibrations[x][0] = int(math.degrees(AC[x+3][1][0][0]))
+                calibrations[x][0] + int((calibrations[x][1] - calibrations[x][0]) / 2)
 
-    x = WIDTH - width_8 - width_32
-    y = height_4 + height_8
-    integrate_button = pygame.Rect(x, y, width_8 - width_64, height_16)
-    pygame.draw.rect(WIN, value_color[3], integrate_button)
-    integrate_button = pygame.Rect(x+2, y+2, width_8 - width_64-4, height_16-4)
-    pygame.draw.rect(WIN, value_color[0], integrate_button)
-    if integrate_button.collidepoint((mx, my)):
-        record_t = main_font.render('integrate: ' + str(integrate), True, value_color[7])
-        WIN.blit(record_t, (x+width_128, y+height_128))
-        if click:
-            integrate= (integrate + 1)%2
-            click = False
+
+
+
+
 
 
 
