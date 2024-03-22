@@ -135,7 +135,7 @@ spacedigu = {v: k for k, v in spacedig.items()}
 
 letters = []
 used = []
-
+sorted()
 print()
 for x in range(32):
     letters.append([])

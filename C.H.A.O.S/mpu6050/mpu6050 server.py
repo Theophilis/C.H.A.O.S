@@ -62,7 +62,7 @@ AC = [[(0, 0, 0), [(0, (1, 1)), (0, (1, 1)), (0, (1, 1))]] for n in range(number
 
 orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
                'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
-               'UD':{0:2, 1:1, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
+               'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
 
 positions = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
              'LR':[0, 0, 0, 0, 0, 0, 0, 0],
@@ -80,21 +80,40 @@ switches = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
 
-toggle = 0
+polarity = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
 
+memory = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+
+loops = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+
+calibrations = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+                'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+                'UD': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]}
+
+
+#calibrations
 glove_name = 'chaotomata'
 try:
     filename = 'calibrations/' + glove_name
     infile = open(filename, "rb")
-    calibrations = pickle.load(infile)
+    revelations = pickle.load(infile)
     infile.close
 
-    for x in range(8):
-        midpoints['FB'][x] = calibrations['FB'][x][0] + int((calibrations['FB'][x][1] - calibrations['FB'][x][0]) / 2)
 except:
-    calibrations = {'FB':[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-                    'LR':[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-                    'UD':[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]}
+
+    revelations = {'FB':[[0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]],
+                    'LR':[[0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]],
+                    'UD':[[0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]}
+
 
 
 
@@ -157,7 +176,6 @@ while run == 1:
         angles[0] = math.atan2(Ay, Az)
         quadrants[0] = (int(Az / abs(Az)), int(Ay / abs(Ay)))
         AC[int(channel)][1][0] = (angles[0], quadrants[0])
-
     except:
         continue
 
@@ -177,23 +195,168 @@ while run == 1:
 
     positions['FB'][channel] = 180 + int(math.degrees(angles[orientation['FB'][channel]]))
 
+    #polarity and loops
+    if polarity['FB'][channel] != int(angles[orientation['FB'][channel]]/abs(angles[orientation['FB'][channel]])):
 
-    #typing
-    letter_value = 0
-    letter_value += switches['FB'][7] * 1 + switches['FB'][6] * 2 + switches['FB'][5] * 4 + switches['FB'][4] * 8 + switches['FB'][3] * 16
+        if positions['FB'][channel] > 270:
+            loops['FB'][channel] -= 1
+        elif positions['FB'][channel] < 90:
+            loops['FB'][channel] += 1
 
-    if switches['FB'][1] != toggle:
-        phrase += digibetu[letter_value]
-        toggle = switches['FB'][1]
+        polarity['FB'][channel] = int(angles[orientation['FB'][channel]]/abs(angles[orientation['FB'][channel]]))
 
-        if letter_value == 15:
-            phrase = ''
-        if letter_value == 16:
-            try:
-                phrase = phrase[:-2]
-            except:
-                continue
+    #loops
+    if loops['FB'][channel] > 0:
+        relatives['FB'][channel] = positions['FB'][channel] + loops['FB'][channel]*360
+    elif loops['FB'][channel] < 0:
+        relatives['FB'][channel] = loops['FB'][channel]*360 + positions['FB'][channel]
+    else:
+        relatives['FB'][channel] = positions['FB'][channel]
 
+
+
+
+    # #typing
+    # letter_value = 0
+    # letter_value += switches['FB'][7] * 1 + switches['FB'][6] * 2 + switches['FB'][5] * 4 + switches['FB'][4] * 8 + switches['FB'][3] * 16
+    #
+    # if switches['FB'][1] != toggle:
+    #     phrase += digibetu[letter_value]
+    #     toggle = switches['FB'][1]
+    #
+    #     if letter_value == 15:
+    #         phrase = ''
+    #     if letter_value == 16:
+    #         try:
+    #             phrase = phrase[:-2]
+    #         except:
+    #             continue
+
+    x0 = width_32
+    y0 = height_16
+    x_space = width_8
+    y_space = height_32 + height_64
+    for x in range(number_of_sensors):
+
+        # calibration
+        if x == 0:
+            calibrations['FB'][x][0] = revelations['FB'][x][0]
+            calibrations['FB'][x][1] = revelations['FB'][x][1]
+        elif x == 1:
+            # shift0 = -(relatives['FB'][0] - revelations['FB'][x][2])
+            # shift1 = -(relatives['FB'][0] - revelations['FB'][x][3])
+            calibrations['FB'][x][0] = revelations['FB'][x][0]
+            calibrations['FB'][x][1] = revelations['FB'][x][1]
+        elif x == 2:
+            shift0 = relatives['FB'][1] - revelations['FB'][x][4]
+            shift1 = relatives['FB'][1] - revelations['FB'][x][5]
+            calibrations['FB'][x][0] = revelations['FB'][x][0] + shift0
+            calibrations['FB'][x][1] = revelations['FB'][x][1] + shift1
+        else:
+            shift0 = relatives['FB'][2] - revelations['FB'][x][6]
+            shift1 = relatives['FB'][2] - revelations['FB'][x][7]
+            calibrations['FB'][x][0] = revelations['FB'][x][0] + shift0
+            calibrations['FB'][x][1] = revelations['FB'][x][1] + shift1
+
+        # midpoints
+        midpoints['FB'][x] = calibrations['FB'][x][1] + int((calibrations['FB'][x][0] - calibrations['FB'][x][1]) / 2)
+
+        if relatives['FB'][x] > midpoints['FB'][x]:
+            switches['FB'][x] = 0
+        else:
+            switches['FB'][x] = 1
+
+        #positions
+        pos_t = small_font.render(str(positions['FB'][x]), True, (255, 255, 255))
+        WIN.blit(pos_t, (x0 + x_space * x, y0))
+        #relatives
+        pos_t = small_font.render(str(relatives['FB'][x]), True, (255, 255, 255))
+        WIN.blit(pos_t, (x0 + x_space * x + width_32, y0))
+
+        #polarity
+        pos_t = small_font.render(str(polarity['FB'][x]), True, (255, 255, 255))
+        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space))
+        #loops
+        pos_t = small_font.render(str(loops['FB'][x]), True, (255, 255, 255))
+        WIN.blit(pos_t, (x0 + x_space * x + width_32, y0 + y_space))
+
+        #revelations
+        for y in range(len(revelations['FB'][x])):
+            pos_t = small_font.render(str(revelations['FB'][x][y]), True, (255, 255, 255))
+            WIN.blit(pos_t, (x0 + x_space * x + width_16, y0 + pos_t.get_height()*y))
+
+        #calibrations
+        pos_t = small_font.render(str(calibrations['FB'][x]), True, (255, 255, 255))
+        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*2))
+        #midpoint
+        pos_t = small_font.render(str(midpoints['FB'][x]), True, (255, 255, 255))
+        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*3))
+
+        #switches
+        pos_t = main_font.render(str(switches['FB'][x]), True, (255, 255, 255))
+        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*4))
+
+
+
+        #stand
+        pos_stand = pygame.Rect(x0 + x_space*x, y0 + y_space*7, 8, 360)
+        pygame.draw.rect(WIN, value_color[1], pos_stand)
+
+        # mark
+        pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + positions['FB'][x]%360, 64, 4)
+        pygame.draw.rect(WIN, value_color[2], pos_mark)
+
+        # cali
+        pos_cali = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + calibrations['FB'][x][0]%360, 32, 4)
+        pygame.draw.rect(WIN, value_color[3], pos_cali)
+        pos_cali = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + calibrations['FB'][x][1]%360, 32, 4)
+        pygame.draw.rect(WIN, value_color[3], pos_cali)
+
+        # midpoint
+        pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + midpoints['FB'][x]%360, 64, 4)
+        pygame.draw.rect(WIN, value_color[4], pos_mark)
+
+        # high calibration
+        cali_high = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + 380, 48, 48)
+        pygame.draw.rect(WIN, value_color[7], cali_high)
+        if cali_high.collidepoint((mx, my)):
+            if click:
+                revelations['FB'][x][1] = positions['FB'][x]
+
+                if x > 0:
+                    revelations['FB'][x][3] = positions['FB'][0]
+                if x > 1:
+                    revelations['FB'][x][5] = positions['FB'][1]
+                if x > 2:
+                    revelations['FB'][x][7] = positions['FB'][2]
+
+                loops['FB'][channel] = 0
+
+                filename = 'calibrations/' + glove_name
+                outfile = open(filename, 'wb')
+                pickle.dump(revelations, outfile)
+                outfile.close
+
+        # low calibration
+        cali_low = pygame.Rect(x0 + x_space * x, y0 + y_space*8 + 380, 48, 48)
+        pygame.draw.rect(WIN, value_color[8], cali_low)
+        if cali_low.collidepoint((mx, my)):
+            if click:
+                revelations['FB'][x][0] = positions['FB'][x]
+
+                if x > 0:
+                    revelations['FB'][x][2] = positions['FB'][0]
+                if x > 1:
+                    revelations['FB'][x][4] = positions['FB'][1]
+                if x > 2:
+                    revelations['FB'][x][6] = positions['FB'][2]
+
+                loops['FB'][channel] = 0
+
+                filename = 'calibrations/' + glove_name
+                outfile = open(filename, 'wb')
+                pickle.dump(revelations, outfile)
+                outfile.close
 
 
     #display
@@ -208,108 +371,6 @@ while run == 1:
 
     time_t = main_font.render('{' + str(phrase) + '}', True, (255, 255, 255))
     WIN.blit(time_t, (width_2 - int(time_t.get_width()/2), height_16))
-
-
-
-
-
-    x0 = width_32
-    y0 = height_8
-    x_space = width_16
-    for x in range(number_of_sensors):
-
-
-        if relatives['FB'][x] < midpoints['FB'][x]:
-            switches['FB'][x] = 1
-        else:
-            switches['FB'][x] = 0
-
-        if x < 2:
-            relatives['FB'][x] = positions['FB'][x]
-        elif x == 2:
-            relatives['FB'][x] = positions['FB'][x] - (positions['FB'][1] - midpoints['FB'][1])
-        elif x > 2:
-            relatives['FB'][x] = positions['FB'][x] - (relatives['FB'][2] - midpoints['FB'][2]) - (positions['FB'][1] - midpoints['FB'][1])
-
-        if lables > 0:
-            pos_t = main_font.render(str(relatives['FB'][x]), True, (255, 255, 255))
-            WIN.blit(pos_t, (x0 + x_space*x, y0-height_16))
-            pos_t = main_font.render(str(positions['FB'][x]), True, (255, 255, 255))
-            WIN.blit(pos_t, (x0 + x_space*x, y0))
-            pos_t = main_font.render(str(calibrations['FB'][x]), True, (255, 255, 255))
-            WIN.blit(pos_t, (x0 + x_space*x, y0 + height_16))
-            pos_t = main_font.render(str(midpoints['FB'][x]), True, (255, 255, 255))
-            WIN.blit(pos_t, (x0 + x_space*x, y0 + height_8))
-            pos_t = main_font.render(str(switches['FB'][x]), True, (255, 255, 255))
-            WIN.blit(pos_t, (x0 + x_space*x, y0 + height_8 + height_16))
-
-        #switch
-        pos_stand = pygame.Rect(x0 + x_space*x + 16, y0 + height_4 + midpoints['FB'][x]-16, 32, 32)
-        pygame.draw.rect(WIN, value_color[switches['FB'][x]*7], pos_stand)
-
-        #stand
-        pos_stand = pygame.Rect(x0 + x_space*x, y0 + height_4, 8, 360)
-        pygame.draw.rect(WIN, value_color[1], pos_stand)
-
-        #mark
-        pos_mark = pygame.Rect(x0 + x_space*x, y0 + height_4+positions['FB'][x], 64, 4)
-        pygame.draw.rect(WIN, value_color[2], pos_mark)
-
-        #mark
-        pos_mark = pygame.Rect(x0 + x_space*x, y0 + height_4+relatives['FB'][x], 64, 2)
-        pygame.draw.rect(WIN, value_color[5], pos_mark)
-
-        #cali
-        pos_cali = pygame.Rect(x0 + x_space*x, y0 + height_4+calibrations['FB'][x][0], 32, 4)
-        pygame.draw.rect(WIN, value_color[3], pos_cali)
-        pos_cali = pygame.Rect(x0 + x_space*x, y0 + height_4+calibrations['FB'][x][1], 32, 4)
-        pygame.draw.rect(WIN, value_color[3], pos_cali)
-
-        #midpoint
-        pos_mark = pygame.Rect(x0 + x_space*x, y0 + height_4+midpoints['FB'][x], 64, 4)
-        pygame.draw.rect(WIN, value_color[4], pos_mark)
-
-
-
-        #high calibration
-        cali_high = pygame.Rect(x0 + x_space*x, y0 + height_2 + height_8 + height_16, 64, 64)
-        pygame.draw.rect(WIN, value_color[7], cali_high)
-        if cali_high.collidepoint((mx, my)):
-            if click:
-                calibrations['FB'][x][1] = positions['FB'][x]
-                midpoints['FB'][x] = calibrations['FB'][x][0] + int((calibrations['FB'][x][1] - calibrations['FB'][x][0]) / 2)
-
-                filename = 'calibrations/' + glove_name
-                outfile = open(filename, 'wb')
-                pickle.dump(calibrations, outfile)
-                outfile.close
-
-
-
-        #low calibration
-        cali_low = pygame.Rect(x0 + x_space*x, y0 + height_2 + height_8 + height_16 + 80, 64, 64)
-        pygame.draw.rect(WIN, value_color[8], cali_low)
-        if cali_low.collidepoint((mx, my)):
-            if click:
-                calibrations['FB'][x][0] = positions['FB'][x]
-                midpoints['FB'][x] = calibrations['FB'][x][0] + int((calibrations['FB'][x][1] - calibrations['FB'][x][0]) / 2)
-
-                filename = 'calibrations/' + glove_name
-                outfile = open(filename, 'wb')
-                pickle.dump(calibrations, outfile)
-                outfile.close
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -702,3 +763,5 @@ while run == 1:
         #         glove_values[ev[1] + glove_sensors] = ev[2]
 
     pygame.display.update()
+
+
