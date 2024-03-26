@@ -63,38 +63,28 @@ AC = [[(0, 0, 0), [(0, (1, 1)), (0, (1, 1)), (0, (1, 1))]] for n in range(number
 orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
                'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
                'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
-
 positions = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-
-relatives = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
              'LR':[0, 0, 0, 0, 0, 0, 0, 0],
              'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
 
 midpoints = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
              'LR':[0, 0, 0, 0, 0, 0, 0, 0],
              'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+deadpoints = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
 
 switches = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-
-polarity = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-
-memory = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-
-loops = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+zones = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
 
 calibrations = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'UD': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]}
+
 
 
 #calibrations
@@ -171,49 +161,24 @@ while run == 1:
     A = AC[int(channel)][0]
 
 
-
+    #angle
     try:
         angles[0] = math.atan2(Ay, Az)
-        quadrants[0] = (int(Az / abs(Az)), int(Ay / abs(Ay)))
-        AC[int(channel)][1][0] = (angles[0], quadrants[0])
     except:
         continue
 
     try:
         angles[1] = math.atan2(Ax, Az)
-        quadrants[1] = (int(Az / abs(Az)), int(Ax / abs(Ax)))
-        AC[int(channel)][1][1] = (angles[1], quadrants[1])
     except:
         continue
 
     try:
         angles[2] = math.atan2(Ax, Ay)
-        quadrants[2] = (int(Ay / abs(Ay)), int(Ax / abs(Ax)))
-        AC[int(channel)][1][2] = (angles[2], quadrants[2])
     except:
         continue
 
+    #positions
     positions['FB'][channel] = 180 + int(math.degrees(angles[orientation['FB'][channel]]))
-
-    #polarity and loops
-    if polarity['FB'][channel] != int(angles[orientation['FB'][channel]]/abs(angles[orientation['FB'][channel]])):
-
-        if positions['FB'][channel] > 270:
-            loops['FB'][channel] -= 1
-        elif positions['FB'][channel] < 90:
-            loops['FB'][channel] += 1
-
-        polarity['FB'][channel] = int(angles[orientation['FB'][channel]]/abs(angles[orientation['FB'][channel]]))
-
-    #loops
-    if loops['FB'][channel] > 0:
-        relatives['FB'][channel] = positions['FB'][channel] + loops['FB'][channel]*360
-    elif loops['FB'][channel] < 0:
-        relatives['FB'][channel] = loops['FB'][channel]*360 + positions['FB'][channel]
-    else:
-        relatives['FB'][channel] = positions['FB'][channel]
-
-
 
 
     # #typing
@@ -248,55 +213,57 @@ while run == 1:
             calibrations['FB'][x][0] = revelations['FB'][x][0]
             calibrations['FB'][x][1] = revelations['FB'][x][1]
         elif x == 2:
-            shift0 = relatives['FB'][1] - revelations['FB'][x][4]
-            shift1 = relatives['FB'][1] - revelations['FB'][x][5]
+            shift0 = positions['FB'][1] - revelations['FB'][x][4]
+            shift1 = positions['FB'][1] - revelations['FB'][x][5]
             calibrations['FB'][x][0] = revelations['FB'][x][0] + shift0
             calibrations['FB'][x][1] = revelations['FB'][x][1] + shift1
         else:
-            shift0 = relatives['FB'][2] - revelations['FB'][x][6]
-            shift1 = relatives['FB'][2] - revelations['FB'][x][7]
+            shift0 = positions['FB'][2] - revelations['FB'][x][6]
+            shift1 = positions['FB'][2] - revelations['FB'][x][7]
             calibrations['FB'][x][0] = revelations['FB'][x][0] + shift0
             calibrations['FB'][x][1] = revelations['FB'][x][1] + shift1
 
         # midpoints
         midpoints['FB'][x] = calibrations['FB'][x][1] + int((calibrations['FB'][x][0] - calibrations['FB'][x][1]) / 2)
+        deadpoints['FB'][x] = (midpoints['FB'][x]+180)%360
 
-        if relatives['FB'][x] > midpoints['FB'][x]:
-            switches['FB'][x] = 0
+        if midpoints['FB'][x] > deadpoints['FB'][x]:
+            if positions['FB'][x] < midpoints['FB'][x] and positions['FB'][x] > deadpoints['FB'][x]:
+                switches['FB'][x] = 1
+            else:
+                switches['FB'][x] = 0
         else:
-            switches['FB'][x] = 1
+            if positions['FB'][x] > midpoints['FB'][x] and positions['FB'][x] < deadpoints['FB'][x]:
+                switches['FB'][x] = 0
+            else:
+                switches['FB'][x] = 1
+
 
         #positions
         pos_t = small_font.render(str(positions['FB'][x]), True, (255, 255, 255))
         WIN.blit(pos_t, (x0 + x_space * x, y0))
-        #relatives
-        pos_t = small_font.render(str(relatives['FB'][x]), True, (255, 255, 255))
-        WIN.blit(pos_t, (x0 + x_space * x + width_32, y0))
 
-        #polarity
-        pos_t = small_font.render(str(polarity['FB'][x]), True, (255, 255, 255))
-        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space))
-        #loops
-        pos_t = small_font.render(str(loops['FB'][x]), True, (255, 255, 255))
-        WIN.blit(pos_t, (x0 + x_space * x + width_32, y0 + y_space))
+        #zones
+        zone_t = small_font.render(str(zones['FB'][x]), True, (255, 255, 255))
+        WIN.blit(zone_t, (x0 + x_space * x, y0 + y_space))
 
-        #revelations
-        for y in range(len(revelations['FB'][x])):
-            pos_t = small_font.render(str(revelations['FB'][x][y]), True, (255, 255, 255))
-            WIN.blit(pos_t, (x0 + x_space * x + width_16, y0 + pos_t.get_height()*y))
+        # #revelations
+        # for y in range(len(revelations['FB'][x])):
+        #     pos_t = small_font.render(str(revelations['FB'][x][y]), True, (255, 255, 255))
+        #     WIN.blit(pos_t, (x0 + x_space * x + width_16, y0 + pos_t.get_height()*y))
 
-        #calibrations
-        pos_t = small_font.render(str(calibrations['FB'][x]), True, (255, 255, 255))
-        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*2))
-        #midpoint
-        pos_t = small_font.render(str(midpoints['FB'][x]), True, (255, 255, 255))
-        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*3))
+        # #calibrations
+        # pos_t = small_font.render(str(calibrations['FB'][x]), True, (255, 255, 255))
+        # WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*2))
+        # #midpoint
+        # pos_t = small_font.render(str(midpoints['FB'][x]), True, (255, 255, 255))
+        # WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*3))
 
-        #switches
-        pos_t = main_font.render(str(switches['FB'][x]), True, (255, 255, 255))
-        WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*4))
+        # #switches
+        # pos_t = main_font.render(str(switches['FB'][x]), True, (255, 255, 255))
+        # WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*4))
 
-
+        x=x
 
         #stand
         pos_stand = pygame.Rect(x0 + x_space*x, y0 + y_space*7, 8, 360)
@@ -315,6 +282,9 @@ while run == 1:
         # midpoint
         pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + midpoints['FB'][x]%360, 64, 4)
         pygame.draw.rect(WIN, value_color[4], pos_mark)
+        # deadpoint
+        pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + deadpoints['FB'][x]%360, 64, 4)
+        pygame.draw.rect(WIN, value_color[5], pos_mark)
 
         # high calibration
         cali_high = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + 380, 48, 48)
@@ -329,8 +299,6 @@ while run == 1:
                     revelations['FB'][x][5] = positions['FB'][1]
                 if x > 2:
                     revelations['FB'][x][7] = positions['FB'][2]
-
-                loops['FB'][channel] = 0
 
                 filename = 'calibrations/' + glove_name
                 outfile = open(filename, 'wb')
@@ -351,12 +319,17 @@ while run == 1:
                 if x > 2:
                     revelations['FB'][x][6] = positions['FB'][2]
 
-                loops['FB'][channel] = 0
 
                 filename = 'calibrations/' + glove_name
                 outfile = open(filename, 'wb')
                 pickle.dump(revelations, outfile)
                 outfile.close
+
+        #switches
+        switch_sign = pygame.Rect(x0 + x_space * x, y0 + y_space*5, 32, 32)
+        pygame.draw.rect(WIN, value_color[7*switches['FB'][x]], switch_sign)
+
+
 
 
     #display
