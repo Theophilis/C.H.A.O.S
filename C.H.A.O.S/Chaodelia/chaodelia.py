@@ -10,13 +10,7 @@ import sys
 import pygame.midi
 import time
 from collections import deque
-from gtts import gTTS
 from pygame import mixer
-import pynput
-from pynput.keyboard import Key, Controller
-import mouse
-
-keyboard = Controller()
 
 sys.setrecursionlimit(999999999)
 
@@ -451,13 +445,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
         phrase0_label = lable_font.render(f":{phrase_0}", 1, (255, 255, 255))
         phrase1_label = lable_font.render(f":{phrase_1}", 1, (255, 255, 255))
         goal_label = lable_font.render(f"{goal}", 1, (255, 255, 255))
-        turn_label = lable_font.render(f"{turn}", 1, (255, 255, 255))
+        # turn_label = lable_font.render(f"{turn}", 1, (255, 255, 255))
 
         value0_label = lable_font.render(f"{value_letter[value_0]}", 1, (255, 255, 255))
         value1_label = lable_font.render(f"{value_letter[value_1]}", 1, (255, 255, 255))
 
-        score_label = lable_font.render(f"{(score_1, score_0)}", 1, (255, 255, 255))
-        point_label = lable_font.render(f"{(point_1, point_0)}", 1, (255, 255, 255))
+        # score_label = lable_font.render(f"{(score_1, score_0)}", 1, (255, 255, 255))
+        # point_label = lable_font.render(f"{(point_1, point_0)}", 1, (255, 255, 255))
 
 
 
@@ -477,13 +471,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             WIN.blit(phrase0_label, (int(WIDTH/2) + WIDTH/4 - phrase0_label.get_width(), 10))
             WIN.blit(phrase1_label, (int(WIDTH/4) - phrase1_label.get_width(), 10))
             WIN.blit(goal_label, (int(WIDTH/2) - goal_label.get_width()/2, 10))
-            WIN.blit(turn_label, (int(WIDTH/2), int(HEIGHT/2)))
-
+            # WIN.blit(turn_label, (int(WIDTH/2), int(HEIGHT/2)))
+            #
             WIN.blit(value1_label, (int(WIDTH/4), 60))
             WIN.blit(value0_label, (int(WIDTH/2) + WIDTH/4, 60))
-
-            WIN.blit(score_label, (int(WIDTH/2) - score_label.get_width()/2, 80))
-            WIN.blit(point_label, (int(WIDTH/2) - point_label.get_width()/2, 160))
+            #
+            # WIN.blit(score_label, (int(WIDTH/2) - score_label.get_width()/2, 80))
+            # WIN.blit(point_label, (int(WIDTH/2) - point_label.get_width()/2, 160))
 
             if ari > 1:
                 # stick_0
@@ -857,7 +851,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #ari
-    ari = 0
+    ari = 2
     turn = 0
 
     value_0 = 0
@@ -914,7 +908,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     bookmarks = [0]
 
     #ui
-    ui_on = 1
+    ui_on = 0
     ui_scale = 14
     bar_height = 15000
     bar_width = ui_scale + int(ui_scale / 1)
@@ -1372,7 +1366,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         int(glove_values[8] / 64) * 2 ** 2) + (
                             int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
 
-            if ari == 1:
+            if ari == 8:
                 typing_mouse = 0
 
                 # typing
@@ -2097,13 +2091,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
                 elif event.key == pygame.K_F1:
-                    # book_rule = str()
-                    # for ir in i_rule:
-                    #     book_rule += str(ir)
-                    # rule_book.append(book_rule)
 
                     ari += 2
                     ari = ari % 4
+
+                    print()
+                    print(ari)
 
                     if ari > 0:
                         micro_brush = 2
@@ -2111,13 +2104,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         micro_brush = 0
 
                 elif event.key == pygame.K_F2:
-                    # book_rule = str()
-                    # for ir in i_rule:
-                    #     book_rule += str(ir)
-                    # rule_book.append(book_rule)
 
                     ui_on += 1
                     ui_on = ui_on % 3
+
+                    print()
+                    print(ui_on)
 
                 elif event.key == pygame.K_F3:
                     for y in range(canvas_rows):
