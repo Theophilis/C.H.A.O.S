@@ -60,9 +60,16 @@ run = 1
 number_of_sensors = 8
 AC = [[(0, 0, 0), [(0, (1, 1)), (0, (1, 1)), (0, (1, 1))]] for n in range(number_of_sensors)]
 
+
+#chaotomata
 orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
                'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
                'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
+#gos
+orientation = {'FB':{0:1, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0},
+               'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
+               'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
+
 positions = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
              'LR':[0, 0, 0, 0, 0, 0, 0, 0],
              'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
@@ -118,6 +125,7 @@ xyz_dict = {0:'X:', 1:'Y:', 2:'Z:'}
 
 
 #lables
+Ascale = 1
 lables = 0
 
 
@@ -132,6 +140,8 @@ cali_round = 2
 scale = 12
 
 #typing
+signing = 0
+toggle = 0
 digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
            's': 4, 'c': 5, 'd': 6, 'm': 7,
            'g': 8, 'f': 9, 'w': 10, 'v': 11,
@@ -144,6 +154,7 @@ digibetu = {v: k for k, v in digibet.items()}
 
 letter_value = 0
 phrase = ''
+almanac = []
 
 while run == 1:
 
@@ -156,9 +167,6 @@ while run == 1:
 
     Ax, Ay, Az, channel = unpack('4f', message)
     channel = int(channel)
-    AC[channel][0] = (Ax, Ay, Az)
-
-    A = AC[int(channel)][0]
 
 
     #angle
@@ -181,21 +189,35 @@ while run == 1:
     positions['FB'][channel] = 180 + int(math.degrees(angles[orientation['FB'][channel]]))
 
 
-    # #typing
-    # letter_value = 0
-    # letter_value += switches['FB'][7] * 1 + switches['FB'][6] * 2 + switches['FB'][5] * 4 + switches['FB'][4] * 8 + switches['FB'][3] * 16
-    #
-    # if switches['FB'][1] != toggle:
-    #     phrase += digibetu[letter_value]
-    #     toggle = switches['FB'][1]
-    #
-    #     if letter_value == 15:
-    #         phrase = ''
-    #     if letter_value == 16:
-    #         try:
-    #             phrase = phrase[:-2]
-    #         except:
-    #             continue
+    #typing
+    if signing == 1:
+        letter_value = 0
+        letter_value += switches['FB'][7] * 1 + switches['FB'][6] * 2 + switches['FB'][5] * 4 + switches['FB'][4] * 8 + switches['FB'][3] * 16
+
+        if switches['FB'][1] != toggle:
+            phrase += digibetu[letter_value]
+            toggle = switches['FB'][1]
+
+            if letter_value == 15:
+                almanac.append(phrase)
+                phrase = ''
+            if letter_value == 16:
+                try:
+                    phrase = phrase[:-2]
+                except:
+                    continue
+
+        #display
+        time_t = main_font.render(str(digibetu[letter_value]), True, (255, 255, 255))
+        WIN.blit(time_t, (width_2, height_8))
+
+        time_t = main_font.render('{' + str(phrase) + '}', True, (255, 255, 255))
+        WIN.blit(time_t, (width_2 - int(time_t.get_width() / 2), height_16))
+
+        for x in range(len(almanac)):
+            time_t = main_font.render('{' + str(almanac[x]) + '}', True, (255, 255, 255))
+            WIN.blit(time_t, (width_2 - int(time_t.get_width() / 2), height_16 + height_8*x))
+
 
     x0 = width_32
     y0 = height_16
@@ -238,112 +260,104 @@ while run == 1:
             else:
                 switches['FB'][x] = 1
 
-
-        #positions
-        pos_t = small_font.render(str(positions['FB'][x]), True, (255, 255, 255))
-        WIN.blit(pos_t, (x0 + x_space * x, y0))
-
-        #zones
-        zone_t = small_font.render(str(zones['FB'][x]), True, (255, 255, 255))
-        WIN.blit(zone_t, (x0 + x_space * x, y0 + y_space))
-
-        # #revelations
-        # for y in range(len(revelations['FB'][x])):
-        #     pos_t = small_font.render(str(revelations['FB'][x][y]), True, (255, 255, 255))
-        #     WIN.blit(pos_t, (x0 + x_space * x + width_16, y0 + pos_t.get_height()*y))
-
-        # #calibrations
-        # pos_t = small_font.render(str(calibrations['FB'][x]), True, (255, 255, 255))
-        # WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*2))
-        # #midpoint
-        # pos_t = small_font.render(str(midpoints['FB'][x]), True, (255, 255, 255))
-        # WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*3))
-
-        # #switches
-        # pos_t = main_font.render(str(switches['FB'][x]), True, (255, 255, 255))
-        # WIN.blit(pos_t, (x0 + x_space * x, y0 + y_space*4))
-
         x=x
 
-        #stand
-        pos_stand = pygame.Rect(x0 + x_space*x, y0 + y_space*7, 8, 360)
-        pygame.draw.rect(WIN, value_color[1], pos_stand)
+        if Ascale == 1:
 
-        # mark
-        pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + positions['FB'][x]%360, 64, 4)
-        pygame.draw.rect(WIN, value_color[2], pos_mark)
+            # positions
+            pos_t = small_font.render(str(positions['FB'][x]), True, (255, 255, 255))
+            WIN.blit(pos_t, (x0 + x_space * x, y0))
 
-        # cali
-        pos_cali = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + calibrations['FB'][x][0]%360, 32, 4)
-        pygame.draw.rect(WIN, value_color[3], pos_cali)
-        pos_cali = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + calibrations['FB'][x][1]%360, 32, 4)
-        pygame.draw.rect(WIN, value_color[3], pos_cali)
+            # zones
+            zone_t = small_font.render(str(zones['FB'][x]), True, (255, 255, 255))
+            WIN.blit(zone_t, (x0 + x_space * x, y0 + y_space))
 
-        # midpoint
-        pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + midpoints['FB'][x]%360, 64, 4)
-        pygame.draw.rect(WIN, value_color[4], pos_mark)
-        # deadpoint
-        pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + deadpoints['FB'][x]%360, 64, 4)
-        pygame.draw.rect(WIN, value_color[5], pos_mark)
+            #stand
+            pos_stand = pygame.Rect(x0 + x_space*x, y0 + y_space*7, 8, 360)
+            pygame.draw.rect(WIN, value_color[1], pos_stand)
 
-        # high calibration
-        cali_high = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + 380, 48, 48)
-        pygame.draw.rect(WIN, value_color[7], cali_high)
-        if cali_high.collidepoint((mx, my)):
-            if click:
-                revelations['FB'][x][1] = positions['FB'][x]
+            # mark
+            pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + positions['FB'][x]%360, 64, 4)
+            pygame.draw.rect(WIN, value_color[2], pos_mark)
 
-                if x > 0:
-                    revelations['FB'][x][3] = positions['FB'][0]
-                if x > 1:
-                    revelations['FB'][x][5] = positions['FB'][1]
-                if x > 2:
-                    revelations['FB'][x][7] = positions['FB'][2]
+            # cali
+            pos_cali = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + calibrations['FB'][x][0]%360, 32, 4)
+            pygame.draw.rect(WIN, value_color[3], pos_cali)
+            pos_cali = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + calibrations['FB'][x][1]%360, 32, 4)
+            pygame.draw.rect(WIN, value_color[3], pos_cali)
 
-                filename = 'calibrations/' + glove_name
-                outfile = open(filename, 'wb')
-                pickle.dump(revelations, outfile)
-                outfile.close
+            # midpoint
+            pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + midpoints['FB'][x]%360, 64, 4)
+            pygame.draw.rect(WIN, value_color[4], pos_mark)
+            # deadpoint
+            pos_mark = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + deadpoints['FB'][x]%360, 64, 4)
+            pygame.draw.rect(WIN, value_color[5], pos_mark)
 
-        # low calibration
-        cali_low = pygame.Rect(x0 + x_space * x, y0 + y_space*8 + 380, 48, 48)
-        pygame.draw.rect(WIN, value_color[8], cali_low)
-        if cali_low.collidepoint((mx, my)):
-            if click:
-                revelations['FB'][x][0] = positions['FB'][x]
+            # high calibration
+            cali_high = pygame.Rect(x0 + x_space * x, y0 + y_space*7 + 380, 48, 48)
+            pygame.draw.rect(WIN, value_color[7], cali_high)
+            if cali_high.collidepoint((mx, my)):
+                if click:
+                    revelations['FB'][x][1] = positions['FB'][x]
 
-                if x > 0:
-                    revelations['FB'][x][2] = positions['FB'][0]
-                if x > 1:
-                    revelations['FB'][x][4] = positions['FB'][1]
-                if x > 2:
-                    revelations['FB'][x][6] = positions['FB'][2]
+                    if x > 0:
+                        revelations['FB'][x][3] = positions['FB'][0]
+                    if x > 1:
+                        revelations['FB'][x][5] = positions['FB'][1]
+                    if x > 2:
+                        revelations['FB'][x][7] = positions['FB'][2]
+
+                    filename = 'calibrations/' + glove_name
+                    outfile = open(filename, 'wb')
+                    pickle.dump(revelations, outfile)
+                    outfile.close
+
+            # low calibration
+            cali_low = pygame.Rect(x0 + x_space * x, y0 + y_space*8 + 380, 48, 48)
+            pygame.draw.rect(WIN, value_color[8], cali_low)
+            if cali_low.collidepoint((mx, my)):
+                if click:
+                    revelations['FB'][x][0] = positions['FB'][x]
+
+                    if x > 0:
+                        revelations['FB'][x][2] = positions['FB'][0]
+                    if x > 1:
+                        revelations['FB'][x][4] = positions['FB'][1]
+                    if x > 2:
+                        revelations['FB'][x][6] = positions['FB'][2]
 
 
-                filename = 'calibrations/' + glove_name
-                outfile = open(filename, 'wb')
-                pickle.dump(revelations, outfile)
-                outfile.close
+                    filename = 'calibrations/' + glove_name
+                    outfile = open(filename, 'wb')
+                    pickle.dump(revelations, outfile)
+                    outfile.close
 
-        #switches
-        switch_sign = pygame.Rect(x0 + x_space * x, y0 + y_space*5, 32, 32)
-        pygame.draw.rect(WIN, value_color[7*switches['FB'][x]], switch_sign)
+            #switches
+            switch_sign = pygame.Rect(x0 + x_space * x, y0 + y_space*5, 32, 32)
+            pygame.draw.rect(WIN, value_color[7*switches['FB'][x]], switch_sign)
 
 
 
 
     #display
-    time_t = main_font.render(str(int(clock.get_fps())), True, (255, 255, 255))
-    WIN.blit(time_t, (WIDTH-width_32, height_128))
+    # time_t = main_font.render(str(int(clock.get_fps())), True, (255, 255, 255))
+    # WIN.blit(time_t, (WIDTH-width_32, height_128))
+    #
+    # time_t = main_font.render(str(letter_value), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_8 + height_16))
+    #
+    # time_t = main_font.render(str(digibetu[letter_value]), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_8))
+    #
+    # time_t = main_font.render('{' + str(phrase) + '}', True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2 - int(time_t.get_width()/2), height_16))
 
-    time_t = main_font.render(str(letter_value), True, (255, 255, 255))
-    WIN.blit(time_t, (width_2, height_8 + height_16))
-
-    time_t = main_font.render(str(digibetu[letter_value]), True, (255, 255, 255))
-    WIN.blit(time_t, (width_2, height_8))
-
-    time_t = main_font.render('{' + str(phrase) + '}', True, (255, 255, 255))
-    WIN.blit(time_t, (width_2 - int(time_t.get_width()/2), height_16))
+    # time_t = main_font.render(str((int(Ax*10))), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_2))
+    # time_t = main_font.render(str((int(Ay*10))), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_2 + height_16))
+    # time_t = main_font.render(str((int(Az*10))), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_2 + height_8))
 
 
 
