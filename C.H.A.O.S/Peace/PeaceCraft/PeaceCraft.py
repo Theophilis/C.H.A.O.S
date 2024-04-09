@@ -49,7 +49,7 @@ def Chaos_Window():
     view = 3
     bv = base ** view
     bbv = base ** base ** view
-    mandala = 1
+    mandala = 0
 
     #glove mappings
     lr_map = 0
@@ -398,7 +398,7 @@ def Chaos_Window():
 
     #input augments
     midi_inputs = 1
-    gloves = 1
+    gloves = 2
     number_of_sensors = 12
     device_id = 1
 
@@ -680,7 +680,7 @@ def Chaos_Window():
                     tile[int(tile_w / 2 * 3) + 1] = value_color[1][2]
 
                 path[3] = path[2]
-                path[2] = (glove_values[lr_map], glove_values[ud_map])
+                path[2] = (glove_values[lr_map + number_of_sensors], glove_values[ud_map + number_of_sensors])
 
                 if path[2][0] != path[3][0]:
                     direction[2] = 0

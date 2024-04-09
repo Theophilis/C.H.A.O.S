@@ -471,13 +471,13 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
             WIN.blit(phrase0_label, (int(WIDTH/2) + WIDTH/4 - phrase0_label.get_width(), 10))
             WIN.blit(phrase1_label, (int(WIDTH/4) - phrase1_label.get_width(), 10))
             WIN.blit(goal_label, (int(WIDTH/2) - goal_label.get_width()/2, 10))
-            # WIN.blit(turn_label, (int(WIDTH/2), int(HEIGHT/2)))
-            #
+
             WIN.blit(value1_label, (int(WIDTH/4), 60))
             WIN.blit(value0_label, (int(WIDTH/2) + WIDTH/4, 60))
-            #
-            # WIN.blit(score_label, (int(WIDTH/2) - score_label.get_width()/2, 80))
-            # WIN.blit(point_label, (int(WIDTH/2) - point_label.get_width()/2, 160))
+
+            time_t = main_font.render(str(round(time_0[0]-time_0[1], 3)), True, (255, 255, 255))
+            WIN.blit(time_t, (WIDTH - int(WIDTH / 4) - time_t.get_width(), 150))
+
 
             if ari > 1:
                 # stick_0
@@ -504,6 +504,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 pygame.draw.rect(WIN, value_color[7], stick)
                 stick = pygame.Rect(int(HEIGHT / 2) - stick_l, int(HEIGHT / 2), stick_l * int(talking_stick_1 % 2), stick_w)
                 pygame.draw.rect(WIN, value_color[8], stick)
+
+                time_t = main_font.render(str(round(time_1[0] - time_1[1], 3)), True, (255, 255, 255))
+                WIN.blit(time_t, (int(WIDTH / 4) - time_t.get_width(), 150))
 
 
 
@@ -851,7 +854,7 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
 
 
     #ari
-    ari = 2
+    ari = 0
     turn = 0
 
     value_0 = 0
@@ -873,6 +876,8 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
     point_1 = 0
     mark_0 = 0
     mark_1 = 0
+    time_0 = [time.time(), 0]
+    time_1 = [time.time(), 0]
 
     mark = 0
 
@@ -1366,131 +1371,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         int(glove_values[8] / 64) * 2 ** 2) + (
                             int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
 
-            if ari == 8:
-                typing_mouse = 0
-
-                # typing
-                if typing_mouse == 0:
-
-                    #ari ui
-                    for x in range(5):
-                        for y in range(ari_scale):
-                            for z in range(ari_scale):
-                                # print()
-                                # print(x)
-                                # print(evs[6 + x])
-                                # print(value_color[evs[6 + x]])
-                                # print(type(value_color[evs[6 + x]]))
-                                color = value_color[int(glove_values[6 + x] / 64)]
-                                # print(color)
-                                canvas[y - (x * ari_scale) - ari_scale, (WIDTH - ari_scale) + z] = color
-
-                                if gloves == 2:
-                                    color = value_color[int(glove_values[18 + x] / 64)]
-                                    # print(color)
-                                    canvas[y - (x * ari_scale) - ari_scale, z] = color
-
-                    # letter input
-                    if glove_values[0] > 64 and x_brake == 0:
-
-                        print()
-                        print("value letter")
-                        print(value)
-                        print(value_letter[value])
-
-                        # keyboard.press(value_letter[value])
-                        # keyboard.release(value_letter[value])
-
-                        phrase_0 += value_letter[value]
-
-                        print()
-                        print('phrase')
-                        print(phrase_0)
-
-                        x_brake = 1
-
-                        if ari_speak == 1:
-                            if value == 17 and len(phrase) > 1:
-
-                                try:
-                                    print('spoken')
-                                    audio = gTTS(text=phrase, lang='en', slow=False)
-
-                                    audio.save('i-' + phrase + '.mp3')
-
-                                    path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
-                                    mixer.music.load(path)
-                                    mixer.music.play()
-
-                                    phrase = ' '
-
-                                except:
-                                    phrase = ' '
-
-                    elif glove_values[0] < 64 and x_brake == 1:
-
-                        print()
-                        print("value letter")
-                        print(value)
-                        print(value_letter[value])
-
-                        # keyboard.press(value_letter[value])
-                        # keyboard.release(value_letter[value])
-
-                        phrase_0 += value_letter[value]
-
-                        # print()
-                        print('phrase')
-                        print(phrase_0)
-
-                        if ari_speak == 1:
-                            if value == 17 and len(phrase) > 1:
-
-                                try:
-                                    print('spoken')
-                                    audio = gTTS(text=phrase, lang='en', slow=False)
-
-                                    audio.save('i-' + phrase + '.mp3')
-
-                                    path = r'C:\Users\edwar\PycharmProjects\GitHub\C.H.A.O.S\Chaodelia\i-' + phrase + '.mp3'
-                                    mixer.music.load(path)
-                                    mixer.music.play()
-
-                                    phrase = ' '
-
-                                except:
-                                    phrase = ' '
-
-
-                        x_brake = 0
-
-                    # backspace
-                    if glove_values[1] > 64 and value == 16 and y_brake == 0:
-
-                        keyboard.press(pynput.keyboard.Key.backspace)
-                        keyboard.release(pynput.keyboard.Key.backspace)
-
-                        phrase = phrase[:-1]
-
-                        print()
-                        print('phrase')
-                        print(phrase)
-
-                        y_brake = 1
-
-                    elif glove_values[1] < 64 and value == 16 and y_brake == 1:
-
-                        keyboard.press(pynput.keyboard.Key.backspace)
-                        keyboard.release(pynput.keyboard.Key.backspace)
-
-                        phrase = phrase[:-1]
-
-                        print()
-                        print('phrase')
-                        print(phrase)
-
-                        y_brake = 0
-
             if ari == 2:
 
                 if glove_values[0] > 64:
@@ -1503,7 +1383,6 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                 else:
                     y_polarity_0 = 0
 
-                # print(x_polarity_0, y_polarity_0)
 
                 #turn check
                 if x_polarity_0 + (2*y_polarity_0) == talking_stick_0:
@@ -1511,6 +1390,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                     value_0 = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (int(glove_values[8] / 64) * 2 ** 2) + (
                                 int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
                     phrase_0 += value_letter[value_0]
+
+                    if value_0 == 16:
+                        phrase_0 = phrase_0[:-2]
 
                     if value_0 == 0:
                         talking_chalk_0 += 1
@@ -1521,34 +1403,12 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                         talking_chalk_0 = 0
                         talking_chalk_1 = 0
 
-                        point_0 = int((step - mark_0)/100)
 
-                        # print()
-                        # print("step")
-                        # print(step)
-                        # print("m_0")
-                        # print(mark_0)
-                        # print("step-m_0")
-                        # print(step-mark_0)
-                        # print('point_0')
-                        # print(point_0)
-
-                        if point_1 != 0:
-
-                            score_1 += point_0-point_1
-
-                            print()
-                            print("scores")
-                            print(point_0, point_1)
-                            print(score_0, score_1)
-
-                            point_0 = 0
-                            point_1 = 0
-
-                            eb = HEIGHT
-
+                        time_0[1] = time_0[0]
+                        time_0[0] = time.time()
 
                         phrase_0 = ''
+                        canvas = np.zeros((canvas_rows, canvas_row_width, 3), dtype='uint8')
 
 
 
@@ -1583,6 +1443,9 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                                         int(glove_values[21] / 64) * 2 ** 3) + (int(glove_values[22] / 64) * 2 ** 4)
                         phrase_1 += value_letter[value_1]
 
+                        if value_1 == 16:
+                            phrase_1 = phrase_1[:-2]
+
                         if value_1 == 0:
                             talking_chalk_1 += 1
                         else:
@@ -1593,217 +1456,11 @@ def Chaos_Window(base, cell_vel, analytics, device_id=-1):
                             talking_chalk_1 = 0
 
 
-                            point_1 = int((step - mark_1)/100)
-
-                            # print()
-                            # print("step")
-                            # print(step)
-                            # print("m_1")
-                            # print(mark_1)
-                            # print("step-m_1")
-                            # print(step - mark_1)
-                            # print('point_1')
-                            # print(point_1)
-
-                            if point_0 != 0:
-                                score_0 += point_1 - point_0
-
-                                # print()
-                                # print("scores")
-                                # print(point_1, point_0)
-                                # print(score_1, score_0)
-
-                                point_0 = 0
-                                point_1 = 0
-                                eb = HEIGHT
-
+                            time_1[1] = time_0[0]
+                            time_1[0] = time.time()
 
                             phrase_1 = ''
-
-
-                        # print("talking_1")
-                        # print(x_polarity_1, y_polarity_1)
-                        # print(talking_stick_1)
-                        talking_stick_1 += 1
-                        talking_stick_1 = talking_stick_1 % 4
-
-            if ari == 3:
-
-                # ari ui
-                for x in range(5):
-                    for y in range(ari_scale):
-                        for z in range(ari_scale):
-                            # print()
-                            # print(x)
-                            # print(evs[6 + x])
-                            # print(value_color[evs[6 + x]])
-                            # print(type(value_color[evs[6 + x]]))
-                            color = value_color[int(glove_values[6 + x] / 64)]
-                            # print(color)
-                            canvas[y - (x * ari_scale) - ari_scale, (WIDTH - ari_scale) + z] = color
-
-                            if gloves == 2:
-                                color = value_color[int(glove_values[18 + x] / 64)]
-                                # print(color)
-                                canvas[y - (x * ari_scale) - ari_scale, z] = color
-
-                if glove_values[0] > 64:
-                    x_polarity_0 = 1
-                else:
-                    x_polarity_0 = 0
-
-                if glove_values[1] > 64:
-                    y_polarity_0 = 1
-                else:
-                    y_polarity_0 = 0
-
-                # print(x_polarity_0, y_polarity_0)
-
-                # turn check
-                if x_polarity_0 + (2 * y_polarity_0) == talking_stick_0:
-
-                    value_0 = (int(glove_values[6] / 64) * 2 ** 0) + (int(glove_values[7] / 64) * 2 ** 1) + (
-                                int(glove_values[8] / 64) * 2 ** 2) + (
-                                      int(glove_values[9] / 64) * 2 ** 3) + (int(glove_values[10] / 64) * 2 ** 4)
-                    phrase_0 += value_letter[value_0]
-
-                    if value_0 == 0:
-                        talking_chalk_0 += 1
-                    else:
-                        talking_chalk_0 = 0
-
-                    if talking_chalk_0 == 4:
-
-                        if turn == 0:
-                            talking_chalk_0 = 0
-                            talking_chalk_1 = 0
-
-                            point_0 = int((step - mark) / 100)
-
-
-                            print("")
-                            print("step_0")
-                            print(step/100)
-                            print(mark/100)
-                            print(point_0)
-
-                            mark = step
-                            eb = HEIGHT
-
-                            goal = phrase_0
-                            phrase_0 = ''
-
-                        elif turn == 1 and phrase_0 == goal:
-                            talking_chalk_0 = 0
-                            talking_chalk_1 = 0
-
-                            point_0 = int((step - mark) / 100)
-
-
-                            # print("")
-                            # print("step_0")
-                            # print(step/100)
-                            # print(mark/100)
-                            # print(point_0)
-
-                            score_0 += point_0
-                            score_1 += point_1
-
-                            point_0 = 0
-                            point_1 = 0
-
-                            mark = step
-                            eb = HEIGHT
-
-                            phrase_0 = ''
-                            turn = 0
-
-                        else:
-                            phrase_0 = ''
-
-                    # print("talking_0")
-                    # print(x_polarity_0, y_polarity_0)
-                    # print(talking_stick_0)
-                    talking_stick_0 += 1
-                    talking_stick_0 = talking_stick_0 % 4
-
-                if gloves == 2:
-                    x_polarity_1 = 0
-                    y_polarity_1 = 0
-
-                    if glove_values[12] > 64:
-                        x_polarity_1 = 0
-                    else:
-                        x_polarity_1 = 1
-
-                    if glove_values[13] > 64:
-                        y_polarity_1 = 1
-                    else:
-                        y_polarity_1 = 0
-
-                    # print(x_polarity_1, y_polarity_1)
-
-                    # turn check
-                    if x_polarity_1 + (2 * y_polarity_1) == talking_stick_1:
-
-                        value_1 = (int(glove_values[18] / 64) * 2 ** 0) + (int(glove_values[19] / 64) * 2 ** 1) + (
-                                int(glove_values[20] / 64) * 2 ** 2) + (
-                                          int(glove_values[21] / 64) * 2 ** 3) + (int(glove_values[22] / 64) * 2 ** 4)
-                        phrase_1 += value_letter[value_1]
-
-                        if value_1 == 0:
-                            talking_chalk_1 += 1
-                        else:
-                            talking_chalk_1 = 0
-
-                        if talking_chalk_1 == 4:
-
-                            if turn == 1:
-
-                                talking_chalk_0 = 0
-                                talking_chalk_1 = 0
-
-                                point_1 = int((step - mark) / 100)
-
-                                print("")
-                                print("step_1")
-                                print(step/100)
-                                print(mark/100)
-                                print(point_1)
-
-                                mark = step
-                                eb = HEIGHT
-
-                                goal = phrase_1
-                                phrase_1 = ''
-
-                            if turn == 0 and phrase_1 == goal:
-                                talking_chalk_0 = 0
-                                talking_chalk_1 = 0
-
-                                point_1 = int((step - mark) / 100)
-
-                                # print("")
-                                # print("step_1")
-                                # print(step/100)
-                                # print(mark/100)
-                                # print(point_1)
-
-                                score_0 += point_0
-                                score_1 += point_1
-
-                                point_0 = 0
-                                point_1 = 0
-
-                                mark = step
-                                eb = HEIGHT
-
-                                phrase_1 = ''
-                                turn = 1
-
-                            else:
-                                phrase_1 = ''
-
+                            canvas = np.zeros((canvas_rows, canvas_row_width, 3), dtype='uint8')
 
 
                         # print("talking_1")
