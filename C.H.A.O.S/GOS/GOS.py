@@ -105,7 +105,14 @@ except:
 
 compass = [[0, 0, 0, 0, 0, 0] for x in range(nos)]
 g_time = [[time.time(), 0] for x in range(nos)]
-g_switch = [1 for x in range(nos)]
+acc_switch = [1 for x in range(nos)]
+
+gyros = [1 for x in range(nos)]
+gyro_switch = [1 for x in range(nos)]
+gyro_polarity = [1 for x in range(nos)]
+gyro_cap = [1 for x in range(nos)]
+spin_min = [4 for x in range(nos)]
+
 
 total_gs = {'FB':0, 'LR':0, 'UD':0}
 
@@ -130,30 +137,71 @@ while run == 1:
     g_time[channel][1] = g_time[channel][0]
     g_time[channel][0] = time.time()
 
+    gyros[channel] = int(Gx)
+
 
     #compass
     try:
         compass[channel][0] = 180 + int(math.degrees(math.atan2(Ay, Az)))
         compass[channel][3] += Gx * (g_time[channel][0] - g_time[channel][1])
-
     except:
         continue
 
     try:
         compass[channel][1] = 180 + int(math.degrees(math.atan2(Ax, Az)))
         compass[channel][4] += Gy * (g_time[channel][0] - g_time[channel][1])
-
     except:
         continue
 
     try:
         compass[channel][2] = 180 + int(math.degrees(math.atan2(Ax, Ay)))
         compass[channel][5] += Gz * (g_time[channel][0] - g_time[channel][1])
-
     except:
         continue
 
+    gyro_cap[channel] = int(compass[channel][3])
 
+    #gyro switch
+    if int(Gx) > 0 and gyro_polarity[channel] == -1:
+        compass[channel][3] = 0
+        gyro_polarity[channel] = 1
+    elif int(Gx) < 0 and gyro_polarity[channel] == 1:
+        compass[channel][3] = 0
+        gyro_polarity[channel] = -1
+    elif int(Gx) == 0:
+        compass[channel][3] = 0
+
+
+
+    if channel > 2:
+        if abs(gyro_cap[channel]) - abs(gyro_cap[2]) > spin_min[channel]:
+            if gyro_cap[channel] > 0:
+                gyro_switch[channel] = 0
+            else:
+                gyro_switch[channel] = 1
+    else:
+        if abs(gyro_cap[channel]) > spin_min[channel]:
+            if gyro_cap[channel] > 0:
+                gyro_switch[channel] = 0
+            else:
+                gyro_switch[channel] = 1
+
+
+
+    value_t = small_font.render(str(gyros), True, (255, 255, 255))
+    WIN.blit(value_t, (width_4, height_4 - height_8))
+
+    value_t = small_font.render(str(gyro_polarity), True, (255, 255, 255))
+    WIN.blit(value_t, (width_4, height_4))
+
+    value_t = small_font.render(str(gyro_cap), True, (255, 255, 255))
+    WIN.blit(value_t, (width_4, height_4 + height_8))
+
+    value_t = small_font.render(str(gyro_switch), True, (255, 255, 255))
+    WIN.blit(value_t, (width_4, height_4 + height_4))
+
+
+    #acc switch
     total_gs = {'FB': 0, 'LR': 0, 'UD': 0}
     for x in range(nos):
 
@@ -179,17 +227,19 @@ while run == 1:
         midpoints['FB'][x][0] = calibrations['FB'][x][1] + int((calibrations['FB'][x][0] - calibrations['FB'][x][1]) / 2)
         midpoints['FB'][x][1] = (midpoints['FB'][x][0] + 180) % 360
 
-        #switches
+        #acc switches
         if midpoints['FB'][x][0] > midpoints['FB'][x][1]:
             if compass[x][0] < midpoints['FB'][x][0] and compass[x][0] > midpoints['FB'][x][1]:
-                g_switch[x] = 1
+                acc_switch[x] = 1
             else:
-                g_switch[x] = 0
+                acc_switch[x] = 0
         else:
             if compass[x][0] > midpoints['FB'][x][0] and compass[x][0] < midpoints['FB'][x][1]:
-                g_switch[x] = 0
+                acc_switch[x] = 0
             else:
-                g_switch[x] = 1
+                acc_switch[x] = 1
+
+        #gyro switches
 
         x0 = width_32 + width_8 * x
         y0 = height_16
@@ -221,7 +271,7 @@ while run == 1:
 
             #switches
             switch_b = pygame.Rect(x0, height_32, 32, 32)
-            pygame.draw.rect(WIN, value_color[g_switch[x]*7], switch_b)
+            pygame.draw.rect(WIN, value_color[acc_switch[x]*7], switch_b)
 
             # high calibration
             cali_high = pygame.Rect(x0, y0 + 64, 48, 48)
@@ -296,15 +346,6 @@ while run == 1:
             pygame.draw.rect(WIN, value_color[5], low_b)
 
 
-        for o in orients:
-            total_gs[o] += glove_values[x][1][orientation[o][x]]
-
-    x0 = width_2
-    y0 = height_2
-
-    for x in range(3):
-        value_t = small_font.render(str(total_gs[orients[x]]), True, (255, 255, 255))
-        WIN.blit(value_t, (x0, y0 + height_8*x))
 
     #ui buttons
     x0 = WIDTH - 64

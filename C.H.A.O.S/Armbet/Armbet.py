@@ -12,7 +12,7 @@ print('dirty')
 print(read[:100])
 
 bibliogram = {0:{}, 1:{}, 2:{}, 3:{}}
-depth = 4
+depth = 3
 
 for x in range(len(read)):
     for y in range(depth):

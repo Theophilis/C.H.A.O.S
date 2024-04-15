@@ -317,6 +317,25 @@ while run == 1:
     mx, my = pygame.mouse.get_pos()
 
 
+    x0 = width_32
+    y0 = height_8
+
+    key_shift = 64
+
+    for y in range(4):
+        for x in range(8):
+
+            key = y*4 + x
+
+
+
+            synth_b = pygame.Rect(x0 + x*width_32, y0 + y*height_8, 48, 48)
+            pygame.draw.rect(WIN, value_color[7], synth_b)
+            if synth_b.collidepoint((mx, my)):
+                synthesize(key, 1.0, key*key_shift, 'sawtooth')
+
+
+
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT:
