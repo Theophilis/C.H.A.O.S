@@ -3,7 +3,7 @@ import pickle
 text = open('library/bible-niv.txt', 'r')
 read = text.read()
 
-read = read[3:]
+read = read[1:]
 read = read.lower()
 read = read.translate({ord('\n'): ' '})
 

@@ -3,7 +3,6 @@ import pickle
 from struct import unpack
 import pygame
 import math
-import time
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -58,36 +57,46 @@ value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4
                6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127)}
 
 run = 1
-#number_of_sensors
-nos = 8
+number_of_sensors = 1
+AC = [[(0, 0, 0), [(0, (1, 1)), (0, (1, 1)), (0, (1, 1))]] for n in range(number_of_sensors)]
 
-clock = pygame.time.Clock()
 
-glove_name = 'gos'
-glove_values = [[0, [0, 0, 0, 0, 0, 0]] for x in range(nos)]
-sensor_order = ['arm', 'wrist', 'hand', 'thumb', 'index', 'middle', 'ring', 'pinky']
 
-#orients
-orients = ['FB', 'LR', 'UD']
 #chaotomata
-if glove_name == 'chaotomata':
-    orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
-                   'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
-                   'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
+orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
+               'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
+               'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
 #gos
-if glove_name == 'gos':
-    orientation = {'FB':{0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0},
-                   'LR':{0:1, 1:1, 2:1, 3:1, 4:1, 5:1, 6:1, 7:1},
-                   'UD':{0:2, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
+orientation = {'FB':{0:1, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0},
+               'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
+               'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
+
+positions = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+
+midpoints = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+deadpoints = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+
+switches = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+zones = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
+            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
+            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
 
 calibrations = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'UD': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]}
-midpoints = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-                'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-                'UD': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]}
+
+
 
 #calibrations
+glove_name = 'arm'
 try:
     filename = 'calibrations/' + glove_name
     infile = open(filename, "rb")
@@ -103,25 +112,50 @@ except:
                     'UD':[[0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]}
 
-compass = [[0, 0, 0, 0, 0, 0] for x in range(nos)]
-g_time = [[time.time(), 0] for x in range(nos)]
-acc_switch = [1 for x in range(nos)]
-
-gyros = [1 for x in range(nos)]
-gyro_switch = [1 for x in range(nos)]
-gyro_polarity = [1 for x in range(nos)]
-gyro_cap = [1 for x in range(nos)]
-spin_min = [4 for x in range(nos)]
 
 
-total_gs = {'FB':0, 'LR':0, 'UD':0}
+
+#quads
+poles = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
+quadrants = [(1, 1), (1, 1), (1, 1)]
+
+#angles
+angles = [0, 0, 0, 0, 0, 0, 0, 0]
+tangles = [(0, 0), (0, 0), (0, 0)]
+xyz_dict = {0:'X:', 1:'Y:', 2:'Z:'}
 
 
-#ui
-compui = 0
-calui = 1
-gyrui = 1
-switchui = 1
+#lables
+Ascale = 0
+lables = 0
+
+
+clock = pygame.time.Clock()
+
+#active
+angle_step = 1
+angle_max = 1.5 * angle_step
+cali_round = 2
+
+#heat map
+scale = 12
+
+#typing
+signing = 0
+toggle = 0
+digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+           's': 4, 'c': 5, 'd': 6, 'm': 7,
+           'g': 8, 'f': 9, 'w': 10, 'v': 11,
+           'z': 12, 'q': 13, ',': 14, '"': 15,
+           '/': 16, '.': 17, '?': 18, 'j': 19,
+           'x': 20, 'k': 21, 'y': 22, 'b': 23,
+           'h': 24, 'p': 25, 'u': 26, 'l': 27,
+           'n': 28, 'o': 29, 'r': 30, 'e': 31}
+digibetu = {v: k for k, v in digibet.items()}
+
+letter_value = 0
+phrase = ''
+almanac = []
 
 while run == 1:
 
@@ -135,326 +169,45 @@ while run == 1:
     Ax, Ay, Az, Gx, Gy, Gz, channel = unpack('7f', message)
     channel = int(channel)
 
-    glove_values[channel] = [sensor_order[channel], [Ax, Ay, Az, Gx, Gy, Gz]]
-    g_time[channel][1] = g_time[channel][0]
-    g_time[channel][0] = time.time()
-
-    gyros[channel] = int(Gx)
-
-
-    #compass
-    try:
-        compass[channel][0] = 180 + int(math.degrees(math.atan2(Ay, Az)))
-        compass[channel][3] += Gx * (g_time[channel][0] - g_time[channel][1])
-    except:
-        continue
-
-    try:
-        compass[channel][1] = 180 + int(math.degrees(math.atan2(Ax, Az)))
-        compass[channel][4] += Gy * (g_time[channel][0] - g_time[channel][1])
-    except:
-        continue
-
-    try:
-        compass[channel][2] = 180 + int(math.degrees(math.atan2(Ax, Ay)))
-        compass[channel][5] += Gz * (g_time[channel][0] - g_time[channel][1])
-    except:
-        continue
-
-
-    if channel == 2:
-        gyro_cap[channel] = int(compass[channel][3]) - int(compass[1][3])
-    elif channel > 2:
-        gyro_cap[channel] = int(compass[channel][3]) - int(compass[2][3])
-    else:
-        gyro_cap[channel] = int(compass[channel][3])
-
-    #gyro switch
-    if int(Gx) > 0 and gyro_polarity[channel] == -1:
-
-        if channel == 1:
-            for x in range(6):
-                compass[x + 2][3] = compass[x + 2][3] - compass[1][3]
-        elif channel == 2:
-            for x in range(5):
-                compass[x+3][3] = compass[x+3][3] - compass[2][3]
-
-        compass[channel][3] = 0
-        gyro_polarity[channel] = 1
-
-    elif int(Gx) < 0 and gyro_polarity[channel] == 1:
-
-        if channel == 1:
-            for x in range(6):
-                compass[x + 2][3] = compass[x + 2][3] - compass[1][3]
-        elif channel == 2:
-            for x in range(5):
-                compass[x+3][3] = compass[x+3][3] - compass[2][3]
-
-        compass[channel][3] = 0
-        gyro_polarity[channel] = -1
-    elif int(Gx) == 0:
-
-        if channel == 1:
-            for x in range(6):
-                compass[x + 2][3] = compass[x + 2][3] - compass[1][3]
-        elif channel == 2:
-            for x in range(5):
-                compass[x+3][3] = compass[x+3][3] - compass[2][3]
-
-        compass[channel][3] = 0
-
-
-    if abs(gyro_cap[channel]) > spin_min[channel]:
-        if gyro_cap[channel] > 0:
-            gyro_switch[channel] = 0
-        else:
-            gyro_switch[channel] = 1
-
-
-    if gyrui == 1:
-
-        x0 = width_2
-        y0 = height_2 + height_4
-
-        value_t = small_font.render(str(gyros), True, (255, 255, 255))
-        WIN.blit(value_t, (x0, y0))
-
-        value_t = small_font.render(str(gyro_polarity), True, (255, 255, 255))
-        WIN.blit(value_t, (x0, y0 + height_8))
-
-        value_t = small_font.render(str(gyro_cap), True, (255, 255, 255))
-        WIN.blit(value_t, (x0 + width_4, y0))
-
-        value_t = small_font.render(str(gyro_switch), True, (255, 255, 255))
-        WIN.blit(value_t, (x0 + width_4, y0 + height_8))
-
-
-    #acc switch
-    total_gs = {'FB': 0, 'LR': 0, 'UD': 0}
-    for x in range(nos):
-
-        #calibration-revelations
-        if x == 0:
-            calibrations['FB'][x][0] = revelations['FB'][x][0]
-            calibrations['FB'][x][1] = revelations['FB'][x][1]
-        elif x == 1:
-            calibrations['FB'][x][0] = revelations['FB'][x][0]
-            calibrations['FB'][x][1] = revelations['FB'][x][1]
-        elif x == 2:
-            shift0 = compass[1][0] - revelations['FB'][x][4]
-            shift1 = compass[1][0] - revelations['FB'][x][5]
-            calibrations['FB'][x][0] = revelations['FB'][x][0] + shift0
-            calibrations['FB'][x][1] = revelations['FB'][x][1] + shift1
-        else:
-            shift0 = compass[2][0] - revelations['FB'][x][6]
-            shift1 = compass[2][0] - revelations['FB'][x][7]
-            calibrations['FB'][x][0] = revelations['FB'][x][0] + shift0
-            calibrations['FB'][x][1] = revelations['FB'][x][1] + shift1
-
-        #midpoints
-        midpoints['FB'][x][0] = calibrations['FB'][x][1] + int((calibrations['FB'][x][0] - calibrations['FB'][x][1]) / 2)
-        midpoints['FB'][x][1] = (midpoints['FB'][x][0] + 180) % 360
-
-        #acc switches
-        if midpoints['FB'][x][0] > midpoints['FB'][x][1]:
-            if compass[x][0] < midpoints['FB'][x][0] and compass[x][0] > midpoints['FB'][x][1]:
-                acc_switch[x] = 1
-            else:
-                acc_switch[x] = 0
-        else:
-            if compass[x][0] > midpoints['FB'][x][0] and compass[x][0] < midpoints['FB'][x][1]:
-                acc_switch[x] = 0
-            else:
-                acc_switch[x] = 1
-
-
-        x0 = width_32 + width_8 * x
-        y0 = height_16
-        if compui == 1:
-            #text
-            value_t = small_font.render(str(glove_values[x][0]), True, (255, 255, 255))
-            WIN.blit(value_t, (x0, y0))
-            for y in range(3):
-                y0 = height_8 + height_32*y
-                value_t = small_font.render(str(round(compass[x][y], 2)), True, (255, 255, 255))
-                WIN.blit(value_t, (x0, y0))
-
-                value_t = small_font.render(str(round(compass[x][y + 3], 2)), True, (255, 255, 255))
-                WIN.blit(value_t, (x0 + width_32, y0))
-
-            y0 = height_4
-            value_t = small_font.render(str(calibrations['FB'][x]), True, (255, 255, 255))
-            WIN.blit(value_t, (x0, y0 - height_32))
-
-            value_t = small_font.render(str(midpoints['FB'][x]), True, (255, 255, 255))
-            WIN.blit(value_t, (x0, y0))
-
-            value_t = text_font.render(str(revelations['FB'][x]), True, (255, 255, 255))
-            WIN.blit(value_t, (x0 - width_64, HEIGHT-height_8 - height_16 + height_64*x))
-
-        if calui == 1:
-            #buttons and bars
-            x=x
-
-            #switches
-            switch_b = pygame.Rect(x0, height_32, 32, 32)
-            pygame.draw.rect(WIN, value_color[acc_switch[x]*7], switch_b)
-
-            # high calibration
-            cali_high = pygame.Rect(x0, y0 + 64, 48, 48)
-            pygame.draw.rect(WIN, value_color[7], cali_high)
-            if cali_high.collidepoint((mx, my)):
-                if click:
-
-                    calibrations['FB'][x][0] = compass[x][0]
-                    midpoints['FB'][x][0] = calibrations['FB'][x][1] + int((calibrations['FB'][x][0] - calibrations['FB'][x][1])/2)
-                    midpoints['FB'][x][1] = (midpoints['FB'][x][0] + 180) % 360
-
-                    revelations['FB'][x][0] = compass[x][0]
-                    if x > 0:
-                        revelations['FB'][x][2] = compass[0][0]
-                    if x > 1:
-                        revelations['FB'][x][4] = compass[1][0]
-                    if x > 2:
-                        revelations['FB'][x][6] = compass[2][0]
-
-                    click = False
-
-                    filename = 'calibrations/' + glove_name
-                    outfile = open(filename, 'wb')
-                    pickle.dump(revelations, outfile)
-                    outfile.close
-
-            # low calibration
-            cali_low = pygame.Rect(x0, y0 + 128, 48, 48)
-            pygame.draw.rect(WIN, value_color[8], cali_low)
-            if cali_low.collidepoint((mx, my)):
-                if click:
-
-                    calibrations['FB'][x][1] = compass[x][0]
-                    midpoints['FB'][x][0] = calibrations['FB'][x][1] + int((calibrations['FB'][x][0] - calibrations['FB'][x][1])/2)
-                    midpoints['FB'][x][1] = (midpoints['FB'][x][0] + 180)%360
-
-
-                    revelations['FB'][x][1] = compass[x][0]
-                    if x > 0:
-                        revelations['FB'][x][3] = compass[0][0]
-                    if x > 1:
-                        revelations['FB'][x][5] = compass[1][0]
-                    if x > 2:
-                        revelations['FB'][x][7] = compass[2][0]
-
-                    click = False
-
-                    filename = 'calibrations/' + glove_name
-                    outfile = open(filename, 'wb')
-                    pickle.dump(revelations, outfile)
-                    outfile.close
-
-
-            #scale
-            scale_b = pygame.Rect(x0, y0 + 192, 4, 360)
-            pygame.draw.rect(WIN, value_color[1], scale_b)
-
-            #pos
-            pos_b = pygame.Rect(x0, y0 + 192 + compass[x][0]%360, 64, 4)
-            pygame.draw.rect(WIN, value_color[2], pos_b)
-
-            #cali
-            high_b = pygame.Rect(x0, y0 + 192 + calibrations['FB'][x][0]%360, 32, 4)
-            pygame.draw.rect(WIN, value_color[3], high_b)
-            low_b = pygame.Rect(x0, y0 + 192 + calibrations['FB'][x][1]%360, 32, 4)
-            pygame.draw.rect(WIN, value_color[3], low_b)
-
-            #midpoints
-            high_b = pygame.Rect(x0, y0 + 192 + midpoints['FB'][x][0]%360, 32, 4)
-            pygame.draw.rect(WIN, value_color[4], high_b)
-            low_b = pygame.Rect(x0, y0 + 192 + midpoints['FB'][x][1]%360, 32, 4)
-            pygame.draw.rect(WIN, value_color[5], low_b)
-
-        gyrui_scale = 10
-        if gyrui == 1:
-            comp_b = pygame.Rect(x0 + width_16, y0 + height_4 + height_8 - int(abs(compass[x][3]*gyrui_scale)/2), 4, abs(compass[x][3]*gyrui_scale))
-            pygame.draw.rect(WIN, value_color[4], comp_b)
-
-            spmin_b = pygame.Rect(x0 + width_16, y0 + height_4 + height_8 + int(spin_min[x]*gyrui_scale/2), 32, 4)
-            pygame.draw.rect(WIN, value_color[1], spmin_b)
-            spmin_b = pygame.Rect(x0 + width_16, y0 + height_4 + height_8 - int(spin_min[x]*gyrui_scale/2), 32, 4)
-            pygame.draw.rect(WIN, value_color[1], spmin_b)
-
-
-
-    if switchui == 1:
-
-        x0 = width_16
-        y0 = height_2 + height_4
-        button_size = 48
-        space_size = 64
-
-        for x in range(nos):
-            switch_b = pygame.Rect(x0 + space_size*x, y0, button_size, button_size)
-            pygame.draw.rect(WIN, value_color[acc_switch[x]*6 + 1], switch_b)
-
-            switch_b = pygame.Rect(x0 + space_size*x, y0 + space_size*2, button_size, button_size)
-            pygame.draw.rect(WIN, value_color[gyro_switch[x]*6 + 1], switch_b)
-
-
-
-    #ui buttons
-    x0 = WIDTH - 64
-    y0 = 16
-    button_size = 48
-    space_size = 64
-
-
-    #switch ui
-    switchui_b = pygame.Rect(x0, y0, button_size, button_size)
-    pygame.draw.rect(WIN, value_color[7], switchui_b)
-    if switchui_b.collidepoint((mx, my)):
-        if click:
-            switchui += 1
-            switchui %= 2
-
-            click = False
-
-
-    #compass ui
-    compui_b = pygame.Rect(x0, y0 + space_size, button_size, button_size)
-    pygame.draw.rect(WIN, value_color[6], compui_b)
-    if compui_b.collidepoint((mx, my)):
-        if click:
-            compui += 1
-            compui %= 2
-
-            click = False
-
-    #calibration ui
-    calui_b = pygame.Rect(x0, y0 + space_size*2, button_size, button_size)
-    pygame.draw.rect(WIN, value_color[5], calui_b)
-    if calui_b.collidepoint((mx, my)):
-        if click:
-            calui += 1
-            calui %= 2
-
-            click = False
-
-
-    #gyro ui
-    gyrui_b = pygame.Rect(x0, y0 + space_size*3, button_size, button_size)
-    pygame.draw.rect(WIN, value_color[4], gyrui_b)
-    if gyrui_b.collidepoint((mx, my)):
-        if click:
-            gyrui += 1
-            gyrui %= 2
-
-            click = False
-
-
-
-
-
-
+    x0 = width_8
+    y0 = height_8
+
+    value_t = small_font.render(str(int(Ax*10)), True, (255, 255, 255))
+    WIN.blit(value_t, (x0, y0))
+    value_t = small_font.render(str(int(Ay*10)), True, (255, 255, 255))
+    WIN.blit(value_t, (x0, y0 + height_8))
+    value_t = small_font.render(str(int(Az*10)), True, (255, 255, 255))
+    WIN.blit(value_t, (x0, y0 + height_4))
+
+    value_t = small_font.render(str(int(Gx*10)), True, (255, 255, 255))
+    WIN.blit(value_t, (x0 + width_8, y0))
+    value_t = small_font.render(str(int(Gy*10)), True, (255, 255, 255))
+    WIN.blit(value_t, (x0 + width_8, y0 + height_8))
+    value_t = small_font.render(str(int(Gz*10)), True, (255, 255, 255))
+    WIN.blit(value_t, (x0 + width_8, y0 + height_4))
+
+
+
+
+    #display
+    # time_t = main_font.render(str(int(clock.get_fps())), True, (255, 255, 255))
+    # WIN.blit(time_t, (WIDTH-width_32, height_128))
+    #
+    # time_t = main_font.render(str(letter_value), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_8 + height_16))
+    #
+    # time_t = main_font.render(str(digibetu[letter_value]), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_8))
+    #
+    # time_t = main_font.render('{' + str(phrase) + '}', True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2 - int(time_t.get_width()/2), height_16))
+
+    # time_t = main_font.render(str((int(Ax*10))), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_2))
+    # time_t = main_font.render(str((int(Ay*10))), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_2 + height_16))
+    # time_t = main_font.render(str((int(Az*10))), True, (255, 255, 255))
+    # WIN.blit(time_t, (width_2, height_2 + height_8))
 
 
 
