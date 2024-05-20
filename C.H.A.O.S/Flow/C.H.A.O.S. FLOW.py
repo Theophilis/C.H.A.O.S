@@ -662,6 +662,8 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
                 scales[0]) + '-' + str(scales[0]) + '_Colors-' + str(color_list_label)
             path_name = os.path.join(path, file)
 
+
+
             ax = plt.gca()
             ax.set_aspect(1)
 
@@ -678,8 +680,19 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
             print("printing")
 
             # plt.show()
-            plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
-            plt.close()
+
+            try:
+                plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
+                plt.close()
+
+            except:
+                file = str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[0]) + '_width' + str(
+                    scales[0]) + '-' + str(scales[0]) + '_Colors-' + str(color_list_label)
+                path_name = os.path.join(path, file)
+
+                path_name = path_name[:127]
+                plt.savefig(path_name, dpi=width, bbox_inches='tight', pad_inches=0)
+                plt.close()
 
     else:
 
