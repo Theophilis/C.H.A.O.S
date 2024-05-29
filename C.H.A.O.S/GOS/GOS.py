@@ -9,7 +9,7 @@ import time
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Bind the socket to the port
-host, port = '192.168.1.3', 21621
+host, port = '192.168.1.14', 21621
 server_address = (host, port)
 
 print(f'Starting UDP server on {host} port {port}')
