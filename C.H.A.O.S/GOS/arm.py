@@ -87,7 +87,7 @@ nos = 8
 
 clock = pygame.time.Clock()
 
-glove_name = 'arm'
+glove_name = 'alm'
 glove_values = [[0, [0, 0, 0, 0, 0, 0]] for x in range(nos)]
 sensor_order = ['arm', 'wrist', 'hand', 'thumb', 'index', 'middle', 'ring', 'pinky']
 
@@ -108,6 +108,12 @@ if glove_name == 'arm':
     orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
                    'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
                    'UD':{0:1, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
+
+#alm
+if glove_name == 'alm':
+    orientation = {'FB':{0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0},
+                   'LR':{0:1, 1:2, 2:1, 3:1, 4:1, 5:1, 6:1, 7:1},
+                   'UD':{0:2, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
 
 calibrations = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
@@ -318,13 +324,13 @@ while run == 1:
     if pause == 0:
         t0 = time.time()
         if t0 - timer > cadence:
-            if av != av0:
+            if letter != av0:
                 if av == '!':
                     phrase = phrase[:-2]
 
                 else:
-                    phrase += av
-                    av0 = av
+                    phrase += letter
+                    av0 = letter
 
             timer = t0
 
