@@ -3,12 +3,13 @@ import pickle
 from struct import unpack
 import pygame
 import math
+import time
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Bind the socket to the port
-host, port = '192.168.1.3', 21621
+host, port = '192.168.1.10', 21621
 server_address = (host, port)
 
 print(f'Starting UDP server on {host} port {port}')
@@ -23,7 +24,6 @@ WIDTH, HEIGHT = current_display.current_w - 50, current_display.current_h - 100
 # WIDTH, HEIGHT = 400, 400
 width_2 = int(WIDTH / 2)
 width_3 = int(WIDTH / 3)
-
 width_4 = int(WIDTH / 4)
 width_8 = int(WIDTH / 8)
 width_16 = int(WIDTH / 16)
@@ -52,52 +52,88 @@ lable_font = pygame.font.SysFont("leelawadeeuisemilight", 48)
 TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
 
+
+#digibet
+digibet_0 = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+           's': 4, 'c': 5, 'd': 6, 'm': 7,
+           'g': 8, 'f': 9, 'w': 10, 'v': 11,
+           'z': 12, 'q': 13, ',': 14, '!': 15,
+           '?': 16, '.': 17, '"': 18, 'j': 19,
+           'x': 20, 'k': 21, 'y': 22, 'b': 23,
+           'h': 24, 'p': 25, 'u': 26, 'l': 27,
+           'n': 28, 'o': 29, 'r': 30, 'e': 31}
+
+digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+           's': 4, 'c': 5, 'd': 6, 'm': 7,
+           'g': 8, 'f': 9, 'w': 10, 'v': 11,
+           'z': 12, 'q': 13, 'an': 14, 'er': 15,
+           'ou': 16, 'in': 17, 'th': 18, 'j': 19,
+           'x': 20, 'k': 21, 'y': 22, 'b': 23,
+           'h': 24, 'p': 25, 'u': 26, 'l': 27,
+           'n': 28, 'o': 29, 'r': 30, 'e': 31}
+
+digibetu = {v: k for k, v in digibet.items()}
+
+#armbet
+filename = 'bets/armbet_2'
+infile = open(filename, "rb")
+armbet = pickle.load(infile)
+infile.close
+
+print()
+for d in digibet:
+    print(armbet[d])
+
+
 click = False
 
 value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4: (0, 255, 255), 5: (0, 0, 255),
                6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127)}
 
 run = 1
-number_of_sensors = 1
-AC = [[(0, 0, 0), [(0, (1, 1)), (0, (1, 1)), (0, (1, 1))]] for n in range(number_of_sensors)]
+#number_of_sensors
+nos = 8
 
+clock = pygame.time.Clock()
 
+glove_name = 'alm'
+glove_values = [[0, [0, 0, 0, 0, 0, 0]] for x in range(nos)]
+sensor_order = ['arm', 'wrist', 'hand', 'thumb', 'index', 'middle', 'ring', 'pinky']
 
+sensor_order = ['arm', 'wrist', 'hand', 'pinky', 'ring', 'middle', 'index', 'thumb']
+
+#orients
+orients = ['FB', 'LR', 'UD']
 #chaotomata
-orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
-               'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
-               'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
+if glove_name == 'chaotomata':
+    orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
+                   'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
+                   'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
 #gos
-orientation = {'FB':{0:1, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0},
-               'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
-               'UD':{0:2, 1:2, 2:2, 3:3, 4:3, 5:2, 6:2, 7:2}}
+if glove_name == 'gos':
+    orientation = {'FB':{0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0},
+                   'LR':{0:1, 1:1, 2:1, 3:1, 4:1, 5:1, 6:1, 7:1},
+                   'UD':{0:2, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
+#arm
+if glove_name == 'arm':
+    orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
+                   'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
+                   'UD':{0:1, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
 
-positions = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-
-midpoints = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-deadpoints = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-             'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-             'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-
-switches = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
-zones = {'FB':[0, 0, 0, 0, 0, 0, 0, 0],
-            'LR':[0, 0, 0, 0, 0, 0, 0, 0],
-            'UD':[0, 0, 0, 0, 0, 0, 0, 0]}
+#alm
+if glove_name == 'alm':
+    orientation = {'FB':{0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0},
+                   'LR':{0:1, 1:2, 2:1, 3:1, 4:1, 5:1, 6:1, 7:1},
+                   'UD':{0:2, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
 
 calibrations = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'UD': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]}
-
-
+midpoints = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+                'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+                'UD': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]}
 
 #calibrations
-glove_name = 'arm'
 try:
     filename = 'calibrations/' + glove_name
     infile = open(filename, "rb")
@@ -113,56 +149,37 @@ except:
                     'UD':[[0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]}
 
+#analytics
+analytics = 1
+
+compass = [[0, 0, 0, 0, 0, 0] for x in range(nos)]
+g_time = [[time.time(), 0] for x in range(nos)]
+gyros = [1 for x in range(nos)]
 
 
+cali_range = [16, 32, 32, 48, 48, 48, 48, 48]
+calibrations = [240, 180, 180, 180, 180, 180, 180, 180]
+switches = [1 for x in range(nos + 1)]
 
-#quads
-poles = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
-quadrants = [(1, 1), (1, 1), (1, 1)]
-
-#angles
-angles = [0, 0, 0, 0, 0, 0, 0, 0]
-tangles = [(0, 0), (0, 0), (0, 0)]
-xyz_dict = {0:'X:', 1:'Y:', 2:'Z:'}
-
-
-#lables
-Ascale = 0
-lables = 0
-
-
-clock = pygame.time.Clock()
-
-#active
-angle_step = 1
-angle_max = 1.5 * angle_step
-cali_round = 2
-
-#heat map
-scale = 12
-
-#typing
-signing = 0
-toggle = 0
-digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
-           's': 4, 'c': 5, 'd': 6, 'm': 7,
-           'g': 8, 'f': 9, 'w': 10, 'v': 11,
-           'z': 12, 'q': 13, ',': 14, '"': 15,
-           '/': 16, '.': 17, '?': 18, 'j': 19,
-           'x': 20, 'k': 21, 'y': 22, 'b': 23,
-           'h': 24, 'p': 25, 'u': 26, 'l': 27,
-           'n': 28, 'o': 29, 'r': 30, 'e': 31}
-digibetu = {v: k for k, v in digibet.items()}
-
+#typewriter
+typwrite = 1
 letter_value = 0
-phrase = ''
-almanac = []
+arm_value = 0
+av0 = ''
+av1 = ''
+phrase = ':'
+
+pause = 0
+timer = time.time()
+cadence = 3
 
 while run == 1:
+
 
     clock.tick()
     WIN.fill((0, 0, 0))
     mx, my = pygame.mouse.get_pos()
+
 
     # Wait for message
     message, address = sock.recvfrom(4096)
@@ -170,46 +187,60 @@ while run == 1:
     Ax, Ay, Az, Gx, Gy, Gz, channel = unpack('7f', message)
     channel = int(channel)
 
-    x0 = width_8
-    y0 = height_8
+    glove_values[channel] = [sensor_order[channel], [Ax, Ay, Az, Gx, Gy, Gz]]
+    g_time[channel][1] = g_time[channel][0]
+    g_time[channel][0] = time.time()
 
-    value_t = small_font.render(str(int(Ax*10)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0, y0))
-    value_t = small_font.render(str(int(Ay*10)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0, y0 + height_8))
-    value_t = small_font.render(str(int(Az*10)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0, y0 + height_4))
+    gyros[channel] = int(Gx)
 
-    value_t = small_font.render(str(int(Gx*10)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + width_8, y0))
-    value_t = small_font.render(str(int(Gy*10)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + width_8, y0 + height_8))
-    value_t = small_font.render(str(int(Gz*10)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + width_8, y0 + height_4))
+    #compass
+    try:
+        compass[channel][0] = 180 + int(math.degrees(math.atan2(Ay, Az)))
+        compass[channel][3] += Gx * (g_time[channel][0] - g_time[channel][1])
+    except:
+        continue
+
+    try:
+        compass[channel][1] = 180 + int(math.degrees(math.atan2(Ax, Az)))
+        compass[channel][4] += Gy * (g_time[channel][0] - g_time[channel][1])
+    except:
+        continue
+
+    try:
+        compass[channel][2] = 180 + int(math.degrees(math.atan2(Ax, Ay)))
+        compass[channel][5] += Gz * (g_time[channel][0] - g_time[channel][1])
+    except:
+        continue
 
 
+    x0 = width_16
+    y0 = height_16
+    for x in range(nos):
+
+        value_t = small_font.render(str(compass[x][:3]), True, (255, 255, 255))
+        WIN.blit(value_t, (x0, y0 + height_16 * x))
 
 
-    #display
-    # time_t = main_font.render(str(int(clock.get_fps())), True, (255, 255, 255))
-    # WIN.blit(time_t, (WIDTH-width_32, height_128))
-    #
-    # time_t = main_font.render(str(letter_value), True, (255, 255, 255))
-    # WIN.blit(time_t, (width_2, height_8 + height_16))
-    #
-    # time_t = main_font.render(str(digibetu[letter_value]), True, (255, 255, 255))
-    # WIN.blit(time_t, (width_2, height_8))
-    #
-    # time_t = main_font.render('{' + str(phrase) + '}', True, (255, 255, 255))
-    # WIN.blit(time_t, (width_2 - int(time_t.get_width()/2), height_16))
+    #arm switch
+    if compass[0][0] > compass[0][2]:
+        switches[0] = 0
+    else:
+        switches[0] = 1
 
-    # time_t = main_font.render(str((int(Ax*10))), True, (255, 255, 255))
-    # WIN.blit(time_t, (width_2, height_2))
-    # time_t = main_font.render(str((int(Ay*10))), True, (255, 255, 255))
-    # WIN.blit(time_t, (width_2, height_2 + height_16))
-    # time_t = main_font.render(str((int(Az*10))), True, (255, 255, 255))
-    # WIN.blit(time_t, (width_2, height_2 + height_8))
+    #wrist switch
+    if compass[1][0] > compass[1][2]:
+        switches[1] = 1
+    else:
+        switches[1] = 0
 
+
+    #switches
+
+    button_size = 32
+
+    for x in range(nos):
+        switches_b = pygame.Rect(x0 + button_size*2*x, y0+height_2, button_size, button_size)
+        pygame.draw.rect(WIN, value_color[switches[x]], switches_b)
 
 
     # inputs

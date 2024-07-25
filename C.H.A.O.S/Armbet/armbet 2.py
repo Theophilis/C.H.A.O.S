@@ -50,6 +50,7 @@ for d in digibet:
     print(d)
 
     if d == ' ':
+        armbet[d] = ['', '']
         continue
 
     bet = [d]
@@ -67,3 +68,14 @@ for d in digibet:
 
     print(bet)
     print(len(bet))
+
+    armbet[d] = bet
+
+for d in digibet:
+    print(armbet[d])
+
+
+filename = 'bets/armbet_2'
+outfile = open(filename, 'wb')
+pickle.dump(armbet, outfile)
+outfile.close

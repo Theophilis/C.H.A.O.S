@@ -54,7 +54,7 @@ TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
 
 #digibet
-digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+digibet_0 = {' ': 0, 'a': 1, 'i': 2, 't': 3,
            's': 4, 'c': 5, 'd': 6, 'm': 7,
            'g': 8, 'f': 9, 'w': 10, 'v': 11,
            'z': 12, 'q': 13, ',': 14, '!': 15,
@@ -63,10 +63,19 @@ digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
            'h': 24, 'p': 25, 'u': 26, 'l': 27,
            'n': 28, 'o': 29, 'r': 30, 'e': 31}
 
+digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+           's': 4, 'c': 5, 'd': 6, 'm': 7,
+           'g': 8, 'f': 9, 'w': 10, 'v': 11,
+           'z': 12, 'q': 13, 'an': 14, 'er': 15,
+           'ou': 16, 'in': 17, 'th': 18, 'j': 19,
+           'x': 20, 'k': 21, 'y': 22, 'b': 23,
+           'h': 24, 'p': 25, 'u': 26, 'l': 27,
+           'n': 28, 'o': 29, 'r': 30, 'e': 31}
+
 digibetu = {v: k for k, v in digibet.items()}
 
 #armbet
-filename = 'bets/armbet'
+filename = 'bets/armbet_2'
 infile = open(filename, "rb")
 armbet = pickle.load(infile)
 infile.close
@@ -90,6 +99,8 @@ clock = pygame.time.Clock()
 glove_name = 'alm'
 glove_values = [[0, [0, 0, 0, 0, 0, 0]] for x in range(nos)]
 sensor_order = ['arm', 'wrist', 'hand', 'thumb', 'index', 'middle', 'ring', 'pinky']
+
+sensor_order = ['arm', 'wrist', 'hand', 'pinky', 'ring', 'middle', 'index', 'thumb']
 
 #orients
 orients = ['FB', 'LR', 'UD']
@@ -138,24 +149,29 @@ except:
                     'UD':[[0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]}
 
+#analytics
+analytics = 1
 
 compass = [[0, 0, 0, 0, 0, 0] for x in range(nos)]
 g_time = [[time.time(), 0] for x in range(nos)]
 gyros = [1 for x in range(nos)]
 
 
-cali_range = [32, 32, 32, 48, 48, 48, 48, 48]
+cali_range = [16, 32, 32, 48, 48, 48, 48, 48]
 calibrations = [240, 180, 180, 180, 180, 180, 180, 180]
 switches = [1 for x in range(nos + 1)]
 
+#typewriter
+typwrite = 1
 letter_value = 0
 arm_value = 0
 av0 = ''
+av1 = ''
 phrase = ':'
 
 pause = 0
 timer = time.time()
-cadence = 4
+cadence = 3
 
 while run == 1:
 
@@ -247,7 +263,8 @@ while run == 1:
         calibrations[1] = 180
 
     letter_value = switches[7] + switches[6]*2 + switches[5]*4 + switches[4]*8 + switches[3]*16
-    arm_value = switches[0] + switches[1]*2 + switches[8]*4 + switches[2]*8
+    # letter_value = switches[3] + switches[4]*2 + switches[5]*4 + switches[6]*8 + switches[7]*16
+    arm_value = switches[0]*2 + switches[1] + switches[8]*4 + switches[2]*8
 
     #calibration
     x0 = WIDTH - width_8
@@ -267,86 +284,113 @@ while run == 1:
     #value print
     x0 = width_32
     y0 = height_8
-
     bar_width = 32
     bar_height = 32
 
-    for x in range(nos):
-
-        value_t = small_font.render(str(compass[x][orientation['FB'][x]]), True, (255, 255, 255))
-        WIN.blit(value_t, (x0 + bar_width*2*x, y0))
-
-        value_t = small_font.render(str(calibrations[x]), True, (255, 255, 255))
-        WIN.blit(value_t, (x0 + bar_width*2*x, y0 + bar_height))
-
-        gv = compass[x][orientation['FB'][x]]
-
-        gyrui_b = pygame.Rect(x0 + bar_width*2*x, y0 + height_8, bar_width, gv)
-        pygame.draw.rect(WIN, value_color[4], gyrui_b)
-
-        #switches
-        switch_b = pygame.Rect(x0 + bar_width*2*x, y0 + height_2, bar_width, bar_height)
-        pygame.draw.rect(WIN, value_color[switches[x]*7], switch_b)
+    if analytics == 1:
 
 
-    #rotation
-    rot_v = glove_values[1][1][2]
-    value_t = small_font.render(str(round(rot_v, 3)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + bar_width*2*8, y0 + bar_height))
+        for x in range(nos):
 
-    #bar
-    gyrui_b = pygame.Rect(x0 + bar_width * 2 * 8, y0 + height_8, bar_width, abs(rot_v*300))
-    pygame.draw.rect(WIN, value_color[4 - switches[8]*3], gyrui_b)
+            value_t = small_font.render(str(compass[x][orientation['FB'][x]]), True, (255, 255, 255))
+            WIN.blit(value_t, (x0 + bar_width*2*x, y0))
 
-    # switch
-    switch_b = pygame.Rect(x0 + bar_width * 2 * 8, y0 + height_2, bar_width, bar_height)
-    pygame.draw.rect(WIN, value_color[switches[8] * 7], switch_b)
+            value_t = small_font.render(str(calibrations[x]), True, (255, 255, 255))
+            WIN.blit(value_t, (x0 + bar_width*2*x, y0 + bar_height))
 
+            gv = compass[x][orientation['FB'][x]]
 
-    #digibet
-    letter = digibetu[letter_value]
+            gyrui_b = pygame.Rect(x0 + bar_width*2*x, y0 + height_8, bar_width, gv)
+            pygame.draw.rect(WIN, value_color[4], gyrui_b)
 
-    value_t = lable_font.render(str(letter_value), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + bar_width*2*15, y0 + bar_height))
-    value_t = lable_font.render(str(digibetu[letter_value]), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + bar_width*2*16, y0 + bar_height))
-
-    #armbet
-    av = armbet[letter][arm_value%len(armbet[letter])]
-
-    value_t = lable_font.render(str(arm_value), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + bar_width*2*15, y0 + bar_height * 3))
-    value_t = lable_font.render(str(av), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + bar_width*2*16, y0 + bar_height * 3))
+            #switches
+            switch_b = pygame.Rect(x0 + bar_width*2*x, y0 + height_2, bar_width, bar_height)
+            pygame.draw.rect(WIN, value_color[switches[x]*7], switch_b)
 
 
-    #typing
-    if pause == 0:
+        #rotation
+        rot_v = glove_values[1][1][2]
+        value_t = small_font.render(str(round(rot_v, 3)), True, (255, 255, 255))
+        WIN.blit(value_t, (x0 + bar_width*2*8, y0 + bar_height))
+
+        #bar
+        gyrui_b = pygame.Rect(x0 + bar_width * 2 * 8, y0 + height_8, bar_width, abs(rot_v*300))
+        pygame.draw.rect(WIN, value_color[4 - switches[8]*3], gyrui_b)
+
+        # switch
+        switch_b = pygame.Rect(x0 + bar_width * 2 * 8, y0 + height_2 + height_8, bar_width, bar_height)
+        pygame.draw.rect(WIN, value_color[switches[8] * 7], switch_b)
+
+    if typwrite == 1:
+        #digibet
+        letter = digibetu[letter_value]
+
+        value_t = lable_font.render(str(letter_value), True, (255, 255, 255))
+        WIN.blit(value_t, (x0 + bar_width*2*15, y0 + bar_height))
+        value_t = lable_font.render(str(digibetu[letter_value]), True, (255, 255, 255))
+        WIN.blit(value_t, (x0 + bar_width*2*16, y0 + bar_height))
+
+        #armbet
+        av = armbet[letter][arm_value%len(armbet[letter])]
+
+        value_t = lable_font.render(str(arm_value), True, (255, 255, 255))
+        WIN.blit(value_t, (x0 + bar_width*2*15, y0 + bar_height * 3))
+        value_t = lable_font.render(str(av), True, (255, 255, 255))
+        WIN.blit(value_t, (x0 + bar_width*2*16, y0 + bar_height * 3))
+
         t0 = time.time()
-        if t0 - timer > cadence:
-            if letter != av0:
-                if av == '!':
-                    phrase = phrase[:-2]
+        if av == av1:
+            if t0 - timer > cadence:
+                if av != av0:
+                    if av == '!':
+                        phrase = phrase[:-2]
 
-                else:
-                    phrase += letter
-                    av0 = letter
+                    elif av == '?':
+                        phrase = ':'
 
+                    elif letter == ' ':
+                        phrase += ' '
+                        av0 = av
+                        timer = t0
+
+                        if switches[8] == 1:
+                            phrase = phrase[:-2]
+                            if switches[1] == 1:
+                                phrase = ':'
+
+
+                    else:
+                        phrase += av
+                        av0 = av
+                        timer = t0
+        else:
+            av1 = av
             timer = t0
 
+
     value_t = lable_font.render(str(round(t0-timer, 3)), True, (255, 255, 255))
-    WIN.blit(value_t, (x0 + bar_width*2*16, y0))
+    WIN.blit(value_t, (x0 + bar_width*2*16, y0 - height_16))
 
     value_t = lable_font.render(str(phrase), True, (255, 255, 255))
     WIN.blit(value_t, (x0 + bar_width*2*12, y0 + bar_height * 5))
 
-    #pause button
-    pause_b = pygame.Rect(x0, y0, button_size, button_size)
-    pygame.draw.rect(WIN, value_color[1], pause_b)
-    if pause_b.collidepoint((mx, my)):
+    #typing button
+    typ_b = pygame.Rect(x0, y0 - height_16, button_size, button_size)
+    pygame.draw.rect(WIN, value_color[1], typ_b)
+    if typ_b.collidepoint((mx, my)):
         if click:
-            pause += 1
-            pause = pause % 2
+            typwrite += 1
+            typwrite = typwrite % 2
+            print('click')
+            click = False
+
+    #analytics button
+    ana_b = pygame.Rect(x0 + button_size*2, y0-height_16, button_size, button_size)
+    pygame.draw.rect(WIN, value_color[1], ana_b)
+    if ana_b.collidepoint((mx, my)):
+        if click:
+            analytics += 1
+            analytics = analytics % 2
             print('click')
             click = False
 
