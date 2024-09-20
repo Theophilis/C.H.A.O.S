@@ -61,6 +61,79 @@ def Chaos_Window():
             bin = '0' + bin
         return bin
 
+    def punchroglyph(n, s, x, y):
+
+        # first position
+        if n % 4 == 0:
+
+            # arm
+            pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+            pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y), int(s / 8))
+
+            # hand
+            if n % 16 < 8:
+                pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y), s / 4)
+            else:
+                guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4), s / 2, s / 2)
+                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+            # elbow
+            if n > 15:
+                pygame.draw.circle(WIN, value_color[7], (x, y - s + int(s / 16)), s / 4)
+
+        # second position
+        if n % 4 == 1:
+
+            # arm
+            pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y - s), int(s / 8))
+            pygame.draw.line(WIN, value_color[7], (x, y), (x - s, y - s), int(s / 8))
+
+            # hand
+            if n % 16 < 8:
+                pygame.draw.circle(WIN, value_color[7 + int(n % 8 / 5)], (x + s, y - s), s / 4)
+            else:
+                guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
+                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+            # elbow
+            if n > 15:
+                pygame.draw.circle(WIN, value_color[7], (x - s, y - s + int(s / 16)), s / 4)
+
+        # third position
+        if n % 4 == 2:
+
+            # arm
+            pygame.draw.line(WIN, value_color[7], (x, y - int(s / 2)), (x + s, y - int(s / 2)), int(s / 8))
+
+            # hand
+            if n % 16 < 8:
+                pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - int(s / 2)), s / 4)
+            else:
+                guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4) - int(s / 2), s / 2, s / 2)
+                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+            # elbow
+            if n > 15:
+                pygame.draw.circle(WIN, value_color[7], (x, y - int(s / 2)), s / 4)
+
+        # fourth position
+        if n % 4 == 3:
+
+            # arm
+            pygame.draw.line(WIN, value_color[7], (x + s, y + int(s / 16)), (x + s, y - s), int(s / 8))
+            pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y), int(s / 8))
+
+            # hand
+            if n % 16 < 8:
+                pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - s), s / 4)
+            else:
+                guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
+                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+            # elbow
+            if n > 15:
+                pygame.draw.circle(WIN, value_color[7], (x, y), s / 4)
+
     print(HEIGHT, WIDTH)
     width_2 = int(WIDTH/2)
     width_3 = int(WIDTH/3)
@@ -89,7 +162,6 @@ def Chaos_Window():
                'n': 28, 'o': 29, 'r': 30, 'e': 31}
     digibetu = {v: k for k, v in digibet.items()}
 
-        #armbet
     filename = 'bets/armbet_2'
     infile = open(filename, "rb")
     armbet = pickle.load(infile)
@@ -99,6 +171,8 @@ def Chaos_Window():
     for d in digibet:
         print(armbet[d])
 
+    guide = 3
+    guide_max = 4
 
     #phrase
     phrase = 'edward conlon cadden maclean'
@@ -119,28 +193,132 @@ def Chaos_Window():
 
 
         lesson_t = main_font.render(phrase, True, value_color[7])
-        WIN.blit(lesson_t,(width_2 + width_4-lesson_t.get_width()/2, height_8))
-
-        space = 64
-        step = 0
-        step_lim = 14
-
-        for p in phrase:
-            p = p.lower()
-            if p in digibet:
-
-                x0 = width_16 + int(step/step_lim)*width_4
-                y0 = 16 + step%step_lim * space
-
-                p_value = digibet[p]
-                bin_value = bin_gen(p_value, 2, 5)[::-1]
+        WIN.blit(lesson_t,(width_2 + width_4-lesson_t.get_width()/2, height_2 + height_4 + height_8))
 
 
-                lesson_t = main_font.render(str(p), True, value_color[7])
-                WIN.blit(lesson_t, (x0, y0))
+        #digibet
+        if guide == 1:
+            space = 64
+            step = 0
+            step_lim = 14
 
-                lesson_t = main_font.render(str(digibet[p]), True, value_color[7])
-                WIN.blit(lesson_t, (x0 + space, y0))
+            for p in phrase:
+                p = p.lower()
+                if p in digibet:
+
+                    x0 = width_16 + int(step/step_lim)*width_4
+                    y0 = 16 + step%step_lim * space
+
+                    p_value = digibet[p]
+                    bin_value = bin_gen(p_value, 2, 5)[::-1]
+
+
+                    lesson_t = main_font.render(str(p), True, value_color[7])
+                    WIN.blit(lesson_t, (x0, y0))
+
+                    lesson_t = main_font.render(str(digibet[p]), True, value_color[7])
+                    WIN.blit(lesson_t, (x0 + space, y0))
+
+
+                    for x in range(5):
+
+                        x1 = x0 + space + space + space/2*x
+                        y1 = y0 + 8
+
+
+                        # lesson_t = main_font.render(str(bin_value[x]), True, value_color[7])
+                        # WIN.blit(lesson_t, (x0,y0))
+
+                        finger_sign = pygame.Rect(x1, y1, 31, 31)
+                        pygame.draw.rect(WIN, value_color[8 - int(bin_value[x])], finger_sign)
+
+                step += 1
+
+        #armbet-s
+        if guide == 2:
+
+            phrase = phrase.lower()
+
+            #bigrams
+            bigrams = []
+
+            step = 0
+            stagger = 0
+            check = ''
+            while check != phrase:
+                bigram = phrase[step*2 + stagger:step*2+2 + stagger]
+
+                if ' ' in bigram:
+                    if bigram[0] == ' ':
+                        stagger += 1
+                        bigrams.append(' ')
+                        bigram = phrase[step * 2 + stagger:step * 2 + 2 + stagger]
+                        bigrams.append(bigram)
+                    else:
+                        bigrams.append(bigram[0])
+                        bigrams.append(bigram[1])
+                else:
+                    bigrams.append(bigram)
+                step += 1
+
+                check = ''
+                for b in bigrams:
+                    check += b
+
+
+            space = 128
+            step = 0
+            step_lim = 7
+            x0 = width_32
+            y0 = height_32
+
+            for x in range(len(bigrams)):
+
+                x1 = x0 + int(x/step_lim)*space*2
+                y1 = y0 + x%step_lim*space
+
+                lesson_t = main_font.render(str(bigrams[x]), True, value_color[7])
+                WIN.blit(lesson_t, (x1, y1))
+
+                if len(bigrams[x]) == 2:
+
+                    glyph = armbet[bigrams[x][0]].index(bigrams[x])
+                    punchroglyph(glyph, 64, x1 + space, y1 + int(space/2))
+
+                else:
+                    punchroglyph(0, 64, x1+ space, y1 + int(space/2))
+
+
+        #armbet-c
+        if guide == 3:
+
+            space = 192
+
+            for x in range(16):
+                x0 = width_16 +int(x/4)*(space)
+                y0 = height_8 + x%4 * space
+                punchroglyph(x, 64, x0, y0)
+
+                try:
+                    bigram_t = main_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
+                    WIN.blit(bigram_t, (x0, y0))
+                except:
+                    continue
+
+
+        if guide == 0:
+            space = 64
+            step = 0
+            step_lim = 14
+
+            for y in range(32):
+
+                bin_value = bin_gen(y, 2, 5)[::-1]
+
+                x0 = width_16 + int(step / step_lim) * width_4
+                y0 = 32 + step % step_lim * space
+
+
 
 
                 for x in range(5):
@@ -148,16 +326,103 @@ def Chaos_Window():
                     x1 = x0 + space + space + space/2*x
                     y1 = y0 + 8
 
+                    finger_sign = pygame.Rect(x1, y1, 31, 31)
+                    pygame.draw.rect(WIN, value_color[8 - int(bin_value[x])], finger_sign)
 
-                    # lesson_t = main_font.render(str(bin_value[x]), True, value_color[7])
-                    # WIN.blit(lesson_t, (x0,y0))
+                lesson_t = main_font.render(str(y), True, value_color[7])
+                WIN.blit(lesson_t, (x1 - space*3, y1 -8))
 
-                    valid_sign = pygame.Rect(x1, y1, 31, 31)
-                    pygame.draw.rect(WIN, value_color[8 - int(bin_value[x])], valid_sign)
+                lesson_t = main_font.render(str(digibetu[y]), True, value_color[7])
+                WIN.blit(lesson_t, (x1 + space, y1 -8))
 
-            step += 1
+                step += 1
 
 
+
+        def punchroglyph(n, s, x, y):
+
+            #first position
+            if n%4 == 0:
+
+                #arm
+                pygame.draw.line(WIN, value_color[7], (x, y+int(s/16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x+s, y), int(s/8))
+
+                #hand
+                if n%16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n%8/4) + 7], (x+s, y), s/4)
+                else:
+                    guide_b = pygame.Rect(x+s - int(s/8), y - int(s/4), s/2, s/2)
+                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
+
+                #elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y - s+int(s/16)), s / 4)
+
+            #second position
+            if n%4 == 1:
+
+                #arm
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x-s, y-s), int(s/8))
+
+                #hand
+                if n%16 < 8:
+                    pygame.draw.circle(WIN, value_color[7 + int(n%8/5)], (x+s, y-s), s/4)
+                else:
+                    guide_b = pygame.Rect(x+s - int(s/4), y-s - int(s/4), s/2, s/2)
+                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
+
+                #elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x-s, y - s+int(s/16)), s / 4)
+
+            #third position
+            if n%4 == 2:
+
+                #arm
+                pygame.draw.line(WIN, value_color[7], (x, y - int(s/2)), (x+s, y - int(s/2)), int(s/8))
+
+                #hand
+                if n%16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n%8/4) + 7], (x+s, y - int(s/2)), s/4)
+                else:
+                    guide_b = pygame.Rect(x+s - int(s/8), y - int(s/4) - int(s/2), s/2, s/2)
+                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
+
+                #elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y- int(s/2)), s / 4)
+
+            #fourth position
+            if n%4 == 3:
+
+                #arm
+                pygame.draw.line(WIN, value_color[7], (x + s, y+int(s/16)), (x + s, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x+s, y), int(s/8))
+
+                #hand
+                if n%16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n%8/4) + 7], (x+s, y-s), s/4)
+                else:
+                    guide_b = pygame.Rect(x+s - int(s/4), y -s -  int(s/4), s/2, s/2)
+                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
+
+                #elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y), s / 4)
+
+
+        # punch = 3
+        # size = 64
+        # punchroglyph(punch, size, width_8, height_4)
+        # punchroglyph(punch + 4, size, width_8 + width_4, height_4)
+        # punchroglyph(punch + 8, size, width_8 + width_2, height_4)
+        # punchroglyph(punch + 12, size, width_8 + width_2 + width_4, height_4)
+        # punchroglyph(punch + 16, size, width_8, height_4 + height_4)
+        # punchroglyph(punch + 20, size, width_8 + width_4, height_4 + height_4)
+        # punchroglyph(punch + 24, size, width_8 + width_2, height_4 + height_4)
+        # punchroglyph(punch + 28, size, width_8 + width_2 + width_4, height_4 + height_4)
 
 
 
@@ -201,7 +466,8 @@ def Chaos_Window():
                     print()
 
                 elif event.key == pygame.K_RIGHT:
-                    print()
+                    guide += 1
+                    guide = guide%4
 
                 elif event.key == pygame.K_UP:
                     print()
@@ -444,7 +710,18 @@ def Chaos_Window():
                     phrase = phrase[:-1]
 
 
-
+        #buttons
+        x = WIDTH - width_16
+        y = height_32
+        guide_b = pygame.Rect(x, y, 64, 64)
+        pygame.draw.rect(WIN, value_color[8], guide_b)
+        if guide_b.collidepoint((mx, my)):
+            guide_t = main_font.render(str(guide), True, (255, 255, 255))
+            WIN.blit(guide_t, (x + 24, y + 8))
+            if click:
+                guide += 1
+                guide = guide % guide_max
+                click = False
 
 
         pygame.display.update()

@@ -9,7 +9,7 @@ import time
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Bind the socket to the port
-host, port = '192.168.1.14', 21621
+host, port = '192.168.1.3', 21621
 server_address = (host, port)
 
 print(f'Starting UDP server on {host} port {port}')
@@ -81,9 +81,9 @@ if glove_name == 'gos':
                    'UD':{0:2, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
 #arm
 if glove_name == 'arm':
-    orientation = {'FB':{0:2, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
+    orientation = {'FB':{0:1, 1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0},
                    'LR':{0:0, 1:0, 2:0, 3:1, 4:1, 5:1, 6:1, 7:1},
-                   'UD':{0:1, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
+                   'UD':{0:2, 1:2, 2:2, 3:2, 4:2, 5:2, 6:2, 7:2}}
 
 calibrations = {'FB': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
                 'LR': [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
