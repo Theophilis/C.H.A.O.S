@@ -300,7 +300,7 @@ def Chaos_Window():
                 punchroglyph(x, 64, x0, y0)
 
                 try:
-                    bigram_t = main_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
+                    bigram_t = lable_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
                     WIN.blit(bigram_t, (x0, y0))
                 except:
                     continue

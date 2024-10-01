@@ -119,6 +119,8 @@ gyro_polarity = [1 for x in range(nos)]
 gyro_cap = [1 for x in range(nos)]
 spin_min = [8 for x in range(nos)]
 
+graph = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[]}
+
 
 total_gs = {'FB':0, 'LR':0, 'UD':0}
 
@@ -170,6 +172,30 @@ while run == 1:
 
 
 
+    max_graph = 32
+    graph[channel].insert(0, [compass[channel][0], compass[channel][1], compass[channel][2], compass[channel][3], compass[channel][4], compass[channel][5]])
+    if len(graph[channel]) > max_graph:
+        graph[channel] = graph[channel][:-1]
+
+    x0 = width_32
+    y0 = height_16
+    button_size = height_64
+
+
+    for x in range(nos):
+        for y in range(len(graph[x])):
+            for z in range(6):
+
+                if z < 3:
+                    cell_size = abs(graph[x][y][z]) * 32
+                else:
+                    cell_size = abs(graph[x][y][z])
+
+
+
+                ui_b = pygame.Rect(x0 + y*button_size, y0 + button_size*z + (button_size*7)*x, cell_size, cell_size)
+                pygame.draw.rect(WIN, value_color[z+1], ui_b)
+
 
     button_size = 64
 
@@ -177,8 +203,8 @@ while run == 1:
         y0 = height_32 + height_8*x
         for y in range(6):
             x0 = width_16 + width_16*y
-            value_t = small_font.render(str(compass[x][y]), True, (255, 255, 255))
-            WIN.blit(value_t, (x0, y0))
+            # value_t = small_font.render(str(compass[x][y]), True, (255, 255, 255))
+            # WIN.blit(value_t, (x0, y0))
 
             if y < 3:
                 button_size = abs(compass[x][y]) * 64
