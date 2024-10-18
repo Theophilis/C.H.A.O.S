@@ -55,7 +55,10 @@ TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 click = False
 
 value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4: (0, 255, 255), 5: (0, 0, 255),
-               6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127)}
+               6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127), 9: (127, 0, 0), 10:(127, 127, 0),
+               11: (0, 127, 0), 12: (0, 127, 127), 13: (0, 0, 127), 14: (127, 0, 127)}
+
+
 
 run = 1
 #number_of_sensors
@@ -172,7 +175,7 @@ while run == 1:
 
 
 
-    max_graph = 32
+    max_graph = 64
     graph[channel].insert(0, [compass[channel][0], compass[channel][1], compass[channel][2], compass[channel][3], compass[channel][4], compass[channel][5]])
     if len(graph[channel]) > max_graph:
         graph[channel] = graph[channel][:-1]
@@ -184,6 +187,7 @@ while run == 1:
 
     for x in range(nos):
         for y in range(len(graph[x])):
+            polarity = 0
             for z in range(6):
 
                 if z < 3:
@@ -192,9 +196,11 @@ while run == 1:
                     cell_size = abs(graph[x][y][z])
 
 
+                if graph[x][y][z] < 0:
+                    polarity = 8
 
                 ui_b = pygame.Rect(x0 + y*button_size, y0 + button_size*z + (button_size*7)*x, cell_size, cell_size)
-                pygame.draw.rect(WIN, value_color[z+1], ui_b)
+                pygame.draw.rect(WIN, value_color[z+1 + polarity], ui_b)
 
 
     button_size = 64
@@ -202,7 +208,7 @@ while run == 1:
     for x in range(nos):
         y0 = height_32 + height_8*x
         for y in range(6):
-            x0 = width_16 + width_16*y
+            x0 = width_8 + width_16*y
             # value_t = small_font.render(str(compass[x][y]), True, (255, 255, 255))
             # WIN.blit(value_t, (x0, y0))
 
