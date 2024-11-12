@@ -127,12 +127,46 @@ graph = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[]}
 
 total_gs = {'FB':0, 'LR':0, 'UD':0}
 
+# bets
+digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+           's': 4, 'c': 5, 'd': 6, 'm': 7,
+           'g': 8, 'f': 9, 'w': 10, 'v': 11,
+           'z': 12, 'q': 13, 'an': 14, 'er': 15,
+           'ou': 16, 'in': 17, 'th': 18, 'j': 19,
+           'x': 20, 'k': 21, 'y': 22, 'b': 23,
+           'h': 24, 'p': 25, 'u': 26, 'l': 27,
+           'n': 28, 'o': 29, 'r': 30, 'e': 31}
+digibetu = {v: k for k, v in digibet.items()}
+
+filename = 'bets/armbet_2'
+infile = open(filename, "rb")
+armbet = pickle.load(infile)
+infile.close
+
+print()
+for d in digibet:
+    print(armbet[d])
 
 #ui
 compui = 0
 calui = 1
 gyrui = 1
 switchui = 1
+
+digisign = 0
+digisign_s = ''
+armsign = 0
+armsign_s = ''
+betcalibration = 0
+recordcali = 0
+
+calibet = {}
+mhl = {}
+cali_limit = 255
+
+mean = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+high = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+low = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 while run == 1:
 
@@ -185,26 +219,74 @@ while run == 1:
     button_size = height_64
 
 
-    for x in range(nos):
-        for y in range(len(graph[x])):
-            polarity = 0
-            for z in range(6):
 
-                if z < 3:
-                    cell_size = abs(graph[x][y][z]) * 32
-                else:
-                    cell_size = abs(graph[x][y][z])
+    if betcalibration == 1:
+
+        if (armsign, digisign) not in calibet:
+            calibet[(armsign, digisign)] = []
+            mhl[(armsign, digisign)] = []
+
+        if recordcali == 1:
+
+            calichunk = []
+            for x in range(8):
+                for y in range(3):
+                    calichunk.append(round(compass[x][y],1))
+            calibet[(armsign, digisign)].append(calichunk)
+            if len(calibet[(armsign, digisign)]) > cali_limit:
+                calibet[(armsign, digisign)] = calibet[(armsign, digisign)][1:]
+
+            #mhl
+            mean = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            high = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            low = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+            if len(calibet[(armsign, digisign)]) > 0:
+                digicali_t = text_font.render(str(calibet[(armsign, digisign)][-1]), True, (255, 255, 255))
+                WIN.blit(digicali_t, (width_32, height_4 + height_16))
+
+            for x in range(len(calibet[(armsign, digisign)])):
+                current_set = calibet[(armsign, digisign)][x]
+                for y in range(len(current_set)):
+                    mean[y] += current_set[y]
+
+                    if current_set[y] > high[y]:
+                        high[y] = current_set[y]
+
+                    if current_set[y] < low[y]:
+                        low[y] = current_set[y]
+
+            if len(calibet[(armsign, digisign)]) > 0:
+                for y in range(24):
+                    mean[y] = round(mean[y]/len(calibet[(armsign, digisign)]),1)
+
+        armcali_t = main_font.render(str(len(calibet[(armsign, digisign)])), True, (255, 255, 255))
+        WIN.blit(armcali_t, (width_8 + width_8, height_16))
+
+        armcali_t = main_font.render(str(armbet[digibetu[digisign]][armsign]), True, (255, 255, 255))
+        WIN.blit(armcali_t, (width_8 + width_16, height_8))
+
+        digicali_t = main_font.render(str(digibetu[digisign]), True, (255, 255, 255))
+        WIN.blit(digicali_t, (width_8 + width_8, height_8))
+
+        digicali_t = text_font.render(str(mean), True, (255, 255, 255))
+        WIN.blit(digicali_t, (width_32, height_4 + height_16 * 2))
+
+        digicali_t = text_font.render(str(high), True, (255, 255, 255))
+        WIN.blit(digicali_t, (width_32, height_4 + height_16 * 3))
+
+        digicali_t = text_font.render(str(low), True, (255, 255, 255))
+        WIN.blit(digicali_t, (width_32, height_4 + height_16 * 4))
 
 
-                if graph[x][y][z] < 0:
-                    polarity = 8
 
-                ui_b = pygame.Rect(x0 + y*button_size, y0 + button_size*z + (button_size*7)*x, cell_size, cell_size)
-                pygame.draw.rect(WIN, value_color[z+1 + polarity], ui_b)
+
+
 
 
     button_size = 64
 
+    #squares
     for x in range(nos):
         y0 = height_32 + height_8*x
         for y in range(6):
@@ -226,6 +308,112 @@ while run == 1:
             ui_b = pygame.Rect(x0 + width_2, y0, button_size, button_size)
             pygame.draw.rect(WIN, value_color[color], ui_b)
 
+    # buttons
+        #betcalibration
+    x = width_16
+    y = height_32
+    betcalibration_b = pygame.Rect(x, y, 64, 64)
+    pygame.draw.rect(WIN, value_color[8], betcalibration_b)
+    betcalibration_t = main_font.render(str(recordcali), True, (255, 255, 255))
+    WIN.blit(betcalibration_t, (x + 24 + width_16, y + 8))
+    if betcalibration_b.collidepoint((mx, my)):
+        betcalibration_t = main_font.render(str(betcalibration), True, (255, 255, 255))
+        WIN.blit(betcalibration_t, (x + 24, y + 8))
+        if click:
+            betcalibration += 1
+            betcalibration = betcalibration % 2
+            click = False
+
+    #digisign
+    x = width_16
+    y = height_8
+    digisign_b = pygame.Rect(x, y, 64, 64)
+    pygame.draw.rect(WIN, value_color[1], digisign_b)
+    digisign_t = main_font.render(str(digisign), True, (255, 255, 255))
+    WIN.blit(digisign_t, (x + 24 + 64, y + 8))
+    if digisign_b.collidepoint((mx, my)):
+        digisign_t = main_font.render(str(digisign_s), True, (255, 255, 255))
+        WIN.blit(digisign_t, (x + 24, y + 8))
+        for event in pygame.event.get():
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    digisign = int(digisign_s)
+
+            if event.type == pygame.KEYDOWN:
+
+                if event.key == pygame.K_ESCAPE:
+                    run = 2
+
+                elif event.key == pygame.K_1:
+                    digisign_s += '1'
+                elif event.key == pygame.K_2:
+                    digisign_s += '2'
+                elif event.key == pygame.K_3:
+                    digisign_s += '3'
+                elif event.key == pygame.K_4:
+                    digisign_s += '4'
+                elif event.key == pygame.K_5:
+                    digisign_s += '5'
+                elif event.key == pygame.K_6:
+                    digisign_s += '6'
+                elif event.key == pygame.K_7:
+                    digisign_s += '7'
+                elif event.key == pygame.K_8:
+                    digisign_s += '8'
+                elif event.key == pygame.K_9:
+                    digisign_s += '9'
+                elif event.key == pygame.K_0:
+                    digisign_s += '0'
+
+                elif event.key == pygame.K_BACKSPACE:
+                    digisign_s = ''
+
+    #armsign
+    x = width_16
+    y = height_8 + height_8 - height_32
+    armsign_b = pygame.Rect(x, y, 64, 64)
+    pygame.draw.rect(WIN, value_color[5], armsign_b)
+    armsign_t = main_font.render(str(armsign), True, (255, 255, 255))
+    WIN.blit(armsign_t, (x + 24 + 64, y + 8))
+    if armsign_b.collidepoint((mx, my)):
+        armsign_t = main_font.render(str(armsign_s), True, (255, 255, 255))
+        WIN.blit(armsign_t, (x + 24, y + 8))
+        for event in pygame.event.get():
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    armsign = int(armsign_s)
+
+            if event.type == pygame.KEYDOWN:
+
+                if event.key == pygame.K_ESCAPE:
+                    run = 2
+
+                elif event.key == pygame.K_1:
+                    armsign_s += '1'
+                elif event.key == pygame.K_2:
+                    armsign_s += '2'
+                elif event.key == pygame.K_3:
+                    armsign_s += '3'
+                elif event.key == pygame.K_4:
+                    armsign_s += '4'
+                elif event.key == pygame.K_5:
+                    armsign_s += '5'
+                elif event.key == pygame.K_6:
+                    armsign_s += '6'
+                elif event.key == pygame.K_7:
+                    armsign_s += '7'
+                elif event.key == pygame.K_8:
+                    armsign_s += '8'
+                elif event.key == pygame.K_9:
+                    armsign_s += '9'
+                elif event.key == pygame.K_0:
+                    armsign_s += '0'
+
+                elif event.key == pygame.K_BACKSPACE:
+                    armsign_s = ''
+
 
 
     # inputs
@@ -243,6 +431,28 @@ while run == 1:
 
             if event.key == pygame.K_ESCAPE:
                 run = 2
+
+            elif event.key == pygame.K_SPACE:
+                recordcali += 1
+                recordcali = recordcali%2
+
+            elif event.key == pygame.K_UP:
+                digisign += 1
+                digisign = digisign%32
+
+            elif event.key == pygame.K_DOWN:
+                digisign -= 1
+                if digisign < 0:
+                    digisign  = 0
+
+            elif event.key == pygame.K_RIGHT:
+                armsign += 1
+                armsign = armsign%31
+
+            elif event.key == pygame.K_LEFT:
+                armsign -= 1
+                if armsign < 0:
+                    armsign = 0
 
         # keyboard
 

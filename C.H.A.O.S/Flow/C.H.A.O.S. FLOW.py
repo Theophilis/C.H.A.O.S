@@ -679,7 +679,7 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
                 # print("synthesis")
                 # print(synthesis)
 
-                file = str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[0]) + '_width' + str(
+                file = str(x) + '-' + str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[0]) + '_width' + str(
                     scales[0]) + '-' + str(scales[0]) + '_Colors-' + str(color_list_label)
                 path_name = os.path.join(path, file)
 
@@ -707,7 +707,7 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
                     plt.close()
 
                 except:
-                    file = str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[0]) + '_width' + str(
+                    file = str(x) + '-' + str(base) + '-' + j_name + '_length' + str(scales[0]) + '-' + str(scales[0]) + '_width' + str(
                         scales[0]) + '-' + str(scales[0]) + '_Colors-' + str(color_list_label)
                     path_name = os.path.join(path, file)
 
