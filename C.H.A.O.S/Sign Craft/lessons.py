@@ -61,186 +61,398 @@ def Chaos_Window():
             bin = '0' + bin
         return bin
 
-    def punchroglyph(n, s, x, y):
+    def punchroglyph(n, s, x, y, rl = 0):
 
-        # first position
-        if n % 4 == 0:
+        if rl == 0:
+            # first position
+            if n % 4 == 0:
 
-            # arm
-            pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y), int(s / 8))
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y), int(s / 8))
 
-            # hand
-            if n % 16 < 8:
-                pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y), s / 4)
-            else:
-                guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4), s / 2, s / 2)
-                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y), s / 4)
+                else:
+                    guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-            # elbow
-            if n > 15:
-                pygame.draw.circle(WIN, value_color[7], (x, y - s + int(s / 16)), s / 4)
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y - s + int(s / 16)), s / 4)
 
-        # second position
-        if n % 4 == 1:
+            # second position
+            if n % 4 == 1:
 
-            # arm
-            pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y), (x - s, y - s), int(s / 8))
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x - s, y - s), int(s / 8))
 
-            # hand
-            if n % 16 < 8:
-                pygame.draw.circle(WIN, value_color[7 + int(n % 8 / 5)], (x + s, y - s), s / 4)
-            else:
-                guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
-                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[7 + int(n % 8 / 5)], (x + s, y - s), s / 4)
+                else:
+                    guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-            # elbow
-            if n > 15:
-                pygame.draw.circle(WIN, value_color[7], (x - s, y - s + int(s / 16)), s / 4)
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x - s, y - s + int(s / 16)), s / 4)
 
-        # third position
-        if n % 4 == 2:
+            # third position
+            if n % 4 == 2:
 
-            # arm
-            pygame.draw.line(WIN, value_color[7], (x, y - int(s / 2)), (x + s, y - int(s / 2)), int(s / 8))
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x, y - int(s / 2)), (x + s, y - int(s / 2)), int(s / 8))
 
-            # hand
-            if n % 16 < 8:
-                pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - int(s / 2)), s / 4)
-            else:
-                guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4) - int(s / 2), s / 2, s / 2)
-                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - int(s / 2)), s / 4)
+                else:
+                    guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4) - int(s / 2), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-            # elbow
-            if n > 15:
-                pygame.draw.circle(WIN, value_color[7], (x, y - int(s / 2)), s / 4)
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y - int(s / 2)), s / 4)
 
-        # fourth position
-        if n % 4 == 3:
+            # fourth position
+            if n % 4 == 3:
 
-            # arm
-            pygame.draw.line(WIN, value_color[7], (x + s, y + int(s / 16)), (x + s, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y), int(s / 8))
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x + s, y + int(s / 16)), (x + s, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y), int(s / 8))
 
-            # hand
-            if n % 16 < 8:
-                pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - s), s / 4)
-            else:
-                guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
-                pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - s), s / 4)
+                else:
+                    guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-            # elbow
-            if n > 15:
-                pygame.draw.circle(WIN, value_color[7], (x, y), s / 4)
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y), s / 4)
+
+        if rl == 1:
+            # first position
+            if n % 4 == 0:
+
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x - s, y), int(s / 8))
+
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x - s, y), s / 4)
+                else:
+                    guide_b = pygame.Rect(x - s - int(s / 8), y - int(s / 4), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y - s + int(s / 16)), s / 4)
+
+            # second position
+            if n % 4 == 1:
+
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x - s, y - s), int(s / 8))
+
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[7 + int(n % 8 / 5)], (x + s, y - s), s / 4)
+                else:
+                    guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x - s, y - s + int(s / 16)), s / 4)
+
+            # third position
+            if n % 4 == 2:
+
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x, y - int(s / 2)), (x + s, y - int(s / 2)), int(s / 8))
+
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - int(s / 2)), s / 4)
+                else:
+                    guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4) - int(s / 2), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y - int(s / 2)), s / 4)
+
+            # fourth position
+            if n % 4 == 3:
+
+                # arm
+                pygame.draw.line(WIN, value_color[7], (x + s, y + int(s / 16)), (x + s, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y), int(s / 8))
+
+                # hand
+                if n % 16 < 8:
+                    pygame.draw.circle(WIN, value_color[int(n % 8 / 4) + 7], (x + s, y - s), s / 4)
+                else:
+                    guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
+                    pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
+
+                # elbow
+                if n > 15:
+                    pygame.draw.circle(WIN, value_color[7], (x, y), s / 4)
 
     def kickroglyph(n, s, x, y):
 
-        if n == 0:
-            pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+        if n < 16:
+            if n == 0:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
 
-        elif n == 1:
-            pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s/2), y + int(s / 16)), (x + int(s/2), y - s), int(s / 8))
+            elif n == 1:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/2), y + int(s / 16)), (x + int(s/2), y - s), int(s / 8))
 
-        elif n == 2:
-            pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s /3), y), (x + int(s / 2) + int(s/3), y), int(s / 8))
+            elif n == 2:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s /3), y), (x + int(s / 2) + int(s/3), y), int(s / 8))
 
-            pygame.draw.line(WIN, value_color[7], (x + int(s/3), y + int(s / 16)), (x + int(s/3), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/3), y + int(s / 16)), (x + int(s/3), y - s), int(s / 8))
 
-        elif n == 3:
-            pygame.draw.line(WIN, value_color[7], (x + int(s/3), y + int(s / 16)), (x + int(s/3), y - s), int(s / 8))
+            elif n == 3:
+                pygame.draw.line(WIN, value_color[7], (x + int(s/3), y + int(s / 16)), (x + int(s/3), y - s), int(s / 8))
 
-            pygame.draw.line(WIN, value_color[7], (x + int(s/3)*2, y + int(s / 16)), (x + int(s/3)*2, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x - int(s /2) + int(s/3), y), (x + int(s/3), y), int(s / 8))
-
-
-
-        elif n == 4:
-            pygame.draw.line(WIN, value_color[7], (x-int(s/4), y + int(s / 16)), (x + int(s/2) - int(s/4), y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x + int(s/2) + int(s/1.5), y + int(s / 16)), (x+ int(s/2) + int(s/1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s/2), y -s), (x + int(s/2) + int(s/1.5), y-s), int(s / 8))
-
-        elif n == 5:
-            pygame.draw.line(WIN, value_color[7], (x+int(s/4) + s, y + int(s / 16)), (x +int(s/4) + int(s/2), y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x-int(s/4), y + int(s / 16)), (x-int(s/4), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x-int(s/4), y -s), (x-int(s/4)+ int(s/1.5), y-s), int(s / 8))
-
-
-        elif n == 6:
-            #right
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 2) + int(s / 1.5), y + int(s / 16)), (x + int(s / 2) + int(s / 1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y - s), (x + int(s / 2) + int(s / 1.5), y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x-int(s/4), y + int(s / 16)), (x-int(s/4), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x-int(s/4), y -s), (x-int(s/4)+ int(s/1.5), y-s), int(s / 8))
-
-        elif n == 7:
-            pygame.draw.line(WIN, value_color[7], (x+int(s/4) + s, y + int(s / 16)), (x +int(s/4) + int(s/2), y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y + int(s / 16)), (x + int(s / 2) - int(s / 4), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/3)*2, y + int(s / 16)), (x + int(s/3)*2, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x - int(s /2) + int(s/3), y), (x + int(s/3), y), int(s / 8))
 
 
 
-        elif n == 8:
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5) + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5) + int(s / 1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y - s), (x + int(s / 1.5) + int(s / 1.5), y - s), int(s / 8))
+            elif n == 4:
+                pygame.draw.line(WIN, value_color[7], (x-int(s/4), y + int(s / 16)), (x + int(s/2) - int(s/4), y - s), int(s / 8))
 
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y), (x + int(s / 1.5), y), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/2) + int(s/1.5), y + int(s / 16)), (x+ int(s/2) + int(s/1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/2), y -s), (x + int(s/2) + int(s/1.5), y-s), int(s / 8))
 
+            elif n == 5:
+                pygame.draw.line(WIN, value_color[7], (x+int(s/4) + s, y + int(s / 16)), (x +int(s/4) + int(s/2), y - s), int(s / 8))
 
-        elif n == 9:
-            pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y - s), (x + (s/1.5), y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s/1.5), y), (x + int(s/1.5) + int(s / 1.5), y), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x-int(s/4), y + int(s / 16)), (x-int(s/4), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x-int(s/4), y -s), (x-int(s/4)+ int(s/1.5), y-s), int(s / 8))
 
 
-        elif n == 10:
-            pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y - s), (x + (s/1.5), y - s), int(s / 8))
+            elif n == 6:
+                #right
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2) + int(s / 1.5), y + int(s / 16)), (x + int(s / 2) + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y - s), (x + int(s / 2) + int(s / 1.5), y - s), int(s / 8))
 
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y), (x + int(s / 1.5), y), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x-int(s/4), y + int(s / 16)), (x-int(s/4), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x-int(s/4), y -s), (x-int(s/4)+ int(s/1.5), y-s), int(s / 8))
 
-        elif n == 11:
-            pygame.draw.line(WIN, value_color[7], (x + int(s/2), y), (x + int(s/2) + int(s/2), y -int(s/2)), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s/2), y), (x + int(s/2) - int(s / 2), y - int(s / 2)), int(s / 8))
+            elif n == 7:
+                pygame.draw.line(WIN, value_color[7], (x+int(s/4) + s, y + int(s / 16)), (x +int(s/4) + int(s/2), y - s), int(s / 8))
 
-            pygame.draw.line(WIN, value_color[7], (x + int(s/2), y-s), (x + int(s/2) + int(s / 2), y - int(s / 2)), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s/2) + int(s / 2) - int(s/2), y - s), (x + int(s/2) -int(s/2), y - int(s / 2)), int(s / 8))
-
-
-        elif n == 12:
-            pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x + int(s/3), y-s), (x + int(s/3) + int(s/1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s/1.5), y - s), (x + int(s / 3) + int(s / 1.5), y-int(s/3)), int(s / 8))
-
-        elif n == 13:
-            pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x + int(s/3), y-int(s/3)), (x + int(s/3) + int(s/1.5), y - int(s/3)), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s/1.5), y - s), (x + int(s / 3) + int(s / 1.5), y-int(s/3)), int(s / 8))
-
-        elif n == 14:
-            pygame.draw.line(WIN, value_color[7], (x + int(s), y), (x + int(s), y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x, y-s), (x + int(s/1.5), y - s), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y-int(s/3)), int(s / 8))
-
-        elif n == 15:
-            pygame.draw.line(WIN, value_color[7], (x+s, y), (x+s, y - s), int(s / 8))
-
-            pygame.draw.line(WIN, value_color[7], (x, y-int(s/3)), (x+ int(s/1.5), y - int(s/3)), int(s / 8))
-            pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y-int(s/3)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y + int(s / 16)), (x + int(s / 2) - int(s / 4), y - s), int(s / 8))
 
 
+
+            elif n == 8:
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5) + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5) + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y - s), (x + int(s / 1.5) + int(s / 1.5), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + int(s / 1.5), y), int(s / 8))
+
+
+            elif n == 9:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x + (s/1.5), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/1.5), y), (x + int(s/1.5) + int(s / 1.5), y), int(s / 8))
+
+
+            elif n == 10:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x + (s/1.5), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + int(s / 1.5), y), int(s / 8))
+
+            elif n == 11:
+                pygame.draw.line(WIN, value_color[7], (x + int(s/2), y), (x + int(s/2) + int(s/2), y -int(s/2)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/2), y), (x + int(s/2) - int(s / 2), y - int(s / 2)), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s/2), y-s), (x + int(s/2) + int(s / 2), y - int(s / 2)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s/2) + int(s / 2) - int(s/2), y - s), (x + int(s/2) -int(s/2), y - int(s / 2)), int(s / 8))
+
+
+            elif n == 12:
+                pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s/3), y-s), (x + int(s/3) + int(s/1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s/1.5), y - s), (x + int(s / 3) + int(s / 1.5), y-int(s/3)), int(s / 8))
+
+            elif n == 13:
+                pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s/3), y-int(s/3)), (x + int(s/3) + int(s/1.5), y - int(s/3)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s/1.5), y - s), (x + int(s / 3) + int(s / 1.5), y-int(s/3)), int(s / 8))
+
+            elif n == 14:
+                pygame.draw.line(WIN, value_color[7], (x + int(s), y), (x + int(s), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x, y-s), (x + int(s/1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y-int(s/3)), int(s / 8))
+
+            elif n == 15:
+                pygame.draw.line(WIN, value_color[7], (x+s, y), (x+s, y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x, y-int(s/3)), (x+ int(s/1.5), y - int(s/3)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y-int(s/3)), int(s / 8))
+
+        else:
+            n -= 16
+
+            pygame.draw.circle(WIN, value_color[7], (x + 48, y - height_4), 32)
+
+            if n == 0:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+
+            elif n == 1:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y + int(s / 16)), (x + int(s / 2), y - s),
+                                 int(s / 8))
+
+            elif n == 2:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y), (x + int(s / 2) + int(s / 3), y), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y + int(s / 16)), (x + int(s / 3), y - s),
+                                 int(s / 8))
+
+            elif n == 3:
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y + int(s / 16)), (x + int(s / 3), y - s),
+                                 int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3) * 2, y + int(s / 16)),
+                                 (x + int(s / 3) * 2, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 2) + int(s / 3), y), (x + int(s / 3), y), int(s / 8))
+
+
+
+            elif n == 4:
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y + int(s / 16)),
+                                 (x + int(s / 2) - int(s / 4), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2) + int(s / 1.5), y + int(s / 16)),
+                                 (x + int(s / 2) + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y - s), (x + int(s / 2) + int(s / 1.5), y - s),
+                                 int(s / 8))
+
+            elif n == 5:
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 4) + s, y + int(s / 16)),
+                                 (x + int(s / 4) + int(s / 2), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y + int(s / 16)), (x - int(s / 4), y - s),
+                                 int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y - s), (x - int(s / 4) + int(s / 1.5), y - s),
+                                 int(s / 8))
+
+
+            elif n == 6:
+                # right
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2) + int(s / 1.5), y + int(s / 16)),
+                                 (x + int(s / 2) + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y - s), (x + int(s / 2) + int(s / 1.5), y - s),
+                                 int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y + int(s / 16)), (x - int(s / 4), y - s),
+                                 int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y - s), (x - int(s / 4) + int(s / 1.5), y - s),
+                                 int(s / 8))
+
+            elif n == 7:
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 4) + s, y + int(s / 16)),
+                                 (x + int(s / 4) + int(s / 2), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x - int(s / 4), y + int(s / 16)),
+                                 (x + int(s / 2) - int(s / 4), y - s), int(s / 8))
+
+
+
+            elif n == 8:
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5) + int(s / 1.5), y + int(s / 16)),
+                                 (x + int(s / 1.5) + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y - s),
+                                 (x + int(s / 1.5) + int(s / 1.5), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s),
+                                 int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + int(s / 1.5), y), int(s / 8))
+
+
+            elif n == 9:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x + (s / 1.5), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s),
+                                 int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y), (x + int(s / 1.5) + int(s / 1.5), y),
+                                 int(s / 8))
+
+
+            elif n == 10:
+                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x + (s / 1.5), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 1.5), y + int(s / 16)), (x + int(s / 1.5), y - s),
+                                 int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y), (x + int(s / 1.5), y), int(s / 8))
+
+            elif n == 11:
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y),
+                                 (x + int(s / 2) + int(s / 2), y - int(s / 2)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y),
+                                 (x + int(s / 2) - int(s / 2), y - int(s / 2)), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y - s),
+                                 (x + int(s / 2) + int(s / 2), y - int(s / 2)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 2) + int(s / 2) - int(s / 2), y - s),
+                                 (x + int(s / 2) - int(s / 2), y - int(s / 2)), int(s / 8))
+
+
+            elif n == 12:
+                pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y - s), (x + int(s / 3) + int(s / 1.5), y - s),
+                                 int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s / 1.5), y - s),
+                                 (x + int(s / 3) + int(s / 1.5), y - int(s / 3)), int(s / 8))
+
+            elif n == 13:
+                pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y - int(s / 3)),
+                                 (x + int(s / 3) + int(s / 1.5), y - int(s / 3)), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s / 1.5), y - s),
+                                 (x + int(s / 3) + int(s / 1.5), y - int(s / 3)), int(s / 8))
+
+            elif n == 14:
+                pygame.draw.line(WIN, value_color[7], (x + int(s), y), (x + int(s), y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x + int(s / 1.5), y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y - int(s / 3)), int(s / 8))
+
+            elif n == 15:
+                pygame.draw.line(WIN, value_color[7], (x + s, y), (x + s, y - s), int(s / 8))
+
+                pygame.draw.line(WIN, value_color[7], (x, y - int(s / 3)), (x + int(s / 1.5), y - int(s / 3)),
+                                 int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y - int(s / 3)), int(s / 8))
 
     print(HEIGHT, WIDTH)
     width_2 = int(WIDTH/2)
@@ -249,6 +461,7 @@ def Chaos_Window():
     width_8 = int(WIDTH/8)
     width_16 = int(WIDTH/16)
     width_32 = int(WIDTH/32)
+    width_64 = int(WIDTH/64)
     height_2 = int(HEIGHT/2)
     height_4 = int(HEIGHT/4)
     height_8 = int(HEIGHT/8)
@@ -279,11 +492,11 @@ def Chaos_Window():
     for d in digibet:
         print(armbet[d])
 
-    guide = 4
-    guide_max = 5
+    guide = 7
+    guide_max = 8
 
     #phrase
-    phrase = 'edward conlon cadden maclean'
+    phrase = 'heaven declare'
 
 
 
@@ -301,11 +514,117 @@ def Chaos_Window():
 
 
         lesson_t = main_font.render(phrase, True, value_color[7])
-        WIN.blit(lesson_t,(width_2 + width_4-lesson_t.get_width()/2, height_2 + height_4 + height_8))
+        WIN.blit(lesson_t,(width_2 + width_4 + width_16 + width_32-lesson_t.get_width()/2, height_2 + height_4 + height_8))
 
+        # digibet-c
+        if guide == 0:
+            space = 64
+            step = 0
+            step_lim = 14
 
-        #digibet
+            for y in range(32):
+
+                bin_value = bin_gen(y, 2, 5)[::-1]
+
+                x0 = width_16 + int(step / step_lim) * width_4
+                y0 = 32 + step % step_lim * space
+
+                for x in range(5):
+                    x1 = x0 + space + space + space / 2 * x
+                    y1 = y0 + 8
+
+                    finger_sign = pygame.Rect(x1, y1, 31, 31)
+                    pygame.draw.rect(WIN, value_color[8 - int(bin_value[x])], finger_sign)
+
+                lesson_t = main_font.render(str(y), True, value_color[7])
+                WIN.blit(lesson_t, (x1 - space * 3, y1 - 8))
+
+                lesson_t = main_font.render(str(digibetu[y]), True, value_color[7])
+                WIN.blit(lesson_t, (x1 + space, y1 - 8))
+
+                step += 1
+
+        #digroglyph-c
         if guide == 1:
+            space = 64
+            step = 0
+            step_lim = 6
+            size = 31
+
+            for y in range(32):
+
+                x0 = width_8 + int(step / step_lim) * width_8
+                y0 = height_8 + step % step_lim * (space*2)
+
+
+                bin_value = bin_gen(y, 2, 5)[::-1]
+
+
+                for x in range(5):
+                    x1 = x0
+                    y1 = y0
+
+                    if x == 1:
+                        x1 = x1 + size
+                    if x == 2:
+                        x1 = x1 + size
+                        y1 = y1 + size
+                    if x == 3:
+                        x1 = x1 + size
+                        y1 = y1 + size*2
+                    if x == 4:
+                        x1 = x1
+                        y1 = y1 + size*2
+
+
+
+
+                    finger_sign = pygame.Rect(x1, y1, size, size)
+                    pygame.draw.rect(WIN, value_color[8 - int(bin_value[x])], finger_sign)
+
+                lesson_t = main_font.render(str(y), True, value_color[7])
+                WIN.blit(lesson_t, (x1-size/2 * 3, y1 - 8))
+
+                lesson_t = main_font.render(str(digibetu[y]), True, value_color[7])
+                WIN.blit(lesson_t, (x1 + space + size/2, y1 - 8))
+
+                step += 1
+
+        #punchroglph-c
+        if guide == 2:
+
+            space = 192
+
+            for x in range(16):
+                x0 = width_16 +int(x/4)*(space)
+                y0 = height_8 + x%4 * space
+                punchroglyph(x, 64, x0, y0)
+
+                try:
+                    bigram_t = lable_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
+                    WIN.blit(bigram_t, (x0, y0))
+                except:
+                    continue
+
+        #kickroglyph-c
+        if guide == 3:
+
+            space = 192
+
+            for x in range(16):
+                x0 = width_16 +int(x/4)*(space)
+                y0 = height_8 + x%4 * space
+                kickroglyph(x, 64, x0, y0)
+
+                try:
+                    bigram_t = lable_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
+                    WIN.blit(bigram_t, (x0, y0))
+                except:
+                    continue
+
+
+        #digibet-s
+        if guide == 4:
             space = 64
             step = 0
             step_lim = 14
@@ -343,7 +662,7 @@ def Chaos_Window():
                 step += 1
 
         #armbet-s
-        if guide == 2:
+        if guide == 5:
 
             phrase = phrase.lower()
 
@@ -396,157 +715,288 @@ def Chaos_Window():
                 else:
                     punchroglyph(0, 64, x1+ space, y1 + int(space/2))
 
+        #legbet-s
+        if guide == 6:
 
-        #armbet-c
-        if guide == 3:
+            phrase = phrase.lower()
 
-            space = 192
+            #bigrams
+            bigrams = []
 
-            for x in range(16):
-                x0 = width_16 +int(x/4)*(space)
-                y0 = height_8 + x%4 * space
-                punchroglyph(x, 64, x0, y0)
-
-                try:
-                    bigram_t = lable_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
-                    WIN.blit(bigram_t, (x0, y0))
-                except:
-                    continue
-
-
-        #legbet-c
-        if guide == 4:
-
-            space = 192
-
-            for x in range(16):
-                x0 = width_16 +int(x/4)*(space)
-                y0 = height_8 + x%4 * space
-                kickroglyph(x, 64, x0, y0)
-
-                try:
-                    bigram_t = lable_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
-                    WIN.blit(bigram_t, (x0, y0))
-                except:
-                    continue
-
-        if guide == 0:
-            space = 64
             step = 0
-            step_lim = 14
+            stagger = 0
+            check = ''
+            while check != phrase:
+                bigram = phrase[step*2 + stagger:step*2+2 + stagger]
 
-            for y in range(32):
-
-                bin_value = bin_gen(y, 2, 5)[::-1]
-
-                x0 = width_16 + int(step / step_lim) * width_4
-                y0 = 32 + step % step_lim * space
-
-
-
-
-                for x in range(5):
-
-                    x1 = x0 + space + space + space/2*x
-                    y1 = y0 + 8
-
-                    finger_sign = pygame.Rect(x1, y1, 31, 31)
-                    pygame.draw.rect(WIN, value_color[8 - int(bin_value[x])], finger_sign)
-
-                lesson_t = main_font.render(str(y), True, value_color[7])
-                WIN.blit(lesson_t, (x1 - space*3, y1 -8))
-
-                lesson_t = main_font.render(str(digibetu[y]), True, value_color[7])
-                WIN.blit(lesson_t, (x1 + space, y1 -8))
-
+                if ' ' in bigram:
+                    if bigram[0] == ' ':
+                        stagger += 1
+                        bigrams.append(' ')
+                        bigram = phrase[step * 2 + stagger:step * 2 + 2 + stagger]
+                        bigrams.append(bigram)
+                    else:
+                        bigrams.append(bigram[0])
+                        bigrams.append(bigram[1])
+                else:
+                    bigrams.append(bigram)
                 step += 1
 
+                check = ''
+                for b in bigrams:
+                    check += b
 
 
-        def punchroglyph(n, s, x, y):
+            space = 128
+            step = 0
+            step_lim = 7
+            x0 = width_32
+            y0 = height_32
 
-            #first position
-            if n%4 == 0:
+            for x in range(len(bigrams)):
 
-                #arm
-                pygame.draw.line(WIN, value_color[7], (x, y+int(s/16)), (x, y - s), int(s / 8))
-                pygame.draw.line(WIN, value_color[7], (x, y), (x+s, y), int(s/8))
+                x1 = x0 + int(x/step_lim)*space*2
+                y1 = y0 + x%step_lim*space
 
-                #hand
-                if n%16 < 8:
-                    pygame.draw.circle(WIN, value_color[int(n%8/4) + 7], (x+s, y), s/4)
+                lesson_t = main_font.render(str(bigrams[x]), True, value_color[7])
+                WIN.blit(lesson_t, (x1, y1))
+
+                if len(bigrams[x]) == 2:
+
+                    glyph = armbet[bigrams[x][0]].index(bigrams[x])
+                    kickroglyph(glyph, 64, x1 + space, y1 + int(space/2))
+
                 else:
-                    guide_b = pygame.Rect(x+s - int(s/8), y - int(s/4), s/2, s/2)
-                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
+                    kickroglyph(0, 64, x1+ space, y1 + int(space/2))
 
-                #elbow
-                if n > 15:
-                    pygame.draw.circle(WIN, value_color[7], (x, y - s+int(s/16)), s / 4)
-
-            #second position
-            if n%4 == 1:
-
-                #arm
-                pygame.draw.line(WIN, value_color[7], (x, y), (x + s, y - s), int(s / 8))
-                pygame.draw.line(WIN, value_color[7], (x, y), (x-s, y-s), int(s/8))
-
-                #hand
-                if n%16 < 8:
-                    pygame.draw.circle(WIN, value_color[7 + int(n%8/5)], (x+s, y-s), s/4)
-                else:
-                    guide_b = pygame.Rect(x+s - int(s/4), y-s - int(s/4), s/2, s/2)
-                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
-
-                #elbow
-                if n > 15:
-                    pygame.draw.circle(WIN, value_color[7], (x-s, y - s+int(s/16)), s / 4)
-
-            #third position
-            if n%4 == 2:
-
-                #arm
-                pygame.draw.line(WIN, value_color[7], (x, y - int(s/2)), (x+s, y - int(s/2)), int(s/8))
-
-                #hand
-                if n%16 < 8:
-                    pygame.draw.circle(WIN, value_color[int(n%8/4) + 7], (x+s, y - int(s/2)), s/4)
-                else:
-                    guide_b = pygame.Rect(x+s - int(s/8), y - int(s/4) - int(s/2), s/2, s/2)
-                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
-
-                #elbow
-                if n > 15:
-                    pygame.draw.circle(WIN, value_color[7], (x, y- int(s/2)), s / 4)
-
-            #fourth position
-            if n%4 == 3:
-
-                #arm
-                pygame.draw.line(WIN, value_color[7], (x + s, y+int(s/16)), (x + s, y - s), int(s / 8))
-                pygame.draw.line(WIN, value_color[7], (x, y), (x+s, y), int(s/8))
-
-                #hand
-                if n%16 < 8:
-                    pygame.draw.circle(WIN, value_color[int(n%8/4) + 7], (x+s, y-s), s/4)
-                else:
-                    guide_b = pygame.Rect(x+s - int(s/4), y -s -  int(s/4), s/2, s/2)
-                    pygame.draw.rect(WIN, value_color[int(n%8/4) + 7], guide_b)
-
-                #elbow
-                if n > 15:
-                    pygame.draw.circle(WIN, value_color[7], (x, y), s / 4)
+        #bodyglyph
+        if guide == 7:
 
 
-        # punch = 3
-        # size = 64
-        # punchroglyph(punch, size, width_8, height_4)
-        # punchroglyph(punch + 4, size, width_8 + width_4, height_4)
-        # punchroglyph(punch + 8, size, width_8 + width_2, height_4)
-        # punchroglyph(punch + 12, size, width_8 + width_2 + width_4, height_4)
-        # punchroglyph(punch + 16, size, width_8, height_4 + height_4)
-        # punchroglyph(punch + 20, size, width_8 + width_4, height_4 + height_4)
-        # punchroglyph(punch + 24, size, width_8 + width_2, height_4 + height_4)
-        # punchroglyph(punch + 28, size, width_8 + width_2 + width_4, height_4 + height_4)
+            done = 0
+            space = 64
+            step = 0
+            step_lim = 6
+            size = 36
+            index = []
+            arm_size = 48
+
+            place = 0
+
+            words = phrase.split(' ')
+
+            lesson_t = lable_font.render(str(words), True, value_color[7])
+            WIN.blit(lesson_t, (width_16, height_2 - height_16))
+
+            if len(words) > 1:
+                for x in range(len(words)):
+                    done = 0
+                    word = words[x]
+                    print("")
+                    print(x)
+                    print(word)
+
+                    adjust_x = + width_3*(x%3)
+                    adjust_y = + height_2*int(x/3)
+
+                    if len(word) > 1:
+                        place = 0
+                        while done == 0:
+
+                            #digroglyph-r
+                            bin_value = bin_gen(digibet[word[0]], 2, 5)[::-1]
+                            bin_value_r = bin_value
+                            place += 1
+
+                            #punchroglyph-r
+                            if place == len(word):
+                                #
+                                break
+                            bet = armbet[word[place-1]].index(word[:place + 1])
+                            bet_p = word[:place+1]
+                            bet_r = bet
+                            armbet_r = bet_p
+                            place += 1
+
+
+                            #digroglyph-l
+                            if place == len(word):
+                                #
+                                break
+                            bin_value = bin_gen(digibet[word[place]], 2, 5)[::-1]
+                            bin_value_l = bin_value
+                            place += 1
+
+
+                            # punchroglyph-l
+                            if place == len(word):
+                                #
+                                break
+                            bet = armbet[word[place - 1]].index(word[place-1:place + 1])
+                            bet_p = word[place-1:place + 1]
+                            bet_l = bet
+                            armbet_l = bet_p
+                            place += 1
+
+
+                            # kickroglyph-l
+                            if place == len(word):
+                                #
+                                break
+                            bet = armbet[word[place - 1]].index(word[place-1:place + 1])
+                            bet_p = word[place-1:place + 1]
+                            bet_f = bet
+                            armbet_f = bet_p
+
+
+
+                            if len(bet_p) < len(word) - place+1:
+                                print('short')
+
+                                if word[place - 1:place + 2] in armbet[word[place - 1]]:
+                                    bet_f = armbet[word[place - 1]].index(word[place - 1:place + 2])
+                                    armbet_f = word[place - 1:place + 2]
+                                else:
+                                    print(f"Value {word[place - 1:place + 2]} not found")
+                                    place = 0
+                                    # digroglyph-r
+                                    bin_value = bin_gen(digibet[word[0]], 2, 5)[::-1]
+                                    bin_value_r = bin_value
+                                    place += 1
+
+                                    # punchroglyph-r
+                                    if place == len(word):
+                                        #
+                                        break
+                                    bet = armbet[word[place - 1]].index(word[:place + 1])
+                                    bet_p = word[:place + 1]
+                                    bet_r = bet
+                                    armbet_r = bet_p
+
+                                    if word[place - 1:place + 2] in armbet[word[place - 1]]:
+                                        bet_r = armbet[word[place - 1]].index(word[place - 1:place + 2])
+                                        armbet_r = word[place - 1:place + 2]
+                                        place += 1
+
+                                    place += 1
+
+                                    # digroglyph-l
+                                    if place == len(word):
+                                        #
+                                        break
+                                    bin_value = bin_gen(digibet[word[place]], 2, 5)[::-1]
+                                    bin_value_l = bin_value
+                                    place += 1
+
+                                    # punchroglyph-l
+                                    if place == len(word):
+                                        #
+                                        break
+                                    bet = armbet[word[place - 1]].index(word[place - 1:place + 1])
+                                    bet_p = word[place - 1:place + 1]
+                                    bet_l = bet
+                                    armbet_l = bet_p
+
+                                    if word[place - 1:place + 2] in armbet[word[place - 1]]:
+                                        bet_l = armbet[word[place - 1]].index(word[place - 1:place + 2])
+                                        armbet_l = word[place - 1:place + 2]
+                                        place += 1
+
+                                    place += 1
+
+                                    # kickroglyph-l
+                                    if place == len(word):
+                                        #
+                                        break
+                                    bet = armbet[word[place - 1]].index(word[place - 1:place + 1])
+                                    bet_p = word[place - 1:place + 1]
+                                    bet_f = bet
+                                    armbet_f = bet_p
+
+                                    if word[place - 1:place + 2] in armbet[word[place - 1]]:
+                                        bet_f = armbet[word[place - 1]].index(word[place - 1:place + 2])
+                                        armbet_f = word[place - 1:place + 2]
+
+
+                            print(bet_p)
+
+
+                            place += 1
+
+
+                            #right hand               printing
+
+                            x0 = width_8 + int(step / step_lim) * width_8 + space*4 + adjust_x
+                            y0 = height_8 + step % step_lim * (space * 2) + adjust_y
+                            for x in range(5):
+                                x1 = x0
+                                y1 = y0
+
+                                if x == 1:
+                                    x1 = x1 + size*2
+                                if x == 2:
+                                    x1 = x1 + size*2
+                                    y1 = y1 + size*2
+                                if x == 3:
+                                    x1 = x1 + size*2
+                                    y1 = y1 + size * 4
+                                if x == 4:
+                                    x1 = x1
+                                    y1 = y1 + size * 4
+
+                                finger_sign = pygame.Rect(x1, y1, size, size)
+                                pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[x])], finger_sign)
+
+                            #right arm
+                            x0 = width_8 + width_32 + int(step / step_lim) * width_8 + space * 3 + adjust_x
+                            y0 = height_8 + height_32*2 + step % step_lim * (space * 2) + adjust_y
+                            lesson_t = lable_font.render(str(armbet_r), True, value_color[7])
+                            WIN.blit(lesson_t, (x0, y0-height_8))
+                            punchroglyph(bet_r, arm_size, x0-size/2, y0+space-size/2)
+
+
+                            #left hand
+                            x0 = width_8 + int(step / step_lim) * width_8 + adjust_x
+                            y0 = height_8 + step % step_lim * (space * 2) + adjust_y
+                            for x in range(5):
+                                x1 = x0
+                                y1 = y0
+
+                                if x == 1:
+                                    x1 = x1 - size*2
+                                if x == 2:
+                                    x1 = x1 - size*2
+                                    y1 = y1 + size*2
+                                if x == 3:
+                                    x1 = x1 - size*2
+                                    y1 = y1 + size * 4
+                                if x == 4:
+                                    x1 = x1
+                                    y1 = y1 + size * 4
+
+                                finger_sign = pygame.Rect(x1, y1, size, size)
+                                pygame.draw.rect(WIN, value_color[8 - int(bin_value_l[x])], finger_sign)
+
+                            #left arm
+                            x0 = width_8 - width_64*3 + int(step / step_lim) * width_8 + space + adjust_x
+                            y0 = height_8 + height_16 + step % step_lim * (space * 2) + adjust_y
+                            lesson_t = lable_font.render(str(armbet_l), True, value_color[7])
+                            WIN.blit(lesson_t, (x0 - size + size/4, y0 - size - height_8))
+                            punchroglyph(bet_l, arm_size, x0 + space - size/2, y0 + space - size / 2, 1)
+
+                            #leg
+                            x0 = width_8 + int(step / step_lim) * width_8 + space + adjust_x
+                            y0 = height_8 + step % step_lim * (space * 2) + adjust_y
+                            lesson_t = lable_font.render(str(armbet_f[1::]), True, value_color[7])
+                            WIN.blit(lesson_t, (x0 - size + size + space, y0 - size + space*1.5 - height_8))
+                            kickroglyph(bet_f, space + size, x0 + space - size, y0 + space - size / 2 + space*3 + height_16)
+
+
+
+                            done = 1
+
+
+
 
 
 
