@@ -154,19 +154,37 @@ gyrui = 1
 switchui = 1
 
 digisign = 0
-digisign_s = ''
 armsign = 0
-armsign_s = ''
-betcalibration = 0
 recordcali = 0
 
-calibet = {}
+sensor_v = 0
+sensor_p = 0
+sensor_bet = {0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}, 7:{}}
+
+
+
+#calibet
+calibet_show = 1
+try:
+    filename = 'calibrations/calibet'
+    infile = open(filename, "rb")
+    calibet = pickle.load(infile)
+    infile.close
+    print('load')
+
+except:
+    print('fail')
+    calibet = {}
+
 mhl = {}
 cali_limit = 255
 
-mean = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-high = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-low = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+cali_check = []
+for key in calibet.keys():
+    cali_check.append((key, calibet[key]))
+
+
+mark = [[0,0,0] for x in range(8)]
 
 while run == 1:
 
@@ -179,6 +197,15 @@ while run == 1:
 
     Ax, Ay, Az, Gx, Gy, Gz, channel = unpack('7f', message)
     channel = int(channel)
+
+    #data prep
+    Ax = Ax/16384.0
+    Ay = Ay/16384.0
+    Az = Az/16384.0
+
+    Gx = Gx/131.0
+    Gy = Gy/131.0
+    Gz = Gz/131.0
 
     glove_values[channel] = [sensor_order[channel], [Ax, Ay, Az, Gx, Gy, Gz]]
     g_time[channel][1] = g_time[channel][0]
@@ -209,210 +236,117 @@ while run == 1:
 
 
 
-    max_graph = 64
-    graph[channel].insert(0, [compass[channel][0], compass[channel][1], compass[channel][2], compass[channel][3], compass[channel][4], compass[channel][5]])
-    if len(graph[channel]) > max_graph:
-        graph[channel] = graph[channel][:-1]
 
-    x0 = width_32
-    y0 = height_16
-    button_size = height_64
+    if (armsign, digisign) not in calibet:
+        calibet[(armsign, digisign)] = mark[::]
 
 
+    size = 128
+    x0 = width_16
+    y0 = height_32
 
-    if betcalibration == 1:
 
-        if (armsign, digisign) not in calibet:
-            calibet[(armsign, digisign)] = []
-            mhl[(armsign, digisign)] = []
+    if calibet_show > 0:
 
+        acc_t = main_font.render(str((armsign, digisign)), True, value_color[7])
+        WIN.blit(acc_t, (width_2 + width_4, height_16))
+
+        mark = []
+
+        for y in range(8):
+            mark.append(compass[y][:3])
+
+        #record
         if recordcali == 1:
+            cali_check = []
 
-            calichunk = []
-            for x in range(8):
-                for y in range(3):
-                    calichunk.append(round(compass[x][y],1))
-            calibet[(armsign, digisign)].append(calichunk)
-            if len(calibet[(armsign, digisign)]) > cali_limit:
-                calibet[(armsign, digisign)] = calibet[(armsign, digisign)][1:]
-
-            #mhl
-            mean = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            high = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            low = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-
-            if len(calibet[(armsign, digisign)]) > 0:
-                digicali_t = text_font.render(str(calibet[(armsign, digisign)][-1]), True, (255, 255, 255))
-                WIN.blit(digicali_t, (width_32, height_4 + height_16))
-
-            for x in range(len(calibet[(armsign, digisign)])):
-                current_set = calibet[(armsign, digisign)][x]
-                for y in range(len(current_set)):
-                    mean[y] += current_set[y]
-
-                    if current_set[y] > high[y]:
-                        high[y] = current_set[y]
-
-                    if current_set[y] < low[y]:
-                        low[y] = current_set[y]
-
-            if len(calibet[(armsign, digisign)]) > 0:
-                for y in range(24):
-                    mean[y] = round(mean[y]/len(calibet[(armsign, digisign)]),1)
-
-        armcali_t = main_font.render(str(len(calibet[(armsign, digisign)])), True, (255, 255, 255))
-        WIN.blit(armcali_t, (width_8 + width_8, height_16))
-
-        armcali_t = main_font.render(str(armbet[digibetu[digisign]][armsign]), True, (255, 255, 255))
-        WIN.blit(armcali_t, (width_8 + width_16, height_8))
-
-        digicali_t = main_font.render(str(digibetu[digisign]), True, (255, 255, 255))
-        WIN.blit(digicali_t, (width_8 + width_8, height_8))
-
-        digicali_t = text_font.render(str(mean), True, (255, 255, 255))
-        WIN.blit(digicali_t, (width_32, height_4 + height_16 * 2))
-
-        digicali_t = text_font.render(str(high), True, (255, 255, 255))
-        WIN.blit(digicali_t, (width_32, height_4 + height_16 * 3))
-
-        digicali_t = text_font.render(str(low), True, (255, 255, 255))
-        WIN.blit(digicali_t, (width_32, height_4 + height_16 * 4))
+            calibet[(armsign, digisign)] = mark
 
 
+            for key in calibet.keys():
+                cali_check.append((key, calibet[key]))
+
+            filename = 'calibrations/calibet'
+            outfile = open(filename, 'wb')
+            pickle.dump(calibet, outfile)
+            outfile.close
+
+            print('save')
+
+
+            recordcali = 0
+            armsign += 1
+
+
+            if armsign == 32:
+                armsign = 0
+                digisign += 1
+
+
+        matches = []
+        for x in range(len(cali_check)):
+
+            # cali_t = text_font.render(str(cali_check[x]), True, value_color[7])
+            # WIN.blit(cali_t, (width_32, height_2 + height_8 + height_32*x))
+
+            check_c = cali_check[x][1]
+
+            match = 0
+
+            distance = 0
+
+            for y in range(len(mark)):
+                for z in range(3):
+
+                    distance += abs(check_c[y][z] - mark[y][z])
+
+            matches.append((round(distance, 3), cali_check[x][0]))
+
+            matches = sorted(matches, key=lambda x:x[0])
+            # cali_t = text_font.render(str(matches), True, value_color[7])
+            # WIN.blit(cali_t, (width_2, height_2 + height_4 + height_32*x))
+
+        if len(matches) > 0:
+            cali_t = main_font.render(str(matches[0][1]), True, value_color[7])
+            WIN.blit(cali_t, (width_2 + width_4 + width_8, height_8))
+
+            if matches[0][1][1] > 0:
+                cali_t = main_font.render('d: ' + str(digibetu[matches[0][1][1]]), True, value_color[7])
+                WIN.blit(cali_t, (width_2 + width_4 + width_8, height_8 + height_16))
+
+                if matches[0][1][0] > 0:
+                    try:
+                        cali_t = main_font.render('a: ' + str(armbet[digibetu[matches[0][1][1]]][matches[0][1][0]]), True, value_color[7])
+                        WIN.blit(cali_t, (width_2 + width_4 + width_16, height_8 + height_16))
+                    except:
+                        print('q')
 
 
 
+        try:
+            check = calibet[(armsign, digisign)]
+        except:
+            calibet[(armsign, digisign)] = mark
+
+        for x in range(len(mark)):
+
+            for y in range(3):
+                color = 0
+
+                acc_t = main_font.render(str(mark[x][y]), True, value_color[7])
+                WIN.blit(acc_t, (x0 + width_16 * y, y0 + height_16*x))
+
+                acc_t = main_font.render(str(check[x][y]), True, value_color[7])
+                WIN.blit(acc_t, (x0 + width_4 + width_16 * y, y0 + height_16 * x))
+
+                if abs(check[x][y] - mark[x][y]) < .2:
+
+                    color = 1
+
+                mark_b = pygame.Rect(x0 + width_2 + width_16 * y, y0 + height_16 * x, 64, 64)
+                pygame.draw.rect(WIN, value_color[4 + color], mark_b)
 
 
-    button_size = 64
-
-    #squares
-    for x in range(nos):
-        y0 = height_32 + height_8*x
-        for y in range(6):
-            x0 = width_8 + width_16*y
-            # value_t = small_font.render(str(compass[x][y]), True, (255, 255, 255))
-            # WIN.blit(value_t, (x0, y0))
-
-            if y < 3:
-                button_size = abs(compass[x][y]) * 64
-            else:
-                button_size = abs(compass[x][y]) *2
-
-            if compass[x][y] > 0:
-                color = 7
-            else:
-                color = 1
-
-
-            ui_b = pygame.Rect(x0 + width_2, y0, button_size, button_size)
-            pygame.draw.rect(WIN, value_color[color], ui_b)
-
-    # buttons
-        #betcalibration
-    x = width_16
-    y = height_32
-    betcalibration_b = pygame.Rect(x, y, 64, 64)
-    pygame.draw.rect(WIN, value_color[8], betcalibration_b)
-    betcalibration_t = main_font.render(str(recordcali), True, (255, 255, 255))
-    WIN.blit(betcalibration_t, (x + 24 + width_16, y + 8))
-    if betcalibration_b.collidepoint((mx, my)):
-        betcalibration_t = main_font.render(str(betcalibration), True, (255, 255, 255))
-        WIN.blit(betcalibration_t, (x + 24, y + 8))
-        if click:
-            betcalibration += 1
-            betcalibration = betcalibration % 2
-            click = False
-
-    #digisign
-    x = width_16
-    y = height_8
-    digisign_b = pygame.Rect(x, y, 64, 64)
-    pygame.draw.rect(WIN, value_color[1], digisign_b)
-    digisign_t = main_font.render(str(digisign), True, (255, 255, 255))
-    WIN.blit(digisign_t, (x + 24 + 64, y + 8))
-    if digisign_b.collidepoint((mx, my)):
-        digisign_t = main_font.render(str(digisign_s), True, (255, 255, 255))
-        WIN.blit(digisign_t, (x + 24, y + 8))
-        for event in pygame.event.get():
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    digisign = int(digisign_s)
-
-            if event.type == pygame.KEYDOWN:
-
-                if event.key == pygame.K_ESCAPE:
-                    run = 2
-
-                elif event.key == pygame.K_1:
-                    digisign_s += '1'
-                elif event.key == pygame.K_2:
-                    digisign_s += '2'
-                elif event.key == pygame.K_3:
-                    digisign_s += '3'
-                elif event.key == pygame.K_4:
-                    digisign_s += '4'
-                elif event.key == pygame.K_5:
-                    digisign_s += '5'
-                elif event.key == pygame.K_6:
-                    digisign_s += '6'
-                elif event.key == pygame.K_7:
-                    digisign_s += '7'
-                elif event.key == pygame.K_8:
-                    digisign_s += '8'
-                elif event.key == pygame.K_9:
-                    digisign_s += '9'
-                elif event.key == pygame.K_0:
-                    digisign_s += '0'
-
-                elif event.key == pygame.K_BACKSPACE:
-                    digisign_s = ''
-
-    #armsign
-    x = width_16
-    y = height_8 + height_8 - height_32
-    armsign_b = pygame.Rect(x, y, 64, 64)
-    pygame.draw.rect(WIN, value_color[5], armsign_b)
-    armsign_t = main_font.render(str(armsign), True, (255, 255, 255))
-    WIN.blit(armsign_t, (x + 24 + 64, y + 8))
-    if armsign_b.collidepoint((mx, my)):
-        armsign_t = main_font.render(str(armsign_s), True, (255, 255, 255))
-        WIN.blit(armsign_t, (x + 24, y + 8))
-        for event in pygame.event.get():
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    armsign = int(armsign_s)
-
-            if event.type == pygame.KEYDOWN:
-
-                if event.key == pygame.K_ESCAPE:
-                    run = 2
-
-                elif event.key == pygame.K_1:
-                    armsign_s += '1'
-                elif event.key == pygame.K_2:
-                    armsign_s += '2'
-                elif event.key == pygame.K_3:
-                    armsign_s += '3'
-                elif event.key == pygame.K_4:
-                    armsign_s += '4'
-                elif event.key == pygame.K_5:
-                    armsign_s += '5'
-                elif event.key == pygame.K_6:
-                    armsign_s += '6'
-                elif event.key == pygame.K_7:
-                    armsign_s += '7'
-                elif event.key == pygame.K_8:
-                    armsign_s += '8'
-                elif event.key == pygame.K_9:
-                    armsign_s += '9'
-                elif event.key == pygame.K_0:
-                    armsign_s += '0'
-
-                elif event.key == pygame.K_BACKSPACE:
-                    armsign_s = ''
 
 
 

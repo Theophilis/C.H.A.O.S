@@ -5,8 +5,7 @@ import math
 import pickle
 from pygame import mixer
 
-pygame.mixer.init()
-pygame.mixer.set_num_channels(64)
+
 
 def _print_device_info():
     for i in range(pygame.midi.get_count()):
