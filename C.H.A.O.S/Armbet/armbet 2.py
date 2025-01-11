@@ -11,8 +11,8 @@ read = read.translate({ord('\n'): ' '})
 print('dirty')
 print(read[:100])
 
-bibliogram = {0:{}, 1:{}, 2:{}, 3:{}}
-depth = 4
+bibliogram = {0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}, 7:{}}
+depth = 5
 
 for x in range(len(read)):
     for y in range(depth):
@@ -59,12 +59,14 @@ for d in digibet:
         if b[:len(d)] == d and b[-1] in digibet:
             bet.append(b)
 
-    if len(bet) < 32:
-        for b in bibliogram[len(d) + 1]:
+    it = 1
+    while len(bet) < 32:
+        for b in bibliogram[len(d) + it]:
             if b[:len(d)] == d and b[-1] in digibet:
                 if len(bet) == 32:
                     break
                 bet.append(b)
+        it += 1
 
     print(bet)
     print(len(bet))
