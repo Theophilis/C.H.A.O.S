@@ -491,11 +491,11 @@ def Chaos_Window():
     for d in digibet:
         print(armbet[d])
 
-    guide = 7
+    guide = 2
     guide_max = 8
 
     #phrase
-    phrase = 'heaven declare'
+    phrase = 'th'
 
 
 
@@ -599,11 +599,20 @@ def Chaos_Window():
                 y0 = height_8 + x%4 * space
                 punchroglyph(x, 64, x0, y0)
 
-                try:
-                    bigram_t = lable_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
-                    WIN.blit(bigram_t, (x0, y0))
-                except:
-                    continue
+                if len(phrase) > 1:
+                    if phrase in digibet.keys():
+                        try:
+                            bigram_t = lable_font.render(str(armbet[phrase][x]), True, value_color[7])
+                            WIN.blit(bigram_t, (x0, y0))
+                        except:
+                            continue
+
+                else:
+                    try:
+                        bigram_t = lable_font.render(str(armbet[phrase[0]][x]), True, value_color[7])
+                        WIN.blit(bigram_t, (x0, y0))
+                    except:
+                        continue
 
         #kickroglyph-c
         if guide == 3:

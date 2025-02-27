@@ -6,6 +6,8 @@ read = text.read()
 read = read[1:]
 read = read.lower()
 read = read.translate({ord('\n'): ' '})
+read = read.translate({ord("'"): ' '})
+read = read.translate({ord('-'): ' '})
 
 #dirty
 print('dirty')
@@ -60,10 +62,10 @@ for d in digibet:
             bet.append(b)
 
     it = 1
-    while len(bet) < 32:
+    while len(bet) < 64:
         for b in bibliogram[len(d) + it]:
             if b[:len(d)] == d and b[-1] in digibet:
-                if len(bet) == 32:
+                if len(bet) == 64:
                     break
                 bet.append(b)
         it += 1

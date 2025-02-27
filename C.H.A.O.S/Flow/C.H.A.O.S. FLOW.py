@@ -856,6 +856,18 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
     color_7 = (0, 255, 0)
     color_8 = (0, 0, 255)
 
+    #rainbow
+    color_0 = (0, 0, 0)
+    color_1 = (255, 0, 0)
+    color_2 = (255, 255, 0)
+    color_3 = (0, 255, 0)
+    color_4 = (0, 255, 255)
+    color_5 = (0, 0, 255)
+    color_6 = (255, 0, 255)
+    color_7 = (255, 255, 255)
+    color_8 = (128, 128, 128)
+
+
     if base < 5:
 
         value_color = {0:color_0, 1:color_2, 2:color_3, 3:color_4}
@@ -1643,6 +1655,7 @@ def menu():
 
     c_choice = 0
     color_list = [black, magenta, cyan, yellow, grey, red, green, blue, white]
+    color_list = [black, red, yellow, green, cyan, blue, magenta, white, grey]
 
     pygame.init()
     pygame.fastevent.init()

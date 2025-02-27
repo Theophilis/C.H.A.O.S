@@ -227,7 +227,7 @@ def Chaos_Window():
 
     #records
     record = 1
-    record_name = 'edward_niv'
+    record_name = 'Edward_niv'
     try:
         filename = 'records/' + record_name
         infile = open(filename, "rb")
@@ -618,6 +618,11 @@ def Chaos_Window():
 
         record_t = main_font.render(str(records[current]), True, (255, 255, 255))
         WIN.blit(record_t, (width_2 + width_4 + width_8, height_32 + record_t.get_height()))
+
+        record_t = main_font.render(str(current), True, (255, 255, 255))
+        WIN.blit(record_t, (width_2 - record_t.get_width()/2, record_t.get_height()/8))
+
+
 
 
         #settings
