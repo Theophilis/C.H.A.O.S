@@ -227,7 +227,7 @@ def Chaos_Window():
 
     #records
     record = 1
-    record_name = 'Edward_niv'
+    record_name = 'edward_niv'
     try:
         filename = 'records/' + record_name
         infile = open(filename, "rb")
