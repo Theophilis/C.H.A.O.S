@@ -227,6 +227,7 @@ def Chaos_Window():
 
     #records
     record = 1
+    ###profile name###
     record_name = 'edward_niv'
     try:
         filename = 'records/' + record_name
@@ -731,6 +732,7 @@ def Chaos_Window():
                 elif event.key == pygame.K_RETURN:
 
                     print()
+                    print(current)
                     print(lessons[current])
                     print(phrase)
 
