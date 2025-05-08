@@ -66,19 +66,6 @@ def Chaos_Window():
 
     tone = {0:'in_', 1:'qr_', 2:'aw_'}
 
-    def loop_8(n, c, lvl = 0, v=0):
-
-        n = n%60
-
-        path = r'audio\loop_8\s' + str(tone[lvl%3]) + str(n) + '.mp3'
-        mixer.music.load(path)
-        w = pygame.mixer.Sound(path)
-        w.set_volume(v)
-        pygame.mixer.Channel(c).play(w)
-
-        return w
-
-
     print(HEIGHT, WIDTH)
     width_2 = int(WIDTH/2)
     width_3 = int(WIDTH/3)
@@ -159,14 +146,7 @@ def Chaos_Window():
         midi_inputs = 0
         print('fuck')
 
-    #sound
-    harp = 0
-    wu = 1
 
-
-    lp_0 = loop_8(0, 0)
-    lp_1 = loop_8(0, 0)
-    lp_2 = loop_8(0, 0)
 
     #bet
     bet = 1
