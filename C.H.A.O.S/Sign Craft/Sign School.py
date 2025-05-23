@@ -44,8 +44,6 @@ TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
 def Chaos_Window():
 
-    mixer.init()
-
     def bin_gen(n, b, p):
         def base_x(n, b):
             e = n // b
@@ -63,8 +61,6 @@ def Chaos_Window():
             bin = '0' + bin
         return bin
 
-
-    tone = {0:'in_', 1:'qr_', 2:'aw_'}
 
     print(HEIGHT, WIDTH)
     width_2 = int(WIDTH/2)
@@ -219,6 +215,22 @@ def Chaos_Window():
         print("current")
         print(current)
         print(records[current])
+
+        rec_len = len(list(records.items()))
+
+        print('rec_len')
+        print(rec_len)
+        print("lessons")
+        print(len(lessons))
+
+        dif = len(lessons)- rec_len
+        print("dif")
+        print(dif)
+
+        if dif > 0:
+            for x in range(dif):
+                records[rec_len+x] = 999
+
     except:
         records = {}
         for x in range(len(lessons)):
@@ -758,11 +770,8 @@ def Chaos_Window():
 
                 elif event.key == pygame.K_F1:
 
-
-                    loop_8(wu, 1, 0, 10)
-                    wu += 1
                     print("wu")
-                    print(wu)
+
 
 
                 elif event.key == pygame.K_LEFT:
@@ -1045,50 +1054,6 @@ def Chaos_Window():
                 elif event.key == pygame.K_BACKSPACE:
                     phrase = phrase[:-1]
 
-            #midi
-            elif event.type in [pygame.midi.MIDIIN]:
-
-                # print(event)
-
-                clean_e = str(event)[21:-3]
-                # print(clean_e)
-                list_e = clean_e.split(',')
-                ev = []
-                # print(list_e)
-
-                for l in list_e:
-
-                    ev.append(int(l.split(':')[1]))
-
-
-                if ev[0] == 176:
-                    # print('right')
-                    # print(ev)
-                    glove_values[ev[1]] = ev[2]
-
-                if ev[0] == 177:
-                    # print('left')
-                    # print(ev)
-                    glove_values[ev[1] + glove_sensors] = ev[2]
-
-
-
-        #midi clean up
-        if device_id > 0:
-
-            if midi_inputs == 1:
-
-                if p_m_i.poll():
-
-                    # print(' ')
-                    # print('i')
-                    # print(i)
-
-                    midi_events = p_m_i.read(1024)
-                    midi_evs = pygame.midi.midis2events(midi_events, p_m_i.device_id)
-
-                    for m_e in midi_evs:
-                        event_post(m_e)
 
 
         pygame.display.update()
