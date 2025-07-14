@@ -204,7 +204,7 @@ def Chaos_Window():
     #records
     record = 1
     ###profile name###
-    record_name = 'Theophilis_niv'
+    record_name = 'edward_niv'
     try:
         filename = 'records/' + record_name
         infile = open(filename, "rb")
