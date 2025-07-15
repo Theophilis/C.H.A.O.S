@@ -486,11 +486,14 @@ def Chaos_Window():
 
     bank_entries = [sign, sign_t, time_m, time_s, reps, date, signer]
     entry_guide = ['sign', 'type', 'min', 'sec', 'reps', 'date', 'signer']
-    modes = ['entry', 'look up']
+    modes = ['entry', 'look up', 'letters']
+
 
     mode = 0
     go = 0
     matches = []
+    sort_place = 0
+    digi_times = {}
 
 
     #bet
@@ -548,11 +551,12 @@ def Chaos_Window():
 
         design = pygame.Rect(x, y, w, h)
         pygame.draw.rect(WIN, (170, 40, 160), design)
-        lesson_t = main_font.render(str(modes[mode]), True, text_color)
+        lesson_t = main_font.render(str(modes[mode%len(modes)]), True, text_color)
         WIN.blit(lesson_t, (x + 10, y))
         if design.collidepoint((mx, my)):
             if click:
                 mode += 1
+                click = False
 
         lesson_t = main_font.render(str(phrase), True, text_color)
         WIN.blit(lesson_t, (width_2 - lesson_t.get_width() / 2, height_32))
@@ -652,6 +656,13 @@ def Chaos_Window():
                                 matches.append(b)
                 go = 0
 
+
+                print(matches)
+                print(sort_place)
+
+
+            matches = list(sorted(matches, key=lambda m: m[sort_place], reverse=True))
+
             #matches display
             total_m = 0
             total_s = 0
@@ -659,8 +670,30 @@ def Chaos_Window():
             for m in range(len(matches)):
                 x = width_32
                 y = height_4 + height_32*m
-                lesson_t = small_font.render(str(m) + ': ' + str(matches[m]), True, text_color)
-                WIN.blit(lesson_t, (x, y))
+                x0 = width_32
+
+                #stats
+                stats_m = matches[m]
+                for s in range(len(stats_m)):
+
+                    if m == 0:
+
+                        lesson_t = small_font.render(str(entry_guide[s]), True, text_color)
+                        WIN.blit(lesson_t, (x0, y - height_16))
+
+                        if s == sort_place:
+                            lesson_t = small_font.render(str(entry_guide[s]), True, value_color[4])
+                            WIN.blit(lesson_t, (x0, y - height_16))
+
+
+                    lesson_t = small_font.render(str(stats_m[s]), True, text_color)
+                    WIN.blit(lesson_t, (x0, y))
+
+                    x0 += width_8
+
+
+                # lesson_t = small_font.render(str(m) + ': ' + str(matches[m]), True, text_color)
+                # WIN.blit(lesson_t, (x, y))
 
                 total_m += int(matches[m][2])
                 total_s += int(matches[m][3])
@@ -670,9 +703,109 @@ def Chaos_Window():
             total_s -= s_m*60
 
             lesson_t = small_font.render(str(total_m), True, text_color)
-            WIN.blit(lesson_t, (width_2 + width_4, height_4))
+            WIN.blit(lesson_t, (width_2 + width_4, height_32))
+            lesson_t = small_font.render("minutes", True, text_color)
+            WIN.blit(lesson_t, (width_2 + width_4 + width_16, height_32))
+
             lesson_t = small_font.render(str(total_s), True, text_color)
-            WIN.blit(lesson_t, (width_2 + width_4, height_4 + height_8))
+            WIN.blit(lesson_t, (width_2 + width_4, height_16))
+            lesson_t = small_font.render("seconds", True, text_color)
+            WIN.blit(lesson_t, (width_2 + width_4 + width_16, height_16))
+
+            #sort
+            lesson_t = small_font.render(str(sort_place), True, text_color)
+            WIN.blit(lesson_t, (width_2 + width_4, height_8))
+            lesson_t = small_font.render("sort place", True, text_color)
+            WIN.blit(lesson_t, (width_2 + width_4 + width_16, height_8))
+
+        #letters
+        if mode == 2:
+
+            digikey = list(digibetu.keys())
+
+            if go == 1:
+                print('letters')
+
+                digikey = list(digibetu.keys())
+
+                digi_times = {}
+
+                for d in range(len(digikey)):
+
+                    print()
+                    print('d')
+                    print(digibetu[d])
+
+                    signs = digibetu[d]
+                    matches = []
+
+                    for b in bank:
+                        for s in signs:
+                            if s in b[0]:
+                                if b not in matches:
+                                    matches.append(b)
+                    go = 0
+
+
+                    print('m')
+                    print(matches)
+
+
+                    matches = list(sorted(matches, key=lambda m: m[sort_place], reverse=True))
+
+                    #matches display
+                    total_m = 0
+                    total_s = 0
+
+                    if len(matches) > 2:
+                        print(len(matches))
+
+                        for m in range(len(matches)-1):
+
+                            if matches[m] == entry_guide:
+                                continue
+
+
+                            total_m += int(matches[m][2])
+                            total_s += int(matches[m][3])
+
+                    s_m = int(total_s/60)
+                    total_m += s_m
+                    total_s -= s_m*60
+                    total_n = len(matches)
+
+                    digi_times[digikey[d]] = (total_m, total_s, total_n)
+
+
+            if digi_times != {}:
+                x = width_16
+                y = height_2 - height_8
+                for d in range(len(digikey)):
+
+                    if d == int(len(digikey)/2):
+                        y = HEIGHT - height_32 - height_8
+                        x = width_16
+
+
+                    lesson_t = text_font.render(str(digi_times[d]), True, text_color)
+                    WIN.blit(lesson_t, (x, y))
+                    lesson_b = text_font.render(str(digikey[d]), True, text_color)
+                    WIN.blit(lesson_b, (x-lesson_t.get_width()/2, y + height_32))
+
+                    digi_scale = 3
+
+                    for t in range(len(digi_times[d])):
+
+                        design = pygame.Rect(x + 23*t, y - digi_times[d][t]/digi_scale, 16, digi_times[d][t]/digi_scale)
+                        pygame.draw.rect(WIN, (100, 1+64*t, 255 - 64*t), design)
+
+                    x += lesson_t.get_width() * 1.1
+
+
+
+                print('digitimes')
+                print(digi_times)
+
 
 
 
@@ -714,7 +847,7 @@ def Chaos_Window():
                         pickle.dump(bank, outfile)
                         outfile.close
 
-                    if mode == 1:
+                    if mode > 0:
                         go = 1
 
 
@@ -733,10 +866,20 @@ def Chaos_Window():
                     print()
 
 
-                elif event.key == pygame.K_LEFT:
-                    print()
-
                 elif event.key == pygame.K_RIGHT:
+
+                    sort_place += 1
+
+                    if sort_place > len(entry_guide)-1:
+                        sort_place = 0
+
+
+
+                elif event.key == pygame.K_LEFT:
+
+                    sort_place -= 1
+                    if sort_place < 0:
+                        sort_place = 0
                     print()
 
                 elif event.key == pygame.K_UP:
