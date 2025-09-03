@@ -601,6 +601,10 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
 
     if len(bookmark_choices) == 0:
 
+        print('journal')
+        print(journal)
+
+
         for x in range(len(bookmarks)-1):
 
             try:
@@ -612,7 +616,7 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
                 # print("bookmarks")
                 # print(bookmarks[x], bookmarks[x + 1])
 
-                if bookmarks[x+1] - bookmarks[x] < 2:
+                if bookmarks[x+1] - bookmarks[x] < 1:
                     continue
                 journal_bookmark = journal_key[bookmarks[x]:bookmarks[x + 1]]
                 print()
@@ -621,6 +625,9 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
 
                 for rule in journal_bookmark:
 
+                    print('rule')
+                    print(rule)
+                    print(journal[rule])
                     frame.append((rule[0], journal[rule]))
                     # print()
                     # print("journal[rule]")
@@ -638,13 +645,23 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
 
                     width += journal[rule]
 
+
+
                 # print("frame")
                 # print(frame)
                 #
                 # print('width')
                 # print(width)
 
+
+
+                print('width')
+                print(width)
                 width = int(width * scales[2]/scales[3])
+                print('width_scale')
+                print(width)
+
+
 
                 row = [0 for x in range(width)]
                 if center_seed[0] == 1:
@@ -1096,10 +1113,25 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
 
         if step - step_0 > 3000:
+            print('rule_count')
+            print(rule_count)
+            journal[(rule, step)] = rule_count
+
+            rule_point = i_rule[::]
+            rule = str()
+            for ir in i_rule:
+                rule += str(ir)
+            rule_count = 0
+
+            rule_count += 1
+            step += 1
+
             bookmarks.append(len(list(journal.keys())))
             print("")
             print("bookmarks")
             print(bookmarks)
+            print("journal")
+            print(journal)
 
             step_0 = step
 
@@ -1157,6 +1189,27 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
             elif event.type == pygame.KEYDOWN:
 
                 if event.key == K_ESCAPE:
+
+
+                    print('rule_count')
+                    print(rule_count)
+                    journal[(rule, step)] = rule_count
+
+                    rule_point = i_rule[::]
+                    rule = str()
+                    for ir in i_rule:
+                        rule += str(ir)
+                    rule_count = 0
+
+                    rule_count += 1
+                    step += 1
+
+                    bookmarks.append(len(list(journal.keys())))
+                    print("")
+                    print("bookmarks")
+                    print(bookmarks)
+
+
                     run = 2
 
                 elif event.key == pygame.K_q:
@@ -1510,6 +1563,19 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
                         input_box = 0
 
+                    print('rule_count')
+                    print(rule_count)
+                    journal[(rule, step)] = rule_count
+
+                    rule_point = i_rule[::]
+                    rule = str()
+                    for ir in i_rule:
+                        rule += str(ir)
+                    rule_count = 0
+
+                    rule_count += 1
+                    step += 1
+
                     bookmarks.append(len(list(journal.keys())))
                     print("")
                     print("bookmarks")
@@ -1655,7 +1721,7 @@ def menu():
 
     c_choice = 0
     color_list = [black, magenta, cyan, yellow, grey, red, green, blue, white]
-    color_list = [black, red, yellow, green, cyan, blue, magenta, white, grey]
+    # color_list = [black, red, yellow, green, cyan, blue, magenta, white, grey]
 
     pygame.init()
     pygame.fastevent.init()
