@@ -585,6 +585,7 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
     base = journal['base']
 
     print("color_list")
+    print(base)
     print(color_list[:base])
     cMap = c.ListedColormap(color_list[:base])
 
@@ -592,6 +593,83 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
     for color in color_list:
 
         color_list_label.append((int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)))
+
+
+
+##overrides menu color selection
+    # def rainbow_split(colors):
+    #
+    #     value_color = []
+    #
+    #     black = (0, 0, 0)
+    #     red = (255, 0, 0)
+    #     yellow = (255, 255, 0)
+    #     green = (0, 255, 0)
+    #     cyan = (0, 255, 255)
+    #     blue = (0, 0, 255)
+    #     magenta = (255, 0, 255)
+    #     white = (255, 255, 255)
+    #
+    #     color_list = [black, red, yellow, green, cyan, blue, magenta, white]
+    #
+    #     color_buckets = [0, 1, 0, 2, 1, 0, 1]
+    #
+    #     limit = (len(color_list)-1) * 255
+    #
+    #     if colors == 2:
+    #         value_color = [black, white]
+    #
+    #     else:
+    #
+    #         value_color.append(black)
+    #
+    #         for x in range(colors - 2):
+    #             splat = int(limit / (colors))
+    #             split = int(limit / (colors)) * (x + 1)
+    #
+    #             # print('')
+    #             # print('split')
+    #             # print(split)
+    #             # print(splat)
+    #
+    #             color = int(split / 255)
+    #             sand = split - (color) * 255
+    #
+    #             # print('color')
+    #             # print(color)
+    #             # print('sand')
+    #             # print(sand)
+    #
+    #             new_color = list(color_list[color])
+    #
+    #             # print(new_color)
+    #
+    #             new_color[color_buckets[color]] = sand
+    #
+    #             # print(new_color)
+    #             # print(color_buckets[color])
+    #
+    #             value_color.append(tuple(new_color))
+    #
+    #         value_color.append(white)
+    #
+    #     return value_color
+    #
+    # color_list = rainbow_split(base)
+    # cMap = c.ListedColormap(color_list)
+    #
+    # print('')
+    # print('rainbow')
+    # print(color_list)
+    #
+    #
+    # color_list_label = []
+    # for color in color_list:
+    #
+    #     color_list_label.append((int(color[0]), int(color[1]), int(color[2])))
+
+
+
 
     journal_key = list(journal.keys())[1:]
 
@@ -619,15 +697,15 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
                 if bookmarks[x+1] - bookmarks[x] < 1:
                     continue
                 journal_bookmark = journal_key[bookmarks[x]:bookmarks[x + 1]]
-                print()
-                print("journal_bookmarks")
-                print(journal_bookmark)
+                # print()
+                # print("journal_bookmarks")
+                # print(journal_bookmark)
 
                 for rule in journal_bookmark:
 
-                    print('rule')
-                    print(rule)
-                    print(journal[rule])
+                    # print('rule')
+                    # print(rule)
+                    # print(journal[rule])
                     frame.append((rule[0], journal[rule]))
                     # print()
                     # print("journal[rule]")
@@ -655,11 +733,11 @@ def synthesize(j_name, color_list, bookmark_choices, reflect, center_seed, scale
 
 
 
-                print('width')
-                print(width)
+                # print('width')
+                # print(width)
                 width = int(width * scales[2]/scales[3])
-                print('width_scale')
-                print(width)
+                # print('width_scale')
+                # print(width)
 
 
 
@@ -864,14 +942,15 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
     #colors
     color_0 = (0, 0, 0)
-    color_1 = (32, 32, 32)
-    color_2 = (255, 0, 255)
-    color_3 = (0, 255, 255)
-    color_4 = (255, 255, 0)
-    color_5 = (255, 255, 255)
-    color_6 = (255, 0, 0)
-    color_7 = (0, 255, 0)
-    color_8 = (0, 0, 255)
+
+    color_1 = (255, 0, 255)
+    color_2 = (0, 255, 255)
+    color_3 = (255, 255, 0)
+    color_4 = (32, 32, 32)
+    color_5 = (255, 0, 0)
+    color_6 = (0, 255, 0)
+    color_7 = (0, 0, 255)
+    color_8 = (255, 255, 255)
 
     #rainbow
     # color_0 = (0, 0, 0)
@@ -884,25 +963,173 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
     # color_7 = (255, 255, 255)
     # color_8 = (128, 128, 128)
 
+    def digit_rgb(digit):
 
-    if base < 5:
+        r = 1
+        g = 256
+        b = 256 * 256
 
-        value_color = {0:color_0, 1:color_2, 2:color_3, 3:color_4}
-        color_value = {v:k for k, v in value_color.items()}
+        bd = int(digit / b)
 
-    elif base < 11:
+        if bd > 256:
+            bd = 256
 
-        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
-                      6:color_6, 7:color_7, 8:color_8}
-        color_value = {v:k for k, v in value_color.items()}
+        digit_b = digit - bd * b
 
-    else:
-        value_color = {0:(0, 0, 0),
-                       1:(31, 31, 31), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0),
-                       5:(63, 63, 192), 6:(127, 0, 127), 7:(0, 127, 127), 8:(127, 127, 0),
-                       9:(255, 255, 255), 10:(255, 0, 0), 11:(0, 255, 0), 12:(0, 0, 255),
-                       13:(223, 223, 223), 14:(127, 0, 0), 15:(0, 127, 0), 16:(0, 0, 127)}
-        color_value = {v:k for k, v in value_color.items()}
+        gd = int(digit_b / g)
+
+        if gd > 256:
+            gd = 256
+
+        digit_g = digit_b - gd * g
+
+        rd = int(digit_g)
+
+
+        if rd > 255:
+            rd = 255
+        if gd > 255:
+            gd = 255
+        if bd > 255:
+            bd = 255
+
+        rgb = (rd, gd, bd)
+
+        return rgb
+
+    def color_split(colors):
+
+        limit = 256 * 256 * 256 + 256 * 256 + 256
+        color_list = []
+
+        color_0 = (0, 0, 0)
+        color_w = (255, 255, 255)
+
+        if colors == 1:
+            color_list.append(color_0)
+
+        elif colors == 2:
+            color_list.append(color_0)
+            color_list.append(color_w)
+
+        else:
+            color_list.append(color_0)
+
+            step = int(limit / (colors - 1))
+            print(step)
+
+            for x in range(colors - 2):
+                color_list.append(digit_rgb(step * (x + 1)))
+
+            color_list.append(color_w)
+
+        return color_list
+
+
+    color_splits = color_split(base)
+
+    print(color_splits)
+
+    value_color = {}
+    for x in range(len(color_splits)):
+        value_color[x] = color_splits[x]
+    color_value = {v: k for k, v in value_color.items()}
+
+    def rainbow_split(colors):
+
+        value_color = []
+
+        black = (0, 0, 0)
+        red = (255, 0, 0)
+        yellow = (255, 255, 0)
+        green = (0, 255, 0)
+        cyan = (0, 255, 255)
+        blue = (0, 0, 255)
+        magenta = (255, 0, 255)
+        white = (255, 255, 255)
+
+        color_list = [black, red, yellow, green, cyan, blue, magenta, white]
+
+        color_buckets = [0, 1, 0, 2, 1, 0, 1]
+
+        limit = (len(color_list)-1) * 255
+
+        if colors == 2:
+            value_color = [black, white]
+
+        else:
+
+            value_color.append(black)
+
+            for x in range(colors - 2):
+                splat = int(limit / (colors))
+                split = int(limit / (colors)) * (x + 1)
+
+                # print('')
+                # print('split')
+                # print(split)
+                # print(splat)
+
+                color = int(split / 255)
+                sand = split - (color) * 255
+
+                # print('color')
+                # print(color)
+                # print('sand')
+                # print(sand)
+
+                new_color = list(color_list[color])
+
+                # print(new_color)
+
+                new_color[color_buckets[color]] = sand
+
+                # print(new_color)
+                # print(color_buckets[color])
+
+                value_color.append(tuple(new_color))
+
+            value_color.append(white)
+
+        return value_color
+
+
+    rainbow_splits = rainbow_split(base)
+
+    value_color = {}
+    for x in range(len(rainbow_splits)):
+        value_color[x] = rainbow_splits[x]
+    color_value = {v: k for k, v in value_color.items()}
+
+
+
+    # value_color = {0: (0, 0, 0),
+    #                1: (31, 31, 31), 2: (255, 0, 255), 3: (0, 255, 255), 4: (255, 255, 0),
+    #                5: (63, 63, 192), 6: (127, 0, 127), 7: (0, 127, 127), 8: (127, 127, 0),
+    #                9: (255, 255, 255), 10: (255, 0, 0), 11: (0, 255, 0), 12: (0, 0, 255),
+    #                13: (223, 223, 223), 14: (127, 0, 0), 15: (0, 127, 0), 16: (0, 0, 127)}
+    # color_value = {v: k for k, v in value_color.items()}
+
+
+
+    # if base < 5:
+    #
+    #     value_color = {0:color_0, 1:color_2, 2:color_3, 3:color_4}
+    #     color_value = {v:k for k, v in value_color.items()}
+    #
+    # elif base < 10:
+    #
+    #     value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
+    #                   6:color_6, 7:color_7, 8:color_8}
+    #     color_value = {v:k for k, v in value_color.items()}
+    #
+    # else:
+    #     value_color = {0:(0, 0, 0),
+    #                    1:(31, 31, 31), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0),
+    #                    5:(63, 63, 192), 6:(127, 0, 127), 7:(0, 127, 127), 8:(127, 127, 0),
+    #                    9:(255, 255, 255), 10:(255, 0, 0), 11:(0, 255, 0), 12:(0, 0, 255),
+    #                    13:(223, 223, 223), 14:(127, 0, 0), 15:(0, 127, 0), 16:(0, 0, 127)}
+    #     color_value = {v:k for k, v in value_color.items()}
 
 
     def redraw_window(input_box, v_input, dt, timer):
@@ -954,6 +1181,9 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
         place = (letter_values[letter] + (space * 26)) % bv
 
+        # for x in range(base):
+        #     place = (letter_values[letter] + (space * 26))*(x+1) % bv
+
         # print('')
         # print(place)
 
@@ -984,7 +1214,7 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
     #ui
     ui_on = 1
-    ui_scale = 20
+    ui_scale = int(96/base)
     bar_height = 100
     bar_width = ui_scale + int(ui_scale / 2)
 
@@ -1722,6 +1952,72 @@ def menu():
     c_choice = 0
     color_list = [black, magenta, cyan, yellow, grey, red, green, blue, white]
     # color_list = [black, red, yellow, green, cyan, blue, magenta, white, grey]
+
+    def rainbow_split(colors):
+
+        value_color = []
+
+        black = (0, 0, 0)
+        red = (255, 0, 0)
+        yellow = (255, 255, 0)
+        green = (0, 255, 0)
+        cyan = (0, 255, 255)
+        blue = (0, 0, 255)
+        magenta = (255, 0, 255)
+        white = (255, 255, 255)
+
+        color_list = [black, red, yellow, green, cyan, blue, magenta, white]
+
+        color_buckets = [0, 1, 0, 2, 1, 0, 1]
+
+        limit = (len(color_list)-1) * 255
+
+        if colors == 2:
+            value_color = [black, white]
+
+        else:
+
+            value_color.append(black)
+
+            for x in range(colors - 2):
+                splat = int(limit / (colors))
+                split = int(limit / (colors)) * (x + 1)
+
+                # print('')
+                # print('split')
+                # print(split)
+                # print(splat)
+
+                color = int(split / 255)
+                sand = split - (color) * 255
+
+                # print('color')
+                # print(color)
+                # print('sand')
+                # print(sand)
+
+                new_color = list(color_list[color])
+
+                # print(new_color)
+
+                new_color[color_buckets[color]] = sand
+
+                # print(new_color)
+                # print(color_buckets[color])
+
+                value_color.append(tuple(new_color))
+
+            value_color.append(white)
+
+        return value_color
+
+
+    rainbow_splits = rainbow_split(base)
+
+    value_color = {}
+    for x in range(len(rainbow_splits)):
+        value_color[x] = rainbow_splits[x]
+    color_value = {v: k for k, v in value_color.items()}
 
     pygame.init()
     pygame.fastevent.init()
