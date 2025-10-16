@@ -491,11 +491,13 @@ def Chaos_Window():
     for d in digibet:
         print(armbet[d])
 
-    guide = 2
+    guide = 7
     guide_max = 8
 
+    armbet_size = 1
+
     #phrase
-    phrase = 'th'
+    phrase = 'edwardconloncadden'
 
 
 
@@ -785,7 +787,7 @@ def Chaos_Window():
             space = 64
             step = 0
             step_lim = 6
-            size = 36
+            size = 32
             index = []
             arm_size = 48
 
@@ -796,212 +798,241 @@ def Chaos_Window():
             lesson_t = lable_font.render(str(words), True, value_color[7])
             WIN.blit(lesson_t, (width_16, height_2 - height_16))
 
-            if len(words) > 1:
-                for x in range(len(words)):
-                    done = 0
-                    word = words[x]
-                    print("")
-                    print(x)
-                    print(word)
+            chunky = 0
+            word_chunks = []
+            for x in range(len(words)):
+                chunks = []
 
-                    adjust_x = + width_3*(x%3)
-                    adjust_y = + height_2*int(x/3)
-
-                    if len(word) > 1:
-                        place = 0
-                        while done == 0:
-
-                            #digroglyph-r
-                            bin_value = bin_gen(digibet[word[0]], 2, 5)[::-1]
-                            bin_value_r = bin_value
-                            place += 1
-
-                            #punchroglyph-r
-                            if place == len(word):
-                                #
-                                break
-                            bet = armbet[word[place-1]].index(word[:place + 1])
-                            bet_p = word[:place+1]
-                            bet_r = bet
-                            armbet_r = bet_p
-                            place += 1
+                for y in range(len(words[x])):
+                    if chunky == 1:
+                        chunky = 0
+                        continue
+                    if words[x][y:y+2] in armbet[words[x][y]]:
+                        chunks.append([words[x][y:y+2]])
+                        chunky = 1
 
 
-                            #digroglyph-l
-                            if place == len(word):
-                                #
-                                break
-                            bin_value = bin_gen(digibet[word[place]], 2, 5)[::-1]
-                            bin_value_l = bin_value
-                            place += 1
-
-
-                            # punchroglyph-l
-                            if place == len(word):
-                                #
-                                break
-                            bet = armbet[word[place - 1]].index(word[place-1:place + 1])
-                            bet_p = word[place-1:place + 1]
-                            bet_l = bet
-                            armbet_l = bet_p
-                            place += 1
-
-
-                            # kickroglyph-l
-                            if place == len(word):
-                                #
-                                break
-                            bet = armbet[word[place - 1]].index(word[place-1:place + 1])
-                            bet_p = word[place-1:place + 1]
-                            bet_f = bet
-                            armbet_f = bet_p
+                word_chunks.append(chunks)
 
 
 
-                            if len(bet_p) < len(word) - place+1:
-                                print('short')
-
-                                if word[place - 1:place + 2] in armbet[word[place - 1]]:
-                                    bet_f = armbet[word[place - 1]].index(word[place - 1:place + 2])
-                                    armbet_f = word[place - 1:place + 2]
-                                else:
-                                    print(f"Value {word[place - 1:place + 2]} not found")
-                                    place = 0
-                                    # digroglyph-r
-                                    bin_value = bin_gen(digibet[word[0]], 2, 5)[::-1]
-                                    bin_value_r = bin_value
-                                    place += 1
-
-                                    # punchroglyph-r
-                                    if place == len(word):
-                                        #
-                                        break
-                                    bet = armbet[word[place - 1]].index(word[:place + 1])
-                                    bet_p = word[:place + 1]
-                                    bet_r = bet
-                                    armbet_r = bet_p
-
-                                    if word[place - 1:place + 2] in armbet[word[place - 1]]:
-                                        bet_r = armbet[word[place - 1]].index(word[place - 1:place + 2])
-                                        armbet_r = word[place - 1:place + 2]
-                                        place += 1
-
-                                    place += 1
-
-                                    # digroglyph-l
-                                    if place == len(word):
-                                        #
-                                        break
-                                    bin_value = bin_gen(digibet[word[place]], 2, 5)[::-1]
-                                    bin_value_l = bin_value
-                                    place += 1
-
-                                    # punchroglyph-l
-                                    if place == len(word):
-                                        #
-                                        break
-                                    bet = armbet[word[place - 1]].index(word[place - 1:place + 1])
-                                    bet_p = word[place - 1:place + 1]
-                                    bet_l = bet
-                                    armbet_l = bet_p
-
-                                    if word[place - 1:place + 2] in armbet[word[place - 1]]:
-                                        bet_l = armbet[word[place - 1]].index(word[place - 1:place + 2])
-                                        armbet_l = word[place - 1:place + 2]
-                                        place += 1
-
-                                    place += 1
-
-                                    # kickroglyph-l
-                                    if place == len(word):
-                                        #
-                                        break
-                                    bet = armbet[word[place - 1]].index(word[place - 1:place + 1])
-                                    bet_p = word[place - 1:place + 1]
-                                    bet_f = bet
-                                    armbet_f = bet_p
-
-                                    if word[place - 1:place + 2] in armbet[word[place - 1]]:
-                                        bet_f = armbet[word[place - 1]].index(word[place - 1:place + 2])
-                                        armbet_f = word[place - 1:place + 2]
 
 
-                            print(bet_p)
+                # lesson_t = lable_font.render(str(chunks), True, value_color[7])
+                # WIN.blit(lesson_t, (width_16, height_2 + height_16*x))
 
 
-                            place += 1
+            #right arm
+            space = 64
+            step = 0
+            step_lim = 14
+            x0 = width_8 + int(step / step_lim) * width_4
+            y0 = height_8 + step % step_lim * space
+
+            lesson_t = lable_font.render(str(word_chunks[0]), True, value_color[7])
+            WIN.blit(lesson_t, (width_16, height_2 + height_16 * x))
+
+            word_chunks = word_chunks[0]
+            print(word_chunks)
+            for x in range(len(word_chunks)):
+                x0 += space*2
+                for y in range(len(word_chunks[x])):
 
 
-                            #right hand               printing
+                    hand_bin = digibet[word_chunks[x][y][0]]
+                    bin_value = bin_gen(hand_bin, 2, 5)[::-1]
 
-                            x0 = width_8 + int(step / step_lim) * width_8 + space*4 + adjust_x
-                            y0 = height_8 + step % step_lim * (space * 2) + adjust_y
-                            for x in range(5):
-                                x1 = x0
-                                y1 = y0
+                    # print(hand_bin)
+                    # print(bin_value)
 
-                                if x == 1:
-                                    x1 = x1 + size*2
-                                if x == 2:
-                                    x1 = x1 + size*2
-                                    y1 = y1 + size*2
-                                if x == 3:
-                                    x1 = x1 + size*2
-                                    y1 = y1 + size * 4
-                                if x == 4:
-                                    x1 = x1
-                                    y1 = y1 + size * 4
+                    arm_pos = armbet[word_chunks[x][y][0]].index(word_chunks[x][y])
 
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[x])], finger_sign)
+                    print(arm_pos)
 
-                            #right arm
-                            x0 = width_8 + width_32 + int(step / step_lim) * width_8 + space * 3 + adjust_x
-                            y0 = height_8 + height_32*2 + step % step_lim * (space * 2) + adjust_y
-                            lesson_t = lable_font.render(str(armbet_r), True, value_color[7])
-                            WIN.blit(lesson_t, (x0, y0-height_8))
-                            punchroglyph(bet_r, arm_size, x0-size/2, y0+space-size/2)
+                    s=size*2
+
+                    x2 = x0
+                    y2 = y0
+
+                    # first position
+                    if arm_pos % 4 == 0:
+
+                        x2 = x2 - size*1.5
+                        y2 = y2 + size*1.5
+
+                        for z in range(5):
+
+                            x1 = x0
+                            y1 = y0
+
+                            if z == 1:
+                                x1 = x1 + size
+                            elif z == 2:
+                                x1 = x1 + size
+                                y1 = y1 + size
+                            elif z == 3:
+                                x1 = x1 + size
+                                y1 = y1 + size * 2
+                            elif z == 4:
+                                x1 = x1
+                                y1 = y1 + size * 2
+
+                            # print(z)
+                            # print(x1,y1)
+
+                            finger_sign = pygame.Rect(x1, y1, size, size)
+                            pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+
+                        # arm
+                        pygame.draw.line(WIN, value_color[7], (x2, y2 + int(s / 16)), (x2, y2 - s), int(s / 8))
+                        pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
+
+                        # hand
+                        if arm_pos % 16 < 8:
+                            pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2), s / 4)
+                        else:
+                            guide_b = pygame.Rect(x2 + s - int(s / 8), y2 - int(s / 4), s / 2, s / 2)
+                            pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                        # elbow
+                        if arm_pos > 15:
+                            pygame.draw.circle(WIN, value_color[7], (x2, y2 - s + int(s / 16)), s / 4)
+
+                    # second position
+                    if arm_pos % 4 == 1:
+
+                        for z in range(5):
+
+                            x1 = x0-size/2
+                            y1 = y0+size/2
+
+                            if z == 1:
+                                x1 = x1
+                                y1 = y1-size
+                            elif z == 2:
+                                x1 = x1 + size
+                                y1 = y1 - size
+                            elif z == 3:
+                                x1 = x1 + size*2
+                                y1 = y1 - size
+                            elif z == 4:
+                                x1 = x1 + size*2
+                                y1 = y1
+
+                            # print(z)
+                            # print(x1,y1)
+
+                            finger_sign = pygame.Rect(x1, y1, size, size)
+                            pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+
+                        x2 = x2
+                        y2 = y2 + size*3
+
+                        # arm
+                        pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s/2, y2 - s), int(s / 8))
+                        pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 - s/2, y2 - s), int(s / 8))
+
+                        # hand
+                        if arm_pos % 16 < 8:
+                            pygame.draw.circle(WIN, value_color[7 + int(arm_pos % 8 / 5)], (x2 + s/2, y2 - s), s / 4)
+                        else:
+                            guide_b = pygame.Rect(x2 + s/2 - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
+                            pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                        # elbow
+                        if arm_pos > 15:
+                            pygame.draw.circle(WIN, value_color[7], (x2 - s, y2 - s + int(s / 16)), s / 4)
+
+                    # third position
+                    if arm_pos % 4 == 2:
+
+                        x2 = x2 - size
+                        y2 = y2 + size*2.5
+
+                        for z in range(5):
+
+                            x1 = x0 + size*.75
+                            y1 = y0
+
+                            if z == 1:
+                                x1 = x1 + size
+                            elif z == 2:
+                                x1 = x1 + size
+                                y1 = y1 + size
+                            elif z == 3:
+                                x1 = x1 + size
+                                y1 = y1 + size * 2
+                            elif z == 4:
+                                x1 = x1
+                                y1 = y1 + size * 2
+
+                            # print(z)
+                            # print(x1,y1)
+
+                            finger_sign = pygame.Rect(x1, y1, size, size)
+                            pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+
+                        # arm
+                        pygame.draw.line(WIN, value_color[7], (x2, y2 - int(s / 2)), (x2 + s, y2 - int(s / 2)), int(s / 8))
+
+                        # hand
+                        if arm_pos % 16 < 8:
+                            pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2 - int(s / 2)), s / 4)
+                        else:
+                            guide_b = pygame.Rect(x2 + s - int(s / 8), y2 - int(s / 4) - int(s / 2), s / 2, s / 2)
+                            pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                        # elbow
+                        if arm_pos > 15:
+                            pygame.draw.circle(WIN, value_color[7], (x2, y2 - int(s / 2)), s / 4)
+
+                    # fourth position
+                    if arm_pos % 4 == 3:
+
+                        for z in range(5):
+
+                            x1 = x0-size/2
+                            y1 = y0+size/2
+
+                            if z == 1:
+                                x1 = x1
+                                y1 = y1-size
+                            elif z == 2:
+                                x1 = x1 + size
+                                y1 = y1 - size
+                            elif z == 3:
+                                x1 = x1 + size*2
+                                y1 = y1 - size
+                            elif z == 4:
+                                x1 = x1 + size*2
+                                y1 = y1
+
+                            # print(z)
+                            # print(x1,y1)
+
+                            finger_sign = pygame.Rect(x1, y1, size, size)
+                            pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+
+                        x2 = x2 - size
+                        y2 = y2 + size*3
+
+                        # arm
+                        pygame.draw.line(WIN, value_color[7], (x2 + s, y2 + int(s / 16)), (x2 + s, y2 - s), int(s / 8))
+                        pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
+
+                        # hand
+                        if arm_pos % 16 < 8:
+                            pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2 - s), s / 4)
+                        else:
+                            guide_b = pygame.Rect(x2 + s - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
+                            pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                        # elbow
+                        if arm_pos > 15:
+                            pygame.draw.circle(WIN, value_color[7], (x2, y2), s / 4)
 
 
-                            #left hand
-                            x0 = width_8 + int(step / step_lim) * width_8 + adjust_x
-                            y0 = height_8 + step % step_lim * (space * 2) + adjust_y
-                            for x in range(5):
-                                x1 = x0
-                                y1 = y0
 
-                                if x == 1:
-                                    x1 = x1 - size*2
-                                if x == 2:
-                                    x1 = x1 - size*2
-                                    y1 = y1 + size*2
-                                if x == 3:
-                                    x1 = x1 - size*2
-                                    y1 = y1 + size * 4
-                                if x == 4:
-                                    x1 = x1
-                                    y1 = y1 + size * 4
-
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value_l[x])], finger_sign)
-
-                            #left arm
-                            x0 = width_8 - width_64*3 + int(step / step_lim) * width_8 + space + adjust_x
-                            y0 = height_8 + height_16 + step % step_lim * (space * 2) + adjust_y
-                            lesson_t = lable_font.render(str(armbet_l), True, value_color[7])
-                            WIN.blit(lesson_t, (x0 - size + size/4, y0 - size - height_8))
-                            punchroglyph(bet_l, arm_size, x0 + space - size/2, y0 + space - size / 2, 1)
-
-                            #leg
-                            x0 = width_8 + int(step / step_lim) * width_8 + space + adjust_x
-                            y0 = height_8 + step % step_lim * (space * 2) + adjust_y
-                            lesson_t = lable_font.render(str(armbet_f[1::]), True, value_color[7])
-                            WIN.blit(lesson_t, (x0 - size + size + space, y0 - size + space*1.5 - height_8))
-                            kickroglyph(bet_f, space + size, x0 + space - size, y0 + space - size / 2 + space*3 + height_16)
-
-
-
-                            done = 1
 
 
 
@@ -1046,10 +1077,13 @@ def Chaos_Window():
 
                 elif event.key == pygame.K_LEFT:
                     print()
+                    guide -= 1
+                    if guide < 0:
+                        guide = guide_max-1
 
                 elif event.key == pygame.K_RIGHT:
                     guide += 1
-                    guide = guide%4
+                    guide = guide%guide_max
 
                 elif event.key == pygame.K_UP:
                     print()
