@@ -143,7 +143,7 @@ camera = pygame.camera.Camera(cam_list[0], (screen_width, screen_height))
 camera.start()
 
 image = camera.get_image()
-value_color = {0: (0, 0, 0), 1: (255, 0, 0), 2: (255, 255, 0), 3: (0, 255, 0), 4: (0, 255, 255), 5: (0, 0, 255),
+value_color = {0: (0, 0, 0), 1: (255, 0, 255), 2: (0, 255, 255), 3: (0, 255, 0), 4: (0, 255, 255), 5: (0, 0, 255),
                6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127)}
 color_array = np.array(list(value_color.values()), dtype=int)
 
@@ -217,11 +217,11 @@ rule = np.array(rule)
 
 print(rule)
 
-l = 320
+l = 480
 h = l
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
-pos_y = int(screen_height / 5) - int(h / 2)
+pos_y = int(screen_height / 3.5) - int(h / 2)
 pos_z = 0
 
 if dim == 1:
@@ -312,8 +312,8 @@ while running:
     y_s = 32
     x_g = 4
     y_g = 0
-    x_pos = 64
-    y_pos = 128
+    x_pos = 128
+    y_pos = 640
     palm_x = x_pos + x_s*3
     palm_y = y_pos + y_s*3
 
@@ -383,10 +383,10 @@ while running:
     hand_value = hand[0]*16 + hand[1]*8 + hand[2]*4 + hand[3]*2 + hand[4]*1
 
     lesson_t = main_font.render(str(hand_value), True, value_color[7])
-    screen.blit(lesson_t, (screen_width / 4 - 64, screen_height / 32))
+    screen.blit(lesson_t, (screen_width / 4 - 64, screen_height / 2 + 64))
 
     lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[7])
-    screen.blit(lesson_t, (screen_width / 4 - 32, screen_height / 32))
+    screen.blit(lesson_t, (screen_width / 4 - 32, screen_height / 2 + 64))
 
 
     letter = digibetu[hand_value]
@@ -428,8 +428,8 @@ while running:
     y_s = 32
     x_g = 4
     y_g = 0
-    x_pos = 840
-    y_pos = 128
+    x_pos = 800
+    y_pos = 640
     palm_x = x_pos + x_s*3
     palm_y = y_pos + y_s*3
 
@@ -496,10 +496,15 @@ while running:
     hand_value = hand[0] * 1 + hand[1] * 2 + hand[2] * 4 + hand[3] * 8 + hand[4] * 16
 
     lesson_t = main_font.render(str(hand_value), True, value_color[7])
-    screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 4))
+    screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 64))
 
     lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[7])
-    screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 4 + 64))
+    screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 96))
+
+
+    lesson_t = main_font.render(str(rv), True, value_color[7])
+    screen.blit(lesson_t, (screen_width / 2, screen_height / 32))
+
 
     walk = 0
     for x in range(len(phrase)):
@@ -541,9 +546,15 @@ while running:
             score = 1
 
             if phrase not in sign_bank:
-                sign_bank[phrase] = score
+                sign_bank[phrase] = (score, rv)
             else:
-                score = sign_bank[phrase]
+
+                try:
+                    score, rv = sign_bank[phrase]
+                except:
+                    score = sign_bank[phrase]
+                    rv = rv
+
 
 
 
@@ -566,7 +577,7 @@ while running:
 
                 code = ''
 
-                sign_bank[phrase] = score
+                sign_bank[phrase] = (score, rv)
 
                 filename = 'sign_bank/' + signame
                 outfile = open(filename, 'wb')
