@@ -144,8 +144,8 @@ camera = pygame.camera.Camera(cam_list[0], (screen_width, screen_height))
 camera.start()
 
 image = camera.get_image()
-value_color = {0: (0, 0, 0), 1: (255, 0, 255), 2: (0, 255, 255), 3: (0, 255, 0), 4: (0, 255, 255), 5: (0, 0, 255),
-               6: (255, 0, 255), 7: (255, 255, 255), 8: (127, 127, 127)}
+value_color = {0: (0, 0, 0), 1: (255, 0, 255), 2: (0, 255, 255), 3: (255, 255, 0), 4: (128, 128, 128), 5: (255, 0, 0),
+               6: (0, 255, 0), 7: (0, 0, 255), 8: (255, 255, 255), 9: (255, 255, 255)}
 color_array = np.array(list(value_color.values()), dtype=int)
 
 array_past = pygame.surfarray.array3d(image)
@@ -160,6 +160,7 @@ rethresh = 0
 
 
 # bets
+ui = 0
 digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
            's': 4, 'c': 5, 'd': 6, 'm': 7,
            'g': 8, 'f': 9, 'w': 10, 'v': 11,
@@ -171,6 +172,7 @@ digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
 digibetu = {v: k for k, v in digibet.items()}
 phrase = ''
 phrase_pos = 0
+goal_bin = '00000'
 
 hands = [[], []]
 code = ''
@@ -352,6 +354,8 @@ for x in range(128):
     key_triangle.append(stereo_sound)
 
 
+
+
 #drums
 
 def generate_kick(duration_s, sample_rate=44100, max_amplitude=32767):
@@ -458,11 +462,13 @@ while running:
         water = np.roll(water, l)
         water[0] = row
         flow = water[0]
-        flow[int(l / 2)] = 1
+        code_flow = digibet[code_0]
+        # print(code_flow)
+        flow[0+ code_flow * int(l/32)] = 1
 
         image_flow = color_array[water]
 
-        image_array[pos_x:pos_x+l, pos_y:pos_y+h] = np.rot90(image_flow)
+        image_array[pos_x:pos_x+l, pos_y:pos_y+h] = np.rot90(image_flow, 4)
 
     elif dim == 2:
         flow[int(l / 2), int(h / 2)] = 1
@@ -483,18 +489,24 @@ while running:
         # print()
         # print(row)
 
+
+
+
         flow = water
+        sign_value = digibet[code_0]
+        flow[int(l / 2), int(h / 2) +sign_value] = 1
+
         image_flow = color_array[flow]
         image_array[pos_x:pos_x+l, pos_y:pos_y+h] = image_flow
 
-        flatten = water.flatten()
-        scaled = (flatten * 2 - 1) * max_amplitude
-        sample = scaled.astype(np.int16)
-        stereo = sample.reshape(-1, 1)
-        stack = np.column_stack((stereo, stereo))
-        flow_sound = pygame.sndarray.make_sound(stack)
-
-        flow_sound.play()
+        # flatten = water.flatten()
+        # scaled = (flatten * 2 - 1) * max_amplitude
+        # sample = scaled.astype(np.int16)
+        # stereo = sample.reshape(-1, 1)
+        # stack = np.column_stack((stereo, stereo))
+        # flow_sound = pygame.sndarray.make_sound(stack)
+        #
+        # flow_sound.play()
 
 
 
@@ -559,30 +571,33 @@ while running:
         # print("change")
         # print(change)
 
-        lesson_t = small_font.render(str(hand[x]), True, value_color[7])
-        screen.blit(lesson_t, (screen_width/64 + x*128, screen_height / 2 + screen_height/4))
-        lesson_t = small_font.render(str(int(mse)), True, value_color[7])
-        screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 64))
-        lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
-        screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 96))
-        lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
-        screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 128))
+
+        if ui == 1:
+
+            lesson_t = small_font.render(str(hand[x]), True, value_color[7])
+            screen.blit(lesson_t, (screen_width/64 + x*128, screen_height / 2 + screen_height/4))
+            lesson_t = small_font.render(str(int(mse)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 64))
+            lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 96))
+            lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
+            screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 128))
 
         value_rect = pygame.Rect(palm_x + x*x_s/2, palm_y, x_s/2, y_s/2)
-        pygame.draw.rect(screen, value_color[0 + hand[x]*7], value_rect)
+        pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
 
         tip_rect = pygame.Rect(roi[0], roi[1], x_s, y_s)
-        pygame.draw.rect(screen, value_color[0 + hand[x]*7], tip_rect)
+        pygame.draw.rect(screen, value_color[0 + hand[x]*9], tip_rect)
 
-        pygame.draw.line(screen, value_color[0 + hand[x] * 7], (palm_x, palm_y), (roi[0], roi[1]))
+        pygame.draw.line(screen, value_color[0 + int(goal_bin[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
 
 
     hand_value = hand[0]*16 + hand[1]*8 + hand[2]*4 + hand[3]*2 + hand[4]*1
 
-    lesson_t = main_font.render(str(hand_value), True, value_color[7])
+    lesson_t = main_font.render(str(hand_value), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 4 - 64, screen_height / 2 + 64))
 
-    lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[7])
+    lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 4 - 32, screen_height / 2 + 64))
 
 
@@ -645,37 +660,39 @@ while running:
         # print("change")
         # print(change)
 
+        if ui == 1:
 
-        lesson_t = small_font.render(str(hand[x]), True, value_color[7])
-        screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4))
-        lesson_t = small_font.render(str(int(mse)), True, value_color[7])
-        screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 64))
-        lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
-        screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 96))
-        lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
-        screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 128))
+            lesson_t = small_font.render(str(hand[x]), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4))
+            lesson_t = small_font.render(str(int(mse)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 64))
+            lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 96))
+            lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 128))
 
         t_line = pygame.Rect(palm_x + x * x_s / 2, palm_y, x_s / 2, y_s / 2)
-        pygame.draw.rect(screen, value_color[0 + hand[x] * 7], t_line)
+        pygame.draw.rect(screen, value_color[0 + hand[x] * 9], t_line)
 
         t_line = pygame.Rect(roi[0], roi[1], x_s, y_s)
-        pygame.draw.rect(screen, value_color[0 + hand[x] * 7], t_line)
+        pygame.draw.rect(screen, value_color[0 + hand[x] * 9], t_line)
 
-        pygame.draw.line(screen, value_color[0 + hand[x] * 7], (palm_x, palm_y), (roi[0], roi[1]))
+        goal_bin_r = goal_bin[::-1]
+        pygame.draw.line(screen, value_color[0 + int(goal_bin_r[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
 
     rethresh = 0
     hand_value = hand[0] * 1 + hand[1] * 2 + hand[2] * 4 + hand[3] * 8 + hand[4] * 16
 
-    lesson_t = main_font.render(str(hand_value), True, value_color[7])
+    lesson_t = main_font.render(str(hand_value), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 64))
 
-    lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[7])
+    lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 96))
 
-    lesson_t = main_font.render(str(rv), True, value_color[7])
+    lesson_t = main_font.render(str(rv), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 2, screen_height / 32))
 
-    lesson_t = main_font.render(str(tts_0), True, value_color[7])
+    lesson_t = main_font.render(str(tts_0), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 2, screen_height / 4))
 
 
@@ -684,7 +701,7 @@ while running:
     for x in range(len(times)):
         if x > times_limit:
             break
-        lesson_t = small_font.render(str(times[x]), True, value_color[7])
+        lesson_t = small_font.render(str(times[x]), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 8, screen_height / 8 + lesson_t.get_height()*x))
 
     times_limit = 10
@@ -698,14 +715,14 @@ while running:
     for x in range(len(sign_items)):
         if x > times_limit:
             break
-        lesson_t = small_font.render(str((sign_items[x][1][0], sign_items[x][0])), True, value_color[7])
+        lesson_t = small_font.render(str((sign_items[x][1][0], sign_items[x][0])), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 8 + lesson_t.get_height()*x))
 
     walk = 0
     for x in range(len(phrase)):
-        color = value_color[7]
+        color = value_color[9]
         if x == phrase_pos:
-            color = value_color[4]
+            color = value_color[5]
         lesson_t = lable_font.render(str(phrase[x]), True, color)
         screen.blit(lesson_t, (screen_width / 2 + walk - len(phrase)*8, screen_height / 4 + lesson_t.get_height()))
         walk += lesson_t.get_width()
@@ -745,6 +762,13 @@ while running:
 
     ###typing###
     if phrase != '':
+        goal_bin = base_x(digibet[phrase[phrase_pos]], 2)
+        if len(goal_bin) < 5:
+            zeros = ''
+            for x in range(5-len(goal_bin)):
+                zeros += '0'
+            goal_bin = zeros + goal_bin
+        # print(goal_bin)
 
         if phrase != phrase_past:
             tts[0] = time.time()
@@ -773,7 +797,7 @@ while running:
 
 
 
-            print(phrase, sign_bank[phrase])
+            # print(phrase, sign_bank[phrase])
 
             phrase_past = phrase[::]
 
@@ -783,8 +807,6 @@ while running:
             outfile.close
 
         elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
-
-
 
             phrase_pos += 1
             if len(letter) == 2:
@@ -845,10 +867,10 @@ while running:
 
 
     for x in range(int(len(code)/64)+1):
-        lesson_t = main_font.render(str(code), True, value_color[7])
+        lesson_t = main_font.render(str(code), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 2 - int(lesson_t.get_width()/2), screen_height / 8 - 128 + x*lesson_t.get_height()))
 
-    lesson_t = lable_font.render(str(score), True, value_color[7])
+    lesson_t = lable_font.render(str(score), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 2, screen_height / 8 - 64))
 
 
@@ -859,40 +881,45 @@ while running:
 
     beat = 1
     #####drums####
-
-    if time.time() - time_d > beat/8:
-
-        # print(tempo)
-
-
-        if tempo % 16 == 0:
-            # print('kick')
-            kick_sound.play()
-
-        if tempo % 16 == 10:
-            # print('kick')
-            kick_sound.play()
-
-
-
-        if tempo%16 == 4:
-            snare_sound.play()
-
-        if tempo%16 == 12:
-            hihat_sound.play()
-
-
-        tempo += 1
-
-        time_d = time.time()
-
-
+    #
+    # if time.time() - time_d > beat/8:
+    #
+    #     # print(tempo)
+    #
+    #
+    #     if tempo % 16 == 0:
+    #         # print('kick')
+    #         kick_sound.play()
+    #
+    #     if tempo % 16 == 10:
+    #         # print('kick')
+    #         kick_sound.play()
+    #
+    #
+    #
+    #     if tempo%16 == 4:
+    #         snare_sound.play()
+    #
+    #     if tempo%16 == 12:
+    #         hihat_sound.play()
+    #
+    #
+    #     tempo += 1
+    #
+    #     time_d = time.time()
+    #
+    #
+    #
 
     volume = 0.5
 
     ######bong#####
     if time.time() - time_b > beat:
 
+        # if dim == 1:
+        #     water0 = np.rot90(water[::], 2)
+        # elif dim == 2:
+        #     water0 = water
 
         flatten = water.flatten()
         scaled = (flatten * 2 - 1) * max_amplitude
