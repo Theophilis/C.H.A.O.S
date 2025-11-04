@@ -9,6 +9,372 @@ from datetime import datetime
 
 
 
+
+
+
+def draw_a(size, canvas, corner):
+    apex = (corner[1], corner[0] + int(size / 2))
+
+    canvas[apex] = 1
+
+    a_legs = dict()
+
+    for x in range(2):
+        a_legs[x] = []
+
+    for x in range(size - 1):
+
+        if x % 2 == 0:
+
+            a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
+            a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
+
+        else:
+
+            a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
+            a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
+
+    for x in range(2):
+        for a in a_legs[x]:
+            canvas[a] = 1
+
+    canvas[a_legs[0][int(len(a_legs[0]) / 2)][0],
+    a_legs[0][int(len(a_legs[0]) / 2)][1]:a_legs[1][int(len(a_legs[1]) / 2)][1]] = 1
+
+
+def draw_b(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+    canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 4)] = 1
+
+    for x in range(int(size / 4) + 1):
+        canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+
+        canvas[corner[1] + x + int(size / 2), corner[0] + int(size / 4) + int(x / 2)] = 1
+        canvas[corner[1] + int(size) - x - 1, corner[0] + int(size / 4) + int(x / 2)] = 1
+
+
+def draw_c(size, canvas, corner):
+    for x in range(int(size / 3) + 1):
+        canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+
+        canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+
+    for x in range(int(size / 3) + 2):
+        canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+
+
+def draw_d(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    d_coord_0 = (corner[1], corner[0] + int(size / 3))
+    d_coord_1 = (corner[1] + size - 1, corner[0] + int(size / 3))
+
+    canvas[d_coord_0] = 1
+    canvas[d_coord_1] = 1
+
+    canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
+
+    d_legs = dict()
+
+    for x in range(2):
+        d_legs[x] = []
+
+    for x in range(int(size / 3)):
+
+        if x == 0:
+            d_legs[0].append(d_coord_0)
+            d_legs[1].append(d_coord_1)
+
+        d_legs[0].append((d_coord_0[0] + 1 + x, d_coord_0[1] + 1 + x))
+        d_legs[1].append((d_coord_1[0] - 1 - x, d_coord_1[1] + 1 + x))
+
+    # print(d_legs[0])
+    # print(d_legs[1])
+
+    for k in d_legs[0]:
+        canvas[k] = 1
+
+    for k in d_legs[1]:
+        canvas[k] = 1
+
+    canvas[d_legs[0][-1][0]:d_legs[1][-1][0], d_legs[0][-1][1]] = 1
+
+
+def draw_e(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+    canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
+
+
+def draw_f(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+    canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+
+
+def draw_g(size, canvas, corner):
+    canvas[corner[1] + int(size / 3 * 2), corner[0] + int(size / 3):corner[0] + int(size / 3 * 2)] = 1
+
+    for x in range(int(size / 3) + 1):
+        canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+
+        canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+
+    for x in range(int(size / 3) + 2):
+        canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+
+
+def draw_h(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
+    canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 2)] = 1
+
+
+def draw_i(size, canvas, corner):
+    canvas[corner[1], corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+    canvas[corner[1] + size - 1, corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+    canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+
+
+def draw_j(size, canvas, corner):
+    for x in range(int(size / 3) + 1):
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+
+    for x in range(int(size / 3 * 2)):
+        canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
+
+    for x in range(int(size / 3) + 2):
+        canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+
+
+def draw_k(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    k_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
+
+    canvas[k_coord_0] = 1
+
+    k_legs = dict()
+
+    for x in range(2):
+        k_legs[x] = []
+
+    for x in range(int(size / 2)):
+
+        if x == 0:
+            k_legs[0].append(k_coord_0)
+            k_legs[1].append(k_coord_0)
+
+        k_legs[0].append((k_coord_0[0] + 1 + x, k_coord_0[1] + 1 + x))
+        k_legs[1].append((k_coord_0[0] - 1 - x, k_coord_0[1] + 1 + x))
+
+    # print(k_legs[0])
+    # print(k_legs[1])
+
+    for k in k_legs[0]:
+        canvas[k] = 1
+
+    for k in k_legs[1]:
+        canvas[k] = 1
+
+
+def draw_l(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2)] = 1
+
+
+def draw_m(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    canvas[corner[1]:corner[1] + size, corner[0] + size - 1] = 1
+
+    apex = (corner[1] + size - 1, corner[0] + int(size / 2))
+
+    canvas[apex] = 1
+
+    m_legs = dict()
+
+    for x in range(2):
+        m_legs[x] = []
+
+    for x in range(size - 2):
+
+        if x % 2 == 0:
+
+            m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+            m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+
+        else:
+
+            m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+            m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+
+    for x in range(2):
+        for m in m_legs[x]:
+            canvas[m] = 1
+
+
+def draw_n(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+
+    for x in range(size - 1):
+        canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
+
+
+def draw_o(size, canvas, corner):
+    for x in range(int(size / 3) + 1):
+        canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+
+        canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+        canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
+
+    for x in range(int(size / 3) + 2):
+        canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+
+
+def draw_p(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+    canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+
+    for x in range(int(size / 4) + 1):
+        canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+
+
+def draw_q(size, canvas, corner):
+    for x in range(int(size / 3) + 1):
+        canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2) + int(size / 3) + int(size / 3 / 2)] = 1
+
+        canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+        canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
+
+    for x in range(int(size / 3) + 2):
+        canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+
+
+def draw_r(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0]] = 1
+
+    r_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
+    r_coord_1 = (corner[1], corner[0] + 1)
+    r_coord_2 = (corner[1] + int(size / 2), corner[0] + 1 + int(size / 5))
+    r_coord_3 = (corner[1], corner[0] + 1 + int(size / 5))
+
+    # print(r_coord_1)
+    # print(r_coord_2)
+
+    canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+    canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+
+    r_legs = dict()
+
+    for x in range(3):
+        r_legs[x] = []
+
+    for x in range(int(size / 2) + 1):
+        canvas[corner[1] + int(size / 2) + x, corner[0] + int(size / 5) + int(x / 2)] = 1
+
+    for x in range(int(size / 4) + 1):
+        canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+
+
+def draw_s(size, canvas, corner):
+    canvas[corner[1] + int(size / 6):corner[1] + int(size / 6) * 2, corner[0]] = 1
+    canvas[corner[1] + int(size / 6) * 4:corner[1] + int(size / 6) * 5, corner[0] + int(size / 2)] = 1
+    canvas[corner[1], corner[0] + int(size / 6):corner[0] + int(size / 2)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2) - int(size / 6)] = 1
+
+    for x in range(int(size / 2)):
+        canvas[corner[1] + int(size / 6) * 2 + int(5 * x / 6) - 1, corner[0] + x] = 1
+
+    for x in range(int(size / 6)):
+        canvas[corner[1] + int(size / 6) - x, corner[0] + x] = 1
+        canvas[corner[1] + int(size / 6) * 5 + x, corner[0] + int(size / 2) - x - 1] = 1
+
+
+def draw_t(size, canvas, corner):
+    canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
+    canvas[corner[1], corner[0] + int(size / 5):corner[0] + size - int(size / 5)] = 1
+
+
+def draw_u(size, canvas, corner):
+    for x in range(int(size / 3) + 1):
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+
+    for x in range(int(size / 3 * 2)):
+        canvas[corner[1] + x, corner[0]] = 1
+        canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
+
+    for x in range(int(size / 3) + 2):
+        canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+
+
+def draw_v(size, canvas, corner):
+    for x in range(size - 1):
+        canvas[corner[1] + x, corner[0] + int(x / 3)] = 1
+        canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(x / 3) - 1] = 1
+
+
+def draw_w(size, canvas, corner):
+    for x in range(size):
+        canvas[corner[1] + x, corner[0] + int(x / 4)] = 1
+        canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 4)] = 1
+        canvas[corner[1] + x, corner[0] + int(x / 4) + int(size / 2)] = 1
+        canvas[corner[1] + x, corner[0] + int(size) - int(x / 4) - 1] = 1
+
+
+def draw_x(size, canvas, corner):
+    for x in range(size - 1):
+        canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
+        canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 2) - 1] = 1
+
+
+def draw_y(size, canvas, corner):
+    canvas[corner[1] + int(size / 2):corner[1] + int(size), corner[0] + int(size / 2)] = 1
+
+    for x in range(int(size / 2)):
+        canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        canvas[corner[1] + x, corner[0] + int(size / 4 * 3) - int(x / 2)] = 1
+
+
+def draw_z(size, canvas, corner):
+    canvas[corner[1], corner[0]:corner[0] + int(size / 3 * 2)] = 1
+    canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3 * 2)] = 1
+
+    for x in range(size):
+        canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(2 * x / 3)] = 1
+
+
+
+
+
+
+
 pygame.init()
 pygame.camera.init()
 
@@ -273,6 +639,7 @@ if dim == 2:
     water = np.zeros((h, l), dtype=int)
 
 rainbow_array = np.zeros((h, l), dtype=int)
+dirivative_array = np.zeros((h, l), dtype=int)
 uw = 256**3 - 1  # = 16,777,216
 
 
@@ -546,12 +913,24 @@ stamp_y = 32 + int(reg_y * stamp_s * 2)
 
 
 
-
 ####rainbow runner####
 
 runner = 1
 up_count = 0
 down_count = 0
+
+
+messages = ['']
+message = ''
+messages[0] = message
+
+
+water_line = 0
+rainbow_reset = 0
+
+init = datetime.now()
+
+init = init.strftime("%Y-%m-%d_%H-%M-%S")
 
 
 
@@ -562,6 +941,666 @@ while running:
 
     image = camera.get_image()
     image_array = pygame.surfarray.array3d(image)
+
+
+
+    ###water canvas
+
+    ####water type####
+
+    def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, canvas=0):
+        #
+        # def draw_a(size, canvas, corner):
+        #
+        #     apex = (corner[1], corner[0] + int(size / 2))
+        #
+        #     canvas[apex] = 1
+        #
+        #     a_legs = dict()
+        #
+        #     for x in range(2):
+        #         a_legs[x] = []
+        #
+        #     for x in range(size - 1):
+        #
+        #         if x % 2 == 0:
+        #
+        #             a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
+        #             a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
+        #
+        #         else:
+        #
+        #             a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
+        #             a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
+        #
+        #     for x in range(2):
+        #         for a in a_legs[x]:
+        #             canvas[a] = 1
+        #
+        #     canvas[a_legs[0][int(len(a_legs[0]) / 2)][0],
+        #     a_legs[0][int(len(a_legs[0]) / 2)][1]:a_legs[1][int(len(a_legs[1]) / 2)][1]] = 1
+        #
+        # def draw_b(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        #
+        #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 4)] = 1
+        #
+        #     for x in range(int(size / 4) + 1):
+        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #
+        #         canvas[corner[1] + x + int(size / 2), corner[0] + int(size / 4) + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size) - x - 1, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #
+        # def draw_c(size, canvas, corner):
+        #
+        #     for x in range(int(size / 3) + 1):
+        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        #
+        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+        #
+        #     for x in range(int(size / 3) + 2):
+        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+        #
+        # def draw_d(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        #
+        #     d_coord_0 = (corner[1], corner[0] + int(size / 3))
+        #     d_coord_1 = (corner[1] + size - 1, corner[0] + int(size / 3))
+        #
+        #     canvas[d_coord_0] = 1
+        #     canvas[d_coord_1] = 1
+        #
+        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
+        #
+        #     d_legs = dict()
+        #
+        #     for x in range(2):
+        #         d_legs[x] = []
+        #
+        #     for x in range(int(size / 3)):
+        #
+        #         if x == 0:
+        #             d_legs[0].append(d_coord_0)
+        #             d_legs[1].append(d_coord_1)
+        #
+        #         d_legs[0].append((d_coord_0[0] + 1 + x, d_coord_0[1] + 1 + x))
+        #         d_legs[1].append((d_coord_1[0] - 1 - x, d_coord_1[1] + 1 + x))
+        #
+        #     # print(d_legs[0])
+        #     # print(d_legs[1])
+        #
+        #     for k in d_legs[0]:
+        #         canvas[k] = 1
+        #
+        #     for k in d_legs[1]:
+        #         canvas[k] = 1
+        #
+        #     canvas[d_legs[0][-1][0]:d_legs[1][-1][0], d_legs[0][-1][1]] = 1
+        #
+        # def draw_e(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
+        #
+        # def draw_f(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+        #
+        # def draw_g(size, canvas, corner):
+        #
+        #     canvas[corner[1] + int(size / 3 * 2), corner[0] + int(size / 3):corner[0] + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(int(size / 3) + 1):
+        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        #
+        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+        #
+        #     for x in range(int(size / 3) + 2):
+        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+        #
+        # def draw_h(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        #     canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
+        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 2)] = 1
+        #
+        # def draw_i(size, canvas, corner):
+        #
+        #     canvas[corner[1], corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+        #     canvas[corner[1] + size - 1, corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+        #     canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+        #
+        # def draw_j(size, canvas, corner):
+        #
+        #     for x in range(int(size / 3) + 1):
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(int(size / 3 * 2)):
+        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(int(size / 3) + 2):
+        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+        #
+        # def draw_k(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        #
+        #     k_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
+        #
+        #     canvas[k_coord_0] = 1
+        #
+        #     k_legs = dict()
+        #
+        #     for x in range(2):
+        #         k_legs[x] = []
+        #
+        #     for x in range(int(size / 2)):
+        #
+        #         if x == 0:
+        #             k_legs[0].append(k_coord_0)
+        #             k_legs[1].append(k_coord_0)
+        #
+        #         k_legs[0].append((k_coord_0[0] + 1 + x, k_coord_0[1] + 1 + x))
+        #         k_legs[1].append((k_coord_0[0] - 1 - x, k_coord_0[1] + 1 + x))
+        #
+        #     # print(k_legs[0])
+        #     # print(k_legs[1])
+        #
+        #     for k in k_legs[0]:
+        #         canvas[k] = 1
+        #
+        #     for k in k_legs[1]:
+        #         canvas[k] = 1
+        #
+        # def draw_l(size, canvas, corner):
+        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2)] = 1
+        #
+        # def draw_m(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        #     canvas[corner[1]:corner[1] + size, corner[0] + size - 1] = 1
+        #
+        #     apex = (corner[1] + size - 1, corner[0] + int(size / 2))
+        #
+        #     canvas[apex] = 1
+        #
+        #     m_legs = dict()
+        #
+        #     for x in range(2):
+        #         m_legs[x] = []
+        #
+        #     for x in range(size - 2):
+        #
+        #         if x % 2 == 0:
+        #
+        #             m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+        #             m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+        #
+        #         else:
+        #
+        #             m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+        #             m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+        #
+        #     for x in range(2):
+        #         for m in m_legs[x]:
+        #             canvas[m] = 1
+        #
+        # def draw_n(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+        #     canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+        #
+        #     for x in range(size - 1):
+        #         canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
+        #
+        # def draw_o(size, canvas, corner):
+        #
+        #     for x in range(int(size / 3) + 1):
+        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        #
+        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+        #         canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(int(size / 3) + 2):
+        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+        #
+        # def draw_p(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        #
+        #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+        #
+        #     for x in range(int(size / 4) + 1):
+        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #
+        # def draw_q(size, canvas, corner):
+        #
+        #     for x in range(int(size / 3) + 1):
+        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2) + int(size / 3) + int(size / 3 / 2)] = 1
+        #
+        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+        #         canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(int(size / 3) + 2):
+        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+        #
+        # def draw_r(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+        #
+        #     r_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
+        #     r_coord_1 = (corner[1], corner[0] + 1)
+        #     r_coord_2 = (corner[1] + int(size / 2), corner[0] + 1 + int(size / 5))
+        #     r_coord_3 = (corner[1], corner[0] + 1 + int(size / 5))
+        #
+        #     # print(r_coord_1)
+        #     # print(r_coord_2)
+        #
+        #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+        #
+        #     r_legs = dict()
+        #
+        #     for x in range(3):
+        #         r_legs[x] = []
+        #
+        #     for x in range(int(size / 2) + 1):
+        #         canvas[corner[1] + int(size / 2) + x, corner[0] + int(size / 5) + int(x / 2)] = 1
+        #
+        #     for x in range(int(size / 4) + 1):
+        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #
+        # def draw_s(size, canvas, corner):
+        #
+        #     canvas[corner[1] + int(size / 6):corner[1] + int(size / 6) * 2, corner[0]] = 1
+        #     canvas[corner[1] + int(size / 6) * 4:corner[1] + int(size / 6) * 5, corner[0] + int(size / 2)] = 1
+        #     canvas[corner[1], corner[0] + int(size / 6):corner[0] + int(size / 2)] = 1
+        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2) - int(size / 6)] = 1
+        #
+        #     for x in range(int(size / 2)):
+        #         canvas[corner[1] + int(size / 6) * 2 + int(5 * x / 6) - 1, corner[0] + x] = 1
+        #
+        #     for x in range(int(size / 6)):
+        #         canvas[corner[1] + int(size / 6) - x, corner[0] + x] = 1
+        #         canvas[corner[1] + int(size / 6) * 5 + x, corner[0] + int(size / 2) - x - 1] = 1
+        #
+        # def draw_t(size, canvas, corner):
+        #
+        #     canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
+        #     canvas[corner[1], corner[0] + int(size / 5):corner[0] + size - int(size / 5)] = 1
+        #
+        # def draw_u(size, canvas, corner):
+        #
+        #     for x in range(int(size / 3) + 1):
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(int(size / 3 * 2)):
+        #         canvas[corner[1] + x, corner[0]] = 1
+        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(int(size / 3) + 2):
+        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+        #
+        # def draw_v(size, canvas, corner):
+        #
+        #     for x in range(size - 1):
+        #         canvas[corner[1] + x, corner[0] + int(x / 3)] = 1
+        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(x / 3) - 1] = 1
+        #
+        # def draw_w(size, canvas, corner):
+        #
+        #     for x in range(size):
+        #         canvas[corner[1] + x, corner[0] + int(x / 4)] = 1
+        #         canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 4)] = 1
+        #         canvas[corner[1] + x, corner[0] + int(x / 4) + int(size / 2)] = 1
+        #         canvas[corner[1] + x, corner[0] + int(size) - int(x / 4) - 1] = 1
+        #
+        # def draw_x(size, canvas, corner):
+        #
+        #     for x in range(size - 1):
+        #         canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
+        #         canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 2) - 1] = 1
+        #
+        # def draw_y(size, canvas, corner):
+        #
+        #     canvas[corner[1] + int(size / 2):corner[1] + int(size), corner[0] + int(size / 2)] = 1
+        #
+        #     for x in range(int(size / 2)):
+        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+        #         canvas[corner[1] + x, corner[0] + int(size / 4 * 3) - int(x / 2)] = 1
+        #
+        # def draw_z(size, canvas, corner):
+        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3 * 2)] = 1
+        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3 * 2)] = 1
+        #
+        #     for x in range(size):
+        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(2 * x / 3)] = 1
+
+        rainbow_reset = 0
+
+        m_list = list(message)
+
+        # print("")
+        # print("m_list")
+        # print(m_list)
+
+        line = 0
+
+        canvas = np.rot90(canvas)
+        canvas = np.flipud(canvas)
+
+
+        l_place = 0
+
+        for c in m_list:
+
+            if x_o + l_size + (l_size + x_space) * l_place > l-x_o:
+                l_place = 0
+                line += 1
+
+            if y_o + l_size + l_size * line + y_space * line > h-y_o:
+
+                l_place = 0
+                line = 0
+                x_o += 1
+
+                rainbow_reset = 1
+
+
+        # for c in m:
+
+
+            if c == 'a':
+
+                for offset in (0, offset_size, density):
+                    draw_a(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_a(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_a(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_a(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'b':
+
+                for offset in (0, offset_size, density):
+                    draw_b(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_b(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_b(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_b(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'c':
+
+                for offset in (0, offset_size, density):
+                    draw_c(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_c(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_c(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_c(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'd':
+
+                for offset in (0, offset_size, density):
+                    draw_d(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_d(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_d(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_d(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'e':
+
+                for offset in (0, offset_size, density):
+                    draw_e(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_e(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_e(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_e(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'f':
+
+                for offset in (0, offset_size, density):
+                    draw_f(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_f(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_f(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_f(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'g':
+
+                for offset in (0, offset_size, density):
+                    draw_g(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_g(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_g(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_g(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'h':
+
+                for offset in (0, offset_size, density):
+                    draw_h(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_h(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_h(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_h(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'i':
+
+                for offset in (0, offset_size, density):
+                    draw_i(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_i(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_i(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_i(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'j':
+
+                for offset in (0, offset_size, density):
+                    draw_j(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_j(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_j(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_j(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'k':
+
+                for offset in (0, offset_size, density):
+                    draw_k(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_k(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_k(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_k(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'l':
+
+                for offset in (0, offset_size, density):
+                    draw_l(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_l(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_l(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_l(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'm':
+
+                for offset in (0, offset_size, density):
+                    draw_m(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_m(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_m(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_m(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'n':
+
+                for offset in (0, offset_size, density):
+                    draw_n(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_n(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_n(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_n(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'o':
+
+                for offset in (0, offset_size, density):
+                    draw_o(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_o(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_o(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_o(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'p':
+
+                for offset in (0, offset_size, density):
+                    draw_p(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_p(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_p(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_p(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'q':
+
+                for offset in (0, offset_size, density):
+                    draw_q(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_q(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_q(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_q(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'r':
+
+                for offset in (0, offset_size, density):
+                    draw_r(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_r(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_r(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_r(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 's':
+
+                for offset in (0, offset_size, density):
+                    draw_s(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_s(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_s(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_s(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 't':
+
+                for offset in (0, offset_size, density):
+                    draw_t(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_t(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_t(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_t(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'u':
+
+                for offset in (0, offset_size, density):
+                    draw_u(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_u(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_u(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_u(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'v':
+
+                for offset in (0, offset_size, density):
+                    draw_v(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_v(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_v(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_v(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'w':
+
+                for offset in (0, offset_size, density):
+                    draw_w(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_w(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_w(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_w(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'x':
+
+                for offset in (0, offset_size, density):
+                    draw_x(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_x(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_x(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_x(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'y':
+
+                for offset in (0, offset_size, density):
+                    draw_y(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_y(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_y(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_y(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == 'z':
+
+                for offset in (0, offset_size, density):
+                    draw_z(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_z(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                    draw_z(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                    draw_z(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+            if c == ' ':
+                l_place += 1
+
+            l_place += 1
+
+
+
+        canvas = np.flipud(canvas)
+        canvas = np.rot90(canvas, 3)
+
+
+
+        return canvas, rainbow_reset
+
+
+
+    size = 64
+    l_size = 16
+    x_space = 8
+    y_space = 16
+    offset_size = 1
+    density = 1
+    x_o = 128
+    y_o = 32 + water_line* (size+16)
+
+
+    if len(message) > 0:
+        canvas , rainbow_reset = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, flow)
+
+        # print()
+        # print("canvas")
+        # print(canvas)
+
+
+    if rainbow_reset == 1:
+        rainbow_array = np.zeros((h, l), dtype=int)
+        rainbow_speed += 1
+        set += 1
+
+        rainbow_reset = 0
+
+        messages.append(message[::])
+        message = []
+
+
+    ###messages###
+    messages[0] = message
+
+    filename = 'messages/' + signame + str(init)
+    outfile = open(filename, 'wb')
+    pickle.dump(messages, outfile)
+    outfile.close
+
 
 
 
@@ -644,14 +1683,6 @@ while running:
 
 
 
-
-
-
-
-        ####water type####
-
-
-
         flow = water
         # sign_value = digibet[code_0]
         # flow[int(l / 2), int(h / 2) +sign_value] = 1
@@ -686,7 +1717,7 @@ while running:
                 down_mask = water == 2
 
 
-            count_scale = color_max
+            count_scale = color_max*64
 
             up_count += int(np.sum(up_mask)/count_scale)
             down_count += int(np.sum(down_mask)/count_scale)
@@ -695,6 +1726,11 @@ while running:
             rainbow_array[down_mask] -= rainbow_speed + set
             rainbow_array[rainbow_array < 0] = color_max-1
             rainbow_array[rainbow_array > color_max-1] = 0
+
+
+            ####dirivative array####
+            #map another array so that the rate of change of each pixel is cast onto its own rainbow
+            dirivative_array = dirivative_array
 
 
             rainbow_flow = np.zeros((l, h, 3), dtype=np.uint8)
@@ -716,7 +1752,7 @@ while running:
     if runner == 1:
 
         lesson_t = main_font.render(str((up_count, down_count)), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 16, screen_height / 8))
+        screen.blit(lesson_t, (screen_width / 16, screen_height / 16))
 
 
 
@@ -901,11 +1937,14 @@ while running:
         lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 96))
 
-        lesson_t = main_font.render(str(rv), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 2, screen_height / 32))
+        # lesson_t = main_font.render(str(rv), True, value_color[9])
+        # screen.blit(lesson_t, (screen_width / 2, screen_height / 32))
 
         lesson_t = main_font.render(str(tts_0), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 2 + 128, screen_height / 32))
+        screen.blit(lesson_t, (screen_width / 32, screen_height / 4))
+
+
+
 
 
     ###stats###
@@ -931,7 +1970,10 @@ while running:
         screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 8 + lesson_t.get_height()*x))
 
 
-    ######walk#######
+
+
+
+    ######phrase walk#######
     walk = 0
 
     for x in range(len(phrase)):
@@ -947,14 +1989,17 @@ while running:
             walk = 0
 
         lesson_t = lable_font.render(str(phrase[x]), True, color)
-        screen.blit(lesson_t, (screen_width / 2 + walk - screen_width/4.3, screen_height / 4 + lesson_t.get_height()*y))
+        screen.blit(lesson_t, (screen_width / 2 + walk - screen_width/4.3, screen_height / 2 + lesson_t.get_height()*y+ 128))
         walk += lesson_t.get_width()
 
     letter = digibetu[hand_value]
 
     hands[1] = letter
 
-    ####code####
+
+
+
+    ####double hand code####
     if hands[0] == hands[1]:
 
         if hands[0] != code_0:
@@ -1021,6 +2066,8 @@ while running:
                 rule[shift] = str((int(rule[shift])+1)%base)
 
 
+
+
     ###typing###
     if phrase != '':
 
@@ -1075,14 +2122,21 @@ while running:
 
         elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
 
-            phrase_pos += 1
+            message += phrase[phrase_pos]
+
             if len(letter) == 2:
+                message += phrase[phrase_pos + 1]
                 phrase_pos += 1
+
+            phrase_pos += 1
 
             if phrase_pos == 1:
                 tts[0] = time.time()
 
             if phrase_pos == len(phrase):
+
+
+                message += ' '
 
                 score += 1
                 phrase_pos = 0
@@ -1123,6 +2177,7 @@ while running:
 
                 sign_bank[phrase] = (score, rv, times)
 
+
                 filename = 'sign_bank/' + signame
                 outfile = open(filename, 'wb')
                 pickle.dump(sign_bank, outfile)
@@ -1160,6 +2215,8 @@ while running:
 
 
 
+
+
     ### rule display #####
 
     if base == 2:
@@ -1191,17 +2248,23 @@ while running:
             t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
             pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
 
+
+
+
     ###code display####
 
     for x in range(int(len(code)/64)+1):
         lesson_t = main_font.render(str(code), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 2 - int(lesson_t.get_width()/2), screen_height / 8 - 128 + x*lesson_t.get_height()))
 
-    lesson_t = lable_font.render(str(score), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 2 - 128, screen_height / 16 - 64))
+    lesson_t = lable_font.render('score' + str(score), True, value_color[9])
+    screen.blit(lesson_t, (screen_width / 4 - 192, screen_height / 32 - 32))
 
-    lesson_t = main_font.render(str(set), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 2 - 256, screen_height / 16 + 32))
+    lesson_t = main_font.render('set' + str(set), True, value_color[9])
+    screen.blit(lesson_t, (screen_width / 4 - 256, screen_height / 32 - 32))
+
+    lesson_t = main_font.render('speed' + str(rainbow_speed), True, value_color[9])
+    screen.blit(lesson_t, (screen_width / 4, screen_height / 32 - 32))
 
 
     ###synth###
