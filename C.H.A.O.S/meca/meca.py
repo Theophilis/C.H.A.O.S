@@ -620,11 +620,11 @@ shift = 0
 
 print(rule)
 
-l = 592
+l = 800
 h = l
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
-pos_y = int(screen_height / 3) - int(h / 2)
+pos_y = int(screen_height / 2) - int(h / 2)
 pos_z = 0
 
 if dim == 1:
@@ -941,6 +941,7 @@ while running:
 
     image = camera.get_image()
     image_array = pygame.surfarray.array3d(image)
+    hand_array = pygame.surfarray.array3d(image)
 
 
 
@@ -1565,7 +1566,7 @@ while running:
 
 
     size = 64
-    l_size = 16
+    l_size = 32
     x_space = 8
     y_space = 16
     offset_size = 1
@@ -1689,9 +1690,9 @@ while running:
 
 
 
-
-        image_flow = color_array[flow]
-        image_array[pos_x:pos_x+l, pos_y:pos_y+h] = image_flow
+        if rainbow == 0:
+            image_flow = color_array[flow]
+            image_array[pos_x:pos_x+l, pos_y:pos_y+h] = image_flow
 
         # flatten = water.flatten()
         # scaled = (flatten * 2 - 1) * max_amplitude
@@ -1728,17 +1729,21 @@ while running:
             rainbow_array[rainbow_array > color_max-1] = 0
 
 
-            ####dirivative array####
-            #map another array so that the rate of change of each pixel is cast onto its own rainbow
-            dirivative_array = dirivative_array
-
 
             rainbow_flow = np.zeros((l, h, 3), dtype=np.uint8)
 
             rainbow_flow = full_colors[rainbow_array]
 
 
-            image_array[pos_x:pos_x + l, pos_y:pos_y + h] = rainbow_flow
+
+            mask = flow != 0
+
+            region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
+            region[mask] = rainbow_flow[mask]
+
+
+
+            image_array[pos_x:pos_x + l, pos_y:pos_y + h] = region
 
     image = pygame.surfarray.make_surface(image_array)
     screen.blit(image, (0, 0))
@@ -1790,12 +1795,12 @@ while running:
 
 
 
-            mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, image_array, roi, thresholds[x])
+            mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x])
 
 
             if rethresh == 1:
 
-                mask_color = image_array[int(screen_width/2), int(screen_height/2)]
+                mask_color = hand_array[int(screen_width/2), int(screen_height/2)]
 
 
                 ram[x] = [roi1, roi2]
@@ -1883,7 +1888,7 @@ while running:
 
             roi_palm = (x_pos + x*x_s, y_pos + y_s*4)
 
-            mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, image_array, roi, thresholds[x+5])
+            mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x+5])
 
             if rethresh == 1:
 
@@ -2289,6 +2294,7 @@ while running:
                 water0 = water
 
             if dim > 0:
+
                 flatten = water0.flatten()
                 scaled = (flatten * 2 - 1) * max_amplitude
                 sample = scaled.astype(np.int16)
@@ -2394,7 +2400,7 @@ while running:
 
 
                 rethresh = 1
-                array_past = image_array
+                array_past = hand_array
 
                 # print()
                 # print(current)
