@@ -602,10 +602,15 @@ pos_x = screen_width / 2
 pos_y = screen_height / 2
 dim = 2
 sim = 0
+
+
 rainbow = 1
 rainbow_speed = 2
 base = 2
 view = 5
+fade = 1
+
+
 bv = base ** view
 bvv = base ** view ** view
 bbv = base**base**view
@@ -1691,17 +1696,22 @@ while running:
 
 
         if rainbow == 0:
-            image_flow = color_array[flow]
-            image_array[pos_x:pos_x+l, pos_y:pos_y+h] = image_flow
 
-        # flatten = water.flatten()
-        # scaled = (flatten * 2 - 1) * max_amplitude
-        # sample = scaled.astype(np.int16)
-        # stereo = sample.reshape(-1, 1)
-        # stack = np.column_stack((stereo, stereo))
-        # flow_sound = pygame.sndarray.make_sound(stack)
-        #
-        # flow_sound.play()
+
+            if fade == 0:
+                image_flow = color_array[flow]
+                image_array[pos_x:pos_x + l, pos_y:pos_y + h] = image_flow
+
+            elif fade == 1:
+                mask = flow != 0
+
+                region = image_array[pos_x:pos_x + l, pos_y:pos_y + h]
+
+
+                region[mask] = color_array[flow[mask]]
+
+                image_array[pos_x:pos_x + l, pos_y:pos_y + h] = region
+
 
 
         if rainbow == 1:
@@ -1736,10 +1746,31 @@ while running:
 
 
 
-            mask = flow != 0
+
 
             region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
-            region[mask] = rainbow_flow[mask]
+
+            fade = 3
+
+            if fade == 1:
+                mask = flow != 0
+                region[mask] = rainbow_flow[mask]
+            elif fade == 0:
+                region = rainbow_flow
+
+            elif fade == 2:
+                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                region = blended
+
+            elif fade == 3:
+
+                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                region = blended
+
+                mask = flow != 0
+                region[mask] = rainbow_flow[mask]
+
+
 
 
 
@@ -2274,7 +2305,7 @@ while running:
 
     ###synth###
     beat = 1
-    volume = 0.5
+    volume = 0.3
     ######bong#####
     if bong_on == 1:
         if time.time() - time_b > beat:
