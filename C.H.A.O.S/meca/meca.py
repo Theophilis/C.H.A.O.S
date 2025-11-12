@@ -12,6 +12,9 @@ from datetime import datetime
 
 
 
+
+
+
 def draw_a(size, canvas, corner):
     apex = (corner[1], corner[0] + int(size / 2))
 
@@ -378,7 +381,7 @@ def draw_z(size, canvas, corner):
 pygame.init()
 pygame.camera.init()
 
-screen_width, screen_height = 1280, 960
+screen_width, screen_height = 1600, 900
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('C.H.A.O.S')
 
@@ -557,7 +560,7 @@ tts_0 = time.time()
 tts_1 = time.time()
 stenograph = []
 
-signame = "Theophilis"
+signame = "Chaotomata"
 
 try:
     filename = 'sign_bank/' + signame
@@ -625,8 +628,8 @@ shift = 0
 
 print(rule)
 
-l = 800
-h = l
+l = 850
+h = 850
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
 pos_y = int(screen_height / 2) - int(h / 2)
@@ -1750,8 +1753,15 @@ while running:
 
             region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
 
-            fade = 3
+            region_0 = region
 
+
+
+
+
+            ###fade###
+
+            fade = 4
             if fade == 1:
                 mask = flow != 0
                 region[mask] = rainbow_flow[mask]
@@ -1769,6 +1779,43 @@ while running:
 
                 mask = flow != 0
                 region[mask] = rainbow_flow[mask]
+
+
+
+            ###edge###
+            edge = 1
+            edge_depth = 16
+
+            if edge == 1:
+
+                gray = region.mean(axis=2)
+
+                gx = np.abs(np.diff(gray, axis=1))
+                gy = np.abs(np.diff(gray, axis=0))
+
+                gx = np.pad(gx, ((0, 0), (0, 1)), mode='constant')
+                gy = np.pad(gy, ((0, 1), (0, 0)), mode='constant')
+
+                edges = np.sqrt(gx**2 + gy**2)
+                edges = (edges/edges.max()*255).astype(np.uint8)
+
+
+
+                edge_mask = edges > edge_depth
+
+                flow[edge_mask] = (flow[edge_mask] + 1)%base
+
+            if fade == 4:
+
+                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                region = blended
+
+                mask = flow != 0
+                region[mask] = rainbow_flow[mask]
+
+                if edge == 1:
+                    region[edge_mask] = region_0[edge_mask]
+
 
 
 
@@ -1805,7 +1852,7 @@ while running:
         x_g = 4
         y_g = 0
         x_pos = 32
-        y_pos = 640
+        y_pos = 560
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
@@ -1895,8 +1942,8 @@ while running:
         y_s = 32
         x_g = 4
         y_g = 0
-        x_pos = 880
-        y_pos = 640
+        x_pos = 1188
+        y_pos = 560
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
@@ -2307,6 +2354,7 @@ while running:
     beat = 1
     volume = 0.3
     ######bong#####
+    bong_on = 0
     if bong_on == 1:
         if time.time() - time_b > beat:
 
