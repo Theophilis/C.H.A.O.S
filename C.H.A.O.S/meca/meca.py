@@ -6,6 +6,11 @@ import numpy as np
 import pickle
 import time
 from datetime import datetime
+import pyaudio
+
+
+
+
 
 
 
@@ -602,15 +607,10 @@ pos_x = screen_width / 2
 pos_y = screen_height / 2
 dim = 2
 sim = 0
-
-
 rainbow = 1
-rainbow_speed = 2
-base = 2
+rainbow_speed = 1
+base = 4
 view = 5
-fade = 1
-
-
 bv = base ** view
 bvv = base ** view ** view
 bbv = base**base**view
@@ -947,6 +947,8 @@ while running:
     image = camera.get_image()
     image_array = pygame.surfarray.array3d(image)
     hand_array = pygame.surfarray.array3d(image)
+
+    print(image_array.shape)
 
 
 
@@ -1575,7 +1577,7 @@ while running:
     x_space = 8
     y_space = 16
     offset_size = 1
-    density = 1
+    density = 2
     x_o = 128
     y_o = 32 + water_line* (size+16)
 
@@ -1694,83 +1696,76 @@ while running:
         # flow[int(l / 2), int(h / 2) +sign_value] = 1
 
 
-
         if rainbow == 0:
+            image_flow = color_array[flow]
+            image_array[pos_x:pos_x+l, pos_y:pos_y+h] = image_flow
 
-
-            if fade == 0:
-                image_flow = color_array[flow]
-                image_array[pos_x:pos_x + l, pos_y:pos_y + h] = image_flow
-
-            elif fade == 1:
-                mask = flow != 0
-
-                region = image_array[pos_x:pos_x + l, pos_y:pos_y + h]
-
-
-                region[mask] = color_array[flow[mask]]
-
-                image_array[pos_x:pos_x + l, pos_y:pos_y + h] = region
-
+        # flatten = water.flatten()
+        # scaled = (flatten * 2 - 1) * max_amplitude
+        # sample = scaled.astype(np.int16)
+        # stereo = sample.reshape(-1, 1)
+        # stack = np.column_stack((stereo, stereo))
+        # flow_sound = pygame.sndarray.make_sound(stack)
+        #
+        # flow_sound.play()
 
 
         if rainbow == 1:
 
 
-
+            ###up and down masks###
             if base == 2:
                 up_mask = water == 1
                 down_mask = water == 0
 
             elif base == 3:
 
-                up_mask = water == 1
-                down_mask = water == 2
+                up_mask = water == 0
+                down_mask = water == 1
+
+            elif base == 4:
+
+                up_mask = water == 0
+                down_mask = water == 1
+                up_mask2 = water == 2
+                down_mask2 = water == 3
 
 
+            ##count
             count_scale = color_max*64
-
             up_count += int(np.sum(up_mask)/count_scale)
             down_count += int(np.sum(down_mask)/count_scale)
 
+            if base == 4:
+                up_count += int(np.sum(up_mask) / count_scale)*2
+                down_count += int(np.sum(down_mask) / count_scale)*2
+
+
+            ###rainbow_apply###
             rainbow_array[up_mask] += rainbow_speed + set
             rainbow_array[down_mask] -= rainbow_speed + set
+
+            if base == 4:
+                rainbow_array[up_mask2] += (rainbow_speed*2) + set
+                rainbow_array[down_mask2] -= (rainbow_speed*2) + set
+
+
+
             rainbow_array[rainbow_array < 0] = color_max-1
             rainbow_array[rainbow_array > color_max-1] = 0
 
 
-
+            ###rainbow flow###
             rainbow_flow = np.zeros((l, h, 3), dtype=np.uint8)
-
             rainbow_flow = full_colors[rainbow_array]
 
 
-
-
-
+            ###fade mask###
             region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
 
-            fade = 3
+            mask = flow != 0
 
-            if fade == 1:
-                mask = flow != 0
-                region[mask] = rainbow_flow[mask]
-            elif fade == 0:
-                region = rainbow_flow
-
-            elif fade == 2:
-                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
-                region = blended
-
-            elif fade == 3:
-
-                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
-                region = blended
-
-                mask = flow != 0
-                region[mask] = rainbow_flow[mask]
-
-
+            region[mask] = rainbow_flow[mask]
 
 
 
@@ -2024,7 +2019,7 @@ while running:
         if x%row_limit == 0:
             walk = 0
 
-        lesson_t = lable_font.render(str(phrase[x]), True, color)
+        lesson_t = main_font.render(str(phrase[x]), True, color)
         screen.blit(lesson_t, (screen_width / 2 + walk - screen_width/4.3, screen_height / 2 + lesson_t.get_height()*y+ 128))
         walk += lesson_t.get_width()
 
@@ -2072,8 +2067,8 @@ while running:
             if stamp_y > 400:
                 stamp_y = 32
 
-            print()
-            print(stamp_x, stamp_y)
+            # print()
+            # print(stamp_x, stamp_y)
 
 
 
@@ -2279,12 +2274,25 @@ while running:
 
         for x in range(len(rule)):
             rule_x = screen_width / 2 + (x % int(len(rule) / rows)) * rule_l - int(len(rule) / (2*rows)) * rule_l
-            rule_y = screen_height - screen_height/16 - screen_height / 4 + rule_h * int(x / int(len(rule) / rows))
+            rule_y = screen_height - screen_height/8 + rule_h * int(x / int(len(rule) / rows))
 
             t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
             pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
 
+    elif base == 4:
+        rule_l = 5
+        rule_h = 5
 
+        # print(rule)
+
+        rows = 10
+
+        for x in range(len(rule)):
+            rule_x = screen_width / 2 + (x % int(len(rule) / rows)) * rule_l - int(len(rule) / (2*rows)) * rule_l
+            rule_y = screen_height - screen_height/8 + rule_h * int(x / int(len(rule) / rows))
+
+            t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
+            pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
 
 
     ###code display####
@@ -2304,20 +2312,21 @@ while running:
 
 
     ###synth###
-    beat = 1
-    volume = 0.3
+    beat = 5
+    volume = 0.5
+    sample_rate = 44100
+    column_duration = 0.02
+
     ######bong#####
+    bong_on = 0
     if bong_on == 1:
+
+        pygame.mixer.quit()  # reset
+        pygame.mixer.init(frequency=sample_rate, size=-16, channels=1, buffer=512)
+
         if time.time() - time_b > beat:
 
-            # if dim == 2:
-            #
-            #     code_flow = digibet[code_0]
-            #     flow_pos = code_flow * int(l / 32) + int(l / 128)
-            #     flow[1:l, flow_pos:flow_pos + int(l / 64)] += 1
-            #     flow[flow_pos:flow_pos + int(l / 64), 1:h] += 1
-            #     flow[1:l, flow_pos:flow_pos + int(l / 64)] = flow[1:l, flow_pos:flow_pos + int(l / 64)] % base
-            #     flow[flow_pos:flow_pos + int(l / 64), 1:h] = flow[flow_pos:flow_pos + int(l / 64), 1:h] % base
+            print('bong')
 
             if dim == 1:
                 water0 = np.rot90(water[::], 2)
@@ -2326,16 +2335,139 @@ while running:
 
             if dim > 0:
 
-                flatten = water0.flatten()
-                scaled = (flatten * 2 - 1) * max_amplitude
-                sample = scaled.astype(np.int16)
-                stereo = sample.reshape(-1, 1)
-                stack = np.column_stack((stereo, stereo))
-                flow_sound = pygame.sndarray.make_sound(stack)
+                if rainbow == 0:
+                    flatten = water0.flatten()
+                    scaled = (flatten * 2 - 1) * max_amplitude
+                    sample = scaled.astype(np.int16)
+                    stereo = sample.reshape(-1, 1)
+                    stack = np.column_stack((stereo, stereo))
+                    flow_sound = pygame.sndarray.make_sound(stack)
 
-                flow_sound.play()
+                    flow_sound.play()
+
+                elif rainbow > 0:
+
+                    voice = 0
+
+                    if voice == 0:
+
+                        red_range = (1, 1500)
+                        green_range = (1500, 6000)
+                        blue_range = (6000, 150000)
+
+                        rainbong = rainbow_array
+
+                        t = np.linspace(0, column_duration, int(sample_rate * column_duration), endpoint=False)
+
+                        arr = rainbow_flow.astype(np.float32) / 255.0
+                        height, width, _ = arr.shape
+
+                        def map_color_to_freq(color, freq_min, freq_max):
+
+                            #map frequency to intensity
+
+                            return freq_min * (freq_max/ freq_min) ** color
+
+                        def column_to_sound(column_rgb, log=1):
 
 
+                            r, g, b = column_rgb.mean(axis=0)
+
+                            if log == 0:
+                                red_freq = np.interp(r, [0, 1], red_range)
+                                green_freq = np.interp(g, [0, 1], green_range)
+                                blue_freq = np.interp(b, [0, 1], blue_range)
+                            else:
+                                red_freq = map_color_to_freq(r, *red_range)
+                                green_freq = map_color_to_freq(g, *green_range)
+                                blue_freq = map_color_to_freq(b, *blue_range)
+
+
+
+                            wave = (
+                                0.4 * r * np.sin(2 * np.pi * red_freq * t)
+                                + 0.4 * g * np.sin(2*np.pi * green_freq * t)
+                                + 0.4 * b * np.sin(2*np.pi * blue_freq * t)
+                            )
+
+                            return wave
+
+
+
+                        audio = np.concatenate([column_to_sound(arr[:, x, :]) for x in range(width)])
+                        audio /= np.max(np.abs(audio))
+
+                        samples = np.int16(audio * 32767)
+
+
+
+
+                        pygame.mixer.init(frequency=sample_rate, size=-16, channels=1)
+                        sound = pygame.mixer.Sound(buffer=samples.tobytes())
+                        sound.play()
+
+
+                    if voice == 1:
+
+                        red_range = (1, 1500)
+                        green_range = (1500, 6000)
+                        blue_range = (6000, 150000)
+
+                        rainbong = rainbow_array
+
+                        t = np.linspace(0, column_duration, int(sample_rate * column_duration), endpoint=False)
+
+                        arr = rainbow_flow.astype(np.float32) / 255.0
+                        height, width, _ = arr.shape
+
+                        def sine_wave(freq, t):
+                            return np.sin(2*np.pi*freq*t)
+                        def square_wave(freq, t):
+                            return np.sign(np.sin(2*np.pi*freq*t))
+                        def saw_wave(freq, t):
+                            return 2*(t*freq-np.floor(0.5+t*freq))
+
+
+                        def select_waveform(intensity, freq, t):
+                            if intensity < 0.33:
+                                return sine_wave(freq, t)
+                            elif intensity < 0.66:
+                                return saw_wave(freq, t)
+                            else:
+                                return square_wave(freq, t)
+
+
+
+                        def map_color_to_freq(color, freq_min, freq_max):
+
+                            #map frequency to intensity
+
+                            return freq_min * (freq_max/ freq_min) ** color
+
+
+
+                        def column_to_sound(column_rgb, log=1):
+                            r, g, b = column_rgb.mean(axis=0)
+
+
+                            if log==0:
+                                red_freq = np.interp(r, [0, 1], red_range)
+                                green_freq = np.interp(g, [0, 1], green_range)
+                                blue_freq = np.interp(b, [0, 1], blue_range)
+
+                            else:
+                                red_freq = map_color_to_freq(r, *red_range)
+                                green_freq = map_color_to_freq(g, *green_range)
+                                blue_freq = map_color_to_freq(b, *blue_range)
+
+
+                            red_wave = select_waveform(r, red_freq, t)
+                            green_wave = select_waveform(g, green_freq, t)
+                            blue_wave = select_waveform(b, blue_freq, t)
+
+                            wave = 0.4 * (r*red_wave + g*green_wave + b * blue_wave)
+
+                            return wave
 
             # print()
             # print('bong')
@@ -2385,7 +2517,278 @@ while running:
             #
 
 
-            time_b = time.time()
+                        audio = np.concatenate([column_to_sound(arr[:, x, :]) for x in range(width)])
+                        audio /= np.max(np.abs(audio))
+                        samples = np.int16(audio*32767)
+
+
+                        pygame.mixer.init(frequency=sample_rate, size=-16, channels=1)
+                        sound = pygame.mixer.Sound(buffer=samples.tobytes())
+                        sound.play()
+
+                    # if voice == 2:
+                    #
+                    #     red_range = (1, 1500)
+                    #     green_range = (1500, 6000)
+                    #     blue_range = (6000, 150000)
+                    #
+                    #     rainbong = rainbow_array
+                    #
+                    #     t = np.linspace(0, column_duration, int(sample_rate * column_duration), endpoint=False)
+                    #
+                    #     arr = rainbow_flow.astype(np.float32) / 255.0
+                    #     height, width, _ = arr.shape
+                    #
+                    #
+                    #     def sine_wave(freq, t):
+                    #         return np.sin(2 * np.pi * freq * t)
+                    #
+                    #
+                    #     def square_wave(freq, t):
+                    #         return np.sign(np.sin(2 * np.pi * freq * t))
+                    #
+                    #
+                    #     def saw_wave(freq, t):
+                    #         return 2 * (t * freq - np.floor(0.5 + t * freq))
+                    #
+                    #
+                    #     def select_waveform(intensity, freq, t):
+                    #         if intensity < 0.33:
+                    #             return sine_wave(freq, t)
+                    #         elif intensity < 0.66:
+                    #             return saw_wave(freq, t)
+                    #         else:
+                    #             return square_wave(freq, t)
+                    #
+                    #
+                    #     def map_color_to_freq(color, freq_min, freq_max):
+                    #
+                    #         # map frequency to intensity
+                    #
+                    #         return freq_min * (freq_max / freq_min) ** color
+                    #
+                    #
+                    #     def column_to_sound(column_rgb, log=1):
+                    #         r, g, b = column_rgb.mean(axis=0)
+                    #
+                    #         if log == 0:
+                    #             red_freq = np.interp(r, [0, 1], red_range)
+                    #             green_freq = np.interp(g, [0, 1], green_range)
+                    #             blue_freq = np.interp(b, [0, 1], blue_range)
+                    #
+                    #         else:
+                    #             red_freq = map_color_to_freq(r, *red_range)
+                    #             green_freq = map_color_to_freq(g, *green_range)
+                    #             blue_freq = map_color_to_freq(b, *blue_range)
+                    #
+                    #         red_wave = select_waveform(r, red_freq, t)
+                    #         green_wave = select_waveform(g, green_freq, t)
+                    #         blue_wave = select_waveform(b, blue_freq, t)
+                    #
+                    #         wave = 0.4 * (r * red_wave + g * green_wave + b * blue_wave)
+                    #
+                    #         return wave
+                    #
+                    #
+                    #
+                    #     def blend_waveform(intensity, freq, t):
+                    #         sine = np.sin(2*np.pi*freq*t)
+                    #         saw = 2*(t*freq-np.floor(0.5+t*freq))
+                    #         square = np.sign(np.sin(2*np.pi*freq*t))
+                    #
+                    #         if intensity < 0.5:
+                    #             mix = intensity / 0.5
+                    #             return(1-mix)*sine+mix*saw
+                    #         else:
+                    #             mix = (intensity - 0.5) / 0.5
+                    #             return (1-mix)*saw+mix*square
+                    #
+                    #
+                    #
+                    #
+                    #     def color_to_hue_segment(rgb):
+                    #         r, g, b = rgb
+                    #         total = r+g+b
+                    #         brightness = total / (3*255)
+                    #
+                    #         segment = r//255 + g//255 + b//255
+                    #
+                    #
+                    #     def hue_to_freq(segment, intensity):
+                    #         ranges = [
+                    #             (100, 400), (400, 800), (800, 1500),
+                    #             (1500, 3000), (3000, 6000), (6000, 9000),
+                    #             (9000, 12000), (12000, 16000)
+                    #         ]
+                    #
+                    #         fmin, fmax = ranges[segment]
+                    #         return fmin*(fmax/fmin)**intensity
+                    #
+                    #
+                    #     def color_to_wave(rgb, segment, t):
+                    #
+                    #         r, g, b = [v / 255.0 for v in rgb]
+                    #         intensity = np.mean([r, g, b])
+                    #
+                    #         freq = hue_to_freq(segment, intensity)
+                    #
+                    #     audio = np.concatenate([column_to_sound(arr[:, x, :]) for x in range(width)])
+                    #     audio /= np.max(np.abs(audio))
+                    #     samples = np.int16(audio * 32767)
+                    #
+                    #     pygame.mixer.init(frequency=sample_rate, size=-16, channels=1)
+                    #     sound = pygame.mixer.Sound(buffer=samples.tobytes())
+                    #     sound.play()
+
+                    if voice == 2:
+
+
+
+                        # =====================================================
+                        # 🎚 CONFIGURATION
+                        # =====================================================
+
+                        sample_rate = 44100  # Audio samples per second
+                        column_duration = 0.03  # Duration (seconds) per image column
+                        volume_scale = 0.4  # Mix level per channel
+
+                        # Frequency ranges for color channels (Hz)
+                        red_range = (100, 400)
+                        green_range = (400, 1500)
+                        blue_range = (1500, 6000)
+
+                        # Example: rainbow_flow is your image or rainbow array
+                        # (replace this with your actual array)
+                        # It must be shape (height, width, 3), dtype=np.uint8
+                        # For testing:
+                        height, width = 128, 128
+                        rainbong = rainbow_array
+
+                        # Normalize image to 0–1 range for processing
+                        arr = rainbong.astype(np.float32) / 255.0
+                        height, width, _ = arr.shape
+
+
+                        # =====================================================
+                        # 🔊 WAVEFORM GENERATORS
+                        # =====================================================
+
+                        def sine_wave(freq, t):
+                            return np.sin(2 * np.pi * freq * t)
+
+
+                        def square_wave(freq, t):
+                            return np.sign(np.sin(2 * np.pi * freq * t))
+
+
+                        def saw_wave(freq, t):
+                            return 2 * (t * freq - np.floor(0.5 + t * freq))
+
+
+                        # =====================================================
+                        # 🌈 BLENDING & FREQUENCY MAPPING
+                        # =====================================================
+
+                        def map_color_to_freq(color, fmin, fmax):
+                            """Map color intensity (0–1) to frequency logarithmically."""
+                            return fmin * (fmax / fmin) ** color
+
+
+                        def blend_waveform(intensity, freq, t):
+                            """Smoothly morph between sine → saw → square based on intensity."""
+                            sine = sine_wave(freq, t)
+                            saw = saw_wave(freq, t)
+                            square = square_wave(freq, t)
+
+                            if intensity < 0.5:  # sine → saw
+                                mix = intensity / 0.5
+                                return (1 - mix) * sine + mix * saw
+                            else:  # saw → square
+                                mix = (intensity - 0.5) / 0.5
+                                return (1 - mix) * saw + mix * square
+
+
+                        # =====================================================
+                        # 🎵 COLUMN TO SOUND CONVERSION
+                        # =====================================================
+
+                        def column_to_sound(column_rgb):
+                            """Convert one vertical column of pixels to a short waveform."""
+                            r, g, b = column_rgb.mean(axis=0)  # average per channel (0–1)
+
+                            red_freq = map_color_to_freq(r, *red_range)
+                            green_freq = map_color_to_freq(g, *green_range)
+                            blue_freq = map_color_to_freq(b, *blue_range)
+
+                            # Time vector for this column
+                            t = np.linspace(0, column_duration, int(sample_rate * column_duration), endpoint=False)
+
+                            # Generate blended waveforms for each channel
+                            red_wave = blend_waveform(r, red_freq, t)
+                            green_wave = blend_waveform(g, green_freq, t)
+                            blue_wave = blend_waveform(b, blue_freq, t)
+
+                            # Combine channels into one waveform
+                            wave = volume_scale * (r * red_wave + g * green_wave + b * blue_wave)
+                            return wave
+
+
+                        # =====================================================
+                        # 🧩 BUILD AUDIO FROM RAINBOW IMAGE
+                        # =====================================================
+
+                        audio_segments = []
+
+                        print("🎨 Converting rainbow columns to sound...")
+                        for x in range(width):
+                            col_wave = column_to_sound(arr[:, x, :])
+                            audio_segments.append(col_wave)
+
+                        audio = np.concatenate(audio_segments)
+
+                        # Normalize safely
+                        max_val = np.max(np.abs(audio))
+                        if max_val > 0:
+                            audio /= max_val
+
+                        # Convert to 16-bit PCM
+                        samples = np.int16(audio * 32767)
+
+                        print(f"✅ Sound generated! Duration: {len(samples) / sample_rate:.2f}s, Samples: {len(samples)}")
+
+                        # =====================================================
+                        # ▶️ PLAY SOUND WITH PYGAME
+                        # =====================================================
+
+                        pygame.mixer.quit()
+                        pygame.mixer.init(frequency=sample_rate, size=-16, channels=1, buffer=512)
+
+                        sound = pygame.mixer.Sound(buffer=samples.tobytes())
+                        sound.play()
+
+                        pygame.time.wait(int(len(samples) / sample_rate * 1000))
+                        print("✅ Playback finished.")
+
+        time_b = time.time()
+
+
+
+    voice = 0
+    if voice == 1:
+
+        format = pyaudio.paInt16
+        channels = 1
+        rate = 44100
+        chunk = 1024
+        record_seconds = 2
+
+        audio = pyaudio.PyAudio()
+
+        stream = audio.open(format=format,
+                            channels = channels,
+                            rate = rate,
+                            input=True,
+                            frames_per_buffer=chunk)
 
 
 
