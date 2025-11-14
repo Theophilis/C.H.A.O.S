@@ -546,6 +546,7 @@ hands = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 arms = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 code = ''
 code_0 = ' '
+code_00 = ' '
 
 score = 1
 set = 0
@@ -607,7 +608,8 @@ sim = 0
 
 rainbow = 1
 rainbow_speed = 2
-base = 2
+edge_speed = 1
+base = 3
 view = 5
 fade = 1
 
@@ -626,7 +628,7 @@ shift = 0
 
 print(rule)
 
-l = 800
+l = 900
 h = l
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
@@ -903,7 +905,7 @@ hihat_sound = pygame.sndarray.make_sound(hihat_stereo)
 
 
 detect_change = 1
-bong_on = 1
+bong_on = 0
 
 
 
@@ -940,15 +942,21 @@ init = init.strftime("%Y-%m-%d_%H-%M-%S")
 
 
 
+###letters###
+letter = ' '
+letter_0 = ' '
+
+
+
 running = True
 while running:
+
 
     screen.fill((0, 0, 0))
 
     image = camera.get_image()
     image_array = pygame.surfarray.array3d(image)
     hand_array = pygame.surfarray.array3d(image)
-
 
 
     ###water canvas
@@ -1750,8 +1758,9 @@ while running:
 
 
             region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
+            region_0 = region
 
-            fade = 3
+            fade = 5
 
             if fade == 1:
                 mask = flow != 0
@@ -1771,11 +1780,60 @@ while running:
                 mask = flow != 0
                 region[mask] = rainbow_flow[mask]
 
+            ###edge###
+            edge = 1
+            edge_depth = 16
+
+            if edge == 1:
+                gray = region.mean(axis=2)
+
+                gx = np.abs(np.diff(gray, axis=1))
+                gy = np.abs(np.diff(gray, axis=0))
+
+                gx = np.pad(gx, ((0, 0), (0, 1)), mode='constant')
+                gy = np.pad(gy, ((0, 1), (0, 0)), mode='constant')
+
+                edges = np.sqrt(gx ** 2 + gy ** 2)
+                edges = (edges / edges.max() * 255).astype(np.uint8)
+
+                edge_mask = edges > edge_depth
+
+                flow[edge_mask] = (flow[edge_mask] + 1) % base
+
+            if fade == 4:
+
+                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                region = blended
+
+                mask = flow != 0
+                region[mask] = rainbow_flow[mask]
+
+                if edge == 1:
+                    region[edge_mask] = region_0[edge_mask]
+
+            if fade == 5:
+
+                alpha = 0.5
+                flow_alpha = np.clip(water, 0, 2)
+                flow_alpha = flow_alpha[..., np.newaxis]
+                blended = (
+                        region.astype(np.float32) * (1 - alpha * flow_alpha) +
+                        rainbow_flow.astype(np.float32) * (alpha * flow_alpha)
+                ).astype(np.uint8)
+
+                region = blended
+
+                if edge == 1:
+                    edge_speed = len(message)
+                    region[edge_mask] = region_0[edge_mask]
+
+                    rainbow_array[edge_mask] += edge_speed + set
+                    rainbow_array[rainbow_array < 0] = color_max - 1
+                    rainbow_array[rainbow_array > color_max - 1] = 0
 
 
 
-
-            image_array[pos_x:pos_x + l, pos_y:pos_y + h] = region
+        image_array[pos_x:pos_x + l, pos_y:pos_y + h] = region
 
     image = pygame.surfarray.make_surface(image_array)
     screen.blit(image, (0, 0))
@@ -1795,9 +1853,8 @@ while running:
 
 
 
-
-
     #####hands######
+    detect_change = 1
     if detect_change == 1:
 
         ####right hand####
@@ -1805,14 +1862,18 @@ while running:
         y_s = 32
         x_g = 4
         y_g = 0
-        x_pos = 32
+        x_pos = 0
         y_pos = 640
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
         hand = [0, 0, 0, 0, 0]
+        hand_0 = [0, 0, 0, 0, 0]
+        palm = [0, 0]
         tips = [64, 16, 0, 24, 0]
 
+
+        ###fingers###
         for x in range(5):
 
             x_pos += x_s + x_g
@@ -1891,17 +1952,131 @@ while running:
 
         hands[0] = letter
 
+        ###right palm###
+
+        x_pos = palm_x - x_s*5
+        y_pos = palm_y - x_s*2
+
+        roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
+
+        mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x])
+
+        if rethresh == 1:
+
+            mask_color = hand_array[int(screen_width / 2), int(screen_height / 2)]
+
+            ram[x] = [roi1, roi2]
+
+            mse_mem[x].append(mse)
+
+            if thresholds[11] != mse:
+                thresholds[11] = mse + threshold
+
+        mse_avg = int(sum(mse_mem[x]) / len(mse_mem[x]))
+
+        if mse < mse_avg + thresholds[11]:
+            palm[0] = 0
+        else:
+            palm[0] = 1
+
+        if ui == 1:
+            lesson_t = small_font.render(str(hand[x]), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4))
+            lesson_t = small_font.render(str(int(mse)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 64))
+            lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 96))
+            lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 128))
+
+        value_rect = pygame.Rect(palm_x + 6 * x_s / 2, palm_y, x_s / 2, y_s / 2)
+        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], value_rect)
+
+        tip_rect = pygame.Rect(roi[0], roi[1], x_s, y_s)
+        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], tip_rect)
+
+        pygame.draw.line(screen, value_color[0 + int(goal_bin[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
+
+        if palm[0] == 1:
+
+            x = 0
+            x_pos = 0
+            y_pos = 640
+
+            palm_array = pygame.surfarray.array3d(image)
+            px1, py1, px2, py2 = roi
+            palm_roi_array = palm_array[px1:px2, py1:py2]
+            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 4)
+
+            # finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
+            # fx1, fy1, fx2, fy2 = finger_roi
+            # finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
+            # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 1)
+            #
+            # palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
+            # finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
+            #
+            # color_diff = np.linalg.norm(palm_color - finger_color)
+            #
+            # diff_thresh = 40
+            # if color_diff < diff_thresh:
+            #     hand[x] = 1
+            # else:
+            #     hand[x] = 0
+
+            # print('')
+            # print('color_diff')
+            # print(color_diff)
+
+            for x in range(5):
+
+                x_pos += x_s + x_g
+
+                if x == 4:
+                    x_pos += x_s * 1
+                    y_pos += y_s * 5
+
+                # palm_array = pygame.surfarray.array3d(image)
+                # px1, py1, px2, py2 = roi
+                # palm_roi_array = palm_array[px1:px2, py1:py2]
+                # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 1)
+
+                finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
+                fx1, fy1, fx2, fy2 = finger_roi
+                finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
+                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
+
+                palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
+                finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
+
+                color_diff = np.linalg.norm(palm_color - finger_color)
+
+                diff_thresh = 40
+                if color_diff < diff_thresh:
+                    hand_0[x] = 1
+                else:
+                    hand_0[x] = 0
+
+                pygame.draw.rect(screen, value_color[hand_0[x] * 8], pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
+
+
+        hand_value = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
+
+
+        hands_0 = [digibetu[hand_value]]
+
         ####left hand####
         x_s = 32
         y_s = 32
         x_g = 4
         y_g = 0
-        x_pos = 880
+        x_pos = 872
         y_pos = 640
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
         hand = [0, 0, 0, 0, 0]
+        hand_1 = [0, 0, 0, 0, 0]
         tips = [0, 24, 0, 16, 64]
 
         for x in range(5):
@@ -1968,6 +2143,9 @@ while running:
         rethresh = 0
         hand_value = hand[0] * 1 + hand[1] * 2 + hand[2] * 4 + hand[3] * 8 + hand[4] * 16
 
+        letter = digibetu[hand_value]
+        hands[1] = letter
+
         lesson_t = main_font.render(str(hand_value), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 64))
 
@@ -1979,6 +2157,129 @@ while running:
 
         lesson_t = main_font.render(str(tts_0), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 32, screen_height / 4))
+
+
+
+        ###left palm###
+
+        x_pos = palm_x - x_s*4
+        y_pos = palm_y - x_s*2
+
+        roi = (x_pos + x * x_s, y_pos, x_pos + x_s + x * x_s, y_pos + y_s)
+
+        mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x])
+
+        if rethresh == 1:
+
+            mask_color = hand_array[int(screen_width / 2), int(screen_height / 2)]
+
+            ram[x] = [roi1, roi2]
+
+            mse_mem[x].append(mse)
+
+            if thresholds[11] != mse:
+                thresholds[11] = mse + threshold
+
+        mse_avg = int(sum(mse_mem[x]) / len(mse_mem[x]))
+
+        if mse < mse_avg + thresholds[11]:
+            palm[0] = 0
+        else:
+            palm[0] = 1
+
+        if ui == 1:
+            lesson_t = small_font.render(str(hand[x]), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4))
+            lesson_t = small_font.render(str(int(mse)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 64))
+            lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 96))
+            lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
+            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 128))
+
+        value_rect = pygame.Rect(palm_x + 6 * x_s / 2, palm_y, x_s / 2, y_s / 2)
+        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], value_rect)
+
+        tip_rect = pygame.Rect(roi[0], roi[1], x_s, y_s)
+        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], tip_rect)
+
+        pygame.draw.line(screen, value_color[0 + int(goal_bin[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
+
+        if palm[0] == 1:
+
+            x = 0
+            x_pos = 872
+            y_pos = 640
+
+            palm_array = pygame.surfarray.array3d(image)
+            px1, py1, px2, py2 = roi
+            palm_roi_array = palm_array[px1:px2, py1:py2]
+            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 4)
+
+            # finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
+            # fx1, fy1, fx2, fy2 = finger_roi
+            # finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
+            # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 1)
+            #
+            # palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
+            # finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
+            #
+            # color_diff = np.linalg.norm(palm_color - finger_color)
+            #
+            # diff_thresh = 40
+            # if color_diff < diff_thresh:
+            #     hand[x] = 1
+            # else:
+            #     hand[x] = 0
+
+            # print('')
+            # print('color_diff')
+            # print(color_diff)
+
+            for x in range(5):
+
+                x_pos += x_s + x_g
+
+                if x == 0:
+                    x_pos -= x_s * 1
+                    y_pos += y_s * 5
+
+                elif x == 1:
+                    x_pos += x_s * 2
+                    y_pos -= y_s * 6
+
+
+
+                # palm_array = pygame.surfarray.array3d(image)
+                # px1, py1, px2, py2 = roi
+                # palm_roi_array = palm_array[px1:px2, py1:py2]
+                # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 1)
+
+                finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
+                fx1, fy1, fx2, fy2 = finger_roi
+                finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
+                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
+
+                palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
+                finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
+
+                color_diff = np.linalg.norm(palm_color - finger_color)
+
+                diff_thresh = 40
+                if color_diff < diff_thresh:
+                    hand_0[x] = 1
+                else:
+                    hand_0[x] = 0
+
+                pygame.draw.rect(screen, value_color[hand_0[x]*8], pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
+
+        hand_value = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
+
+        hands_0.append(digibetu[hand_value])
+
+    lesson_t = main_font.render(str(hands_0), True, value_color[9])
+    screen.blit(lesson_t, (screen_width / 4, screen_height - screen_height/16))
+
 
 
 
@@ -2028,10 +2329,6 @@ while running:
         lesson_t = lable_font.render(str(phrase[x]), True, color)
         screen.blit(lesson_t, (screen_width / 2 + walk - screen_width/4.3, screen_height / 2 + lesson_t.get_height()*y+ 128))
         walk += lesson_t.get_width()
-
-    letter = digibetu[hand_value]
-
-    hands[1] = letter
 
 
 
@@ -2102,6 +2399,68 @@ while running:
 
                 rule[shift] = str((int(rule[shift])+1)%base)
 
+
+    if hands_0[0] == hands_0[1]:
+
+        if hands_0[0] != code_00:
+
+            letter_0 == hands_0[0]
+
+
+            code_bin = base_x(digibet[code_00], 2)
+            if len(code_bin) < 5:
+                zeros = ''
+                for x in range(5 - len(code_bin)):
+                    zeros += '0'
+                code_bin = zeros + code_bin
+            # print(goal_bin)
+
+            for x in range(5):
+
+
+
+                stamp_y0 = stamp_y + int(stamp_s*1.2) * x
+
+
+                if code_bin[x] == '1':
+
+
+                    flow[stamp_x:stamp_x+stamp_s, stamp_y0:stamp_y0+stamp_s + (stamp_s + 2)*x] = (flow[stamp_x:stamp_x+stamp_s, stamp_y0:stamp_y0+stamp_s + (stamp_s + 2)*x]+1)%base
+
+            stamp_x += int(stamp_s*1.3)
+
+            if stamp_x > 400:
+                stamp_x = 32
+                stamp_y += stamp_s*6
+
+            if stamp_y > 400:
+                stamp_y = 32
+
+            print()
+            print(stamp_x, stamp_y)
+
+
+            code += hands_0[0]
+            code_00 = hands_0[0]
+
+            stenograph.append((code_00, round(time.time() - tts_1, 3), datetime.now()))
+            # sign_bank['steno'] = []
+            tts_1 = time.time()
+
+            if ruler == 0:
+                rv += digibet[code_00]
+                rv = rv%bbv
+                rules, rule = rule_gen(rv, base)
+                rule = np.array(rule)
+
+
+            elif ruler == 1:
+
+                shift += digibet[code_00]
+
+                shift = shift % len(rule)
+
+                rule[shift] = str((int(rule[shift])+1)%base)
 
 
 
@@ -2250,6 +2609,99 @@ while running:
                     flow[int(l / 2), int(h / 2)] = 1
                     water = np.zeros((h, l), dtype=int)
 
+        elif letter_0 == phrase[phrase_pos] or letter_0 == phrase[phrase_pos:phrase_pos+2]:
+
+            message += phrase[phrase_pos]
+
+            if len(letter_0) == 2:
+                message += phrase[phrase_pos + 1]
+                phrase_pos += 1
+
+            phrase_pos += 1
+
+            if phrase_pos == 1:
+                tts[0] = time.time()
+
+            if phrase_pos == len(phrase):
+
+
+                message += ' '
+
+                score += 1
+                phrase_pos = 0
+                tts[1] = time.time()
+
+
+                tts_0 = round(tts[1] - tts[0], 3)
+                tts[0] = time.time()
+
+                times_0 = []
+                t_max = 99999999999999999999999999999999999999
+                for t in times:
+                    if t < t_max and t > 0:
+                        times_0.append(round(t, 3))
+                times = times_0
+
+                # print()
+                # print(tts)
+                # print(tts_0)
+
+                times.append(tts_0)
+                times = sorted(times)
+
+                # print()
+                # print("times")
+                # print(times)
+
+
+
+                if phrase == code[len(code)-len(phrase):len(code)]:
+                    set += 1
+
+                else:
+                    set = int(set/2)
+
+
+                code = ''
+
+                sign_bank[phrase] = (score, rv, times)
+
+
+                filename = 'sign_bank/' + signame
+                outfile = open(filename, 'wb')
+                pickle.dump(sign_bank, outfile)
+                outfile.close
+
+
+
+
+
+
+                if ruler == 0:
+                    set_scale = 1
+                    for x in range(len(phrase)):
+                        rv += digibet[phrase[x]]*int(set/set_scale)
+                    rv = rv % bbv
+
+                    # print("")
+                    # print(rv)
+                    # print(rule)
+                    rules, rule = rule_gen(rv, base)
+                    # print(rule)
+
+                    rule = np.array(rule)
+
+                if dim == 1:
+                    flow = np.zeros(l, dtype=int)
+                    flow[int(l / 2)] = 1
+                    water = np.zeros((h, l), dtype=int)
+                    water[0] = flow
+
+                if dim == 2:
+                    flow = np.zeros((h, l), dtype=int)
+                    flow[int(l / 2), int(h / 2)] = 1
+                    water = np.zeros((h, l), dtype=int)
+
 
 
 
@@ -2265,7 +2717,7 @@ while running:
         for x in range(len(rule)):
 
             rule_x = screen_width/2 + (x%int(len(rule)/2))*rule_l - int(len(rule)/4)*rule_l
-            rule_y = screen_height - screen_height/4 + rule_h*int(x/int(len(rule)/2))
+            rule_y = screen_height - screen_height/16 + rule_h*int(x/int(len(rule)/2))
 
             t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
             pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
@@ -2280,7 +2732,7 @@ while running:
 
         for x in range(len(rule)):
             rule_x = screen_width / 2 + (x % int(len(rule) / rows)) * rule_l - int(len(rule) / (2*rows)) * rule_l
-            rule_y = screen_height - screen_height/16 - screen_height / 4 + rule_h * int(x / int(len(rule) / rows))
+            rule_y = screen_height - screen_height/16 - screen_height / 16 + rule_h * int(x / int(len(rule) / rows))
 
             t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
             pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
@@ -2310,6 +2762,7 @@ while running:
     ######bong#####
     if bong_on == 1:
         if time.time() - time_b > beat:
+            print('gong')
 
             # if dim == 2:
             #
@@ -2390,6 +2843,114 @@ while running:
 
 
 
+
+
+
+    ###buttons###
+    mx, my = pygame.mouse.get_pos()
+
+    #####dim#####
+    x = screen_width/8
+    y = screen_height - screen_height/8
+
+    xs = 30
+    ys = 30
+
+    design = pygame.Rect(x, y, xs, ys)
+    design_i = pygame.Rect(x, y, int(xs/2), int(ys/2))
+    pygame.draw.rect(screen, (100, 10, 100), design)
+    pygame.draw.rect(screen, (0, 0, 0), design_i)
+
+    if design.collidepoint((mx, my)):
+        print('collide')
+        if click:
+            print('click')
+            dim += 2
+            dim = dim%4
+
+            click = False
+
+
+
+    #####bong#####
+    x = screen_width - screen_width/8
+    y = screen_height - screen_height/8
+
+    xs = 30
+    ys = 30
+
+    design = pygame.Rect(x, y, xs, ys)
+    design_i = pygame.Rect(x, y, int(xs/2), int(ys/2))
+    pygame.draw.rect(screen, (100, 10, 100), design)
+    pygame.draw.rect(screen, (0, 0, 0), design_i)
+
+    if design.collidepoint((mx, my)):
+
+        if click:
+            print('bong')
+            bong_on += 1
+            bong_on = bong_on%2
+
+            print("bong_on")
+            print(bong_on)
+
+
+            click = False
+
+
+
+    #####bong#####
+    x = screen_width - screen_width/8
+    y = screen_height - screen_height/8
+
+    xs = 30
+    ys = 30
+
+    design = pygame.Rect(x, y, xs, ys)
+    design_i = pygame.Rect(x, y, int(xs/2), int(ys/2))
+    pygame.draw.rect(screen, (100, 10, 100), design)
+    pygame.draw.rect(screen, (0, 0, 0), design_i)
+
+    if design.collidepoint((mx, my)):
+
+        if click:
+            print('bong')
+            bong_on += 1
+            bong_on = bong_on%2
+
+            print("bong_on")
+            print(bong_on)
+
+
+            click = False
+
+
+    #####rainbow#####
+    x = screen_width - screen_width/2
+    y = screen_height - screen_height/32
+
+    xs = 30
+    ys = 30
+
+    design = pygame.Rect(x, y, xs, ys)
+    design_i = pygame.Rect(x, y, int(xs/2), int(ys/2))
+    pygame.draw.rect(screen, (100, 10, 100), design)
+    pygame.draw.rect(screen, (0, 0, 0), design_i)
+
+    if design.collidepoint((mx, my)):
+
+        if click:
+            print('rainbow')
+            rainbow += 1
+            rainbow = rainbow%2
+
+
+
+            click = False
+
+
+
+    click = False
     ####events####
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -2398,6 +2959,11 @@ while running:
             pickle.dump(sign_bank, outfile)
             outfile.close
             running = False
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button==1:
+                print('click')
+                click = True
         # elif event.type == pygame.KEYDOWN:
         #     if event.key == pygame.K_ESCAPE:
         #         pygame.quit()
