@@ -540,8 +540,10 @@ digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
 digibetu = {v: k for k, v in digibet.items()}
 phrase = ''
 phrase_pos = 0
-goal_bin = '00000'
+goal_bin = '000000'
+gb_len = 6
 
+hands_0 = [0, 0]
 hands = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 arms = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 code = ''
@@ -609,7 +611,7 @@ sim = 0
 rainbow = 1
 rainbow_speed = 2
 edge_speed = 1
-base = 3
+base = 2
 view = 5
 fade = 1
 
@@ -628,7 +630,7 @@ shift = 0
 
 print(rule)
 
-l = 900
+l = 700
 h = l
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
@@ -1850,436 +1852,209 @@ while running:
         screen.blit(lesson_t, (screen_width / 16, screen_height / 16))
 
 
-
-
-
     #####hands######
+    def color_dist(a, b):
+        ca = np.mean(a.reshape(-1, 3), axis=0)
+        cb = np.mean(b.reshape(-1, 3), axis=0)
+        return np.linalg.norm(ca - cb)
+
+
     detect_change = 1
+
     if detect_change == 1:
 
+
         ####right hand####
+
         x_s = 32
         y_s = 32
-        x_g = 4
+        x_g = 28
         y_g = 0
         x_pos = 0
         y_pos = 640
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
-        hand = [0, 0, 0, 0, 0]
-        hand_0 = [0, 0, 0, 0, 0]
+
+        hand = [0, 0, 0, 0, 0, 0]
+        hand_0 = [0, 0, 0, 0, 0, 0]
         palm = [0, 0]
         tips = [64, 16, 0, 24, 0]
 
-
-        ###fingers###
-        for x in range(5):
-
-            x_pos += x_s + x_g
+        right_roi = [(x_pos + (x_s + x_g) * (n + 1), y_pos + tips[n],
+                      x_pos + (x_s + x_g) * (n + 1) + x_s, y_pos + tips[n] + y_s) for n in range(5)]
+        right_roi[4] = (x_pos + (x_s + x_g) * (4 + 1) + x_s, y_pos + tips[4] + y_s*5, x_pos + (x_s + x_g) * (4 + 1) + x_s*2, y_pos + tips[4] + y_s*6)
 
 
-            if x == 4:
-                x_pos += x_s*1
-                y_pos += y_s*5
-
-
-            roi = (x_pos + x*x_s, y_pos + tips[x], x_pos +x_s + x*x_s, y_pos + y_s + tips[x])
-
-
-
-            mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x])
-
-
-            if rethresh == 1:
-
-                mask_color = hand_array[int(screen_width/2), int(screen_height/2)]
-
-
-                ram[x] = [roi1, roi2]
-
-                mse_mem[x].append(mse)
-
-
-                if thresholds[x] != mse:
-                    thresholds[x] = mse + threshold
-
-
-            mse_avg = int(sum(mse_mem[x])/len(mse_mem[x]))
-
-            if mse < mse_avg + thresholds[x]:
-                hand[x] = 0
-            else:
-                hand[x] = 1
-
-            # hand[x] = change
-
-            # print('')
-            # print("change")
-            # print(change)
-
-
-            if ui == 1:
-
-                lesson_t = small_font.render(str(hand[x]), True, value_color[7])
-                screen.blit(lesson_t, (screen_width/64 + x*128, screen_height / 2 + screen_height/4))
-                lesson_t = small_font.render(str(int(mse)), True, value_color[7])
-                screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 64))
-                lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
-                screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 96))
-                lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
-                screen.blit(lesson_t, (screen_width/64 +x * 128, screen_height /2 + screen_height/4 + 128))
-
-            value_rect = pygame.Rect(palm_x + x*x_s/2, palm_y, x_s/2, y_s/2)
-            pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
-
-            tip_rect = pygame.Rect(roi[0], roi[1], x_s, y_s)
-            pygame.draw.rect(screen, value_color[0 + hand[x]*9], tip_rect)
-
-            pygame.draw.line(screen, value_color[0 + int(goal_bin[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-
-        hand_value = hand[0]*16 + hand[1]*8 + hand[2]*4 + hand[3]*2 + hand[4]*1
-
-        lesson_t = main_font.render(str(hand_value), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 4 - 64, screen_height / 2 + 64))
-
-        lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 4 - 32, screen_height / 2 + 64))
-
-
-        letter = digibetu[hand_value]
-
-        hands[0] = letter
-
-        ###right palm###
-
-        x_pos = palm_x - x_s*5
+        x_pos = palm_x - x_s*1
         y_pos = palm_y - x_s*2
 
-        roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
+        right_roi.append((x_pos , y_pos , x_pos + x_s, y_pos + y_s))
 
-        mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x])
+        roi_map = []
+        dist_map = []
+        place = 0
 
-        if rethresh == 1:
-
-            mask_color = hand_array[int(screen_width / 2), int(screen_height / 2)]
-
-            ram[x] = [roi1, roi2]
-
-            mse_mem[x].append(mse)
-
-            if thresholds[11] != mse:
-                thresholds[11] = mse + threshold
-
-        mse_avg = int(sum(mse_mem[x]) / len(mse_mem[x]))
-
-        if mse < mse_avg + thresholds[11]:
-            palm[0] = 0
-        else:
-            palm[0] = 1
-
-        if ui == 1:
-            lesson_t = small_font.render(str(hand[x]), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4))
-            lesson_t = small_font.render(str(int(mse)), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 64))
-            lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 96))
-            lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 128))
-
-        value_rect = pygame.Rect(palm_x + 6 * x_s / 2, palm_y, x_s / 2, y_s / 2)
-        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], value_rect)
-
-        tip_rect = pygame.Rect(roi[0], roi[1], x_s, y_s)
-        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], tip_rect)
-
-        pygame.draw.line(screen, value_color[0 + int(goal_bin[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-        if palm[0] == 1:
-
-            x = 0
-            x_pos = 0
-            y_pos = 640
-
-            palm_array = pygame.surfarray.array3d(image)
-            px1, py1, px2, py2 = roi
-            palm_roi_array = palm_array[px1:px2, py1:py2]
-            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 4)
-
-            # finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
-            # fx1, fy1, fx2, fy2 = finger_roi
-            # finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
-            # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 1)
-            #
-            # palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
-            # finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
-            #
-            # color_diff = np.linalg.norm(palm_color - finger_color)
-            #
-            # diff_thresh = 40
-            # if color_diff < diff_thresh:
-            #     hand[x] = 1
-            # else:
-            #     hand[x] = 0
-
-            # print('')
-            # print('color_diff')
-            # print(color_diff)
-
-            for x in range(5):
-
-                x_pos += x_s + x_g
-
-                if x == 4:
-                    x_pos += x_s * 1
-                    y_pos += y_s * 5
-
-                # palm_array = pygame.surfarray.array3d(image)
-                # px1, py1, px2, py2 = roi
-                # palm_roi_array = palm_array[px1:px2, py1:py2]
-                # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 1)
-
-                finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
-                fx1, fy1, fx2, fy2 = finger_roi
-                finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
-                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
-
-                palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
-                finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
-
-                color_diff = np.linalg.norm(palm_color - finger_color)
-
-                diff_thresh = 40
-                if color_diff < diff_thresh:
-                    hand_0[x] = 1
-                else:
-                    hand_0[x] = 0
-
-                pygame.draw.rect(screen, value_color[hand_0[x] * 8], pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
+        flex_c = 32
+        flex_m = 32
 
 
-        hand_value = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
+        for roi in right_roi:
+            place += 1
+            # print(place)
 
 
-        hands_0 = [digibetu[hand_value]]
+            x1, y1, x2, y2 = roi
+            roi_prev = array_past[x1:x2, y1:y2]
+            roi_now = hand_array[x1:x2, y1:y2]
+            roi_map.append((roi_prev, roi_now))
+
+
+
+            roi_dist = color_dist(roi_prev, roi_now)
+            roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
+
+            # print(roi_dist)
+
+            dist_map.append(roi_dist)
+            if roi_dist > flex_c:
+                hand[place-1] = 1
+            else:
+                hand[place-1] = 0
+
+
+            if roi_mean > flex_m:
+                hand_0[place-1] = 1
+            else:
+                hand[place-1] = 0
+
+            x = place-1
+            value_rect = pygame.Rect(x1, y1, x_s, y_s)
+            pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
+
+            tip_rect = pygame.Rect(x1, y1, x_s/2, y_s/2)
+            pygame.draw.rect(screen, value_color[0 + hand_0[x]*9], tip_rect)
+
+            pygame.draw.line(screen, value_color[0 + int(goal_bin[x%len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
+
+        # print(right_roi)
+        # print(dist_map)
+        # print("")
+        # print("hand")
+        # print(hand)
+        # print(hand_0)
+
+        right_hand = [0, 0]
+
+        right_hand[0] = hand[0] * 16 + hand[1]*8 + hand[2]*4 + hand[3]*2 + hand[4]*1
+        right_hand[1] = hand_0[0] * 16 + hand_0[1] * 8 + hand_0[2] * 4 + hand_0[3] * 2 + hand_0[4] * 1
+
+        # print(right_hand)
+
+        hands[0] = digibetu[right_hand[0]]
+        hands_0[0] = digibetu[right_hand[1]]
+
 
         ####left hand####
+
+
         x_s = 32
         y_s = 32
-        x_g = 4
+        x_g = 28
         y_g = 0
+
         x_pos = 872
         y_pos = 640
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
-        hand = [0, 0, 0, 0, 0]
-        hand_1 = [0, 0, 0, 0, 0]
+        hand = [0, 0, 0, 0, 0, 0]
+        hand_0 = [0, 0, 0, 0, 0, 0]
         tips = [0, 24, 0, 16, 64]
 
-        for x in range(5):
 
-            x_pos += x_s + x_g
-
-            if x == 0:
-                x_pos -= x_s*1
-                y_pos += y_s*5
-
-            elif x == 1:
-                x_pos += x_s*2
-                y_pos -= y_s*6
-
-            roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
-
-            roi_palm = (x_pos + x*x_s, y_pos + y_s*4)
-
-            mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x+5])
-
-            if rethresh == 1:
-
-                ram[x+5] = [roi1, roi2]
-
-                mse_mem[x+5].append(mse)
+        left_roi = [(x_pos + (x_s + x_g) * (n + 1), y_pos + tips[n],
+                      x_pos + (x_s + x_g) * (n + 1) + x_s, y_pos + tips[n] + y_s) for n in range(5)]
+        left_roi[0] = (x_pos + x_s, y_pos + tips[4] + y_s*4, x_pos + x_s*2, y_pos + tips[4] + y_s*5)
 
 
-                if thresholds[x+5] != mse:
-                    thresholds[x+5] = mse + threshold
-
-            mse_avg = int(sum(mse_mem[x+5])/len(mse_mem[x+5]))
-
-            if mse < mse_avg + thresholds[x+5]:
-                hand[x] = 0
-            else:
-                hand[x] = 1
-
-            # hand[x] = change
-
-            # print('')
-            # print("change")
-            # print(change)
-
-            if ui == 1:
-
-                lesson_t = small_font.render(str(hand[x]), True, value_color[7])
-                screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4))
-                lesson_t = small_font.render(str(int(mse)), True, value_color[7])
-                screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 64))
-                lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
-                screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 96))
-                lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
-                screen.blit(lesson_t, (screen_width / 2 + x * 128, screen_height / 2 + screen_height / 4 + 128))
-
-            t_line = pygame.Rect(palm_x + x * x_s / 2, palm_y, x_s / 2, y_s / 2)
-            pygame.draw.rect(screen, value_color[0 + hand[x] * 9], t_line)
-
-            t_line = pygame.Rect(roi[0], roi[1], x_s, y_s)
-            pygame.draw.rect(screen, value_color[0 + hand[x] * 9], t_line)
-
-            goal_bin_r = goal_bin[::-1]
-            pygame.draw.line(screen, value_color[0 + int(goal_bin_r[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-        rethresh = 0
-        hand_value = hand[0] * 1 + hand[1] * 2 + hand[2] * 4 + hand[3] * 8 + hand[4] * 16
-
-        letter = digibetu[hand_value]
-        hands[1] = letter
-
-        lesson_t = main_font.render(str(hand_value), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 64))
-
-        lesson_t = main_font.render(str(digibetu[hand_value]), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 2 + 96))
-
-        # lesson_t = main_font.render(str(rv), True, value_color[9])
-        # screen.blit(lesson_t, (screen_width / 2, screen_height / 32))
-
-        lesson_t = main_font.render(str(tts_0), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 32, screen_height / 4))
-
-
-
-        ###left palm###
-
-        x_pos = palm_x - x_s*4
+        x_pos = palm_x - x_s*1
         y_pos = palm_y - x_s*2
 
-        roi = (x_pos + x * x_s, y_pos, x_pos + x_s + x * x_s, y_pos + y_s)
+        left_roi.append((x_pos, y_pos, x_pos + x_s, y_pos + y_s))
 
-        mse, change, roi1, roi2 = detect_change_in_roi_mse(array_past, hand_array, roi, thresholds[x])
+        roi_map = []
+        dist_map = []
+        place = 0
 
-        if rethresh == 1:
-
-            mask_color = hand_array[int(screen_width / 2), int(screen_height / 2)]
-
-            ram[x] = [roi1, roi2]
-
-            mse_mem[x].append(mse)
-
-            if thresholds[11] != mse:
-                thresholds[11] = mse + threshold
-
-        mse_avg = int(sum(mse_mem[x]) / len(mse_mem[x]))
-
-        if mse < mse_avg + thresholds[11]:
-            palm[0] = 0
-        else:
-            palm[0] = 1
-
-        if ui == 1:
-            lesson_t = small_font.render(str(hand[x]), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4))
-            lesson_t = small_font.render(str(int(mse)), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 64))
-            lesson_t = small_font.render(str(int(mse_avg)), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 96))
-            lesson_t = small_font.render(str(int(thresholds[x])), True, value_color[7])
-            screen.blit(lesson_t, (screen_width / 64 + x * 128, screen_height / 2 + screen_height / 4 + 128))
-
-        value_rect = pygame.Rect(palm_x + 6 * x_s / 2, palm_y, x_s / 2, y_s / 2)
-        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], value_rect)
-
-        tip_rect = pygame.Rect(roi[0], roi[1], x_s, y_s)
-        pygame.draw.rect(screen, value_color[0 + palm[0] * 9], tip_rect)
-
-        pygame.draw.line(screen, value_color[0 + int(goal_bin[x]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-        if palm[0] == 1:
-
-            x = 0
-            x_pos = 872
-            y_pos = 640
-
-            palm_array = pygame.surfarray.array3d(image)
-            px1, py1, px2, py2 = roi
-            palm_roi_array = palm_array[px1:px2, py1:py2]
-            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 4)
-
-            # finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
-            # fx1, fy1, fx2, fy2 = finger_roi
-            # finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
-            # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 1)
-            #
-            # palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
-            # finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
-            #
-            # color_diff = np.linalg.norm(palm_color - finger_color)
-            #
-            # diff_thresh = 40
-            # if color_diff < diff_thresh:
-            #     hand[x] = 1
-            # else:
-            #     hand[x] = 0
-
-            # print('')
-            # print('color_diff')
-            # print(color_diff)
-
-            for x in range(5):
-
-                x_pos += x_s + x_g
-
-                if x == 0:
-                    x_pos -= x_s * 1
-                    y_pos += y_s * 5
-
-                elif x == 1:
-                    x_pos += x_s * 2
-                    y_pos -= y_s * 6
+        flex_c = 32
+        flex_m = 32
 
 
 
-                # palm_array = pygame.surfarray.array3d(image)
-                # px1, py1, px2, py2 = roi
-                # palm_roi_array = palm_array[px1:px2, py1:py2]
-                # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(px1, py1, px2 - px1, py2 - py1), 1)
+        for roi in left_roi:
+            place += 1
+            # print(place)
 
-                finger_roi = (x_pos + x * x_s, y_pos + tips[x], x_pos + x_s + x * x_s, y_pos + y_s + tips[x])
-                fx1, fy1, fx2, fy2 = finger_roi
-                finger_roi_array = palm_array[fx1:fx2, fy1:fy2]
-                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
 
-                palm_color = np.mean(palm_roi_array.reshape(-1, 3), axis=0)
-                finger_color = np.mean(finger_roi_array.reshape(-1, 3), axis=0)
+            x1, y1, x2, y2 = roi
+            roi_prev = array_past[x1:x2, y1:y2]
+            roi_now = hand_array[x1:x2, y1:y2]
+            roi_map.append((roi_prev, roi_now))
 
-                color_diff = np.linalg.norm(palm_color - finger_color)
 
-                diff_thresh = 40
-                if color_diff < diff_thresh:
-                    hand_0[x] = 1
-                else:
-                    hand_0[x] = 0
 
-                pygame.draw.rect(screen, value_color[hand_0[x]*8], pygame.Rect(fx1, fy1, fx2 - fx1, fy2 - fy1), 4)
+            roi_dist = color_dist(roi_prev, roi_now)
+            roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
 
-        hand_value = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
+            # print(roi_dist)
 
-        hands_0.append(digibetu[hand_value])
+            dist_map.append(roi_dist)
+            if roi_dist > flex_c:
+                hand[place-1] = 1
+            else:
+                hand[place-1] = 0
 
-    lesson_t = main_font.render(str(hands_0), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 4, screen_height - screen_height/16))
 
+            if roi_mean > flex_m:
+                hand_0[place-1] = 1
+            else:
+                hand[place-1] = 0
+
+            x = place-1
+            value_rect = pygame.Rect(x1, y1, x_s, y_s)
+            pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
+
+            tip_rect = pygame.Rect(x1, y1, x_s/2, y_s/2)
+            pygame.draw.rect(screen, value_color[0 + hand_0[x]*9], tip_rect)
+
+            pygame.draw.line(screen, value_color[0 + int(goal_bin[x%len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
+
+        # print(left_roi)
+        # print(dist_map)
+        # print("")
+        # print("hand")
+        # print(hand)
+        # print(hand_0)
+
+        left_hand = [0, 0]
+
+        left_hand[0] = hand[0] * 1 + hand[1]*2 + hand[2]*4 + hand[3]*8 + hand[4]*16
+        left_hand[1] = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
+
+
+
+        hands[1] = digibetu[left_hand[0]]
+        hands_0[1] = digibetu[left_hand[1]]
+
+
+
+        print()
+        print('hands')
+        print(left_hand)
+        print(right_hand)
+        print(hands)
+        print(hands_0)
 
 
 
@@ -2338,7 +2113,7 @@ while running:
 
         if hands[0] != code_0:
 
-
+            letter = hands[0]
 
 
             code_bin = base_x(digibet[code_0], 2)
@@ -2469,7 +2244,7 @@ while running:
 
 
         goal_bin = base_x(digibet[phrase[phrase_pos]], 2)
-        if len(goal_bin) < 5:
+        if len(goal_bin) < gb_len:
             zeros = ''
             for x in range(5-len(goal_bin)):
                 zeros += '0'
@@ -2755,6 +2530,8 @@ while running:
     lesson_t = main_font.render('speed' + str(rainbow_speed), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 4, screen_height / 32 - 32))
 
+    lesson_t = main_font.render('tts: ' + str(tts_0), True, value_color[9])
+    screen.blit(lesson_t, (screen_width / 64, screen_height / 2 - 32))
 
     ###synth###
     beat = 1
