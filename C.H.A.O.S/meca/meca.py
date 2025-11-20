@@ -379,7 +379,7 @@ def draw_z(size, canvas, corner):
 pygame.init()
 pygame.camera.init()
 
-screen_width, screen_height = 1280, 960
+screen_width, screen_height = 1800, 960
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('C.H.A.O.S')
 
@@ -408,14 +408,16 @@ def detect_change_in_roi_mse(img1, img2, roi_coords, threshold=1):
 
 
 def base_x(n, b):
-    e = n // b
-    q = n % b
-    if n == 0:
-        return '0'
-    elif e == 0:
-        return str(q)
-    else:
-        return base_x(e, b) + str(q)
+    result = ""
+    while n != 0:
+        e = n // b
+        q = n % b
+        if e == 0:
+            result += str(q)
+        else:
+            result = str(q) + result
+        n = e
+    return result if result else '0'
 
 
 def rule_gen(rule, base=2, width=0, string=0):
@@ -543,12 +545,14 @@ phrase_pos = 0
 goal_bin = '000000'
 gb_len = 6
 
+hands_1 = [0, 0]
 hands_0 = [0, 0]
-hands = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
-arms = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
+hands = [0, 0]
+arms = [0, 0]
 code = ''
 code_0 = ' '
 code_00 = ' '
+code_01 = ' '
 
 score = 1
 set = 0
@@ -561,7 +565,7 @@ tts_0 = time.time()
 tts_1 = time.time()
 stenograph = []
 
-signame = "Theophilis"
+signame = "Chaotomata"
 
 try:
     filename = 'sign_bank/' + signame
@@ -608,7 +612,7 @@ dim = 2
 sim = 0
 
 
-rainbow = 1
+rainbow = 0
 rainbow_speed = 2
 edge_speed = 1
 base = 2
@@ -625,7 +629,7 @@ rv_bank = {}
 #####rulers######
 rules, rule = rule_gen(rv, base)
 rule = np.array(rule)
-ruler = 1
+ruler = 3
 shift = 0
 
 print(rule)
@@ -644,6 +648,11 @@ if dim == 1:
     water[0] = flow
 
 if dim == 2:
+    flow = np.zeros((h, l), dtype=int)
+    flow[int(l / 2), int(h / 2)] = 1
+    water = np.zeros((h, l), dtype=int)
+
+if dim == 3:
     flow = np.zeros((h, l), dtype=int)
     flow[int(l / 2), int(h / 2)] = 1
     water = np.zeros((h, l), dtype=int)
@@ -947,6 +956,10 @@ init = init.strftime("%Y-%m-%d_%H-%M-%S")
 ###letters###
 letter = ' '
 letter_0 = ' '
+letter_1 = ' '
+last_typed = letter
+
+palm_prev = [None, None]
 
 
 
@@ -1619,6 +1632,62 @@ while running:
     outfile.close
 
 
+    def water_update(flow):
+        global view
+
+        if view == 5:
+            flow_1 = np.roll(flow, -1)
+            flow_2 = np.roll(flow, 1)
+            flow_3 = np.roll(flow, -l)
+            flow_4 = np.roll(flow, l)
+
+            currents = [flow, flow_1, flow_2, flow_3, flow_4]
+
+            current = currents[3] * 1 + currents[1] * base + currents[0] * base ** 2 + currents[2] * base ** 3 + \
+                      currents[4] * base ** 4
+            # print()
+            # print(current)
+            water = rule[-current.astype(int)]
+
+            if sim == 1:
+                water = rule[-(current.astype(int) % int(len(rule) / base))]
+
+            water = water.astype(int)
+
+            return water
+
+        elif view == 9:
+            L = np.roll(flow, -1)
+            R = np.roll(flow, 1)
+            U = np.roll(flow, -l)
+            D = np.roll(flow, l)
+
+            UL = np.roll(flow, -l - 1)
+            UR = np.roll(flow, -l + 1)
+            DL = np.roll(flow, l - 1)
+            DR = np.roll(flow, l + 1)
+
+            current = (
+                    UL * base ** 0 +
+                    U * base ** 1 +
+                    UR * base ** 2 +
+                    L * base ** 3 +
+                    flow * base ** 4 +
+                    R * base ** 5 +
+                    DL * base ** 6 +
+                    D * base ** 7 +
+                    DR * base ** 8
+            )
+            # print()
+            # print(current)
+            water = rule[-current.astype(int)]
+
+            if sim == 1:
+                water = rule[-(current.astype(int) % int(len(rule) / base))]
+
+            water = water.astype(int)
+
+            return water
 
 
     ###flow###
@@ -1674,29 +1743,40 @@ while running:
         # flow[int(l / 2), int(h / 2)] = 1
         # water = np.zeros((h, l), dtype=int)
 
-
         for x in range(len(phrase)):
-            flow[digibet[phrase[x]] * int(l/32), digibet[phrase[x]] * int(h/32)] = 1
-            flow[digibet[phrase[x]] * int(l/32), -digibet[phrase[x]] * int(h/32)] = 1
+            idx = digibet[phrase[x]]
+
+            fx = idx * (l // 32)
+            fy = idx * (h // 32)
+
+            # Upper-right seed
+            flow[fy, fx] = (flow[fy, fx] + 1) % base
+
+            # Upper-left symmetric seed
+            flow[fy, -fx] = (flow[fy, -fx] + 1) % base
 
         currents = []
 
-        flow_1 = np.roll(flow, -1)
-        flow_2 = np.roll(flow, 1)
-        flow_3 = np.roll(flow, -l)
-        flow_4 = np.roll(flow, l)
+        # if view == 5:
+        #     flow_1 = np.roll(flow, -1)
+        #     flow_2 = np.roll(flow, 1)
+        #     flow_3 = np.roll(flow, -l)
+        #     flow_4 = np.roll(flow, l)
+        #
+        #
+        #     currents = [flow, flow_1, flow_2, flow_3, flow_4]
+        #
+        #     current = currents[3] * 1 + currents[1] * base + currents[0] * base ** 2 + currents[2] * base ** 3 + currents[4] * base ** 4
+        #     # print()
+        #     # print(current)
+        #     water = rule[-current.astype(int)]
+        #
+        #     if sim == 1:
+        #         water = rule[-(current.astype(int)%int(len(rule)/base))]
+        #
+        #     water = water.astype(int)
 
-        currents = [flow, flow_1, flow_2, flow_3, flow_4]
-
-        current = currents[3] * 1 + currents[1] * base + currents[0] * base ** 2 + currents[2] * base ** 3 + currents[4] * base ** 4
-        # print()
-        # print(current)
-        water = rule[-current.astype(int)]
-
-        if sim == 1:
-            water = rule[-(current.astype(int)%int(len(rule)/base))]
-
-        water = water.astype(int)
+        water = water_update(flow)
 
 
 
@@ -1724,7 +1804,6 @@ while running:
                 image_array[pos_x:pos_x + l, pos_y:pos_y + h] = region
 
 
-
         if rainbow == 1:
 
 
@@ -1738,6 +1817,17 @@ while running:
                 up_mask = water == 1
                 down_mask = water == 2
 
+            elif base == 4:
+
+                up_mask = water == 0
+                down_mask = water == 1
+                up_mask_0 = water == 2
+                down_mask_0 = water == 3
+
+                rainbow_array[up_mask_0] += rainbow_speed * set
+                rainbow_array[down_mask_0] -= rainbow_speed * set
+                rainbow_array[rainbow_array < 0] = color_max - 1
+                rainbow_array[rainbow_array > color_max - 1] = 0
 
             count_scale = color_max*64
 
@@ -1754,7 +1844,6 @@ while running:
             rainbow_flow = np.zeros((l, h, 3), dtype=np.uint8)
 
             rainbow_flow = full_colors[rainbow_array]
-
 
 
 
@@ -1815,8 +1904,8 @@ while running:
 
             if fade == 5:
 
-                alpha = 0.5
-                flow_alpha = np.clip(water, 0, 2)
+                alpha = round(1/base, 3)
+                flow_alpha = np.clip(water, 0, base)
                 flow_alpha = flow_alpha[..., np.newaxis]
                 blended = (
                         region.astype(np.float32) * (1 - alpha * flow_alpha) +
@@ -1837,6 +1926,10 @@ while running:
 
         image_array[pos_x:pos_x + l, pos_y:pos_y + h] = region
 
+
+
+
+
     image = pygame.surfarray.make_surface(image_array)
     screen.blit(image, (0, 0))
 
@@ -1854,8 +1947,11 @@ while running:
 
     #####hands######
     def color_dist(a, b):
+
         ca = np.mean(a.reshape(-1, 3), axis=0)
         cb = np.mean(b.reshape(-1, 3), axis=0)
+
+
         return np.linalg.norm(ca - cb)
 
 
@@ -1863,14 +1959,13 @@ while running:
 
     if detect_change == 1:
 
-
         ####right hand####
 
-        x_s = 32
-        y_s = 32
+        x_s = 36
+        y_s = 36
         x_g = 28
         y_g = 0
-        x_pos = 0
+        x_pos = (x_s+x_g)*2
         y_pos = 640
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
@@ -1878,7 +1973,9 @@ while running:
 
         hand = [0, 0, 0, 0, 0, 0]
         hand_0 = [0, 0, 0, 0, 0, 0]
-        palm = [0, 0]
+        hand_1 = [0, 0, 0, 0, 0, 0]
+
+        palm = [0, 0, 0, 0, 0, 0]
         tips = [64, 16, 0, 24, 0]
 
         right_roi = [(x_pos + (x_s + x_g) * (n + 1), y_pos + tips[n],
@@ -1895,13 +1992,14 @@ while running:
         dist_map = []
         place = 0
 
-        flex_c = 32
-        flex_m = 32
-
+        flex_c = 16
+        flex_m = 64
+        flex_p = 128
 
         for roi in right_roi:
             place += 1
             # print(place)
+
 
 
             x1, y1, x2, y2 = roi
@@ -1909,10 +2007,15 @@ while running:
             roi_now = hand_array[x1:x2, y1:y2]
             roi_map.append((roi_prev, roi_now))
 
-
+            if palm_prev[0] is None:
+                palm_prev[0] = roi_now.copy()
 
             roi_dist = color_dist(roi_prev, roi_now)
             roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
+            roi_palm = int(color_dist(roi_now, palm_prev[0]))
+
+            palm[place-1] = roi_palm
+
 
             # print(roi_dist)
 
@@ -1926,50 +2029,64 @@ while running:
             if roi_mean > flex_m:
                 hand_0[place-1] = 1
             else:
-                hand[place-1] = 0
+                hand_0[place-1] = 0
+
+            if roi_mean > flex_p:
+                hand_1[place-1] = 1
+            else:
+                hand_1[place-1] = 0
 
             x = place-1
             value_rect = pygame.Rect(x1, y1, x_s, y_s)
             pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
 
             tip_rect = pygame.Rect(x1, y1, x_s/2, y_s/2)
-            pygame.draw.rect(screen, value_color[0 + hand_0[x]*9], tip_rect)
+            pygame.draw.rect(screen, value_color[0 + hand_0[x]*5], tip_rect)
+
+            tip_rect = pygame.Rect(x1, y1, x_s/3, y_s/3)
+            pygame.draw.rect(screen, value_color[0 + hand_1[x]*7], tip_rect)
 
             pygame.draw.line(screen, value_color[0 + int(goal_bin[x%len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
 
-        # print(right_roi)
-        # print(dist_map)
         # print("")
-        # print("hand")
-        # print(hand)
-        # print(hand_0)
+        # print('palm r')
+        # print(palm)
+        #
+        # print(hand_1)
 
-        right_hand = [0, 0]
+        palm_prev[0] = roi_map[-1][1].copy()
+
+        right_hand = [0, 0, 0]
 
         right_hand[0] = hand[0] * 16 + hand[1]*8 + hand[2]*4 + hand[3]*2 + hand[4]*1
         right_hand[1] = hand_0[0] * 16 + hand_0[1] * 8 + hand_0[2] * 4 + hand_0[3] * 2 + hand_0[4] * 1
+        right_hand[2] = hand_1[0] * 16 + hand_1[1] * 8 + hand_1[2] * 4 + hand_1[3] * 2 + hand_1[4] * 1
 
         # print(right_hand)
 
         hands[0] = digibetu[right_hand[0]]
         hands_0[0] = digibetu[right_hand[1]]
+        hands_1[0] = digibetu[right_hand[2]]
 
 
         ####left hand####
 
 
-        x_s = 32
-        y_s = 32
+        x_s = 36
+        y_s = 36
         x_g = 28
         y_g = 0
 
-        x_pos = 872
+        x_pos = screen_width - (x_s+x_g)*9
         y_pos = 640
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
         hand = [0, 0, 0, 0, 0, 0]
         hand_0 = [0, 0, 0, 0, 0, 0]
+        hand_1 = [0, 0, 0, 0, 0, 0]
+
+        palm = [0, 0, 0, 0, 0, 0]
         tips = [0, 24, 0, 16, 64]
 
 
@@ -1987,8 +2104,9 @@ while running:
         dist_map = []
         place = 0
 
-        flex_c = 32
-        flex_m = 32
+        # flex_c = 16
+        # flex_m = 24
+        # flex_p = 32
 
 
 
@@ -2003,9 +2121,16 @@ while running:
             roi_map.append((roi_prev, roi_now))
 
 
+            if palm_prev[1] is None:
+                palm_prev[1] = roi_now.copy()
+
+
 
             roi_dist = color_dist(roi_prev, roi_now)
             roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
+            roi_palm = int(color_dist(roi_now, palm_prev[1]))
+
+            palm[place-1] = roi_palm
 
             # print(roi_dist)
 
@@ -2019,14 +2144,23 @@ while running:
             if roi_mean > flex_m:
                 hand_0[place-1] = 1
             else:
-                hand[place-1] = 0
+                hand_0[place-1] = 0
+
+
+            if roi_mean > flex_p:
+                hand_1[place-1] = 1
+            else:
+                hand_1[place-1] = 0
 
             x = place-1
             value_rect = pygame.Rect(x1, y1, x_s, y_s)
             pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
 
             tip_rect = pygame.Rect(x1, y1, x_s/2, y_s/2)
-            pygame.draw.rect(screen, value_color[0 + hand_0[x]*9], tip_rect)
+            pygame.draw.rect(screen, value_color[0 + hand_0[x]*5], tip_rect)
+
+            tip_rect = pygame.Rect(x1, y1, x_s/3, y_s/3)
+            pygame.draw.rect(screen, value_color[0 + hand_1[x]*7], tip_rect)
 
             pygame.draw.line(screen, value_color[0 + int(goal_bin[x%len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
 
@@ -2037,27 +2171,32 @@ while running:
         # print(hand)
         # print(hand_0)
 
-        left_hand = [0, 0]
+        palm_prev[1] = roi_map[-1][1].copy()
+
+        # print('palm l')
+        # print(palm)
+        # print(hand_1)
+
+        left_hand = [0, 0, 0]
 
         left_hand[0] = hand[0] * 1 + hand[1]*2 + hand[2]*4 + hand[3]*8 + hand[4]*16
         left_hand[1] = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
+        left_hand[2] = hand_1[0] * 1 + hand_1[1] * 2 + hand_1[2] * 4 + hand_1[3] * 8 + hand_1[4] * 16
 
 
 
         hands[1] = digibetu[left_hand[0]]
         hands_0[1] = digibetu[left_hand[1]]
+        hands_1[1] = digibetu[left_hand[2]]
 
 
 
-        print()
-        print('hands')
-        print(left_hand)
-        print(right_hand)
-        print(hands)
-        print(hands_0)
-
-
-
+        # print()
+        # print('hands')
+        # print(left_hand)
+        # print(right_hand)
+        # print(hands)
+        # print(hands_0)
 
 
     ###stats###
@@ -2084,8 +2223,6 @@ while running:
 
 
 
-
-
     ######phrase walk#######
     walk = 0
 
@@ -2107,141 +2244,234 @@ while running:
 
 
 
+    letters = []
 
-    ####double hand code####
-    if hands[0] == hands[1]:
-
-        if hands[0] != code_0:
-
-            letter = hands[0]
+    def handle(hand, code_0):
+        global stamp_x, stamp_y, code, rv, shift, rule, tts_1
 
 
-            code_bin = base_x(digibet[code_0], 2)
-            if len(code_bin) < 5:
-                zeros = ''
-                for x in range(5 - len(code_bin)):
-                    zeros += '0'
-                code_bin = zeros + code_bin
-            # print(goal_bin)
+        if hand[0] == hand[1]:
 
-            for x in range(5):
+            if hand[0] != code_0:
 
+                letter = hand[0]
+                code_0 = hand[0]
+                code += hand[0]
 
+                code_bin = base_x(digibet[code_0], 2)
+                if len(code_bin) < 5:
+                    zeros = ''
+                    for x in range(5 - len(code_bin)):
+                        zeros += '0'
+                    code_bin = zeros + code_bin
+                # print(goal_bin)
 
-                stamp_y0 = stamp_y + int(stamp_s*1.2) * x
+                for x in range(5):
 
+                    stamp_y0 = stamp_y + int(stamp_s * 1.2) * x
 
-                if code_bin[x] == '1':
+                    if code_bin[x] == '1':
+                        flow[stamp_x:stamp_x + stamp_s, stamp_y0:stamp_y0 + stamp_s + (stamp_s + 2) * x] = (flow[
+                                                                                                            stamp_x:stamp_x + stamp_s,
+                                                                                                            stamp_y0:stamp_y0 + stamp_s + (
+                                                                                                                        stamp_s + 2) * x] + 1) % base
 
+                stamp_x += int(stamp_s * 1.3)
 
-                    flow[stamp_x:stamp_x+stamp_s, stamp_y0:stamp_y0+stamp_s + (stamp_s + 2)*x] = (flow[stamp_x:stamp_x+stamp_s, stamp_y0:stamp_y0+stamp_s + (stamp_s + 2)*x]+1)%base
+                if stamp_x > 400:
+                    stamp_x = 32
+                    stamp_y += stamp_s * 6
 
-            stamp_x += int(stamp_s*1.3)
+                if stamp_y > 400:
+                    stamp_y = 32
 
-            if stamp_x > 400:
-                stamp_x = 32
-                stamp_y += stamp_s*6
+                stenograph.append((code_0, round(time.time() - tts_1, 3), datetime.now()))
+                # sign_bank['steno'] = []
+                tts_1 = time.time()
 
-            if stamp_y > 400:
-                stamp_y = 32
-
-            print()
-            print(stamp_x, stamp_y)
-
-
-
-
-
-            code += hands[0]
-            code_0 = hands[0]
-
-            stenograph.append((code_0, round(time.time() - tts_1, 3), datetime.now()))
-            # sign_bank['steno'] = []
-            tts_1 = time.time()
-
-            if ruler == 0:
-                rv += digibet[code_0]
-                rv = rv%bbv
-                rules, rule = rule_gen(rv, base)
-                rule = np.array(rule)
+                if ruler == 0:
+                    rv += digibet[code_0]
+                    rv = rv % bbv
+                    rules, rule = rule_gen(rv, base)
+                    rule = np.array(rule)
 
 
-            elif ruler == 1:
+                elif ruler == 1:
 
-                shift += digibet[code_0]
+                    shift += digibet[code_0]
 
-                shift = shift % len(rule)
+                    shift = shift % len(rule)
 
-                rule[shift] = str((int(rule[shift])+1)%base)
+                    rule[shift] = str((int(rule[shift]) + 1) % base)
 
-
-    if hands_0[0] == hands_0[1]:
-
-        if hands_0[0] != code_00:
-
-            letter_0 == hands_0[0]
+                    rule_str = "".join(rule)
+                    rv = int(rule_str, base)
+                    rv = rv % bbv
 
 
-            code_bin = base_x(digibet[code_00], 2)
-            if len(code_bin) < 5:
-                zeros = ''
-                for x in range(5 - len(code_bin)):
-                    zeros += '0'
-                code_bin = zeros + code_bin
-            # print(goal_bin)
-
-            for x in range(5):
+                elif ruler == 2:
 
 
+                    shift += digibet[code_0]
 
-                stamp_y0 = stamp_y + int(stamp_s*1.2) * x
+                    shift = shift % len(rule)
 
+                    rule[shift] = str((int(rule[shift]) + 1) % base)
 
-                if code_bin[x] == '1':
+                    mirror = (int(len(rule)/2) + shift)%len(rule)
+                    rule[mirror] = str((int(rule[mirror]) + 1) % base)
 
-
-                    flow[stamp_x:stamp_x+stamp_s, stamp_y0:stamp_y0+stamp_s + (stamp_s + 2)*x] = (flow[stamp_x:stamp_x+stamp_s, stamp_y0:stamp_y0+stamp_s + (stamp_s + 2)*x]+1)%base
-
-            stamp_x += int(stamp_s*1.3)
-
-            if stamp_x > 400:
-                stamp_x = 32
-                stamp_y += stamp_s*6
-
-            if stamp_y > 400:
-                stamp_y = 32
-
-            print()
-            print(stamp_x, stamp_y)
+                elif ruler == 3:
 
 
-            code += hands_0[0]
-            code_00 = hands_0[0]
+                    shift += digibet[code_0]
 
-            stenograph.append((code_00, round(time.time() - tts_1, 3), datetime.now()))
-            # sign_bank['steno'] = []
-            tts_1 = time.time()
+                    shift = shift % len(rule)
 
-            if ruler == 0:
-                rv += digibet[code_00]
-                rv = rv%bbv
-                rules, rule = rule_gen(rv, base)
-                rule = np.array(rule)
+                    rule[shift] = str((int(rule[shift]) + 1) % base)
+
+                    shift_base = base_x(shift, base)
+                    print(shift_base)
+
+                    shift_base = base_x(shift, base)
+                    if len(code_bin) < view:
+                        zeros = ''
+                        for x in range(5 - len(code_bin)):
+                            zeros += '0'
+                        shift_base = zeros + shift_base
+                    print(shift_base)
+
+                    inv_base = shift_base.translate(str.maketrans('01', '10'))
 
 
-            elif ruler == 1:
+                    inv_digits = [int(c) for c in inv_base]
 
-                shift += digibet[code_00]
+                    def digits_to_index(digits, base):
+                        idx = 0
+                        for d in digits:
+                            idx = idx * base + d
+                        return idx
 
-                shift = shift % len(rule)
+                    inv_index = digits_to_index(inv_digits, base)
 
-                rule[shift] = str((int(rule[shift])+1)%base)
+
+                    rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+
+            else:
+                letter = code_0
+
+        else:
+            letter = code_0
+
+
+        # print(letter)
+
+        return letter, code_0
+
+    def submit(letter):
+
+        # print(letter)
+
+        global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water
+
+        if letter == last_typed:
+            letter = code_0
+        elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos + 2]:
+            message += phrase[phrase_pos]
+            phrase_pos += 1
+
+            if len(letter) == 2:
+                message += phrase[(phrase_pos + 1)%len(phrase)]
+                phrase_pos += 1
+
+            if phrase_pos == 1:
+                tts[0] = time.time()
+
+            if phrase_pos == len(phrase):
+
+                message += ' '
+
+                score += 1
+                phrase_pos = 0
+                tts[1] = time.time()
+
+                tts_0 = round(tts[1] - tts[0], 3)
+                tts[0] = time.time()
+
+                times_0 = []
+                t_max = 99999999999999999999999999999999999999
+                for t in times:
+                    if t < t_max and t > 0:
+                        times_0.append(round(t, 3))
+                times = times_0
+
+                # print()
+                # print(tts)
+                # print(tts_0)
+
+                times.append(tts_0)
+                times = sorted(times)
+
+                # print()
+                # print("times")
+                # print(times)
+
+                if phrase == code[len(code) - len(phrase):len(code)]:
+                    set += 1
+
+                else:
+                    set = int(set / 2)
+
+                code = ''
+
+                sign_bank[phrase] = (score, rv, times)
+
+                filename = 'sign_bank/' + signame
+                outfile = open(filename, 'wb')
+                pickle.dump(sign_bank, outfile)
+                outfile.close
+
+                if ruler == 0:
+                    set_scale = 1
+                    for x in range(len(phrase)):
+                        rv += digibet[phrase[x]] * int(set / set_scale)
+                    rv = rv % bbv
+
+                    # print("")
+                    # print(rv)
+                    # print(rule)
+                    rules, rule = rule_gen(rv, base)
+                    # print(rule)
+
+                    rule = np.array(rule)
+
+                if dim == 1:
+                    flow = np.zeros(l, dtype=int)
+                    flow[int(l / 2)] = 1
+                    water = np.zeros((h, l), dtype=int)
+                    water[0] = flow
+
+                if dim == 2:
+                    flow = np.zeros((h, l), dtype=int)
+                    flow[int(l / 2), int(h / 2)] = 1
+                    water = np.zeros((h, l), dtype=int)
+
+                if dim == 3:
+                    flow = np.zeros((h, l), dtype=int)
+                    flow[int(l / 2), int(h / 2)] = 1
+                    water = np.zeros((h, l), dtype=int)
+
+
+    letter, code_0 = handle(hands, code_0)
+    letter_0, code_00 = handle(hands_0, code_00)
+    letter_1, code_01 = handle(hands_1, code_01)
 
 
 
     ###typing###
     if phrase != '':
-
 
         goal_bin = base_x(digibet[phrase[phrase_pos]], 2)
         if len(goal_bin) < gb_len:
@@ -2291,211 +2521,241 @@ while running:
             pickle.dump(sign_bank, outfile)
             outfile.close
 
-        elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
 
-            message += phrase[phrase_pos]
-
-            if len(letter) == 2:
-                message += phrase[phrase_pos + 1]
-                phrase_pos += 1
-
-            phrase_pos += 1
-
-            if phrase_pos == 1:
-                tts[0] = time.time()
-
-            if phrase_pos == len(phrase):
-
-
-                message += ' '
-
-                score += 1
-                phrase_pos = 0
-                tts[1] = time.time()
-
-
-                tts_0 = round(tts[1] - tts[0], 3)
-                tts[0] = time.time()
-
-                times_0 = []
-                t_max = 99999999999999999999999999999999999999
-                for t in times:
-                    if t < t_max and t > 0:
-                        times_0.append(round(t, 3))
-                times = times_0
-
-                # print()
-                # print(tts)
-                # print(tts_0)
-
-                times.append(tts_0)
-                times = sorted(times)
-
-                # print()
-                # print("times")
-                # print(times)
-
-
-
-                if phrase == code[len(code)-len(phrase):len(code)]:
-                    set += 1
-
-                else:
-                    set = int(set/2)
-
-
-                code = ''
-
-                sign_bank[phrase] = (score, rv, times)
-
-
-                filename = 'sign_bank/' + signame
-                outfile = open(filename, 'wb')
-                pickle.dump(sign_bank, outfile)
-                outfile.close
-
-
-
-
-
-
-                if ruler == 0:
-                    set_scale = 1
-                    for x in range(len(phrase)):
-                        rv += digibet[phrase[x]]*int(set/set_scale)
-                    rv = rv % bbv
-
-                    # print("")
-                    # print(rv)
-                    # print(rule)
-                    rules, rule = rule_gen(rv, base)
-                    # print(rule)
-
-                    rule = np.array(rule)
-
-                if dim == 1:
-                    flow = np.zeros(l, dtype=int)
-                    flow[int(l / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
-                    water[0] = flow
-
-                if dim == 2:
-                    flow = np.zeros((h, l), dtype=int)
-                    flow[int(l / 2), int(h / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
-
-        elif letter_0 == phrase[phrase_pos] or letter_0 == phrase[phrase_pos:phrase_pos+2]:
-
-            message += phrase[phrase_pos]
-
-            if len(letter_0) == 2:
-                message += phrase[phrase_pos + 1]
-                phrase_pos += 1
-
-            phrase_pos += 1
-
-            if phrase_pos == 1:
-                tts[0] = time.time()
-
-            if phrase_pos == len(phrase):
-
-
-                message += ' '
-
-                score += 1
-                phrase_pos = 0
-                tts[1] = time.time()
-
-
-                tts_0 = round(tts[1] - tts[0], 3)
-                tts[0] = time.time()
-
-                times_0 = []
-                t_max = 99999999999999999999999999999999999999
-                for t in times:
-                    if t < t_max and t > 0:
-                        times_0.append(round(t, 3))
-                times = times_0
-
-                # print()
-                # print(tts)
-                # print(tts_0)
-
-                times.append(tts_0)
-                times = sorted(times)
-
-                # print()
-                # print("times")
-                # print(times)
-
-
-
-                if phrase == code[len(code)-len(phrase):len(code)]:
-                    set += 1
-
-                else:
-                    set = int(set/2)
-
-
-                code = ''
-
-                sign_bank[phrase] = (score, rv, times)
-
-
-                filename = 'sign_bank/' + signame
-                outfile = open(filename, 'wb')
-                pickle.dump(sign_bank, outfile)
-                outfile.close
-
-
-
-
-
-
-                if ruler == 0:
-                    set_scale = 1
-                    for x in range(len(phrase)):
-                        rv += digibet[phrase[x]]*int(set/set_scale)
-                    rv = rv % bbv
-
-                    # print("")
-                    # print(rv)
-                    # print(rule)
-                    rules, rule = rule_gen(rv, base)
-                    # print(rule)
-
-                    rule = np.array(rule)
-
-                if dim == 1:
-                    flow = np.zeros(l, dtype=int)
-                    flow[int(l / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
-                    water[0] = flow
-
-                if dim == 2:
-                    flow = np.zeros((h, l), dtype=int)
-                    flow[int(l / 2), int(h / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
-
-
+        if letter != last_typed:
+            submit(letter)
+            last_typed = letter
+
+        elif letter_0 != last_typed:
+            submit(letter_0)
+            last_typed = letter_0
+
+        elif letter_1 != last_typed:
+            submit(letter_1)
+            last_typed = letter_1
+
+
+        # elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
+        #
+        #     message += phrase[phrase_pos]
+        #
+        #     if len(letter) == 2:
+        #         message += phrase[phrase_pos + 1]
+        #         phrase_pos += 1
+        #
+        #     phrase_pos += 1
+        #
+        #     if phrase_pos == 1:
+        #         tts[0] = time.time()
+        #
+        #     if phrase_pos == len(phrase):
+        #
+        #
+        #         message += ' '
+        #
+        #         score += 1
+        #         phrase_pos = 0
+        #         tts[1] = time.time()
+        #
+        #
+        #         tts_0 = round(tts[1] - tts[0], 3)
+        #         tts[0] = time.time()
+        #
+        #         times_0 = []
+        #         t_max = 99999999999999999999999999999999999999
+        #         for t in times:
+        #             if t < t_max and t > 0:
+        #                 times_0.append(round(t, 3))
+        #         times = times_0
+        #
+        #         # print()
+        #         # print(tts)
+        #         # print(tts_0)
+        #
+        #         times.append(tts_0)
+        #         times = sorted(times)
+        #
+        #         # print()
+        #         # print("times")
+        #         # print(times)
+        #
+        #
+        #
+        #         if phrase == code[len(code)-len(phrase):len(code)]:
+        #             set += 1
+        #
+        #         else:
+        #             set = int(set/2)
+        #
+        #
+        #         code = ''
+        #
+        #         sign_bank[phrase] = (score, rv, times)
+        #
+        #
+        #         filename = 'sign_bank/' + signame
+        #         outfile = open(filename, 'wb')
+        #         pickle.dump(sign_bank, outfile)
+        #         outfile.close
+        #
+        #
+        #
+        #
+        #
+        #
+        #         if ruler == 0:
+        #             set_scale = 1
+        #             for x in range(len(phrase)):
+        #                 rv += digibet[phrase[x]]*int(set/set_scale)
+        #             rv = rv % bbv
+        #
+        #             # print("")
+        #             # print(rv)
+        #             # print(rule)
+        #             rules, rule = rule_gen(rv, base)
+        #             # print(rule)
+        #
+        #             rule = np.array(rule)
+        #
+        #         if dim == 1:
+        #             flow = np.zeros(l, dtype=int)
+        #             flow[int(l / 2)] = 1
+        #             water = np.zeros((h, l), dtype=int)
+        #             water[0] = flow
+        #
+        #         if dim == 2:
+        #             flow = np.zeros((h, l), dtype=int)
+        #             flow[int(l / 2), int(h / 2)] = 1
+        #             water = np.zeros((h, l), dtype=int)
+        #
+        # elif letter_0 == phrase[phrase_pos] or letter_0 == phrase[phrase_pos:phrase_pos+2]:
+        #
+        #     message += phrase[phrase_pos]
+        #
+        #     if len(letter_0) == 2:
+        #         message += phrase[phrase_pos + 1]
+        #         phrase_pos += 1
+        #
+        #     phrase_pos += 1
+        #
+        #     if phrase_pos == 1:
+        #         tts[0] = time.time()
+        #
+        #     if phrase_pos == len(phrase):
+        #
+        #
+        #         message += ' '
+        #
+        #         score += 1
+        #         phrase_pos = 0
+        #         tts[1] = time.time()
+        #
+        #
+        #         tts_0 = round(tts[1] - tts[0], 3)
+        #         tts[0] = time.time()
+        #
+        #         times_0 = []
+        #         t_max = 99999999999999999999999999999999999999
+        #         for t in times:
+        #             if t < t_max and t > 0:
+        #                 times_0.append(round(t, 3))
+        #         times = times_0
+        #
+        #         # print()
+        #         # print(tts)
+        #         # print(tts_0)
+        #
+        #         times.append(tts_0)
+        #         times = sorted(times)
+        #
+        #         # print()
+        #         # print("times")
+        #         # print(times)
+        #
+        #
+        #
+        #         if phrase == code[len(code)-len(phrase):len(code)]:
+        #             set += 1
+        #
+        #         else:
+        #             set = int(set/2)
+        #
+        #
+        #         code = ''
+        #
+        #         sign_bank[phrase] = (score, rv, times)
+        #
+        #
+        #         filename = 'sign_bank/' + signame
+        #         outfile = open(filename, 'wb')
+        #         pickle.dump(sign_bank, outfile)
+        #         outfile.close
+        #
+        #
+        #
+        #
+        #
+        #
+        #         if ruler == 0:
+        #             set_scale = 1
+        #             for x in range(len(phrase)):
+        #                 rv += digibet[phrase[x]]*int(set/set_scale)
+        #             rv = rv % bbv
+        #
+        #             # print("")
+        #             # print(rv)
+        #             # print(rule)
+        #             rules, rule = rule_gen(rv, base)
+        #             # print(rule)
+        #
+        #             rule = np.array(rule)
+        #
+        #         if dim == 1:
+        #             flow = np.zeros(l, dtype=int)
+        #             flow[int(l / 2)] = 1
+        #             water = np.zeros((h, l), dtype=int)
+        #             water[0] = flow
+        #
+        #         if dim == 2:
+        #             flow = np.zeros((h, l), dtype=int)
+        #             flow[int(l / 2), int(h / 2)] = 1
+        #             water = np.zeros((h, l), dtype=int)
 
 
 
     ### rule display #####
 
     if base == 2:
-        rule_l = 16
-        rule_h = 16
 
-        # print(rule)
+        if view == 5:
+            rule_l = 16
+            rule_h = 16
 
-        for x in range(len(rule)):
+            # print(rule)
 
-            rule_x = screen_width/2 + (x%int(len(rule)/2))*rule_l - int(len(rule)/4)*rule_l
-            rule_y = screen_height - screen_height/16 + rule_h*int(x/int(len(rule)/2))
+            for x in range(len(rule)):
 
-            t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
-            pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
+                rule_x = screen_width/2 + (x%int(len(rule)/2))*rule_l - int(len(rule)/4)*rule_l
+                rule_y = screen_height - screen_height/16 + rule_h*int(x/int(len(rule)/2))
+
+                t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
+                pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
+
+        if view == 9:
+            rule_l = 9
+            rule_h = 9
+
+            # print(rule)
+
+            rows = 7
+
+            for x in range(len(rule)):
+                rule_x = screen_width / 2 + (x % int(len(rule) / rows)) * rule_l - int(len(rule) / (2 * rows)) * rule_l
+                rule_y = screen_height - screen_height / 16 - screen_height / 16 + rule_h * int(
+                    x / int(len(rule) / rows))
+
+                t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
+                pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
 
     elif base == 3:
         rule_l = 9
@@ -2504,6 +2764,21 @@ while running:
         # print(rule)
 
         rows = 7
+
+        for x in range(len(rule)):
+            rule_x = screen_width / 2 + (x % int(len(rule) / rows)) * rule_l - int(len(rule) / (2*rows)) * rule_l
+            rule_y = screen_height - screen_height/16 - screen_height / 16 + rule_h * int(x / int(len(rule) / rows))
+
+            t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
+            pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
+
+    elif base == 4:
+        rule_l = 4
+        rule_h = 4
+
+        # print(rule)
+
+        rows = 20
 
         for x in range(len(rule)):
             rule_x = screen_width / 2 + (x % int(len(rule) / rows)) * rule_l - int(len(rule) / (2*rows)) * rule_l
@@ -2532,6 +2807,8 @@ while running:
 
     lesson_t = main_font.render('tts: ' + str(tts_0), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 64, screen_height / 2 - 32))
+
+
 
     ###synth###
     beat = 1
