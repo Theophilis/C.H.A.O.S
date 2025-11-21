@@ -545,9 +545,11 @@ phrase_pos = 0
 goal_bin = '000000'
 gb_len = 6
 
+hand_x = []
 hands_1 = [0, 0]
 hands_0 = [0, 0]
 hands = [0, 0]
+hand_x = [hands, hands_0, hands_1]
 arms = [0, 0]
 code = ''
 code_0 = ' '
@@ -612,7 +614,7 @@ dim = 2
 sim = 0
 
 
-rainbow = 0
+rainbow = 1
 rainbow_speed = 2
 edge_speed = 1
 base = 2
@@ -623,18 +625,18 @@ fade = 1
 bv = base ** view
 bvv = base ** view ** view
 bbv = base**base**view
-rv = 137
+rv = 0
 rv_bank = {}
 
 #####rulers######
 rules, rule = rule_gen(rv, base)
 rule = np.array(rule)
-ruler = 3
+ruler = 4
 shift = 0
 
 print(rule)
 
-l = 700
+l = 500
 h = l
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
@@ -958,8 +960,1373 @@ letter = ' '
 letter_0 = ' '
 letter_1 = ' '
 last_typed = letter
+shifts = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 
 palm_prev = [None, None]
+
+
+def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, canvas=0):
+    #
+    # def draw_a(size, canvas, corner):
+    #
+    #     apex = (corner[1], corner[0] + int(size / 2))
+    #
+    #     canvas[apex] = 1
+    #
+    #     a_legs = dict()
+    #
+    #     for x in range(2):
+    #         a_legs[x] = []
+    #
+    #     for x in range(size - 1):
+    #
+    #         if x % 2 == 0:
+    #
+    #             a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
+    #             a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
+    #
+    #         else:
+    #
+    #             a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
+    #             a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
+    #
+    #     for x in range(2):
+    #         for a in a_legs[x]:
+    #             canvas[a] = 1
+    #
+    #     canvas[a_legs[0][int(len(a_legs[0]) / 2)][0],
+    #     a_legs[0][int(len(a_legs[0]) / 2)][1]:a_legs[1][int(len(a_legs[1]) / 2)][1]] = 1
+    #
+    # def draw_b(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    #
+    #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+    #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+    #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 4)] = 1
+    #
+    #     for x in range(int(size / 4) + 1):
+    #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #
+    #         canvas[corner[1] + x + int(size / 2), corner[0] + int(size / 4) + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size) - x - 1, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #
+    # def draw_c(size, canvas, corner):
+    #
+    #     for x in range(int(size / 3) + 1):
+    #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+    #
+    #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+    #
+    #     for x in range(int(size / 3) + 2):
+    #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+    #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+    #
+    # def draw_d(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    #
+    #     d_coord_0 = (corner[1], corner[0] + int(size / 3))
+    #     d_coord_1 = (corner[1] + size - 1, corner[0] + int(size / 3))
+    #
+    #     canvas[d_coord_0] = 1
+    #     canvas[d_coord_1] = 1
+    #
+    #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+    #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
+    #
+    #     d_legs = dict()
+    #
+    #     for x in range(2):
+    #         d_legs[x] = []
+    #
+    #     for x in range(int(size / 3)):
+    #
+    #         if x == 0:
+    #             d_legs[0].append(d_coord_0)
+    #             d_legs[1].append(d_coord_1)
+    #
+    #         d_legs[0].append((d_coord_0[0] + 1 + x, d_coord_0[1] + 1 + x))
+    #         d_legs[1].append((d_coord_1[0] - 1 - x, d_coord_1[1] + 1 + x))
+    #
+    #     # print(d_legs[0])
+    #     # print(d_legs[1])
+    #
+    #     for k in d_legs[0]:
+    #         canvas[k] = 1
+    #
+    #     for k in d_legs[1]:
+    #         canvas[k] = 1
+    #
+    #     canvas[d_legs[0][-1][0]:d_legs[1][-1][0], d_legs[0][-1][1]] = 1
+    #
+    # def draw_e(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+    #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+    #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
+    #
+    # def draw_f(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
+    #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+    #
+    # def draw_g(size, canvas, corner):
+    #
+    #     canvas[corner[1] + int(size / 3 * 2), corner[0] + int(size / 3):corner[0] + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(int(size / 3) + 1):
+    #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+    #
+    #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+    #
+    #     for x in range(int(size / 3) + 2):
+    #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+    #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+    #
+    # def draw_h(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    #     canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
+    #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 2)] = 1
+    #
+    # def draw_i(size, canvas, corner):
+    #
+    #     canvas[corner[1], corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+    #     canvas[corner[1] + size - 1, corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
+    #     canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+    #
+    # def draw_j(size, canvas, corner):
+    #
+    #     for x in range(int(size / 3) + 1):
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(int(size / 3 * 2)):
+    #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(int(size / 3) + 2):
+    #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+    #
+    # def draw_k(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    #
+    #     k_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
+    #
+    #     canvas[k_coord_0] = 1
+    #
+    #     k_legs = dict()
+    #
+    #     for x in range(2):
+    #         k_legs[x] = []
+    #
+    #     for x in range(int(size / 2)):
+    #
+    #         if x == 0:
+    #             k_legs[0].append(k_coord_0)
+    #             k_legs[1].append(k_coord_0)
+    #
+    #         k_legs[0].append((k_coord_0[0] + 1 + x, k_coord_0[1] + 1 + x))
+    #         k_legs[1].append((k_coord_0[0] - 1 - x, k_coord_0[1] + 1 + x))
+    #
+    #     # print(k_legs[0])
+    #     # print(k_legs[1])
+    #
+    #     for k in k_legs[0]:
+    #         canvas[k] = 1
+    #
+    #     for k in k_legs[1]:
+    #         canvas[k] = 1
+    #
+    # def draw_l(size, canvas, corner):
+    #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2)] = 1
+    #
+    # def draw_m(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    #     canvas[corner[1]:corner[1] + size, corner[0] + size - 1] = 1
+    #
+    #     apex = (corner[1] + size - 1, corner[0] + int(size / 2))
+    #
+    #     canvas[apex] = 1
+    #
+    #     m_legs = dict()
+    #
+    #     for x in range(2):
+    #         m_legs[x] = []
+    #
+    #     for x in range(size - 2):
+    #
+    #         if x % 2 == 0:
+    #
+    #             m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+    #             m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+    #
+    #         else:
+    #
+    #             m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
+    #             m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
+    #
+    #     for x in range(2):
+    #         for m in m_legs[x]:
+    #             canvas[m] = 1
+    #
+    # def draw_n(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
+    #     canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
+    #
+    #     for x in range(size - 1):
+    #         canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
+    #
+    # def draw_o(size, canvas, corner):
+    #
+    #     for x in range(int(size / 3) + 1):
+    #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+    #
+    #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+    #         canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(int(size / 3) + 2):
+    #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+    #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+    #
+    # def draw_p(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    #
+    #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+    #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+    #
+    #     for x in range(int(size / 4) + 1):
+    #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #
+    # def draw_q(size, canvas, corner):
+    #
+    #     for x in range(int(size / 3) + 1):
+    #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2) + int(size / 3) + int(size / 3 / 2)] = 1
+    #
+    #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
+    #         canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(int(size / 3) + 2):
+    #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
+    #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+    #
+    # def draw_r(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
+    #
+    #     r_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
+    #     r_coord_1 = (corner[1], corner[0] + 1)
+    #     r_coord_2 = (corner[1] + int(size / 2), corner[0] + 1 + int(size / 5))
+    #     r_coord_3 = (corner[1], corner[0] + 1 + int(size / 5))
+    #
+    #     # print(r_coord_1)
+    #     # print(r_coord_2)
+    #
+    #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
+    #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
+    #
+    #     r_legs = dict()
+    #
+    #     for x in range(3):
+    #         r_legs[x] = []
+    #
+    #     for x in range(int(size / 2) + 1):
+    #         canvas[corner[1] + int(size / 2) + x, corner[0] + int(size / 5) + int(x / 2)] = 1
+    #
+    #     for x in range(int(size / 4) + 1):
+    #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #
+    # def draw_s(size, canvas, corner):
+    #
+    #     canvas[corner[1] + int(size / 6):corner[1] + int(size / 6) * 2, corner[0]] = 1
+    #     canvas[corner[1] + int(size / 6) * 4:corner[1] + int(size / 6) * 5, corner[0] + int(size / 2)] = 1
+    #     canvas[corner[1], corner[0] + int(size / 6):corner[0] + int(size / 2)] = 1
+    #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2) - int(size / 6)] = 1
+    #
+    #     for x in range(int(size / 2)):
+    #         canvas[corner[1] + int(size / 6) * 2 + int(5 * x / 6) - 1, corner[0] + x] = 1
+    #
+    #     for x in range(int(size / 6)):
+    #         canvas[corner[1] + int(size / 6) - x, corner[0] + x] = 1
+    #         canvas[corner[1] + int(size / 6) * 5 + x, corner[0] + int(size / 2) - x - 1] = 1
+    #
+    # def draw_t(size, canvas, corner):
+    #
+    #     canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
+    #     canvas[corner[1], corner[0] + int(size / 5):corner[0] + size - int(size / 5)] = 1
+    #
+    # def draw_u(size, canvas, corner):
+    #
+    #     for x in range(int(size / 3) + 1):
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(int(size / 3 * 2)):
+    #         canvas[corner[1] + x, corner[0]] = 1
+    #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(int(size / 3) + 2):
+    #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
+    #
+    # def draw_v(size, canvas, corner):
+    #
+    #     for x in range(size - 1):
+    #         canvas[corner[1] + x, corner[0] + int(x / 3)] = 1
+    #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(x / 3) - 1] = 1
+    #
+    # def draw_w(size, canvas, corner):
+    #
+    #     for x in range(size):
+    #         canvas[corner[1] + x, corner[0] + int(x / 4)] = 1
+    #         canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 4)] = 1
+    #         canvas[corner[1] + x, corner[0] + int(x / 4) + int(size / 2)] = 1
+    #         canvas[corner[1] + x, corner[0] + int(size) - int(x / 4) - 1] = 1
+    #
+    # def draw_x(size, canvas, corner):
+    #
+    #     for x in range(size - 1):
+    #         canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
+    #         canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 2) - 1] = 1
+    #
+    # def draw_y(size, canvas, corner):
+    #
+    #     canvas[corner[1] + int(size / 2):corner[1] + int(size), corner[0] + int(size / 2)] = 1
+    #
+    #     for x in range(int(size / 2)):
+    #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
+    #         canvas[corner[1] + x, corner[0] + int(size / 4 * 3) - int(x / 2)] = 1
+    #
+    # def draw_z(size, canvas, corner):
+    #     canvas[corner[1], corner[0]:corner[0] + int(size / 3 * 2)] = 1
+    #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3 * 2)] = 1
+    #
+    #     for x in range(size):
+    #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(2 * x / 3)] = 1
+
+    rainbow_reset = 0
+
+    m_list = list(message)
+
+    # print("")
+    # print("m_list")
+    # print(m_list)
+
+    line = 0
+
+    canvas = np.rot90(canvas)
+    canvas = np.flipud(canvas)
+
+    l_place = 0
+
+    for c in m_list:
+
+        if x_o + l_size + (l_size + x_space) * l_place > l - x_o:
+            l_place = 0
+            line += 1
+
+        if y_o + l_size + l_size * line + y_space * line > h - y_o:
+            l_place = 0
+            line = 0
+            x_o += 1
+
+            rainbow_reset = 1
+
+        # for c in m:
+
+        if c == 'a':
+
+            for offset in (0, offset_size, density):
+                draw_a(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_a(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_a(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_a(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'b':
+
+            for offset in (0, offset_size, density):
+                draw_b(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_b(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_b(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_b(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'c':
+
+            for offset in (0, offset_size, density):
+                draw_c(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_c(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_c(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_c(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'd':
+
+            for offset in (0, offset_size, density):
+                draw_d(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_d(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_d(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_d(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'e':
+
+            for offset in (0, offset_size, density):
+                draw_e(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_e(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_e(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_e(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'f':
+
+            for offset in (0, offset_size, density):
+                draw_f(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_f(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_f(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_f(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'g':
+
+            for offset in (0, offset_size, density):
+                draw_g(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_g(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_g(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_g(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'h':
+
+            for offset in (0, offset_size, density):
+                draw_h(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_h(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_h(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_h(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'i':
+
+            for offset in (0, offset_size, density):
+                draw_i(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_i(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_i(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_i(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'j':
+
+            for offset in (0, offset_size, density):
+                draw_j(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_j(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_j(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_j(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'k':
+
+            for offset in (0, offset_size, density):
+                draw_k(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_k(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_k(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_k(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'l':
+
+            for offset in (0, offset_size, density):
+                draw_l(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_l(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_l(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_l(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'm':
+
+            for offset in (0, offset_size, density):
+                draw_m(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_m(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_m(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_m(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'n':
+
+            for offset in (0, offset_size, density):
+                draw_n(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_n(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_n(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_n(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'o':
+
+            for offset in (0, offset_size, density):
+                draw_o(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_o(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_o(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_o(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'p':
+
+            for offset in (0, offset_size, density):
+                draw_p(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_p(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_p(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_p(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'q':
+
+            for offset in (0, offset_size, density):
+                draw_q(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_q(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_q(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_q(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'r':
+
+            for offset in (0, offset_size, density):
+                draw_r(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_r(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_r(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_r(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 's':
+
+            for offset in (0, offset_size, density):
+                draw_s(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_s(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_s(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_s(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 't':
+
+            for offset in (0, offset_size, density):
+                draw_t(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_t(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_t(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_t(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'u':
+
+            for offset in (0, offset_size, density):
+                draw_u(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_u(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_u(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_u(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'v':
+
+            for offset in (0, offset_size, density):
+                draw_v(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_v(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_v(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_v(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'w':
+
+            for offset in (0, offset_size, density):
+                draw_w(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_w(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_w(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_w(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'x':
+
+            for offset in (0, offset_size, density):
+                draw_x(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_x(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_x(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_x(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'y':
+
+            for offset in (0, offset_size, density):
+                draw_y(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_y(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_y(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_y(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == 'z':
+
+            for offset in (0, offset_size, density):
+                draw_z(l_size, canvas,
+                       (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_z(l_size, canvas,
+                       (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
+                draw_z(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
+                draw_z(l_size, canvas,
+                       (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
+
+        if c == ' ':
+            l_place += 1
+
+        l_place += 1
+
+    canvas = np.flipud(canvas)
+    canvas = np.rot90(canvas, 3)
+
+    return canvas, rainbow_reset
+
+
+def water_update(flow):
+    global view, cell_map
+
+    if view == 5:
+        flow_1 = np.roll(flow, -1)
+        flow_2 = np.roll(flow, 1)
+        flow_3 = np.roll(flow, -l)
+        flow_4 = np.roll(flow, l)
+
+        currents = [flow, flow_3, flow_4, flow_1, flow_2]
+
+        current = currents[0] * 1 + currents[1] * base + currents[2] * base ** 2 + currents[3] * base ** 3 + \
+                  currents[4] * base ** 4
+        # print()
+        # print(current)
+        water = rule[-current.astype(int)]
+
+        if sim == 1:
+            water = rule[-(current.astype(int) % int(len(rule) / base))]
+
+        water = water.astype(int)
+
+        return water
+
+    elif view == 9:
+        L = np.roll(flow, -1)
+        R = np.roll(flow, 1)
+        U = np.roll(flow, -l)
+        D = np.roll(flow, l)
+
+        UL = np.roll(flow, -l - 1)
+        UR = np.roll(flow, -l + 1)
+        DL = np.roll(flow, l - 1)
+        DR = np.roll(flow, l + 1)
+
+        current = (
+                UL * base ** 0 +
+                U * base ** 1 +
+                UR * base ** 2 +
+                L * base ** 3 +
+                flow * base ** 4 +
+                R * base ** 5 +
+                DL * base ** 6 +
+                D * base ** 7 +
+                DR * base ** 8
+        )
+        # print()
+        # print(current)
+        water = rule[-current.astype(int)]
+
+        if sim == 1:
+            water = rule[-(current.astype(int) % int(len(rule) / base))]
+
+        water = water.astype(int)
+
+        return water
+
+def color_dist(a, b):
+
+        ca = np.mean(a.reshape(-1, 3), axis=0)
+        cb = np.mean(b.reshape(-1, 3), axis=0)
+
+
+        return np.linalg.norm(ca - cb)
+
+
+def fill_bin(bin):
+    if len(bin) < 5:
+        zeros = ''
+        for x in range(5 - len(bin)):
+            zeros += '0'
+        bin = zeros + bin
+
+    return bin
+
+
+def digits_to_index(digits, base):
+    idx = 0
+    for d in digits:
+        idx = idx * base + d
+    return idx
+
+def handle(hand, code_0):
+    global stamp_x, stamp_y, code, rv, shift, rule, tts_1, shifts, hands_x, rule_base
+
+
+    if hand[0] == hand[1]:
+
+        if hand[0] != code_0:
+
+            letter = hand[0]
+            code_0 = hand[0]
+            code += hand[0]
+
+            code_bin = base_x(digibet[code_0], 2)
+            code_bin = fill_bin(code_bin)
+            # print(goal_bin)
+
+            for x in range(5):
+
+                stamp_y0 = stamp_y + int(stamp_s * 1.2) * x
+
+                if code_bin[x] == '1':
+                    flow[stamp_x:stamp_x + stamp_s, stamp_y0:stamp_y0 + stamp_s + (stamp_s + 2) * x] = (flow[
+                                                                                                        stamp_x:stamp_x + stamp_s,
+                                                                                                        stamp_y0:stamp_y0 + stamp_s + (
+                                                                                                                    stamp_s + 2) * x] + 1) % base
+
+            stamp_x += int(stamp_s * 1.3)
+
+            if stamp_x > 400:
+                stamp_x = 32
+                stamp_y += stamp_s * 6
+
+            if stamp_y > 400:
+                stamp_y = 32
+
+            stenograph.append((code_0, round(time.time() - tts_1, 3), datetime.now()))
+            # sign_bank['steno'] = []
+            tts_1 = time.time()
+
+            if ruler == 0:
+                rv += digibet[code_0]
+                rv = rv % bbv
+                rules, rule = rule_gen(rv, base)
+                rule = np.array(rule)
+
+
+            elif ruler == 1:
+
+                shift += digibet[code_0]
+
+                shift = shift % len(rule)
+
+                rule[shift] = str((int(rule[shift]) + 1) % base)
+
+                rule_str = "".join(rule)
+                rv = int(rule_str, base)
+                rv = rv % bbv
+
+
+            elif ruler == 2:
+
+
+                shift += digibet[code_0]
+
+                shift = shift % len(rule)
+
+                rule[shift] = str((int(rule[shift]) + 1) % base)
+
+                mirror = (int(len(rule)/2) + shift)%len(rule)
+                rule[mirror] = str((int(rule[mirror]) + 1) % base)
+
+
+            elif ruler == 3:
+
+
+
+                shift += digibet[code_0]
+
+                shift = shift % len(rule)
+
+                # print()
+                # print('shift')
+                # print(shift)
+
+                rule[shift] = str((int(rule[shift]) + 1) % base)
+
+                shift_base = base_x(shift, base)
+
+                shift_base = fill_bin(shift_base)
+
+                shift_flip = shift_base[::-1]
+
+
+
+                # print('base')
+                # print(shift_base)
+                # print(shift_flip)
+
+                shifts[0] = [c for c in shift_flip]
+
+                if len(code_bin) < view:
+                    zeros = ''
+                    for x in range(5 - len(code_bin)):
+                        zeros += '0'
+                    shift_base = zeros + shift_base
+
+                inv_base = shift_base.translate(str.maketrans('01', '10'))
+
+                inv_flip = inv_base[::-1]
+
+                shifts[1] = [c for c in inv_flip]
+
+                # print(inv_flip)
+                #
+                # print(inv_base)
+
+
+                inv_digits = [int(c) for c in inv_base]
+
+
+
+                inv_index = digits_to_index(inv_digits, base)
+
+
+                # print('inv')
+                # print(inv_index)
+                #
+                # print("")
+                # print("shifts")
+                # print(shifts)
+
+
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+
+                shifts[2] = shifts[0][::]
+                shifts[3] = shifts[1][::]
+
+                # print(int(view/2))
+
+                center = 0
+
+                # print('center')
+                # print(center)
+                #
+                # print(shifts)
+
+                for x in range(2):
+
+                    if shifts[2+x][center] == '0':
+
+                        shifts[2+x][center] = '1'
+
+                    elif shifts[2+x][center] == '1':
+
+                        if base == 2:
+                            shifts[2+x][center] = '0'
+                        else:
+                            shifts[2 + x][center] = '2'
+
+                    elif shifts[2+x][center] == '2':
+
+                        shifts[2 + x][center] = '0'
+
+
+                # print(shifts)
+
+                flip = shifts[2][::-1]
+                inv_index = digits_to_index([int(c) for c in flip], base)
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+                flip = shifts[3][::-1]
+                inv_index = digits_to_index([int(c) for c in flip], base)
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+            elif ruler == 4:
+
+                rule = rule_base.copy()
+
+
+
+                shift = digibet[code_0]
+
+                shift = shift % len(rule)
+
+                print()
+                print('shift')
+                print(shift)
+
+                rule[shift] = str((int(rule[shift]) + 1) % base)
+
+                shift_base = base_x(shift, base)
+
+                shift_base = fill_bin(shift_base)
+
+                shift_flip = shift_base[::-1]
+
+
+
+                print('base')
+                print(shift_base)
+                print(shift_flip)
+
+                shifts[0] = [c for c in shift_flip]
+
+
+                inv_base = shift_base.translate(str.maketrans('01', '10'))
+
+                inv_flip = inv_base[::-1]
+
+                shifts[1] = [c for c in inv_flip]
+
+                print(inv_flip)
+
+                print(inv_base)
+
+
+                inv_digits = [int(c) for c in inv_base]
+
+
+
+                inv_index = digits_to_index(inv_digits, base)
+
+
+                print('inv')
+                print(inv_index)
+
+                print("")
+                print("shifts")
+                print(shifts)
+
+
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+
+                shifts[2] = shifts[0][::]
+                shifts[3] = shifts[1][::]
+
+                # print(int(view/2))
+
+                center = 0
+
+                # print('center')
+                # print(center)
+                #
+                # print(shifts)
+
+                for x in range(2):
+
+                    if shifts[2+x][center] == '0':
+
+                        shifts[2+x][center] = '1'
+
+                    elif shifts[2+x][center] == '1':
+
+                        if base == 2:
+                            shifts[2+x][center] = '0'
+                        else:
+                            shifts[2 + x][center] = '2'
+
+                    elif shifts[2+x][center] == '2':
+
+                        shifts[2 + x][center] = '0'
+
+
+                # print(shifts)
+
+                flip = shifts[2][::-1]
+                inv_index = digits_to_index([int(c) for c in flip], base)
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+                flip = shifts[3][::-1]
+                inv_index = digits_to_index([int(c) for c in flip], base)
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+            elif ruler == 5:
+
+                rule = rule_base.copy()
+
+
+
+                shift = digibet[code_0]
+
+                shift = shift % len(rule)
+
+                print()
+                print('shift')
+                print(shift)
+
+                rule[shift] = str((int(rule[shift]) + 1) % base)
+
+                shift_base = base_x(shift, base)
+
+                shift_base = fill_bin(shift_base)
+
+                shift_flip = shift_base[::-1]
+
+
+
+                print('base')
+                print(shift_base)
+                print(shift_flip)
+
+                shifts[0] = [c for c in shift_flip]
+
+
+                inv_base = shift_base.translate(str.maketrans('01', '10'))
+
+                inv_flip = inv_base[::-1]
+
+                shifts[1] = [c for c in inv_flip]
+
+                print(inv_flip)
+
+                print(inv_base)
+
+
+                inv_digits = [int(c) for c in inv_base]
+
+
+
+                inv_index = digits_to_index(inv_digits, base)
+
+
+                print('inv')
+                print(inv_index)
+
+                print("")
+                print("shifts")
+                print(shifts)
+
+
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+
+                shifts[2] = shifts[0][::]
+                shifts[3] = shifts[1][::]
+
+                # print(int(view/2))
+
+                center = 0
+
+                # print('center')
+                # print(center)
+                #
+                # print(shifts)
+
+                for x in range(2):
+
+                    if shifts[2+x][center] == '0':
+
+                        shifts[2+x][center] = '1'
+
+                    elif shifts[2+x][center] == '1':
+
+                        if base == 2:
+                            shifts[2+x][center] = '0'
+                        else:
+                            shifts[2 + x][center] = '2'
+
+                    elif shifts[2+x][center] == '2':
+
+                        shifts[2 + x][center] = '0'
+
+
+                # print(shifts)
+
+
+
+
+
+
+
+
+        else:
+            letter = code_0
+
+    else:
+        letter = code_0
+
+
+    # print(letter)
+
+    return letter, code_0
+
+def submit(letter):
+
+    # print(letter)
+
+    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water
+
+    if letter == last_typed:
+        letter = code_0
+    elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos + 2]:
+        message += phrase[phrase_pos]
+        phrase_pos += 1
+
+        if len(letter) == 2:
+            message += phrase[(phrase_pos + 1)%len(phrase)]
+            phrase_pos += 1
+
+        if phrase_pos == 1:
+            tts[0] = time.time()
+
+        if phrase_pos == len(phrase):
+
+            message += ' '
+
+            score += 1
+            phrase_pos = 0
+            tts[1] = time.time()
+
+            tts_0 = round(tts[1] - tts[0], 3)
+            tts[0] = time.time()
+
+            times_0 = []
+            t_max = 99999999999999999999999999999999999999
+            for t in times:
+                if t < t_max and t > 0:
+                    times_0.append(round(t, 3))
+            times = times_0
+
+            # print()
+            # print(tts)
+            # print(tts_0)
+
+            times.append(tts_0)
+            times = sorted(times)
+
+            # print()
+            # print("times")
+            # print(times)
+
+            if phrase == code[len(code) - len(phrase):len(code)]:
+                set += 1
+
+            else:
+                set = int(set / 2)
+
+            code = ''
+
+            sign_bank[phrase] = (score, rv, times)
+
+            filename = 'sign_bank/' + signame
+            outfile = open(filename, 'wb')
+            pickle.dump(sign_bank, outfile)
+            outfile.close
+
+            if ruler == 0:
+                set_scale = 1
+                for x in range(len(phrase)):
+                    rv += digibet[phrase[x]] * int(set / set_scale)
+                rv = rv % bbv
+
+                # print("")
+                # print(rv)
+                # print(rule)
+                rules, rule = rule_gen(rv, base)
+                # print(rule)
+
+                rule = np.array(rule)
+
+            if dim == 1:
+                flow = np.zeros(l, dtype=int)
+                flow[int(l / 2)] = 1
+                water = np.zeros((h, l), dtype=int)
+                water[0] = flow
+
+            if dim == 2:
+                if ruler < 4:
+                    flow = np.zeros((h, l), dtype=int)
+                    flow[int(l / 2), int(h / 2)] = 1
+                    water = np.zeros((h, l), dtype=int)
+
+
+            if dim == 3:
+                flow = np.zeros((h, l), dtype=int)
+                flow[int(l / 2), int(h / 2)] = 1
+                water = np.zeros((h, l), dtype=int)
+
+def base_x(n, b):
+    if n == 0:
+        return "0"
+    digits = ""
+    while n > 0:
+        digits = str(n % b) + digits
+        n //= b
+    return digits
+
+
+####right hand####
+
+
+x_s = 36
+y_s = 36
+x_g = 28
+y_g = 0
+x_pos = (x_s + x_g) * 2
+y_pos = 500
+palm_x = x_pos + x_s * 6
+palm_y = y_pos + y_s * 9
+
+hand = [0, 0, 0, 0, 0, 0]
+hand_0 = [0, 0, 0, 0, 0, 0]
+hand_1 = [0, 0, 0, 0, 0, 0]
+
+palm = [0, 0, 0, 0, 0, 0]
+
+tips = [64, 16, 0, 24, 0]
+
+right_x = {
+    "size": x_s,
+    "gap": x_g,
+    "start": x_pos,
+    "palm": palm_x,
+    "step": x_s + x_g
+}
+
+right_y = {
+    "size": y_s,
+    "gap": y_g,
+    "start": y_pos,
+    "palm": palm_y,
+    "step": y_s + y_g
+}
+
+right_roi = [
+    (
+        right_x["start"] + right_x["step"] * (n + 1),
+        right_y["start"] + tips[n],
+        right_x["start"] + right_x["step"] * (n + 1) + right_x["size"],
+        right_y["start"] + tips[n] + right_y["size"]
+    )
+    for n in range(5)
+]
+
+right_roi[4] = (
+    right_x["start"] + right_x["step"] * 5 + right_x["size"],
+    right_y["start"] + tips[4] + right_y["size"] * 5,
+    right_x["start"] + right_x["step"] * 5 + right_x["size"] * 2,
+    right_y["start"] + tips[4] + right_y["size"] * 6
+)
+
+x_pos = palm_x - x_s * 1
+y_pos = palm_y - x_s * 2
+
+right_roi.append((x_pos, y_pos, x_pos + x_s, y_pos + y_s))
+
+roi_map = []
+dist_map = []
+place = 0
+
+flex_c = 16
+flex_m = 64
+flex_p = 128
+
+
+
+cell_map = [(0, 0), (-1, 0), (1, 0), (0, 1), (0, -1)]
+
+rule_base = rule.copy()
+
 
 
 
@@ -974,624 +2341,10 @@ while running:
     hand_array = pygame.surfarray.array3d(image)
 
 
+
     ###water canvas
 
     ####water type####
-
-    def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, canvas=0):
-        #
-        # def draw_a(size, canvas, corner):
-        #
-        #     apex = (corner[1], corner[0] + int(size / 2))
-        #
-        #     canvas[apex] = 1
-        #
-        #     a_legs = dict()
-        #
-        #     for x in range(2):
-        #         a_legs[x] = []
-        #
-        #     for x in range(size - 1):
-        #
-        #         if x % 2 == 0:
-        #
-        #             a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
-        #             a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
-        #
-        #         else:
-        #
-        #             a_legs[0].append((apex[0] + 1 + x, apex[1] - 1 - int(x / 2)))
-        #             a_legs[1].append((apex[0] + 1 + x, apex[1] + 1 + int(x / 2)))
-        #
-        #     for x in range(2):
-        #         for a in a_legs[x]:
-        #             canvas[a] = 1
-        #
-        #     canvas[a_legs[0][int(len(a_legs[0]) / 2)][0],
-        #     a_legs[0][int(len(a_legs[0]) / 2)][1]:a_legs[1][int(len(a_legs[1]) / 2)][1]] = 1
-        #
-        # def draw_b(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
-        #
-        #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
-        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
-        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 4)] = 1
-        #
-        #     for x in range(int(size / 4) + 1):
-        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #
-        #         canvas[corner[1] + x + int(size / 2), corner[0] + int(size / 4) + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size) - x - 1, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #
-        # def draw_c(size, canvas, corner):
-        #
-        #     for x in range(int(size / 3) + 1):
-        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
-        #
-        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
-        #
-        #     for x in range(int(size / 3) + 2):
-        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
-        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
-        #
-        # def draw_d(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
-        #
-        #     d_coord_0 = (corner[1], corner[0] + int(size / 3))
-        #     d_coord_1 = (corner[1] + size - 1, corner[0] + int(size / 3))
-        #
-        #     canvas[d_coord_0] = 1
-        #     canvas[d_coord_1] = 1
-        #
-        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
-        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
-        #
-        #     d_legs = dict()
-        #
-        #     for x in range(2):
-        #         d_legs[x] = []
-        #
-        #     for x in range(int(size / 3)):
-        #
-        #         if x == 0:
-        #             d_legs[0].append(d_coord_0)
-        #             d_legs[1].append(d_coord_1)
-        #
-        #         d_legs[0].append((d_coord_0[0] + 1 + x, d_coord_0[1] + 1 + x))
-        #         d_legs[1].append((d_coord_1[0] - 1 - x, d_coord_1[1] + 1 + x))
-        #
-        #     # print(d_legs[0])
-        #     # print(d_legs[1])
-        #
-        #     for k in d_legs[0]:
-        #         canvas[k] = 1
-        #
-        #     for k in d_legs[1]:
-        #         canvas[k] = 1
-        #
-        #     canvas[d_legs[0][-1][0]:d_legs[1][-1][0], d_legs[0][-1][1]] = 1
-        #
-        # def draw_e(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
-        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
-        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
-        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3)] = 1
-        #
-        # def draw_f(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
-        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3)] = 1
-        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
-        #
-        # def draw_g(size, canvas, corner):
-        #
-        #     canvas[corner[1] + int(size / 3 * 2), corner[0] + int(size / 3):corner[0] + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(int(size / 3) + 1):
-        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
-        #
-        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
-        #
-        #     for x in range(int(size / 3) + 2):
-        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
-        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
-        #
-        # def draw_h(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
-        #     canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
-        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 2)] = 1
-        #
-        # def draw_i(size, canvas, corner):
-        #
-        #     canvas[corner[1], corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
-        #     canvas[corner[1] + size - 1, corner[0] + int(size / 4):corner[0] + size - int(size / 4)] = 1
-        #     canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
-        #
-        # def draw_j(size, canvas, corner):
-        #
-        #     for x in range(int(size / 3) + 1):
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(int(size / 3 * 2)):
-        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(int(size / 3) + 2):
-        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
-        #
-        # def draw_k(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
-        #
-        #     k_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
-        #
-        #     canvas[k_coord_0] = 1
-        #
-        #     k_legs = dict()
-        #
-        #     for x in range(2):
-        #         k_legs[x] = []
-        #
-        #     for x in range(int(size / 2)):
-        #
-        #         if x == 0:
-        #             k_legs[0].append(k_coord_0)
-        #             k_legs[1].append(k_coord_0)
-        #
-        #         k_legs[0].append((k_coord_0[0] + 1 + x, k_coord_0[1] + 1 + x))
-        #         k_legs[1].append((k_coord_0[0] - 1 - x, k_coord_0[1] + 1 + x))
-        #
-        #     # print(k_legs[0])
-        #     # print(k_legs[1])
-        #
-        #     for k in k_legs[0]:
-        #         canvas[k] = 1
-        #
-        #     for k in k_legs[1]:
-        #         canvas[k] = 1
-        #
-        # def draw_l(size, canvas, corner):
-        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
-        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2)] = 1
-        #
-        # def draw_m(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
-        #     canvas[corner[1]:corner[1] + size, corner[0] + size - 1] = 1
-        #
-        #     apex = (corner[1] + size - 1, corner[0] + int(size / 2))
-        #
-        #     canvas[apex] = 1
-        #
-        #     m_legs = dict()
-        #
-        #     for x in range(2):
-        #         m_legs[x] = []
-        #
-        #     for x in range(size - 2):
-        #
-        #         if x % 2 == 0:
-        #
-        #             m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
-        #             m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
-        #
-        #         else:
-        #
-        #             m_legs[0].append((apex[0] - 1 - x, apex[1] - 1 - int(x / 2)))
-        #             m_legs[1].append((apex[0] - 1 - x, apex[1] + 1 + int(x / 2)))
-        #
-        #     for x in range(2):
-        #         for m in m_legs[x]:
-        #             canvas[m] = 1
-        #
-        # def draw_n(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size - 1, corner[0]] = 1
-        #     canvas[corner[1]:corner[1] + size - 1, corner[0] + int(size / 2)] = 1
-        #
-        #     for x in range(size - 1):
-        #         canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
-        #
-        # def draw_o(size, canvas, corner):
-        #
-        #     for x in range(int(size / 3) + 1):
-        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
-        #
-        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
-        #         canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(int(size / 3) + 2):
-        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
-        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
-        #
-        # def draw_p(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
-        #
-        #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
-        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
-        #
-        #     for x in range(int(size / 4) + 1):
-        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #
-        # def draw_q(size, canvas, corner):
-        #
-        #     for x in range(int(size / 3) + 1):
-        #         canvas[corner[1] + int(size / 3) - x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3) - x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2) + int(size / 3) + int(size / 3 / 2)] = 1
-        #
-        #         canvas[corner[1] + int(size / 3) + x, corner[0]] = 1
-        #         canvas[corner[1] + int(size / 3) + x, corner[0] + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(int(size / 3) + 2):
-        #         canvas[corner[1], corner[0] + int(size / 3 / 2) + x] = 1
-        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
-        #
-        # def draw_r(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0]] = 1
-        #
-        #     r_coord_0 = (corner[1] + int(size / 2), corner[0] + 1)
-        #     r_coord_1 = (corner[1], corner[0] + 1)
-        #     r_coord_2 = (corner[1] + int(size / 2), corner[0] + 1 + int(size / 5))
-        #     r_coord_3 = (corner[1], corner[0] + 1 + int(size / 5))
-        #
-        #     # print(r_coord_1)
-        #     # print(r_coord_2)
-        #
-        #     canvas[corner[1], corner[0]:corner[0] + int(size / 4)] = 1
-        #     canvas[corner[1] + int(size / 2), corner[0]:corner[0] + int(size / 4)] = 1
-        #
-        #     r_legs = dict()
-        #
-        #     for x in range(3):
-        #         r_legs[x] = []
-        #
-        #     for x in range(int(size / 2) + 1):
-        #         canvas[corner[1] + int(size / 2) + x, corner[0] + int(size / 5) + int(x / 2)] = 1
-        #
-        #     for x in range(int(size / 4) + 1):
-        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 2) - x, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #
-        # def draw_s(size, canvas, corner):
-        #
-        #     canvas[corner[1] + int(size / 6):corner[1] + int(size / 6) * 2, corner[0]] = 1
-        #     canvas[corner[1] + int(size / 6) * 4:corner[1] + int(size / 6) * 5, corner[0] + int(size / 2)] = 1
-        #     canvas[corner[1], corner[0] + int(size / 6):corner[0] + int(size / 2)] = 1
-        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 2) - int(size / 6)] = 1
-        #
-        #     for x in range(int(size / 2)):
-        #         canvas[corner[1] + int(size / 6) * 2 + int(5 * x / 6) - 1, corner[0] + x] = 1
-        #
-        #     for x in range(int(size / 6)):
-        #         canvas[corner[1] + int(size / 6) - x, corner[0] + x] = 1
-        #         canvas[corner[1] + int(size / 6) * 5 + x, corner[0] + int(size / 2) - x - 1] = 1
-        #
-        # def draw_t(size, canvas, corner):
-        #
-        #     canvas[corner[1]:corner[1] + size, corner[0] + int(size / 2)] = 1
-        #     canvas[corner[1], corner[0] + int(size / 5):corner[0] + size - int(size / 5)] = 1
-        #
-        # def draw_u(size, canvas, corner):
-        #
-        #     for x in range(int(size / 3) + 1):
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + int(size / 3 * 2) + x, corner[0] - int(x / 2) + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(int(size / 3 * 2)):
-        #         canvas[corner[1] + x, corner[0]] = 1
-        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(int(size / 3) + 2):
-        #         canvas[corner[1] + size - 1, corner[0] + int(size / 3 / 2) + x] = 1
-        #
-        # def draw_v(size, canvas, corner):
-        #
-        #     for x in range(size - 1):
-        #         canvas[corner[1] + x, corner[0] + int(x / 3)] = 1
-        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(x / 3) - 1] = 1
-        #
-        # def draw_w(size, canvas, corner):
-        #
-        #     for x in range(size):
-        #         canvas[corner[1] + x, corner[0] + int(x / 4)] = 1
-        #         canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 4)] = 1
-        #         canvas[corner[1] + x, corner[0] + int(x / 4) + int(size / 2)] = 1
-        #         canvas[corner[1] + x, corner[0] + int(size) - int(x / 4) - 1] = 1
-        #
-        # def draw_x(size, canvas, corner):
-        #
-        #     for x in range(size - 1):
-        #         canvas[corner[1] + x, corner[0] + int(x / 2)] = 1
-        #         canvas[corner[1] + x, corner[0] + int(size / 2) - int(x / 2) - 1] = 1
-        #
-        # def draw_y(size, canvas, corner):
-        #
-        #     canvas[corner[1] + int(size / 2):corner[1] + int(size), corner[0] + int(size / 2)] = 1
-        #
-        #     for x in range(int(size / 2)):
-        #         canvas[corner[1] + x, corner[0] + int(size / 4) + int(x / 2)] = 1
-        #         canvas[corner[1] + x, corner[0] + int(size / 4 * 3) - int(x / 2)] = 1
-        #
-        # def draw_z(size, canvas, corner):
-        #     canvas[corner[1], corner[0]:corner[0] + int(size / 3 * 2)] = 1
-        #     canvas[corner[1] + size - 1, corner[0]:corner[0] + int(size / 3 * 2)] = 1
-        #
-        #     for x in range(size):
-        #         canvas[corner[1] + x, corner[0] + int(size / 3 * 2) - int(2 * x / 3)] = 1
-
-        rainbow_reset = 0
-
-        m_list = list(message)
-
-        # print("")
-        # print("m_list")
-        # print(m_list)
-
-        line = 0
-
-        canvas = np.rot90(canvas)
-        canvas = np.flipud(canvas)
-
-
-        l_place = 0
-
-        for c in m_list:
-
-            if x_o + l_size + (l_size + x_space) * l_place > l-x_o:
-                l_place = 0
-                line += 1
-
-            if y_o + l_size + l_size * line + y_space * line > h-y_o:
-
-                l_place = 0
-                line = 0
-                x_o += 1
-
-                rainbow_reset = 1
-
-
-        # for c in m:
-
-
-            if c == 'a':
-
-                for offset in (0, offset_size, density):
-                    draw_a(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_a(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_a(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_a(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'b':
-
-                for offset in (0, offset_size, density):
-                    draw_b(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_b(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_b(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_b(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'c':
-
-                for offset in (0, offset_size, density):
-                    draw_c(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_c(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_c(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_c(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'd':
-
-                for offset in (0, offset_size, density):
-                    draw_d(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_d(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_d(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_d(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'e':
-
-                for offset in (0, offset_size, density):
-                    draw_e(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_e(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_e(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_e(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'f':
-
-                for offset in (0, offset_size, density):
-                    draw_f(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_f(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_f(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_f(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'g':
-
-                for offset in (0, offset_size, density):
-                    draw_g(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_g(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_g(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_g(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'h':
-
-                for offset in (0, offset_size, density):
-                    draw_h(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_h(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_h(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_h(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'i':
-
-                for offset in (0, offset_size, density):
-                    draw_i(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_i(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_i(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_i(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'j':
-
-                for offset in (0, offset_size, density):
-                    draw_j(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_j(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_j(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_j(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'k':
-
-                for offset in (0, offset_size, density):
-                    draw_k(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_k(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_k(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_k(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'l':
-
-                for offset in (0, offset_size, density):
-                    draw_l(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_l(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_l(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_l(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'm':
-
-                for offset in (0, offset_size, density):
-                    draw_m(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_m(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_m(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_m(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'n':
-
-                for offset in (0, offset_size, density):
-                    draw_n(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_n(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_n(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_n(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'o':
-
-                for offset in (0, offset_size, density):
-                    draw_o(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_o(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_o(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_o(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'p':
-
-                for offset in (0, offset_size, density):
-                    draw_p(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_p(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_p(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_p(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'q':
-
-                for offset in (0, offset_size, density):
-                    draw_q(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_q(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_q(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_q(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'r':
-
-                for offset in (0, offset_size, density):
-                    draw_r(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_r(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_r(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_r(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 's':
-
-                for offset in (0, offset_size, density):
-                    draw_s(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_s(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_s(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_s(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 't':
-
-                for offset in (0, offset_size, density):
-                    draw_t(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_t(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_t(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_t(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'u':
-
-                for offset in (0, offset_size, density):
-                    draw_u(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_u(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_u(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_u(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'v':
-
-                for offset in (0, offset_size, density):
-                    draw_v(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_v(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_v(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_v(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'w':
-
-                for offset in (0, offset_size, density):
-                    draw_w(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_w(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_w(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_w(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'x':
-
-                for offset in (0, offset_size, density):
-                    draw_x(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_x(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_x(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_x(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'y':
-
-                for offset in (0, offset_size, density):
-                    draw_y(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_y(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_y(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_y(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == 'z':
-
-                for offset in (0, offset_size, density):
-                    draw_z(l_size, canvas, (x_o + offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_z(l_size, canvas, (x_o - offset + (l_size + x_space) * l_place, y_o + l_size * line + y_space * line))
-                    draw_z(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o + offset + l_size * line + y_space * line))
-                    draw_z(l_size, canvas, (x_o + (l_size + x_space) * l_place, y_o - offset + l_size * line + y_space * line))
-
-            if c == ' ':
-                l_place += 1
-
-            l_place += 1
-
-
-
-        canvas = np.flipud(canvas)
-        canvas = np.rot90(canvas, 3)
-
-
-
-        return canvas, rainbow_reset
-
 
 
     size = 64
@@ -1617,10 +2370,18 @@ while running:
         rainbow_speed += 1
         set += 1
 
+
+
         rainbow_reset = 0
 
         messages.append(message[::])
         message = []
+
+
+        if ruler > 3:
+            flow = np.zeros((h, l), dtype=int)
+            flow[int(l / 2), int(h / 2)] = 1
+            water = np.zeros((h, l), dtype=int)
 
 
     ###messages###
@@ -1630,64 +2391,6 @@ while running:
     outfile = open(filename, 'wb')
     pickle.dump(messages, outfile)
     outfile.close
-
-
-    def water_update(flow):
-        global view
-
-        if view == 5:
-            flow_1 = np.roll(flow, -1)
-            flow_2 = np.roll(flow, 1)
-            flow_3 = np.roll(flow, -l)
-            flow_4 = np.roll(flow, l)
-
-            currents = [flow, flow_1, flow_2, flow_3, flow_4]
-
-            current = currents[3] * 1 + currents[1] * base + currents[0] * base ** 2 + currents[2] * base ** 3 + \
-                      currents[4] * base ** 4
-            # print()
-            # print(current)
-            water = rule[-current.astype(int)]
-
-            if sim == 1:
-                water = rule[-(current.astype(int) % int(len(rule) / base))]
-
-            water = water.astype(int)
-
-            return water
-
-        elif view == 9:
-            L = np.roll(flow, -1)
-            R = np.roll(flow, 1)
-            U = np.roll(flow, -l)
-            D = np.roll(flow, l)
-
-            UL = np.roll(flow, -l - 1)
-            UR = np.roll(flow, -l + 1)
-            DL = np.roll(flow, l - 1)
-            DR = np.roll(flow, l + 1)
-
-            current = (
-                    UL * base ** 0 +
-                    U * base ** 1 +
-                    UR * base ** 2 +
-                    L * base ** 3 +
-                    flow * base ** 4 +
-                    R * base ** 5 +
-                    DL * base ** 6 +
-                    D * base ** 7 +
-                    DR * base ** 8
-            )
-            # print()
-            # print(current)
-            water = rule[-current.astype(int)]
-
-            if sim == 1:
-                water = rule[-(current.astype(int) % int(len(rule) / base))]
-
-            water = water.astype(int)
-
-            return water
 
 
     ###flow###
@@ -1902,7 +2605,35 @@ while running:
                 if edge == 1:
                     region[edge_mask] = region_0[edge_mask]
 
-            if fade == 5:
+            elif fade == 5:
+
+                alpha = round(1/base, 3)
+                if base == 2:
+                    alpha = 1
+                flow_alpha = np.clip(water, 0, base)
+                flow_alpha = flow_alpha[..., np.newaxis]
+                blended = (
+                        region.astype(np.float32) * (1 - alpha * flow_alpha) +
+                        rainbow_flow.astype(np.float32) * (alpha * flow_alpha)
+                ).astype(np.uint8)
+
+                region = blended
+
+                if edge == 1:
+                    edge_speed = len(message)
+                    region[edge_mask] = region_0[edge_mask]
+
+                    rainbow_array[edge_mask] += edge_speed + set
+                    rainbow_array[rainbow_array < 0] = color_max - 1
+                    rainbow_array[rainbow_array > color_max - 1] = 0
+
+
+            elif fade == 6:
+
+                image_flow = color_array[flow]
+
+                rainbow_flow = ((image_flow.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+
 
                 alpha = round(1/base, 3)
                 flow_alpha = np.clip(water, 0, base)
@@ -1946,29 +2677,23 @@ while running:
 
 
     #####hands######
-    def color_dist(a, b):
-
-        ca = np.mean(a.reshape(-1, 3), axis=0)
-        cb = np.mean(b.reshape(-1, 3), axis=0)
-
-
-        return np.linalg.norm(ca - cb)
-
-
     detect_change = 1
 
     if detect_change == 1:
 
         ####right hand####
 
+
+
         x_s = 36
         y_s = 36
         x_g = 28
         y_g = 0
         x_pos = (x_s+x_g)*2
-        y_pos = 640
+        y_pos = 500
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
+
 
 
         hand = [0, 0, 0, 0, 0, 0]
@@ -1976,12 +2701,43 @@ while running:
         hand_1 = [0, 0, 0, 0, 0, 0]
 
         palm = [0, 0, 0, 0, 0, 0]
+
+
+
         tips = [64, 16, 0, 24, 0]
 
-        right_roi = [(x_pos + (x_s + x_g) * (n + 1), y_pos + tips[n],
-                      x_pos + (x_s + x_g) * (n + 1) + x_s, y_pos + tips[n] + y_s) for n in range(5)]
-        right_roi[4] = (x_pos + (x_s + x_g) * (4 + 1) + x_s, y_pos + tips[4] + y_s*5, x_pos + (x_s + x_g) * (4 + 1) + x_s*2, y_pos + tips[4] + y_s*6)
+        right_x = {
+            "size": x_s,
+            "gap": x_g,
+            "start": x_pos,
+            "palm": palm_x,
+            "step": x_s + x_g
+        }
 
+        right_y = {
+            "size": y_s,
+            "gap": y_g,
+            "start": y_pos,
+            "palm": palm_y,
+            "step": y_s + y_g
+        }
+
+        right_roi = [
+            (
+                right_x["start"] + right_x["step"] * (n + 1),
+                right_y["start"] + tips[n],
+                right_x["start"] + right_x["step"] * (n + 1) + right_x["size"],
+                right_y["start"] + tips[n] + right_y["size"]
+            )
+            for n in range(5)
+        ]
+
+        right_roi[4] = (
+            right_x["start"] + right_x["step"] * 5 + right_x["size"],
+            right_y["start"] + tips[4] + right_y["size"] * 5,
+            right_x["start"] + right_x["step"] * 5 + right_x["size"] * 2,
+            right_y["start"] + tips[4] + right_y["size"] * 6
+        )
 
         x_pos = palm_x - x_s*1
         y_pos = palm_y - x_s*2
@@ -2078,7 +2834,7 @@ while running:
         y_g = 0
 
         x_pos = screen_width - (x_s+x_g)*9
-        y_pos = 640
+        y_pos = 500
         palm_x = x_pos + x_s*6
         palm_y = y_pos + y_s*9
 
@@ -2189,7 +2945,7 @@ while running:
         hands_0[1] = digibetu[left_hand[1]]
         hands_1[1] = digibetu[left_hand[2]]
 
-
+        hand_x = [hand, hand_0, hand_1, hands, hands_0, hands_1, left_hand, right_hand]
 
         # print()
         # print('hands')
@@ -2245,223 +3001,6 @@ while running:
 
 
     letters = []
-
-    def handle(hand, code_0):
-        global stamp_x, stamp_y, code, rv, shift, rule, tts_1
-
-
-        if hand[0] == hand[1]:
-
-            if hand[0] != code_0:
-
-                letter = hand[0]
-                code_0 = hand[0]
-                code += hand[0]
-
-                code_bin = base_x(digibet[code_0], 2)
-                if len(code_bin) < 5:
-                    zeros = ''
-                    for x in range(5 - len(code_bin)):
-                        zeros += '0'
-                    code_bin = zeros + code_bin
-                # print(goal_bin)
-
-                for x in range(5):
-
-                    stamp_y0 = stamp_y + int(stamp_s * 1.2) * x
-
-                    if code_bin[x] == '1':
-                        flow[stamp_x:stamp_x + stamp_s, stamp_y0:stamp_y0 + stamp_s + (stamp_s + 2) * x] = (flow[
-                                                                                                            stamp_x:stamp_x + stamp_s,
-                                                                                                            stamp_y0:stamp_y0 + stamp_s + (
-                                                                                                                        stamp_s + 2) * x] + 1) % base
-
-                stamp_x += int(stamp_s * 1.3)
-
-                if stamp_x > 400:
-                    stamp_x = 32
-                    stamp_y += stamp_s * 6
-
-                if stamp_y > 400:
-                    stamp_y = 32
-
-                stenograph.append((code_0, round(time.time() - tts_1, 3), datetime.now()))
-                # sign_bank['steno'] = []
-                tts_1 = time.time()
-
-                if ruler == 0:
-                    rv += digibet[code_0]
-                    rv = rv % bbv
-                    rules, rule = rule_gen(rv, base)
-                    rule = np.array(rule)
-
-
-                elif ruler == 1:
-
-                    shift += digibet[code_0]
-
-                    shift = shift % len(rule)
-
-                    rule[shift] = str((int(rule[shift]) + 1) % base)
-
-                    rule_str = "".join(rule)
-                    rv = int(rule_str, base)
-                    rv = rv % bbv
-
-
-                elif ruler == 2:
-
-
-                    shift += digibet[code_0]
-
-                    shift = shift % len(rule)
-
-                    rule[shift] = str((int(rule[shift]) + 1) % base)
-
-                    mirror = (int(len(rule)/2) + shift)%len(rule)
-                    rule[mirror] = str((int(rule[mirror]) + 1) % base)
-
-                elif ruler == 3:
-
-
-                    shift += digibet[code_0]
-
-                    shift = shift % len(rule)
-
-                    rule[shift] = str((int(rule[shift]) + 1) % base)
-
-                    shift_base = base_x(shift, base)
-                    print(shift_base)
-
-                    shift_base = base_x(shift, base)
-                    if len(code_bin) < view:
-                        zeros = ''
-                        for x in range(5 - len(code_bin)):
-                            zeros += '0'
-                        shift_base = zeros + shift_base
-                    print(shift_base)
-
-                    inv_base = shift_base.translate(str.maketrans('01', '10'))
-
-
-                    inv_digits = [int(c) for c in inv_base]
-
-                    def digits_to_index(digits, base):
-                        idx = 0
-                        for d in digits:
-                            idx = idx * base + d
-                        return idx
-
-                    inv_index = digits_to_index(inv_digits, base)
-
-
-                    rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
-
-
-
-            else:
-                letter = code_0
-
-        else:
-            letter = code_0
-
-
-        # print(letter)
-
-        return letter, code_0
-
-    def submit(letter):
-
-        # print(letter)
-
-        global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water
-
-        if letter == last_typed:
-            letter = code_0
-        elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos + 2]:
-            message += phrase[phrase_pos]
-            phrase_pos += 1
-
-            if len(letter) == 2:
-                message += phrase[(phrase_pos + 1)%len(phrase)]
-                phrase_pos += 1
-
-            if phrase_pos == 1:
-                tts[0] = time.time()
-
-            if phrase_pos == len(phrase):
-
-                message += ' '
-
-                score += 1
-                phrase_pos = 0
-                tts[1] = time.time()
-
-                tts_0 = round(tts[1] - tts[0], 3)
-                tts[0] = time.time()
-
-                times_0 = []
-                t_max = 99999999999999999999999999999999999999
-                for t in times:
-                    if t < t_max and t > 0:
-                        times_0.append(round(t, 3))
-                times = times_0
-
-                # print()
-                # print(tts)
-                # print(tts_0)
-
-                times.append(tts_0)
-                times = sorted(times)
-
-                # print()
-                # print("times")
-                # print(times)
-
-                if phrase == code[len(code) - len(phrase):len(code)]:
-                    set += 1
-
-                else:
-                    set = int(set / 2)
-
-                code = ''
-
-                sign_bank[phrase] = (score, rv, times)
-
-                filename = 'sign_bank/' + signame
-                outfile = open(filename, 'wb')
-                pickle.dump(sign_bank, outfile)
-                outfile.close
-
-                if ruler == 0:
-                    set_scale = 1
-                    for x in range(len(phrase)):
-                        rv += digibet[phrase[x]] * int(set / set_scale)
-                    rv = rv % bbv
-
-                    # print("")
-                    # print(rv)
-                    # print(rule)
-                    rules, rule = rule_gen(rv, base)
-                    # print(rule)
-
-                    rule = np.array(rule)
-
-                if dim == 1:
-                    flow = np.zeros(l, dtype=int)
-                    flow[int(l / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
-                    water[0] = flow
-
-                if dim == 2:
-                    flow = np.zeros((h, l), dtype=int)
-                    flow[int(l / 2), int(h / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
-
-                if dim == 3:
-                    flow = np.zeros((h, l), dtype=int)
-                    flow[int(l / 2), int(h / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
 
 
     letter, code_0 = handle(hands, code_0)
@@ -2728,18 +3267,53 @@ while running:
     if base == 2:
 
         if view == 5:
-            rule_l = 16
-            rule_h = 16
+            rule_l = 48
+            rule_h = rule_l
+            cells = len(rule)
+            rows = 4
+            bins = 8
 
             # print(rule)
 
-            for x in range(len(rule)):
 
-                rule_x = screen_width/2 + (x%int(len(rule)/2))*rule_l - int(len(rule)/4)*rule_l
-                rule_y = screen_height - screen_height/16 + rule_h*int(x/int(len(rule)/2))
 
-                t_line = pygame.Rect(rule_x, rule_y, rule_l, rule_h)
-                pygame.draw.rect(screen, value_color[(int(rule[x]))], t_line)
+            for r in range(len(rule)):
+
+
+
+                rule_x = screen_width / 2.55 + rule_l * (r % bins)
+                rule_y = screen_height - (screen_height / 16 + rule_h * (int(r / bins)))
+
+                # Convert rule index r into 5-bit state pattern
+                x_bin = base_x(r, base)  # raw binary string like "101"
+                x_bin = x_bin.zfill(5)  # → always 5 bits: "00101"
+
+                # Rule output value (0 or 1)
+                rule_value = int(rule[r])  # convert '0'/'1' → 0/1
+
+
+                # Draw the 5-cell neighborhood pattern
+                cell_map = [(0, 0), (-1, 0), (1, 0), (0, 1), (0, -1)]  # center, L, R, up, down
+
+                xs = rule_l / 4
+                ys = rule_h / 4
+                print()
+                print(r)
+                print(x_bin)
+                print(rule_value)
+
+                for i in range(5):
+                    cx = rule_x + cell_map[-i - 1][0] * xs
+                    cy = rule_y + cell_map[-i - 1][1] * ys
+
+                    rect = pygame.Rect(cx, cy, xs, ys)
+
+                    # Color = VALUE OF RULE OUTPUT
+                    pygame.draw.rect(screen, value_color[int(x_bin[i])*1 + rule_value*7], rect)
+
+
+
+
 
         if view == 9:
             rule_l = 9
@@ -2897,6 +3471,46 @@ while running:
 
 
 
+
+
+    ###shifts###
+
+    for i in range(5):
+
+
+        cell_map = [(0, 0), (-1, 0), (1, 0), (0, 1), (0, -1)]
+
+        xs = 30
+        ys = 30
+        x = screen_width / 2 + int(cell_map[i][0]*xs) - xs*9
+        y = screen_height / 7 + int(cell_map[i][1]*ys)
+
+
+        if base == 2:
+            design = pygame.Rect(x, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[0][i])*9], design)
+
+            design = pygame.Rect(x + xs*4, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[1][i])*9], design)
+
+            design = pygame.Rect(x + xs*8, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[2][i])*9], design)
+
+            design = pygame.Rect(x + xs*12, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[3][i])*9], design)
+
+        elif base == 3:
+            design = pygame.Rect(x, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[0][i])], design)
+
+            design = pygame.Rect(x + xs * 4, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[1][i])], design)
+
+            design = pygame.Rect(x + xs * 8, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[2][i])], design)
+
+            design = pygame.Rect(x + xs * 12, y, xs, ys)
+            pygame.draw.rect(screen, value_color[int(shifts[3][i])], design)
 
 
 
