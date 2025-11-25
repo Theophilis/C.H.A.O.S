@@ -381,11 +381,13 @@ def draw_z(size, canvas, corner):
 pygame.init()
 pygame.camera.init()
 
-###chao screen###
-screen_width, screen_height = 1800, 960
+
 
 ###theo screen###
 screen_width, screen_height = 1280, 960
+
+###chao screen###
+screen_width, screen_height = 1800, 960
 
 
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -578,7 +580,7 @@ tts_0 = time.time()
 tts_1 = time.time()
 stenograph = []
 
-signame = "Theophilis"
+signame = "Chaotomata"
 
 try:
     filename = os.path.join(SCRIPT_DIR, 'sign_bank', signame)
@@ -624,7 +626,6 @@ mse_mem = {0:[threshold], 1:[threshold], 2:[threshold], 3:[threshold], 4:[thresh
 pos_x = screen_width / 2
 pos_y = screen_height / 2
 dim = 2
-sim = 0
 
 
 rainbow = 1
@@ -1707,7 +1708,7 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
 
 
 def water_update(flow):
-    global view, cell_map
+    global view, cell_map, rule
 
     if view == 5:
 
@@ -1730,9 +1731,6 @@ def water_update(flow):
 
 
 
-
-        if sim == 1:
-            water = rule[-(current.astype(int) % int(len(rule) / base))]
 
         water = water.astype(int)
 
@@ -1764,8 +1762,6 @@ def water_update(flow):
         # print(current)
         water = rule[-current.astype(int)]
 
-        if sim == 1:
-            water = rule[-(current.astype(int) % int(len(rule) / base))]
 
         water = water.astype(int)
 
@@ -1985,11 +1981,11 @@ def handle(hand, code_0):
 
                 rules, rule_base = rule_gen(rv, base)
                 rule_base = np.array(rule_base)
-                print(rule_base)
+                # print(rule_base)
 
                 rule = rule_base.copy()
 
-                print(rule)
+                # print(rule)
 
 
 
@@ -2486,7 +2482,263 @@ cell_map = [(0, 0), (-1, 0), (1, 0), (0, 1), (0, -1)]
 
 rule_base = rule.copy()
 
+###hand variables###
 
+x_s = 36
+y_s = 36
+x_g = 28
+y_g = 0
+flex_c = 16
+flex_m = 64
+flex_p = 128
+
+hands_1 = [0, 0]
+hands_0 = [0, 0]
+hands = [0, 0]
+hand_x = [hands, hands_0, hands_1]
+
+
+####right hand####
+xr_pos = 0
+yr_pos = 500
+palm_xr = xr_pos + x_s * 6
+palm_yr = yr_pos + y_s * 9
+
+
+hand_r = [0, 0, 0, 0, 0, 0]
+hand_r0 = [0, 0, 0, 0, 0, 0]
+hand_r1 = [0, 0, 0, 0, 0, 0]
+
+palm_r = [0, 0, 0, 0, 0, 0]
+
+tips_r = [64, 16, 0, 24, 0]
+
+right_x = {
+    "size": x_s,
+    "gap": x_g,
+    "start": xr_pos,
+    "palm": palm_xr,
+    "step": x_s + x_g
+}
+
+right_y = {
+    "size": y_s,
+    "gap": y_g,
+    "start": yr_pos,
+    "palm": palm_yr,
+    "step": y_s + y_g
+}
+
+right_roi = [
+    (
+        right_x["start"] + right_x["step"] * (n + 1),
+        right_y["start"] + tips_r[n],
+        right_x["start"] + right_x["step"] * (n + 1) + right_x["size"],
+        right_y["start"] + tips_r[n] + right_y["size"]
+    )
+    for n in range(5)
+]
+
+right_roi[4] = (
+    right_x["start"] + right_x["step"] * 5 + right_x["size"],
+    right_y["start"] + tips_r[4] + right_y["size"] * 5,
+    right_x["start"] + right_x["step"] * 5 + right_x["size"] * 2,
+    right_y["start"] + tips_r[4] + right_y["size"] * 6
+)
+
+xr_pos = palm_xr - x_s * 1
+yr_pos = palm_yr - x_s * 2
+
+right_roi.append((xr_pos, yr_pos, xr_pos + x_s, yr_pos + y_s))
+
+
+right_hand = [0, 0, 0]
+
+
+def right_hand_detect():
+    global hand_r, hand_r0, hand_r1, right_hand, right_roi, hand_x, hands, hands_0, hands_1
+
+    roir_map = []
+    distr_map = []
+
+
+    place = 0
+
+
+    for roi in right_roi:
+        place += 1
+        # print(place)
+
+        x1, y1, x2, y2 = roi
+        roi_prev = array_past[x1:x2, y1:y2]
+        roi_now = hand_array[x1:x2, y1:y2]
+        roir_map.append((roi_prev, roi_now))
+
+        if palm_prev[0] is None:
+            palm_prev[0] = roi_now.copy()
+
+        roi_dist = color_dist(roi_prev, roi_now)
+        roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
+        roi_palm = int(color_dist(roi_now, palm_prev[0]))
+
+        palm_r[place - 1] = roi_palm
+
+        # print(roi_dist)
+
+        dist_map.append(roi_dist)
+        if roi_dist > flex_c:
+            hand_r[place - 1] = 1
+        else:
+            hand_r[place - 1] = 0
+
+        if roi_mean > flex_m:
+            hand_r0[place - 1] = 1
+        else:
+            hand_r0[place - 1] = 0
+
+        if roi_mean > flex_p:
+            hand_r1[place - 1] = 1
+        else:
+            hand_r1[place - 1] = 0
+
+        x = place - 1
+        value_rect = pygame.Rect(x1, y1, x_s, y_s)
+        pygame.draw.rect(screen, value_color[0 + hand_r[x] * 9], value_rect)
+
+        tip_rect = pygame.Rect(x1, y1, x_s / 2, y_s / 2)
+        pygame.draw.rect(screen, value_color[0 + hand_r0[x] * 5], tip_rect)
+
+        tip_rect = pygame.Rect(x1, y1, x_s / 3, y_s / 3)
+        pygame.draw.rect(screen, value_color[0 + hand_r1[x] * 7], tip_rect)
+
+        pygame.draw.line(screen, value_color[0 + int(goal_bin[x % len(goal_bin)]) * 9], (palm_xr, palm_yr),
+                         (roi[0], roi[1]))
+
+    palm_prev[0] = roir_map[-1][1].copy()
+
+    right_hand[0] = hand_r[0] * 16 + hand_r[1] * 8 + hand_r[2] * 4 + hand_r[3] * 2 + hand_r[4] * 1
+    right_hand[1] = hand_r0[0] * 16 + hand_r0[1] * 8 + hand_r0[2] * 4 + hand_r0[3] * 2 + hand_r0[4] * 1
+    right_hand[2] = hand_r1[0] * 16 + hand_r1[1] * 8 + hand_r1[2] * 4 + hand_r1[3] * 2 + hand_r1[4] * 1
+
+    hands[0] = digibetu[right_hand[0]]
+    hands_0[0] = digibetu[right_hand[1]]
+    hands_1[0] = digibetu[right_hand[2]]
+
+
+
+
+
+
+###left hand###
+
+
+xl_pos = screen_width - (x_s + x_g) * 7
+yl_pos = 500
+palm_xl = xl_pos + x_s * 6
+palm_yl = yl_pos + y_s * 9
+
+hand_l = [0, 0, 0, 0, 0, 0]
+hand_l0 = [0, 0, 0, 0, 0, 0]
+hand_l1 = [0, 0, 0, 0, 0, 0]
+
+palm_l = [0, 0, 0, 0, 0, 0]
+tips_l = [0, 24, 0, 16, 64]
+
+left_roi = [(xl_pos + (x_s + x_g) * (n + 1), yl_pos + tips_l[n],
+             xl_pos + (x_s + x_g) * (n + 1) + x_s, yl_pos + tips_l[n] + y_s) for n in range(5)]
+left_roi[0] = (xl_pos + x_s, yl_pos + tips_l[4] + y_s * 4, xl_pos + x_s * 2, yl_pos + tips_l[4] + y_s * 5)
+
+xl_pos = palm_xl - x_s * 1
+yl_pos = palm_yl - x_s * 2
+
+left_roi.append((xl_pos, yl_pos, xl_pos + x_s, yl_pos + y_s))
+
+
+
+
+def left_hand_detect():
+    global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x
+
+    roil_map = []
+    distl_map = []
+
+    place = 0
+
+
+
+    for roi in left_roi:
+        place += 1
+        # print(place)
+
+        x1, y1, x2, y2 = roi
+        roi_prev = array_past[x1:x2, y1:y2]
+        roi_now = hand_array[x1:x2, y1:y2]
+        roil_map.append((roi_prev, roi_now))
+
+        if palm_prev[1] is None:
+            palm_prev[1] = roi_now.copy()
+
+        roi_dist = color_dist(roi_prev, roi_now)
+        roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
+        roi_palm = int(color_dist(roi_now, palm_prev[1]))
+
+        palm_l[place - 1] = roi_palm
+
+        # print(roi_dist)
+
+        dist_map.append(roi_dist)
+        if roi_dist > flex_c:
+            hand_l[place - 1] = 1
+        else:
+            hand_l[place - 1] = 0
+
+        if roi_mean > flex_m:
+            hand_l0[place - 1] = 1
+        else:
+            hand_l0[place - 1] = 0
+
+        if roi_mean > flex_p:
+            hand_l1[place - 1] = 1
+        else:
+            hand_l1[place - 1] = 0
+
+        x = place - 1
+        value_rect = pygame.Rect(x1, y1, x_s, y_s)
+        pygame.draw.rect(screen, value_color[0 + hand_l[x] * 9], value_rect)
+
+        tip_rect = pygame.Rect(x1, y1, x_s / 2, y_s / 2)
+        pygame.draw.rect(screen, value_color[0 + hand_l0[x] * 5], tip_rect)
+
+        tip_rect = pygame.Rect(x1, y1, x_s / 3, y_s / 3)
+        pygame.draw.rect(screen, value_color[0 + hand_l1[x] * 7], tip_rect)
+
+        pygame.draw.line(screen, value_color[0 + int(goal_bin[x % len(goal_bin)]) * 9], (palm_xl, palm_yl),
+                         (roi[0], roi[1]))
+
+    # print(left_roi)
+    # print(dist_map)
+    # print("")
+    # print("hand")
+    # print(hand)
+    # print(hand_0)
+
+    palm_prev[1] = roil_map[-1][1].copy()
+
+    # print('palm l')
+    # print(palm)
+    # print(hand_1)
+
+    left_hand = [0, 0, 0]
+
+    left_hand[0] = hand_l[0] * 1 + hand_l[1] * 2 + hand_l[2] * 4 + hand_l[3] * 8 + hand_l[4] * 16
+    left_hand[1] = hand_l0[0] * 1 + hand_l0[1] * 2 + hand_l0[2] * 4 + hand_l0[3] * 8 + hand_l0[4] * 16
+    left_hand[2] = hand_l1[0] * 1 + hand_l1[1] * 2 + hand_l1[2] * 4 + hand_l1[3] * 8 + hand_l1[4] * 16
+
+    hands[1] = digibetu[left_hand[0]]
+    hands_0[1] = digibetu[left_hand[1]]
+    hands_1[1] = digibetu[left_hand[2]]
+
+    hand_x = [hand_l, hand_l0, hand_l1, hands, hands_0, hands_1, left_hand, right_hand]
 
 
 running = True
@@ -2744,7 +2996,7 @@ while running:
 
             ###edge###
             edge = 1
-            edge_depth = 16
+            edge_depth = 32
 
             if edge == 1:
                 gray = region.mean(axis=2)
@@ -2919,140 +3171,12 @@ while running:
     #####hands######
     detect_change = 1
 
-    ###Theo###
+
     if detect_change == 1:
 
 
 
 
-
-        def right_hand_detect():
-            global hands, hands_0, hands_1, right_hand
-
-            ####right hand####
-            x_s = 36
-            y_s = 36
-            x_g = 28
-            y_g = 0
-            x_pos = 0
-            y_pos = 500
-            palm_x = x_pos + x_s * 6
-            palm_y = y_pos + y_s * 9
-
-            hand = [0, 0, 0, 0, 0, 0]
-            hand_0 = [0, 0, 0, 0, 0, 0]
-            hand_1 = [0, 0, 0, 0, 0, 0]
-
-            palm = [0, 0, 0, 0, 0, 0]
-
-            tips = [64, 16, 0, 24, 0]
-
-            right_x = {
-                "size": x_s,
-                "gap": x_g,
-                "start": x_pos,
-                "palm": palm_x,
-                "step": x_s + x_g
-            }
-
-            right_y = {
-                "size": y_s,
-                "gap": y_g,
-                "start": y_pos,
-                "palm": palm_y,
-                "step": y_s + y_g
-            }
-
-            right_roi = [
-                (
-                    right_x["start"] + right_x["step"] * (n + 1),
-                    right_y["start"] + tips[n],
-                    right_x["start"] + right_x["step"] * (n + 1) + right_x["size"],
-                    right_y["start"] + tips[n] + right_y["size"]
-                )
-                for n in range(5)
-            ]
-
-            right_roi[4] = (
-                right_x["start"] + right_x["step"] * 5 + right_x["size"],
-                right_y["start"] + tips[4] + right_y["size"] * 5,
-                right_x["start"] + right_x["step"] * 5 + right_x["size"] * 2,
-                right_y["start"] + tips[4] + right_y["size"] * 6
-            )
-
-            x_pos = palm_x - x_s * 1
-            y_pos = palm_y - x_s * 2
-
-            right_roi.append((x_pos, y_pos, x_pos + x_s, y_pos + y_s))
-
-            roi_map = []
-            dist_map = []
-            place = 0
-
-            flex_c = 16
-            flex_m = 64
-            flex_p = 128
-
-            right_hand = [0, 0, 0]
-
-            for roi in right_roi:
-                place += 1
-                # print(place)
-
-                x1, y1, x2, y2 = roi
-                roi_prev = array_past[x1:x2, y1:y2]
-                roi_now = hand_array[x1:x2, y1:y2]
-                roi_map.append((roi_prev, roi_now))
-
-                if palm_prev[0] is None:
-                    palm_prev[0] = roi_now.copy()
-
-                roi_dist = color_dist(roi_prev, roi_now)
-                roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
-                roi_palm = int(color_dist(roi_now, palm_prev[0]))
-
-                palm[place - 1] = roi_palm
-
-                # print(roi_dist)
-
-                dist_map.append(roi_dist)
-                if roi_dist > flex_c:
-                    hand[place - 1] = 1
-                else:
-                    hand[place - 1] = 0
-
-                if roi_mean > flex_m:
-                    hand_0[place - 1] = 1
-                else:
-                    hand_0[place - 1] = 0
-
-                if roi_mean > flex_p:
-                    hand_1[place - 1] = 1
-                else:
-                    hand_1[place - 1] = 0
-
-                x = place - 1
-                value_rect = pygame.Rect(x1, y1, x_s, y_s)
-                pygame.draw.rect(screen, value_color[0 + hand[x] * 9], value_rect)
-
-                tip_rect = pygame.Rect(x1, y1, x_s / 2, y_s / 2)
-                pygame.draw.rect(screen, value_color[0 + hand_0[x] * 5], tip_rect)
-
-                tip_rect = pygame.Rect(x1, y1, x_s / 3, y_s / 3)
-                pygame.draw.rect(screen, value_color[0 + hand_1[x] * 7], tip_rect)
-
-                pygame.draw.line(screen, value_color[0 + int(goal_bin[x % len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-            palm_prev[0] = roi_map[-1][1].copy()
-
-
-            right_hand[0] = hand[0] * 16 + hand[1] * 8 + hand[2] * 4 + hand[3] * 2 + hand[4] * 1
-            right_hand[1] = hand_0[0] * 16 + hand_0[1] * 8 + hand_0[2] * 4 + hand_0[3] * 2 + hand_0[4] * 1
-            right_hand[2] = hand_1[0] * 16 + hand_1[1] * 8 + hand_1[2] * 4 + hand_1[3] * 2 + hand_1[4] * 1
-
-            hands[0] = digibetu[right_hand[0]]
-            hands_0[0] = digibetu[right_hand[1]]
-            hands_1[0] = digibetu[right_hand[2]]
 
 
         ####right hand####
@@ -3061,119 +3185,6 @@ while running:
 
 
         ####left hand####
-
-        def left_hand_detect():
-            global hand, hand_0, hand_1, left_hand
-
-
-            x_s = 36
-            y_s = 36
-            x_g = 28
-            y_g = 0
-
-            x_pos = screen_width - (x_s + x_g) * 7
-            y_pos = 500
-            palm_x = x_pos + x_s * 6
-            palm_y = y_pos + y_s * 9
-
-            hand = [0, 0, 0, 0, 0, 0]
-            hand_0 = [0, 0, 0, 0, 0, 0]
-            hand_1 = [0, 0, 0, 0, 0, 0]
-
-            palm = [0, 0, 0, 0, 0, 0]
-            tips = [0, 24, 0, 16, 64]
-
-            left_roi = [(x_pos + (x_s + x_g) * (n + 1), y_pos + tips[n],
-                         x_pos + (x_s + x_g) * (n + 1) + x_s, y_pos + tips[n] + y_s) for n in range(5)]
-            left_roi[0] = (x_pos + x_s, y_pos + tips[4] + y_s * 4, x_pos + x_s * 2, y_pos + tips[4] + y_s * 5)
-
-            x_pos = palm_x - x_s * 1
-            y_pos = palm_y - x_s * 2
-
-            left_roi.append((x_pos, y_pos, x_pos + x_s, y_pos + y_s))
-
-            roi_map = []
-            dist_map = []
-            place = 0
-
-            # flex_c = 16
-            # flex_m = 24
-            # flex_p = 32
-
-            for roi in left_roi:
-                place += 1
-                # print(place)
-
-                x1, y1, x2, y2 = roi
-                roi_prev = array_past[x1:x2, y1:y2]
-                roi_now = hand_array[x1:x2, y1:y2]
-                roi_map.append((roi_prev, roi_now))
-
-                if palm_prev[1] is None:
-                    palm_prev[1] = roi_now.copy()
-
-                roi_dist = color_dist(roi_prev, roi_now)
-                roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
-                roi_palm = int(color_dist(roi_now, palm_prev[1]))
-
-                palm[place - 1] = roi_palm
-
-                # print(roi_dist)
-
-                dist_map.append(roi_dist)
-                if roi_dist > flex_c:
-                    hand[place - 1] = 1
-                else:
-                    hand[place - 1] = 0
-
-                if roi_mean > flex_m:
-                    hand_0[place - 1] = 1
-                else:
-                    hand_0[place - 1] = 0
-
-                if roi_mean > flex_p:
-                    hand_1[place - 1] = 1
-                else:
-                    hand_1[place - 1] = 0
-
-                x = place - 1
-                value_rect = pygame.Rect(x1, y1, x_s, y_s)
-                pygame.draw.rect(screen, value_color[0 + hand[x] * 9], value_rect)
-
-                tip_rect = pygame.Rect(x1, y1, x_s / 2, y_s / 2)
-                pygame.draw.rect(screen, value_color[0 + hand_0[x] * 5], tip_rect)
-
-                tip_rect = pygame.Rect(x1, y1, x_s / 3, y_s / 3)
-                pygame.draw.rect(screen, value_color[0 + hand_1[x] * 7], tip_rect)
-
-                pygame.draw.line(screen, value_color[0 + int(goal_bin[x % len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-            # print(left_roi)
-            # print(dist_map)
-            # print("")
-            # print("hand")
-            # print(hand)
-            # print(hand_0)
-
-            palm_prev[1] = roi_map[-1][1].copy()
-
-            # print('palm l')
-            # print(palm)
-            # print(hand_1)
-
-            left_hand = [0, 0, 0]
-
-            left_hand[0] = hand[0] * 1 + hand[1] * 2 + hand[2] * 4 + hand[3] * 8 + hand[4] * 16
-            left_hand[1] = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
-            left_hand[2] = hand_1[0] * 1 + hand_1[1] * 2 + hand_1[2] * 4 + hand_1[3] * 8 + hand_1[4] * 16
-
-            hands[1] = digibetu[left_hand[0]]
-            hands_0[1] = digibetu[left_hand[1]]
-            hands_1[1] = digibetu[left_hand[2]]
-
-            hand_x = [hand, hand_0, hand_1, hands, hands_0, hands_1, left_hand, right_hand]
-
-
         left_hand_detect()
 
 
@@ -3304,282 +3315,6 @@ while running:
         # # print(hands)
         # # print(hands_0)
 
-
-    ###chao###
-    if detect_change == 2:
-
-        ####right hand####
-
-
-
-        x_s = 36
-        y_s = 36
-        x_g = 28
-        y_g = 0
-        x_pos = (x_s+x_g)*2
-        y_pos = 500
-        palm_x = x_pos + x_s*6
-        palm_y = y_pos + y_s*9
-
-
-
-        hand = [0, 0, 0, 0, 0, 0]
-        hand_0 = [0, 0, 0, 0, 0, 0]
-        hand_1 = [0, 0, 0, 0, 0, 0]
-
-        palm = [0, 0, 0, 0, 0, 0]
-
-
-
-        tips = [64, 16, 0, 24, 0]
-
-        right_x = {
-            "size": x_s,
-            "gap": x_g,
-            "start": x_pos,
-            "palm": palm_x,
-            "step": x_s + x_g
-        }
-
-        right_y = {
-            "size": y_s,
-            "gap": y_g,
-            "start": y_pos,
-            "palm": palm_y,
-            "step": y_s + y_g
-        }
-
-        right_roi = [
-            (
-                right_x["start"] + right_x["step"] * (n + 1),
-                right_y["start"] + tips[n],
-                right_x["start"] + right_x["step"] * (n + 1) + right_x["size"],
-                right_y["start"] + tips[n] + right_y["size"]
-            )
-            for n in range(5)
-        ]
-
-        right_roi[4] = (
-            right_x["start"] + right_x["step"] * 5 + right_x["size"],
-            right_y["start"] + tips[4] + right_y["size"] * 5,
-            right_x["start"] + right_x["step"] * 5 + right_x["size"] * 2,
-            right_y["start"] + tips[4] + right_y["size"] * 6
-        )
-
-        x_pos = palm_x - x_s*1
-        y_pos = palm_y - x_s*2
-
-        right_roi.append((x_pos , y_pos , x_pos + x_s, y_pos + y_s))
-
-        roi_map = []
-        dist_map = []
-        place = 0
-
-        flex_c = 16
-        flex_m = 64
-        flex_p = 128
-
-        for roi in right_roi:
-            place += 1
-            # print(place)
-
-
-
-            x1, y1, x2, y2 = roi
-            roi_prev = array_past[x1:x2, y1:y2]
-            roi_now = hand_array[x1:x2, y1:y2]
-            roi_map.append((roi_prev, roi_now))
-
-            if palm_prev[0] is None:
-                palm_prev[0] = roi_now.copy()
-
-            roi_dist = color_dist(roi_prev, roi_now)
-            roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
-            roi_palm = int(color_dist(roi_now, palm_prev[0]))
-
-            palm[place-1] = roi_palm
-
-
-            # print(roi_dist)
-
-            dist_map.append(roi_dist)
-            if roi_dist > flex_c:
-                hand[place-1] = 1
-            else:
-                hand[place-1] = 0
-
-
-            if roi_mean > flex_m:
-                hand_0[place-1] = 1
-            else:
-                hand_0[place-1] = 0
-
-            if roi_mean > flex_p:
-                hand_1[place-1] = 1
-            else:
-                hand_1[place-1] = 0
-
-            x = place-1
-            value_rect = pygame.Rect(x1, y1, x_s, y_s)
-            pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
-
-            tip_rect = pygame.Rect(x1, y1, x_s/2, y_s/2)
-            pygame.draw.rect(screen, value_color[0 + hand_0[x]*5], tip_rect)
-
-            tip_rect = pygame.Rect(x1, y1, x_s/3, y_s/3)
-            pygame.draw.rect(screen, value_color[0 + hand_1[x]*7], tip_rect)
-
-            pygame.draw.line(screen, value_color[0 + int(goal_bin[x%len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-        # print("")
-        # print('palm r')
-        # print(palm)
-        #
-        # print(hand_1)
-
-        palm_prev[0] = roi_map[-1][1].copy()
-
-        right_hand = [0, 0, 0]
-
-        right_hand[0] = hand[0] * 16 + hand[1]*8 + hand[2]*4 + hand[3]*2 + hand[4]*1
-        right_hand[1] = hand_0[0] * 16 + hand_0[1] * 8 + hand_0[2] * 4 + hand_0[3] * 2 + hand_0[4] * 1
-        right_hand[2] = hand_1[0] * 16 + hand_1[1] * 8 + hand_1[2] * 4 + hand_1[3] * 2 + hand_1[4] * 1
-
-        # print(right_hand)
-
-        hands[0] = digibetu[right_hand[0]]
-        hands_0[0] = digibetu[right_hand[1]]
-        hands_1[0] = digibetu[right_hand[2]]
-
-
-        ####left hand####
-
-
-        x_s = 36
-        y_s = 36
-        x_g = 28
-        y_g = 0
-
-        x_pos = screen_width - (x_s+x_g)*9
-        y_pos = 500
-        palm_x = x_pos + x_s*6
-        palm_y = y_pos + y_s*9
-
-        hand = [0, 0, 0, 0, 0, 0]
-        hand_0 = [0, 0, 0, 0, 0, 0]
-        hand_1 = [0, 0, 0, 0, 0, 0]
-
-        palm = [0, 0, 0, 0, 0, 0]
-        tips = [0, 24, 0, 16, 64]
-
-
-        left_roi = [(x_pos + (x_s + x_g) * (n + 1), y_pos + tips[n],
-                      x_pos + (x_s + x_g) * (n + 1) + x_s, y_pos + tips[n] + y_s) for n in range(5)]
-        left_roi[0] = (x_pos + x_s, y_pos + tips[4] + y_s*4, x_pos + x_s*2, y_pos + tips[4] + y_s*5)
-
-
-        x_pos = palm_x - x_s*1
-        y_pos = palm_y - x_s*2
-
-        left_roi.append((x_pos, y_pos, x_pos + x_s, y_pos + y_s))
-
-        roi_map = []
-        dist_map = []
-        place = 0
-
-        # flex_c = 16
-        # flex_m = 24
-        # flex_p = 32
-
-
-
-        for roi in left_roi:
-            place += 1
-            # print(place)
-
-
-            x1, y1, x2, y2 = roi
-            roi_prev = array_past[x1:x2, y1:y2]
-            roi_now = hand_array[x1:x2, y1:y2]
-            roi_map.append((roi_prev, roi_now))
-
-
-            if palm_prev[1] is None:
-                palm_prev[1] = roi_now.copy()
-
-
-
-            roi_dist = color_dist(roi_prev, roi_now)
-            roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
-            roi_palm = int(color_dist(roi_now, palm_prev[1]))
-
-            palm[place-1] = roi_palm
-
-            # print(roi_dist)
-
-            dist_map.append(roi_dist)
-            if roi_dist > flex_c:
-                hand[place-1] = 1
-            else:
-                hand[place-1] = 0
-
-
-            if roi_mean > flex_m:
-                hand_0[place-1] = 1
-            else:
-                hand_0[place-1] = 0
-
-
-            if roi_mean > flex_p:
-                hand_1[place-1] = 1
-            else:
-                hand_1[place-1] = 0
-
-            x = place-1
-            value_rect = pygame.Rect(x1, y1, x_s, y_s)
-            pygame.draw.rect(screen, value_color[0 + hand[x]*9], value_rect)
-
-            tip_rect = pygame.Rect(x1, y1, x_s/2, y_s/2)
-            pygame.draw.rect(screen, value_color[0 + hand_0[x]*5], tip_rect)
-
-            tip_rect = pygame.Rect(x1, y1, x_s/3, y_s/3)
-            pygame.draw.rect(screen, value_color[0 + hand_1[x]*7], tip_rect)
-
-            pygame.draw.line(screen, value_color[0 + int(goal_bin[x%len(goal_bin)]) * 9], (palm_x, palm_y), (roi[0], roi[1]))
-
-        # print(left_roi)
-        # print(dist_map)
-        # print("")
-        # print("hand")
-        # print(hand)
-        # print(hand_0)
-
-        palm_prev[1] = roi_map[-1][1].copy()
-
-        # print('palm l')
-        # print(palm)
-        # print(hand_1)
-
-        left_hand = [0, 0, 0]
-
-        left_hand[0] = hand[0] * 1 + hand[1]*2 + hand[2]*4 + hand[3]*8 + hand[4]*16
-        left_hand[1] = hand_0[0] * 1 + hand_0[1] * 2 + hand_0[2] * 4 + hand_0[3] * 8 + hand_0[4] * 16
-        left_hand[2] = hand_1[0] * 1 + hand_1[1] * 2 + hand_1[2] * 4 + hand_1[3] * 8 + hand_1[4] * 16
-
-
-
-        hands[1] = digibetu[left_hand[0]]
-        hands_0[1] = digibetu[left_hand[1]]
-        hands_1[1] = digibetu[left_hand[2]]
-
-        hand_x = [hand, hand_0, hand_1, hands, hands_0, hands_1, left_hand, right_hand]
-
-        # print()
-        # print('hands')
-        # print(left_hand)
-        # print(right_hand)
-        # print(hands)
-        # print(hands_0)
 
 
     ###stats###
@@ -3894,7 +3629,7 @@ while running:
     if base == 2:
 
         if view == 5:
-            rule_l = 48
+            rule_l = 32
             rule_h = rule_l
             cells = len(rule)
             rows = 4
@@ -3908,8 +3643,8 @@ while running:
 
 
 
-                rule_x = screen_width / 2.55 + rule_l * (r % bins)
-                rule_y = screen_height - (screen_height / 16 + rule_h * (int(r / bins)))
+                rule_x = screen_width / 3 + rule_l * (r % bins)
+                rule_y =  (screen_height / 16 + rule_h * (int(r / bins)))
 
                 # Convert rule index r into 5-bit state pattern
                 x_bin = base_x(r, base)  # raw binary string like "101"
@@ -4119,9 +3854,9 @@ while running:
 
         cell_map = [(0, 0), (-1, 0), (1, 0), (0, 1), (0, -1)]
 
-        xs = 30
-        ys = 30
-        x = screen_width / 2 + int(cell_map[i][0]*xs) - xs*9
+        xs = 16
+        ys = 16
+        x = screen_width / 2 + int(cell_map[i][0]*xs) + xs*1
         y = screen_height / 7 + int(cell_map[i][1]*ys)
 
 
