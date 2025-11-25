@@ -6,6 +6,7 @@ import numpy as np
 import pickle
 import time
 from datetime import datetime
+import OpenGL.GL as gl
 
 
 
@@ -614,12 +615,14 @@ dim = 2
 sim = 0
 
 
-rainbow = 1
+rainbow = 0
 rainbow_speed = 2
 edge_speed = 1
 base = 2
 view = 5
 fade = 1
+
+gpu = 0
 
 
 bv = base ** view
@@ -642,6 +645,8 @@ lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
 pos_y = int(screen_height / 2) - int(h / 2)
 pos_z = 0
+mid_x = l // 2
+mid_y = h // 2
 
 if dim == 1:
     flow = np.zeros(l, dtype=int)
@@ -654,10 +659,18 @@ if dim == 2:
     flow[int(l / 2), int(h / 2)] = 1
     water = np.zeros((h, l), dtype=int)
 
+    flow[0:mid_x, 0:mid_y] = 1
+    flow[0:mid_x, mid_y:h] = 0
+    flow[mid_x:l, 0:mid_y] = 1
+    flow[mid_x:l, mid_y:h] = 0
+
+
+
 if dim == 3:
     flow = np.zeros((h, l), dtype=int)
     flow[int(l / 2), int(h / 2)] = 1
     water = np.zeros((h, l), dtype=int)
+
 
 rainbow_array = np.zeros((h, l), dtype=int)
 dirivative_array = np.zeros((h, l), dtype=int)
@@ -2133,6 +2146,104 @@ def handle(hand, code_0):
                 # print(shifts)
 
 
+            elif ruler == 6:
+
+                rule = rule_base.copy()
+
+
+
+                shift = digibet[code_0]
+
+                shift = shift % len(rule)
+
+                print()
+                print('shift')
+                print(shift)
+
+                rule[shift] = str((int(rule[shift]) + 1) % base)
+
+                shift_base = base_x(shift, base)
+
+                shift_base = fill_bin(shift_base)
+
+                shift_flip = shift_base[::-1]
+
+
+
+                print('base')
+                print(shift_base)
+                print(shift_flip)
+
+                shifts[0] = [c for c in shift_flip]
+
+
+                # inv_base = shift_base.translate(str.maketrans('01', '10'))
+                #
+                # inv_flip = inv_base[::-1]
+                #
+                # shifts[1] = [c for c in inv_flip]
+                #
+                # print(inv_flip)
+                #
+                # print(inv_base)
+                #
+                #
+                # inv_digits = [int(c) for c in inv_base]
+                #
+                #
+                #
+                # inv_index = digits_to_index(inv_digits, base)
+                #
+                #
+                # print('inv')
+                # print(inv_index)
+                #
+                # print("")
+                # print("shifts")
+                # print(shifts)
+                #
+                #
+                # rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+                #
+                #
+                #
+                # shifts[2] = shifts[0][::]
+                # shifts[3] = shifts[1][::]
+                #
+                # # print(int(view/2))
+                #
+                # center = 0
+                #
+                # # print('center')
+                # # print(center)
+                # #
+                # # print(shifts)
+                #
+                # for x in range(2):
+                #
+                #     if shifts[2+x][center] == '0':
+                #
+                #         shifts[2+x][center] = '1'
+                #
+                #     elif shifts[2+x][center] == '1':
+                #
+                #         if base == 2:
+                #             shifts[2+x][center] = '0'
+                #         else:
+                #             shifts[2 + x][center] = '2'
+                #
+                #     elif shifts[2+x][center] == '2':
+                #
+                #         shifts[2 + x][center] = '0'
+                #
+                #
+                # # print(shifts)
+
+
+
+
+
+
 
 
 
@@ -2161,6 +2272,16 @@ def submit(letter):
     elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos + 2]:
         message += phrase[phrase_pos]
         phrase_pos += 1
+
+        if base == 2:
+            flow = np.zeros((h, l), dtype=int)
+            flow[int(l / 2), int(h / 2)] = 1
+            water = np.zeros((h, l), dtype=int)
+
+            flow[0:mid_x, 0:mid_y] = 1
+            flow[0:mid_x, mid_y:h] = 0
+            flow[mid_x:l, mid_y:h] = 1
+            flow[mid_x:l, 0:mid_y] = 0
 
         if len(letter) == 2:
             message += phrase[(phrase_pos + 1)%len(phrase)]
@@ -2334,7 +2455,9 @@ running = True
 while running:
 
 
+
     screen.fill((0, 0, 0))
+    mx, my = pygame.mouse.get_pos()
 
     image = camera.get_image()
     image_array = pygame.surfarray.array3d(image)
@@ -2393,6 +2516,8 @@ while running:
     outfile.close
 
 
+    pause = 0
+
     ###flow###
     if dim == 1:
 
@@ -2434,6 +2559,7 @@ while running:
         image_array[pos_x:pos_x+l, pos_y:pos_y+h] = np.rot90(image_flow, 4)
 
     elif dim == 2:
+
 
         # l = 592
         # h = l
@@ -2479,11 +2605,12 @@ while running:
         #
         #     water = water.astype(int)
 
-        water = water_update(flow)
+        if pause == 0:
+            water = water_update(flow)
 
 
 
-        flow = water
+            flow = water
         # sign_value = digibet[code_0]
         # flow[int(l / 2), int(h / 2) +sign_value] = 1
 
@@ -2554,7 +2681,7 @@ while running:
             region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
             region_0 = region
 
-            fade = 5
+            fade = 7
 
             if fade == 1:
                 mask = flow != 0
@@ -2630,6 +2757,7 @@ while running:
 
             elif fade == 6:
 
+
                 image_flow = color_array[flow]
 
                 rainbow_flow = ((image_flow.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
@@ -2652,6 +2780,77 @@ while running:
                     rainbow_array[edge_mask] += edge_speed + set
                     rainbow_array[rainbow_array < 0] = color_max - 1
                     rainbow_array[rainbow_array > color_max - 1] = 0
+
+
+            elif fade == 7:
+                sum_up = np.sum(flow == 1)
+                sum_down = np.sum(flow == 0)
+
+                print()
+                print('sums')
+                print(sum_up)
+                print(sum_down)
+
+
+
+                image_flow = color_array[flow]
+
+                alpha = round(1, 3)
+
+                mask_1 = up_mask
+                mask_0 = down_mask
+
+
+                base_region = region.astype(np.float32)
+                rainbow_region = rainbow_flow.astype(np.float32)
+
+
+                result = base_region.copy()
+
+
+                alpha_fade = 0.50
+                alpha_full = 1.00
+
+
+                if sum_up > sum_down:
+
+                    # 1 is more common → fade 1s, full for 0s
+                    result[mask_1] = (
+                            base_region[mask_1] * (1 - alpha_fade) +
+                            rainbow_region[mask_1] * alpha_fade
+                    )
+                    result[mask_0] = (
+                            base_region[mask_0] * (1 - alpha_full) +
+                            rainbow_region[mask_0] * alpha_full
+                    )
+
+                else:
+                    # 0 is more common → fade 0s, full for 1s
+                    result[mask_0] = (
+                            base_region[mask_0] * (1 - alpha_fade) +
+                            rainbow_region[mask_0] * alpha_fade
+                    )
+                    result[mask_1] = (
+                            base_region[mask_1] * (1 - alpha_full) +
+                            rainbow_region[mask_1] * alpha_full
+                    )
+
+                region = result.astype(np.uint8)
+
+                if edge == 1:
+
+                    # edge_speed = len(message)
+                    # region[edge_mask] = region_0[edge_mask]
+                    #
+                    # rainbow_array[edge_mask] += edge_speed + set
+                    # rainbow_array[rainbow_array < 0] = color_max - 1
+                    # rainbow_array[rainbow_array > color_max - 1] = 0
+
+                    region[edge_mask] = region_0[edge_mask]
+                    rainbow_array[edge_mask] += len(message) + set
+                    rainbow_array %= color_max
+
+
 
 
 
@@ -2974,8 +3173,8 @@ while running:
     for x in range(len(sign_items)):
         if x > times_limit:
             break
-        lesson_t = small_font.render(str((sign_items[x][1][0], sign_items[x][0])), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 2 + screen_width/4, screen_height / 8 + lesson_t.get_height()*x))
+        lesson_t = text_font.render(str((sign_items[x][1][0], sign_items[x][0])), True, value_color[9])
+        screen.blit(lesson_t, (screen_width / 2 + screen_width/2.5, screen_height / 16 + lesson_t.get_height()*x))
 
 
 
@@ -3297,10 +3496,10 @@ while running:
 
                 xs = rule_l / 4
                 ys = rule_h / 4
-                print()
-                print(r)
-                print(x_bin)
-                print(rule_value)
+                # print()
+                # print(r)
+                # print(x_bin)
+                # print(rule_value)
 
                 for i in range(5):
                     cx = rule_x + cell_map[-i - 1][0] * xs
@@ -3308,8 +3507,20 @@ while running:
 
                     rect = pygame.Rect(cx, cy, xs, ys)
 
+
+
                     # Color = VALUE OF RULE OUTPUT
                     pygame.draw.rect(screen, value_color[int(x_bin[i])*1 + rule_value*7], rect)
+
+                    if rect.collidepoint((mx, my)):
+                        print('collide')
+                        if click:
+                            print('click')
+                            r_plus = (int(rule[r]) + 1)%base
+                            rule[r] = str(r_plus)
+                            rule_base = rule.copy()
+
+                            click = False
 
 
 
@@ -3515,7 +3726,7 @@ while running:
 
 
     ###buttons###
-    mx, my = pygame.mouse.get_pos()
+
 
     #####dim#####
     x = screen_width/8
