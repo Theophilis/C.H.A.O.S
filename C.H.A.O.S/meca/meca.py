@@ -401,29 +401,12 @@ pygame.display.set_caption('C.H.A.O.S')
 
 
 
-
-
-
-
 text_font = pygame.font.SysFont("leelawadeeuisemilight", 16)
 small_font = pygame.font.SysFont("leelawadeeuisemilight", 24)
 main_font = pygame.font.SysFont("leelawadeeuisemilight", 32)
 lable_font = pygame.font.SysFont("leelawadeeuisemilight", 48)
 TITLE_FONT = pygame.font.SysFont("leelawadeeuisemilight", 64)
 
-
-def detect_change_in_roi_mse(img1, img2, roi_coords, threshold=1):
-    y1, x1, y2, x2 = roi_coords
-    roi1 = img1[y1:y2, x1:x2].astype(np.float32)
-    roi2 = img2[y1:y2, x1:x2].astype(np.float32)
-
-    mse = np.mean((roi1 - roi2) ** 2)
-
-    # print("")
-    # print(mse)
-    # print(mse)
-
-    return mse, mse > threshold, roi1, roi2
 
 
 def base_x(n, b):
@@ -510,13 +493,6 @@ def rule_gen(rule, base=2, width=0, string=0):
     return rules, int_rule
 
 
-#######flow######
-# print("")
-# print("water")
-# print(water)
-# print(flow)
-
-
 
 cam_list = pygame.camera.list_cameras()
 if not cam_list:
@@ -564,11 +540,7 @@ phrase_pos = 0
 goal_bin = '000000'
 gb_len = 6
 
-hand_x = []
-hands_1 = [0, 0]
-hands_0 = [0, 0]
-hands = [0, 0]
-hand_x = [hands, hands_0, hands_1]
+
 arms = [0, 0]
 code = ''
 code_0 = ' '
@@ -643,7 +615,6 @@ base4 = base3 * base
 view = 5
 fade = 1
 
-gpu = 0
 
 
 bv = base ** view
@@ -653,8 +624,8 @@ rv = 1431655766
 rv_base = rv
 rv_bank = {}
 
-#####rulers######
 
+#####rulers######
 rules, rule = rule_gen(rv, base)
 rule = np.array(rule)
 lookup = np.array(rule, dtype=np.uint8)
@@ -676,48 +647,6 @@ mid_y = h // 2
 
 
 
-freq_bank = {}
-
-# 32 waveforms, each 1024 samples
-for i in range(32):
-    x = np.linspace(0, 2 * np.pi, 1024)
-    freq_bank[i] = (np.sin((i + 1) * x) + 1) * 0.5
-
-
-def draw_freq_centered(canvas, freqs, center_y=None, scale=50, base=2):
-    """
-    Draw oscilloscope-style waveform in center of canvas.
-
-    canvas : 2D numpy array (h × w)
-    freqs  : 1D float array in [0, 1]
-    center_y : vertical midpoint for waveform (None = canvas center)
-    scale  : amplitude scale in pixels
-    base   : CA base (2,3,4)
-    """
-
-    h, w = canvas.shape
-    N = len(freqs)
-
-    if center_y is None:
-        center_y = h // 2
-
-    # Stretch waveform horizontally across display width
-    x_positions = np.linspace(0, N - 1, w).astype(int)
-    values = freqs[x_positions]
-
-    # Scale amplitude (oscilloscope Y offset)
-    offsets = (values - 0.5) * 2 * scale
-
-    # Convert 0–1 value → CA value range
-    ca_vals = (values * (base - 1)).astype(int)
-
-    # Draw waveform
-    for x in range(w):
-        y = int(center_y + offsets[x])
-        if 0 <= y < h:
-            canvas[y, x] = ca_vals[x]
-
-    return canvas
 
 
 if dim == 1:
@@ -870,43 +799,8 @@ if dim == 2:
         flow = flow_quad_circles(h, l)
         flow_base = flow.copy()
 
-    elif flow_state == 4:
-
-
-        flow = np.zeros((h, l), dtype=int)
-
-        # Choose the waveform based on the *current right-hand sign*
-        # right_hand[0] is already a 0–31 value from digibet
-        sign_value = digibet.get(hands[0], 0)  # safe lookup
-        waveform = freq_bank[sign_value]  # 1D waveform in range [0,1]
-
-        # Draw centered waveform
-        flow = draw_freq_centered(
-            flow,
-            waveform,
-            center_y=h // 2,
-            scale=h // 4,  # amplitude of oscilloscope
-            base=base
-        )
-
-        # Water inherits flow always
-        water = flow.copy()
-        flow_base = flow.copy()
-
-
-
-
-
-
-
-if dim == 3:
-    flow = np.zeros((h, l), dtype=int)
-    flow[int(l / 2), int(h / 2)] = 1
-    water = np.zeros((h, l), dtype=int)
-
 
 rainbow_array = np.zeros((h, l), dtype=int)
-dirivative_array = np.zeros((h, l), dtype=int)
 uw = 256**3 - 1  # = 16,777,216
 
 
@@ -1936,10 +1830,10 @@ def water_update():
 
         index = (
                 flow +  # center
-                left * base +  # up
-                right * base2 +  # down
-                up * base3 +  # left
-                down * base4  # right
+                left * base +
+                right * base2 +
+                up * base3 +
+                down * base4
         ).astype(np.int32)
 
 
@@ -1952,33 +1846,31 @@ def water_update():
         return water
 
     elif view == 9:
-        L = np.roll(flow, -1)
-        R = np.roll(flow, 1)
-        U = np.roll(flow, -l)
-        D = np.roll(flow, l)
+        flow32 = flow.astype(np.int32)
 
-        UL = np.roll(flow, -l - 1)
-        UR = np.roll(flow, -l + 1)
-        DL = np.roll(flow, l - 1)
-        DR = np.roll(flow, l + 1)
+        L = np.roll(flow32, -1)
+        R = np.roll(flow32, 1)
+        U = np.roll(flow32, -l)
+        D = np.roll(flow32, l)
+
+        UL = np.roll(flow32, -l - 1)
+        UR = np.roll(flow32, -l + 1)
+        DL = np.roll(flow32, l - 1)
+        DR = np.roll(flow32, l + 1)
 
         current = (
                 UL * base ** 0 +
                 U * base ** 1 +
                 UR * base ** 2 +
                 L * base ** 3 +
-                flow * base ** 4 +
+                flow32 * base ** 4 +
                 R * base ** 5 +
                 DL * base ** 6 +
                 D * base ** 7 +
                 DR * base ** 8
         )
-        # print()
-        # print(current)
-        water = rule[-current.astype(int)]
 
-
-        water = water.astype(int)
+        water = rule[-current]
 
         return water
 
@@ -2192,7 +2084,7 @@ def handle(hand, code_0):
                 rv = score
                 rv = rv%bbv
 
-                rv = rv_base
+                # rv = rv_base
 
 
                 rules, rule_base = rule_gen(rv, base)
@@ -2443,10 +2335,6 @@ def handle(hand, code_0):
 
 
 
-
-
-
-
         else:
             letter = code_0
 
@@ -2473,28 +2361,6 @@ def submit(letter):
         if base == 2:
             flow = flow_base.copy()
             water = flow.copy()
-
-            if flow_state == 4 and len(code) > 0:
-                sign_val = digibet.get(code[-1], 0)
-                print("")
-                print("sign_val")
-                print(sign_val)
-
-                waveform = freq_bank[sign_val]  # 1D waveform in range [0,1]
-
-                # Draw centered waveform
-                water = draw_freq_centered(
-                    water,
-                    waveform,
-                    center_y=h // 2,
-                    scale=h // 4,  # amplitude of oscilloscope
-                    base=base
-                )
-
-                # Water inherits flow always
-                flow[:] = water
-                flow_base[:] = flow
-
 
 
         if len(letter) == 2:
@@ -2589,80 +2455,22 @@ def base_x(n, b):
     return digits
 
 
-####right hand####
 
 
-x_s = 36
-y_s = 36
-x_g = 28
-y_g = 0
-x_pos = (x_s + x_g) * 2
-y_pos = 500
-palm_x = x_pos + x_s * 6
-palm_y = y_pos + y_s * 9
 
-hand = [0, 0, 0, 0, 0, 0]
-hand_0 = [0, 0, 0, 0, 0, 0]
-hand_1 = [0, 0, 0, 0, 0, 0]
-
-palm = [0, 0, 0, 0, 0, 0]
-
-tips = [64, 16, 0, 24, 0]
-
-right_x = {
-    "size": x_s,
-    "gap": x_g,
-    "start": x_pos,
-    "palm": palm_x,
-    "step": x_s + x_g
-}
-
-right_y = {
-    "size": y_s,
-    "gap": y_g,
-    "start": y_pos,
-    "palm": palm_y,
-    "step": y_s + y_g
-}
-
-right_roi = [
-    (
-        right_x["start"] + right_x["step"] * (n + 1),
-        right_y["start"] + tips[n],
-        right_x["start"] + right_x["step"] * (n + 1) + right_x["size"],
-        right_y["start"] + tips[n] + right_y["size"]
-    )
-    for n in range(5)
-]
-
-right_roi[4] = (
-    right_x["start"] + right_x["step"] * 5 + right_x["size"],
-    right_y["start"] + tips[4] + right_y["size"] * 5,
-    right_x["start"] + right_x["step"] * 5 + right_x["size"] * 2,
-    right_y["start"] + tips[4] + right_y["size"] * 6
-)
-
-x_pos = palm_x - x_s * 1
-y_pos = palm_y - x_s * 2
-
-right_roi.append((x_pos, y_pos, x_pos + x_s, y_pos + y_s))
-
-roi_map = []
-dist_map = []
-place = 0
-
-flex_c = 16
-flex_m = 64
-flex_p = 128
-
-
+####hands####
+hand_x = []
+hands_1 = [0, 0]
+hands_0 = [0, 0]
+hands = [0, 0]
+hand_x = [hands, hands_0, hands_1]
 
 cell_map = [(0, 0), (-1, 0), (1, 0), (0, 1), (0, -1)]
 
 rule_base = rule.copy()
 
-###hand variables###
 
+###hand variables###
 x_s = 36
 y_s = 36
 x_g = 28
@@ -2670,11 +2478,6 @@ y_g = 0
 flex_c = 16
 flex_m = 64
 flex_p = 128
-
-hands_1 = [0, 0]
-hands_0 = [0, 0]
-hands = [0, 0]
-hand_x = [hands, hands_0, hands_1]
 
 
 ####right hand####
@@ -2764,7 +2567,7 @@ def right_hand_detect():
 
         # print(roi_dist)
 
-        dist_map.append(roi_dist)
+        distr_map.append(roi_dist)
         if roi_dist > flex_c:
             hand_r[place - 1] = 1
         else:
@@ -2863,7 +2666,7 @@ def left_hand_detect():
 
         # print(roi_dist)
 
-        dist_map.append(roi_dist)
+        distl_map.append(roi_dist)
         if roi_dist > flex_c:
             hand_l[place - 1] = 1
         else:
@@ -3077,33 +2880,11 @@ while running:
         #     water = water.astype(int)
 
         if pause == 0:
+
             water = water_update()
+            water = water.astype(np.int32)
 
-
-            if flow_state == 4 and len(code) > 0:
-                sign_val = digibet.get(code[-1], 0)
-                print("")
-                print("sign_val")
-                print(sign_val)
-
-                waveform = freq_bank[sign_val]  # 1D waveform in range [0,1]
-
-                # Draw centered waveform
-                water = draw_freq_centered(
-                    water,
-                    waveform,
-                    center_y=h // 2,
-                    scale=h // 4,  # amplitude of oscilloscope
-                    base=base
-                )
-
-                # Water inherits flow always
-                flow[:] = water
-                flow_base[:] = flow
-
-
-            else:
-                flow = water
+            flow = water
 
 
 
@@ -3463,7 +3244,7 @@ while running:
         # # print(hands)
         # # print(hands_0)
 
-    elif detect_change == 1:
+    elif detect_change == 2:
 
 
 
@@ -4015,12 +3796,6 @@ while running:
             #     key_triangle[note_scale].set_volume(volume)
             #     key_triangle[note_scale].play()
             #
-
-
-
-
-
-
 
 
     ###shifts###
