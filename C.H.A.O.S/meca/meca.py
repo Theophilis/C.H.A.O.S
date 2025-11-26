@@ -383,11 +383,17 @@ pygame.camera.init()
 
 
 
-###theo screen###
-screen_width, screen_height = 1280, 960
+signame = "Theophilis"
+
+
 
 ###chao screen###
 screen_width, screen_height = 1800, 960
+
+###theo screen###
+screen_width, screen_height = 1280, 960
+
+
 
 
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -580,7 +586,6 @@ tts_0 = time.time()
 tts_1 = time.time()
 stenograph = []
 
-signame = "Chaotomata"
 
 try:
     filename = os.path.join(SCRIPT_DIR, 'sign_bank', signame)
@@ -644,14 +649,19 @@ gpu = 0
 bv = base ** view
 bvv = base ** view ** view
 bbv = base**base**view
-rv = 0
+rv = 1431655766
+rv_base = rv
 rv_bank = {}
 
 #####rulers######
+
 rules, rule = rule_gen(rv, base)
 rule = np.array(rule)
+lookup = np.array(rule, dtype=np.uint8)
+
 ruler = 4
 shift = 0
+flow_state = 3
 
 print(rule)
 
@@ -664,6 +674,52 @@ pos_z = 0
 mid_x = l // 2
 mid_y = h // 2
 
+
+
+freq_bank = {}
+
+# 32 waveforms, each 1024 samples
+for i in range(32):
+    x = np.linspace(0, 2 * np.pi, 1024)
+    freq_bank[i] = (np.sin((i + 1) * x) + 1) * 0.5
+
+
+def draw_freq_centered(canvas, freqs, center_y=None, scale=50, base=2):
+    """
+    Draw oscilloscope-style waveform in center of canvas.
+
+    canvas : 2D numpy array (h × w)
+    freqs  : 1D float array in [0, 1]
+    center_y : vertical midpoint for waveform (None = canvas center)
+    scale  : amplitude scale in pixels
+    base   : CA base (2,3,4)
+    """
+
+    h, w = canvas.shape
+    N = len(freqs)
+
+    if center_y is None:
+        center_y = h // 2
+
+    # Stretch waveform horizontally across display width
+    x_positions = np.linspace(0, N - 1, w).astype(int)
+    values = freqs[x_positions]
+
+    # Scale amplitude (oscilloscope Y offset)
+    offsets = (values - 0.5) * 2 * scale
+
+    # Convert 0–1 value → CA value range
+    ca_vals = (values * (base - 1)).astype(int)
+
+    # Draw waveform
+    for x in range(w):
+        y = int(center_y + offsets[x])
+        if 0 <= y < h:
+            canvas[y, x] = ca_vals[x]
+
+    return canvas
+
+
 if dim == 1:
     flow = np.zeros(l, dtype=int)
     flow[int(l / 2)] = 1
@@ -671,14 +727,175 @@ if dim == 1:
     water[0] = flow
 
 if dim == 2:
-    flow = np.zeros((h, l), dtype=int)
-    flow[int(l / 2), int(h / 2)] = 1
-    water = np.zeros((h, l), dtype=int)
 
-    flow[0:mid_x, 0:mid_y] = 1
-    flow[0:mid_x, mid_y:h] = 0
-    flow[mid_x:l, 0:mid_y] = 1
-    flow[mid_x:l, mid_y:h] = 0
+    if flow_state == 0:
+        flow = np.zeros((h, l), dtype=int)
+        flow[int(l / 2), int(h / 2)] = 1
+        water = np.zeros((h, l), dtype=int)
+
+        flow[0:mid_x, 0:mid_y] = 1
+        flow[0:mid_x, mid_y:h] = 0
+        flow[mid_x:l, 0:mid_y] = 1
+        flow[mid_x:l, mid_y:h] = 0
+
+        flow_base = flow.copy()
+
+    elif flow_state == 1:
+
+        flow = np.zeros((h, l), dtype=int)
+        flow[int(l / 2), int(h / 2)] = 1
+        water = np.zeros((h, l), dtype=int)
+
+        def flow_radial(flow, base):
+            h, l = flow.shape
+            cx, cy = l // 2, h // 2
+            ring_width = 6
+
+            for y in range(h):
+                for x in range(l):
+                    d = int(((x - cx) ** 2 + (y - cy) ** 2) ** 0.5)
+                    flow[y, x] = (d // ring_width) % base
+
+            return flow
+
+        flow_base = flow_radial(flow, base)
+
+    elif flow_state == 2:
+        def flow_yinyang(h, l, base=2):
+            flow = np.zeros((h, l), dtype=np.uint8)
+
+            cx = l // 2
+            cy = h // 2
+            R = min(cx, cy) * 0.9  # outer radius
+
+            Y, X = np.ogrid[:h, :l]
+            dx = X - cx
+            dy = Y - cy
+            dist = np.sqrt(dx * dx + dy * dy)
+
+            # Inside the outer circle only
+            inside = dist <= R
+
+            # --- MAIN SWIRL PART ---
+            # For Yin–Yang, top and bottom halves each contain one swirl.
+
+            # Center of upper swirl
+            uy = cy - R / 2
+            # Center of lower swirl
+            ly = cy + R / 2
+
+            # distance to each swirl center
+            dist_upper = np.sqrt(dx * dx + (dy - uy) ** 2)
+            dist_lower = np.sqrt(dx * dx + (dy - ly) ** 2)
+
+            # The rule:
+            # - If pixel is closer to upper swirl center → color 1
+            # - If closer to lower swirl center → color 0
+            main = (dist_upper < dist_lower).astype(np.uint8)
+
+            # --- INNER DOTS ---
+            dot_r = R * 0.25
+
+            # Upper small dot
+            dot_up = dist_upper < dot_r
+            # Lower small dot
+            dot_down = dist_lower < dot_r
+
+            # Apply final pattern
+            flow[:] = 0
+            flow[inside] = main[inside]
+
+            # dots invert the region
+            flow[dot_up] = 0  # dot inside yang (black dot)
+            flow[dot_down] = 1  # dot inside yin (white dot)
+
+            # mod for multibase automata
+            if base > 2:
+                flow = flow % base
+
+            return flow
+
+        flow = flow_yinyang(h, l, base)
+        flow_base = flow.copy()
+
+    elif flow_state == 3:
+        def flow_quad_circles(h, l):
+            """
+            Creates a 4-quadrant flow state:
+              TL: 0 with 1-circle
+              TR: 1 with 0-circle
+              BL: 1 with 0-circle
+              BR: 0 with 1-circle
+            All circles same radius, perfectly centered in each quadrant.
+            """
+
+            flow = np.zeros((h, l), dtype=np.uint8)
+
+            # Quadrant size
+            h2 = h // 2
+            l2 = l // 2
+
+            # Circle radius — use 1/3 of min quadrant dimension
+            r = int(min(h2, l2) * 0.33)
+
+            # Quadrant centers
+            centers = [
+                (h2 // 2, l2 // 2),  # TL
+                (h2 // 2, l2 + l2 // 2),  # TR
+                (h2 + h2 // 2, l2 // 2),  # BL
+                (h2 + h2 // 2, l2 + l2 // 2)  # BR
+            ]
+
+            # Background values per quadrant
+            backgrounds = [0, 1, 1, 0]
+
+            # Circle values per quadrant
+            circles = [1, 0, 0, 1]
+
+            # Fill quadrants
+            flow[:h2, :l2] = backgrounds[0]  # TL
+            flow[:h2, l2:] = backgrounds[1]  # TR
+            flow[h2:, :l2] = backgrounds[2]  # BL
+            flow[h2:, l2:] = backgrounds[3]  # BR
+
+            # Draw circles
+            Y, X = np.ogrid[:h, :l]
+
+            for (cy, cx), circle_val in zip(centers, circles):
+                mask = (X - cx) ** 2 + (Y - cy) ** 2 <= r * r
+                flow[mask] = circle_val
+
+            return flow
+
+        flow = flow_quad_circles(h, l)
+        flow_base = flow.copy()
+
+    elif flow_state == 4:
+
+
+        flow = np.zeros((h, l), dtype=int)
+
+        # Choose the waveform based on the *current right-hand sign*
+        # right_hand[0] is already a 0–31 value from digibet
+        sign_value = digibet.get(hands[0], 0)  # safe lookup
+        waveform = freq_bank[sign_value]  # 1D waveform in range [0,1]
+
+        # Draw centered waveform
+        flow = draw_freq_centered(
+            flow,
+            waveform,
+            center_y=h // 2,
+            scale=h // 4,  # amplitude of oscilloscope
+            base=base
+        )
+
+        # Water inherits flow always
+        water = flow.copy()
+        flow_base = flow.copy()
+
+
+
+
 
 
 
@@ -1707,8 +1924,8 @@ def canvas_write(message, size, l_size, x_space, y_space, offset_size, density, 
     return canvas, rainbow_reset
 
 
-def water_update(flow):
-    global view, cell_map, rule
+def water_update():
+    global view, lookup, flow
 
     if view == 5:
 
@@ -1725,14 +1942,12 @@ def water_update(flow):
                 down * base4  # right
         ).astype(np.int32)
 
-        lookup = np.array(rule, dtype=np.uint8)
-
-        water = lookup[index]
 
 
+        water = lookup[index].astype(int)
 
 
-        water = water.astype(int)
+
 
         return water
 
@@ -1792,8 +2007,9 @@ def digits_to_index(digits, base):
         idx = idx * base + d
     return idx
 
+
 def handle(hand, code_0):
-    global stamp_x, stamp_y, code, rv, shift, rule, tts_1, shifts, hands_x, rule_base
+    global stamp_x, stamp_y, code, rv, shift, rule, tts_1, shifts, hands_x, rule_base, lookup
 
 
     if hand[0] == hand[1]:
@@ -1836,6 +2052,7 @@ def handle(hand, code_0):
                 rv = rv % bbv
                 rules, rule = rule_gen(rv, base)
                 rule = np.array(rule)
+
 
 
             elif ruler == 1:
@@ -1972,90 +2189,38 @@ def handle(hand, code_0):
 
             elif ruler == 4:
 
-                # print('')
-                # print(rv)
-                rv += 1
+                rv = score
                 rv = rv%bbv
-                # print(rv)
-                # print('rv')
+
+                rv = rv_base
+
 
                 rules, rule_base = rule_gen(rv, base)
                 rule_base = np.array(rule_base)
-                # print(rule_base)
-
                 rule = rule_base.copy()
-
-                # print(rule)
-
 
 
                 shift = digibet[code_0]
-
                 shift = shift % len(rule)
-
-                # print()
-                # print('shift')
-                # print(shift)
-
                 rule[shift] = str((int(rule[shift]) + 1) % base)
-
                 shift_base = base_x(shift, base)
-
                 shift_base = fill_bin(shift_base)
-
                 shift_flip = shift_base[::-1]
 
 
-
-                # print('base')
-                # print(shift_base)
-                # print(shift_flip)
-
                 shifts[0] = [c for c in shift_flip]
-
-
                 inv_base = shift_base.translate(str.maketrans('01', '10'))
-
                 inv_flip = inv_base[::-1]
 
                 shifts[1] = [c for c in inv_flip]
-
-                # print(inv_flip)
-                #
-                # print(inv_base)
-
-
                 inv_digits = [int(c) for c in inv_base]
-
-
-
                 inv_index = digits_to_index(inv_digits, base)
 
-
-                # print('inv')
-                # print(inv_index)
-                #
-                # print("")
-                # print("shifts")
-                # print(shifts)
-
-
                 rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
-
-
-
                 shifts[2] = shifts[0][::]
                 shifts[3] = shifts[1][::]
 
-                # print(int(view/2))
-
                 center = 0
-
-                # print('center')
-                # print(center)
-                #
-                # print(shifts)
-
                 for x in range(2):
 
                     if shifts[2+x][center] == '0':
@@ -2073,9 +2238,6 @@ def handle(hand, code_0):
 
                         shifts[2 + x][center] = '0'
 
-
-                # print(shifts)
-
                 flip = shifts[2][::-1]
                 inv_index = digits_to_index([int(c) for c in flip], base)
                 rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
@@ -2084,6 +2246,7 @@ def handle(hand, code_0):
                 flip = shifts[3][::-1]
                 inv_index = digits_to_index([int(c) for c in flip], base)
                 rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
 
 
             elif ruler == 5:
@@ -2274,7 +2437,7 @@ def handle(hand, code_0):
                 # # print(shifts)
 
 
-
+            lookup = np.array(rule, dtype=np.uint8)
 
 
 
@@ -2308,14 +2471,31 @@ def submit(letter):
         phrase_pos += 1
 
         if base == 2:
-            flow = np.zeros((h, l), dtype=int)
-            flow[int(l / 2), int(h / 2)] = 1
-            water = np.zeros((h, l), dtype=int)
+            flow = flow_base.copy()
+            water = flow.copy()
 
-            flow[0:mid_x, 0:mid_y] = 1
-            flow[0:mid_x, mid_y:h] = 0
-            flow[mid_x:l, mid_y:h] = 1
-            flow[mid_x:l, 0:mid_y] = 0
+            if flow_state == 4 and len(code) > 0:
+                sign_val = digibet.get(code[-1], 0)
+                print("")
+                print("sign_val")
+                print(sign_val)
+
+                waveform = freq_bank[sign_val]  # 1D waveform in range [0,1]
+
+                # Draw centered waveform
+                water = draw_freq_centered(
+                    water,
+                    waveform,
+                    center_y=h // 2,
+                    scale=h // 4,  # amplitude of oscilloscope
+                    base=base
+                )
+
+                # Water inherits flow always
+                flow[:] = water
+                flow_base[:] = flow
+
+
 
         if len(letter) == 2:
             message += phrase[(phrase_pos + 1)%len(phrase)]
@@ -2390,9 +2570,8 @@ def submit(letter):
 
             if dim == 2:
                 if ruler < 4:
-                    flow = np.zeros((h, l), dtype=int)
-                    flow[int(l / 2), int(h / 2)] = 1
-                    water = np.zeros((h, l), dtype=int)
+                    flow = flow_base.copy()
+                    water = flow.copy()
 
 
             if dim == 3:
@@ -2654,8 +2833,6 @@ yl_pos = palm_yl - x_s * 2
 left_roi.append((xl_pos, yl_pos, xl_pos + x_s, yl_pos + y_s))
 
 
-
-
 def left_hand_detect():
     global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x
 
@@ -2741,6 +2918,14 @@ def left_hand_detect():
     hand_x = [hand_l, hand_l0, hand_l1, hands, hands_0, hands_1, left_hand, right_hand]
 
 
+
+
+
+
+count_scale = color_max*64
+bong = 0
+
+
 running = True
 while running:
 
@@ -2754,8 +2939,6 @@ while running:
     hand_array = pygame.surfarray.array3d(image)
 
 
-
-    ###water canvas
 
     ####water type####
 
@@ -2792,19 +2975,14 @@ while running:
 
 
         if ruler > 3:
-            flow = np.zeros((h, l), dtype=int)
-            flow[int(l / 2), int(h / 2)] = 1
-            water = np.zeros((h, l), dtype=int)
+            flow = flow_base.copy()
+            water = flow.copy()
 
 
     ###messages###
     messages[0] = message
 
-    os.makedirs(os.path.join(SCRIPT_DIR, 'messages'), exist_ok=True)
-    filename = os.path.join(SCRIPT_DIR, 'messages', signame + str(init))
-    outfile = open(filename, 'wb')
-    pickle.dump(messages, outfile)
-    outfile.close()
+
 
 
     pause = 0
@@ -2899,13 +3077,34 @@ while running:
         #     water = water.astype(int)
 
         if pause == 0:
-            water = water_update(flow)
+            water = water_update()
 
 
+            if flow_state == 4 and len(code) > 0:
+                sign_val = digibet.get(code[-1], 0)
+                print("")
+                print("sign_val")
+                print(sign_val)
 
-            flow = water
-        # sign_value = digibet[code_0]
-        # flow[int(l / 2), int(h / 2) +sign_value] = 1
+                waveform = freq_bank[sign_val]  # 1D waveform in range [0,1]
+
+                # Draw centered waveform
+                water = draw_freq_centered(
+                    water,
+                    waveform,
+                    center_y=h // 2,
+                    scale=h // 4,  # amplitude of oscilloscope
+                    base=base
+                )
+
+                # Water inherits flow always
+                flow[:] = water
+                flow_base[:] = flow
+
+
+            else:
+                flow = water
+
 
 
 
@@ -2932,216 +3131,165 @@ while running:
 
 
             if base == 2:
-                up_mask = water == 1
-                down_mask = water == 0
+                up_mask = (flow == 1)
+                down_mask = (flow == 0)
+
+
+                rainbow_strength = np.array([-1, 1], dtype=np.int8)
 
             elif base == 3:
+                up_mask = (flow == 1)
+                down_mask = (flow == 2)
 
-                up_mask = water == 1
-                down_mask = water == 2
+
+
+                rainbow_strength = np.array([0, 1, -1], dtype=np.int8)
 
             elif base == 4:
 
-                up_mask = water == 0
-                down_mask = water == 1
-                up_mask_0 = water == 2
-                down_mask_0 = water == 3
-
-                rainbow_array[up_mask_0] += rainbow_speed * set
-                rainbow_array[down_mask_0] -= rainbow_speed * set
-                rainbow_array[rainbow_array < 0] = color_max - 1
-                rainbow_array[rainbow_array > color_max - 1] = 0
-
-            count_scale = color_max*64
-
-            up_count += int(np.sum(up_mask)/count_scale)
-            down_count += int(np.sum(down_mask)/count_scale)
-
-            rainbow_array[up_mask] += rainbow_speed + set
-            rainbow_array[down_mask] -= rainbow_speed + set
-            rainbow_array[rainbow_array < 0] = color_max-1
-            rainbow_array[rainbow_array > color_max-1] = 0
+                up_mask = (flow == 0) | (flow == 2)
+                down_mask = (flow == 1) | (flow == 3)
 
 
+                rainbow_strength = np.array([+1, -1, +2, -2], dtype=np.int8)
 
-            rainbow_flow = np.zeros((l, h, 3), dtype=np.uint8)
-
-            rainbow_flow = full_colors[rainbow_array]
 
 
 
 
             region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
-            region_0 = region
+            region_original = region.copy()
 
-            fade = 7
 
-            if fade == 1:
-                mask = flow != 0
-                region[mask] = rainbow_flow[mask]
-            elif fade == 0:
-                region = rainbow_flow
+            delta = rainbow_strength[flow] * rainbow_speed * set
 
-            elif fade == 2:
-                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
-                region = blended
+            rainbow_array = (rainbow_array + delta) % color_max
 
-            elif fade == 3:
+            rainbow_flow = full_colors[rainbow_array]
 
-                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
-                region = blended
 
-                mask = flow != 0
-                region[mask] = rainbow_flow[mask]
 
             ###edge###
             edge = 1
-            edge_depth = 32
+            edge_depth = 16
 
             if edge == 1:
-                gray = region.mean(axis=2)
 
+                gray = region.mean(axis=2).astype(np.float32)
                 gx = np.abs(np.diff(gray, axis=1))
                 gy = np.abs(np.diff(gray, axis=0))
 
                 gx = np.pad(gx, ((0, 0), (0, 1)), mode='constant')
                 gy = np.pad(gy, ((0, 1), (0, 0)), mode='constant')
 
-                edges = np.sqrt(gx ** 2 + gy ** 2)
-                edges = (edges / edges.max() * 255).astype(np.uint8)
+                edges = (np.sqrt(gx ** 2 + gy ** 2))
+                edges = (edges / np.max(edges + 1e-6) * 255).astype(np.uint8)
 
                 edge_mask = edges > edge_depth
 
+                # Add CA turbulence at edge boundaries
                 flow[edge_mask] = (flow[edge_mask] + 1) % base
 
-            if fade == 4:
 
-                blended = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
-                region = blended
 
+            fade_max = 8
+
+            fade = score % fade_max
+            fade = 7
+
+            # print(fade)
+
+
+            if fade == 0:
+                region[:, :] = rainbow_flow
+
+            elif fade == 1:
                 mask = flow != 0
                 region[mask] = rainbow_flow[mask]
 
-                if edge == 1:
-                    region[edge_mask] = region_0[edge_mask]
+            elif fade == 2:
+
+                region[:] = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+
+
+            elif fade == 3:
+
+                mixed = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                mask = (flow != 0)
+                mixed[mask] = rainbow_flow[mask]
+                region = mixed
+
+
+            elif fade == 4:
+
+                region = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                region[flow != 0] = rainbow_flow[flow != 0]
+                region[edge_mask] = region_original[edge_mask]
+
 
             elif fade == 5:
 
-                alpha = round(1/base, 3)
-                if base == 2:
-                    alpha = 1
-                flow_alpha = np.clip(water, 0, base)
-                flow_alpha = flow_alpha[..., np.newaxis]
-                blended = (
+                alpha = 1.0 if base == 2 else round(1 / base, 3)
+                flow_alpha = (flow[..., np.newaxis].astype(np.float32))
+
+                region = (
                         region.astype(np.float32) * (1 - alpha * flow_alpha) +
                         rainbow_flow.astype(np.float32) * (alpha * flow_alpha)
                 ).astype(np.uint8)
 
-                region = blended
-
-                if edge == 1:
-                    edge_speed = len(message)
-                    region[edge_mask] = region_0[edge_mask]
-
-                    rainbow_array[edge_mask] += edge_speed + set
-                    rainbow_array[rainbow_array < 0] = color_max - 1
-                    rainbow_array[rainbow_array > color_max - 1] = 0
-
+                # Edge highlight momentum
+                speed_boost = len(message)
+                region[edge_mask] = region_original[edge_mask]
+                rainbow_array[edge_mask] += speed_boost + set
+                rainbow_array %= color_max
 
             elif fade == 6:
 
-
                 image_flow = color_array[flow]
+                half_mix = ((image_flow.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
 
-                rainbow_flow = ((image_flow.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                alpha = 1.0 if base == 2 else round(1 / base, 3)
+                flow_alpha = flow[..., np.newaxis].astype(np.float32)
 
-
-                alpha = round(1/base, 3)
-                flow_alpha = np.clip(water, 0, base)
-                flow_alpha = flow_alpha[..., np.newaxis]
-                blended = (
+                region = (
                         region.astype(np.float32) * (1 - alpha * flow_alpha) +
-                        rainbow_flow.astype(np.float32) * (alpha * flow_alpha)
+                        half_mix.astype(np.float32) * (alpha * flow_alpha)
                 ).astype(np.uint8)
 
-                region = blended
-
-                if edge == 1:
-                    edge_speed = len(message)
-                    region[edge_mask] = region_0[edge_mask]
-
-                    rainbow_array[edge_mask] += edge_speed + set
-                    rainbow_array[rainbow_array < 0] = color_max - 1
-                    rainbow_array[rainbow_array > color_max - 1] = 0
+                speed_boost = len(message)
+                region[edge_mask] = region_original[edge_mask]
+                rainbow_array[edge_mask] += speed_boost + set
+                rainbow_array %= color_max
 
 
             elif fade == 7:
-                sum_up = np.sum(flow == 1)
-                sum_down = np.sum(flow == 0)
 
-                # print()
-                # print('sums')
-                # print(sum_up)
-                print(sum_down)
-
-
-
-                image_flow = color_array[flow]
-
-                alpha = round(1, 3)
-
-                mask_1 = up_mask
-                mask_0 = down_mask
-
+                # Very complex mode from your original system, preserved fully
+                sum_up = np.sum(up_mask)
+                sum_down = np.sum(down_mask)
 
                 base_region = region.astype(np.float32)
                 rainbow_region = rainbow_flow.astype(np.float32)
 
+                up_mask = (flow == 1)
+                down_mask = (flow == 0)
 
                 result = base_region.copy()
 
-
-                alpha_fade = 0.50
-                alpha_full = 1.00
-
+                alpha_fade = 0.5
+                alpha_full = 1.0
 
                 if sum_up > sum_down:
-
-                    # 1 is more common → fade 1s, full for 0s
-                    result[mask_1] = (
-                            base_region[mask_1] * (1 - alpha_fade) +
-                            rainbow_region[mask_1] * alpha_fade
-                    )
-                    result[mask_0] = (
-                            base_region[mask_0] * (1 - alpha_full) +
-                            rainbow_region[mask_0] * alpha_full
-                    )
-
+                    result[up_mask] = base_region[up_mask] * (1 - alpha_fade) + rainbow_region[up_mask] * alpha_fade
+                    result[down_mask] = base_region[down_mask] * (1 - alpha_full) + rainbow_region[down_mask] * alpha_full
                 else:
-                    # 0 is more common → fade 0s, full for 1s
-                    result[mask_0] = (
-                            base_region[mask_0] * (1 - alpha_fade) +
-                            rainbow_region[mask_0] * alpha_fade
-                    )
-                    result[mask_1] = (
-                            base_region[mask_1] * (1 - alpha_full) +
-                            rainbow_region[mask_1] * alpha_full
-                    )
+                    result[down_mask] = base_region[down_mask] * (1 - alpha_fade) + rainbow_region[down_mask] * alpha_fade
+                    result[up_mask] = base_region[up_mask] * (1 - alpha_full) + rainbow_region[up_mask] * alpha_full
 
                 region = result.astype(np.uint8)
-
-                if edge == 1:
-
-                    # edge_speed = len(message)
-                    # region[edge_mask] = region_0[edge_mask]
-                    #
-                    # rainbow_array[edge_mask] += edge_speed + set
-                    # rainbow_array[rainbow_array < 0] = color_max - 1
-                    # rainbow_array[rainbow_array > color_max - 1] = 0
-
-                    region[edge_mask] = region_0[edge_mask]
-                    rainbow_array[edge_mask] += len(message) + set
-                    rainbow_array %= color_max
+                region[edge_mask] = region_original[edge_mask]
+                rainbow_array[edge_mask] += len(message) + set
+                rainbow_array %= color_max
 
 
 
@@ -3315,17 +3463,32 @@ while running:
         # # print(hands)
         # # print(hands_0)
 
+    elif detect_change == 1:
+
+
+
+
+
+
+        ####right hand####
+
+        right_hand_detect()
+
+
+        ####left hand####
+        left_hand_detect()
+
 
 
     ###stats###
-    times_limit = 10
+    times_limit = 20
     for x in range(len(times)):
         if x > times_limit:
             break
-        lesson_t = small_font.render(str(times[x]), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 8, screen_height / 8 + lesson_t.get_height()*x))
+        lesson_t = text_font.render(str(times[x]), True, value_color[9])
+        screen.blit(lesson_t, (screen_width / 128, screen_height / 8 + lesson_t.get_height()*x))
 
-    times_limit = 10
+    times_limit = 20
     sign_items = list(sign_bank.items())[::]
 
     for s in sign_items:
@@ -3424,14 +3587,17 @@ while running:
 
 
         if letter != last_typed:
+            bong = 1
             submit(letter)
             last_typed = letter
 
         elif letter_0 != last_typed:
+            bong = 1
             submit(letter_0)
             last_typed = letter_0
 
         elif letter_1 != last_typed:
+            bong = 1
             submit(letter_1)
             last_typed = letter_1
 
@@ -3635,7 +3801,7 @@ while running:
             rows = 4
             bins = 8
 
-            print(rule)
+            # print(rule)
 
 
 
@@ -3682,6 +3848,10 @@ while running:
                             r_plus = (int(rule[r]) + 1)%base
                             rule[r] = str(r_plus)
                             rule_base = rule.copy()
+
+                            rule_str = "".join(rule)
+                            rv = int(rule_str, base)
+                            rv = rv % bbv
 
                             click = False
 
@@ -3744,8 +3914,13 @@ while running:
         lesson_t = main_font.render(str(code), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 2 - int(lesson_t.get_width()/2), screen_height / 8 - 128 + x*lesson_t.get_height()))
 
+
+    lesson_t = main_font.render('rv: ' + str(rv), True, value_color[9])
+    screen.blit(lesson_t, (screen_width - screen_width/4, screen_height / 32 - 32))
+
+
     lesson_t = lable_font.render('score' + str(score), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 4 - 192, screen_height / 32 - 32))
+    screen.blit(lesson_t, (screen_width / 2 - 192, screen_height / 32 - 32))
 
     lesson_t = main_font.render('set' + str(set), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 4 - 256, screen_height / 32 - 32))
@@ -3753,8 +3928,8 @@ while running:
     lesson_t = main_font.render('speed' + str(rainbow_speed), True, value_color[9])
     screen.blit(lesson_t, (screen_width / 4, screen_height / 32 - 32))
 
-    lesson_t = main_font.render('tts: ' + str(tts_0), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 64, screen_height / 2 - 32))
+    lesson_t = small_font.render('tts: ' + str(round(tts_0, 3)), True, value_color[9])
+    screen.blit(lesson_t, (screen_width / 64, screen_height / 16 - 32))
 
 
 
@@ -3763,7 +3938,8 @@ while running:
     volume = 0.3
     ######bong#####
     if bong_on == 1:
-        if time.time() - time_b > beat:
+        if bong == 1:
+            bong = 0
             print('gong')
 
             # if dim == 2:
@@ -3841,7 +4017,7 @@ while running:
             #
 
 
-            time_b = time.time()
+
 
 
 
@@ -3856,7 +4032,7 @@ while running:
 
         xs = 16
         ys = 16
-        x = screen_width / 2 + int(cell_map[i][0]*xs) + xs*1
+        x = screen_width / 2 + int(cell_map[i][0]*xs) + xs*4
         y = screen_height / 7 + int(cell_map[i][1]*ys)
 
 
