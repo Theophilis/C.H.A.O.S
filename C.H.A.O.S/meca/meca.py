@@ -551,6 +551,9 @@ score = 1
 set = 0
 score_h = 0
 sign_bank = {}
+bank_past = sign_bank
+bank_chart = {}
+
 phrase_past = phrase[::]
 tts = [0, 0]
 times = []
@@ -800,8 +803,13 @@ if dim == 2:
         flow_base = flow.copy()
 
 
+flow_0 = flow.copy()
+
+
 rainbow_array = np.zeros((h, l), dtype=int)
 uw = 256**3 - 1  # = 16,777,216
+
+
 
 
 
@@ -1901,7 +1909,7 @@ def digits_to_index(digits, base):
 
 
 def handle(hand, code_0):
-    global stamp_x, stamp_y, code, rv, shift, rule, tts_1, shifts, hands_x, rule_base, lookup
+    global stamp_x, stamp_y, code, rv, shift, rule, tts_1, shifts, hands_x, rule_base, lookup, flow_0
 
 
     if hand[0] == hand[1]:
@@ -1916,35 +1924,40 @@ def handle(hand, code_0):
             code_bin = fill_bin(code_bin)
             # print(goal_bin)
 
-            for x in range(5):
+            stamp = 1
 
-                stamp_y0 = stamp_y + int(stamp_s * 1.2) * x
+            if stamp == 1:
+                for x in range(5):
 
-                if code_bin[x] == '1':
-                    flow[stamp_x:stamp_x + stamp_s, stamp_y0:stamp_y0 + stamp_s + (stamp_s + 2) * x] = (flow[
-                                                                                                        stamp_x:stamp_x + stamp_s,
-                                                                                                        stamp_y0:stamp_y0 + stamp_s + (
-                                                                                                                    stamp_s + 2) * x] + 1) % base
+                    stamp_y0 = stamp_y + int(stamp_s * 1.2) * x
 
-            stamp_x += int(stamp_s * 1.3)
+                    if code_bin[x] == '1':
+                        flow[stamp_x:stamp_x + stamp_s, stamp_y0:stamp_y0 + stamp_s + (stamp_s + 2) * x] = (flow[
+                                                                                                            stamp_x:stamp_x + stamp_s,
+                                                                                                            stamp_y0:stamp_y0 + stamp_s + (
+                                                                                                                        stamp_s + 2) * x] + 1) % base
 
-            if stamp_x > 400:
-                stamp_x = 32
-                stamp_y += stamp_s * 6
+                stamp_x += int(stamp_s * 1.3)
 
-            if stamp_y > 400:
-                stamp_y = 32
+                if stamp_x > 400:
+                    stamp_x = 32
+                    stamp_y += stamp_s * 6
+
+                if stamp_y > 400:
+                    stamp_y = 32
+
 
             stenograph.append((code_0, round(time.time() - tts_1, 3), datetime.now()))
             # sign_bank['steno'] = []
             tts_1 = time.time()
 
+
+            #ruler
             if ruler == 0:
                 rv += digibet[code_0]
                 rv = rv % bbv
                 rules, rule = rule_gen(rv, base)
                 rule = np.array(rule)
-
 
 
             elif ruler == 1:
@@ -2350,11 +2363,13 @@ def submit(letter):
 
     # print(letter)
 
-    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water
+    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water, current_rung
 
     if letter == last_typed:
         letter = code_0
     elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos + 2]:
+
+
         message += phrase[phrase_pos]
         phrase_pos += 1
 
@@ -2372,6 +2387,7 @@ def submit(letter):
 
         if phrase_pos == len(phrase):
 
+            history.insert(0, (tts_0, current_rung))
             message += ' '
 
             score += 1
@@ -2495,6 +2511,7 @@ palm_r = [0, 0, 0, 0, 0, 0]
 
 tips_r = [64, 16, 0, 24, 0]
 
+#fingers x
 right_x = {
     "size": x_s,
     "gap": x_g,
@@ -2503,6 +2520,7 @@ right_x = {
     "step": x_s + x_g
 }
 
+#fingers y
 right_y = {
     "size": y_s,
     "gap": y_g,
@@ -2511,6 +2529,7 @@ right_y = {
     "step": y_s + y_g
 }
 
+#fingers
 right_roi = [
     (
         right_x["start"] + right_x["step"] * (n + 1),
@@ -2521,6 +2540,7 @@ right_roi = [
     for n in range(5)
 ]
 
+#thumb
 right_roi[4] = (
     right_x["start"] + right_x["step"] * 5 + right_x["size"],
     right_y["start"] + tips_r[4] + right_y["size"] * 5,
@@ -2531,17 +2551,50 @@ right_roi[4] = (
 xr_pos = palm_xr - x_s * 1
 yr_pos = palm_yr - x_s * 2
 
+#palm
 right_roi.append((xr_pos, yr_pos, xr_pos + x_s, yr_pos + y_s))
 
 
 right_hand = [0, 0, 0]
 
+roir_map = []
+distr_map = []
+
+
+
+
+###left hand###
+xl_pos = screen_width - (x_s + x_g) * 7
+yl_pos = 500
+palm_xl = xl_pos + x_s * 6
+palm_yl = yl_pos + y_s * 9
+
+hand_l = [0, 0, 0, 0, 0, 0]
+hand_l0 = [0, 0, 0, 0, 0, 0]
+hand_l1 = [0, 0, 0, 0, 0, 0]
+
+palm_l = [0, 0, 0, 0, 0, 0]
+tips_l = [0, 24, 0, 16, 64]
+
+left_roi = [(xl_pos + (x_s + x_g) * (n + 1), yl_pos + tips_l[n],
+             xl_pos + (x_s + x_g) * (n + 1) + x_s, yl_pos + tips_l[n] + y_s) for n in range(5)]
+left_roi[0] = (xl_pos + x_s, yl_pos + tips_l[4] + y_s * 4, xl_pos + x_s * 2, yl_pos + tips_l[4] + y_s * 5)
+
+xl_pos = palm_xl - x_s * 1
+yl_pos = palm_yl - x_s * 2
+
+left_roi.append((xl_pos, yl_pos, xl_pos + x_s, yl_pos + y_s))
+
+
+roil_map = []
+distl_map = []
+
+
 
 def right_hand_detect():
-    global hand_r, hand_r0, hand_r1, right_hand, right_roi, hand_x, hands, hands_0, hands_1
+    global hand_r, hand_r0, hand_r1, right_hand, right_roi, hand_x, hands, hands_0, hands_1, roir_map, distr_map
 
-    roir_map = []
-    distr_map = []
+
 
 
     place = 0
@@ -2606,45 +2659,17 @@ def right_hand_detect():
     hands_0[0] = digibetu[right_hand[1]]
     hands_1[0] = digibetu[right_hand[2]]
 
+    roir_map.clear()
+    distr_map.clear()
 
 
 
-
-
-###left hand###
-
-
-xl_pos = screen_width - (x_s + x_g) * 7
-yl_pos = 500
-palm_xl = xl_pos + x_s * 6
-palm_yl = yl_pos + y_s * 9
-
-hand_l = [0, 0, 0, 0, 0, 0]
-hand_l0 = [0, 0, 0, 0, 0, 0]
-hand_l1 = [0, 0, 0, 0, 0, 0]
-
-palm_l = [0, 0, 0, 0, 0, 0]
-tips_l = [0, 24, 0, 16, 64]
-
-left_roi = [(xl_pos + (x_s + x_g) * (n + 1), yl_pos + tips_l[n],
-             xl_pos + (x_s + x_g) * (n + 1) + x_s, yl_pos + tips_l[n] + y_s) for n in range(5)]
-left_roi[0] = (xl_pos + x_s, yl_pos + tips_l[4] + y_s * 4, xl_pos + x_s * 2, yl_pos + tips_l[4] + y_s * 5)
-
-xl_pos = palm_xl - x_s * 1
-yl_pos = palm_yl - x_s * 2
-
-left_roi.append((xl_pos, yl_pos, xl_pos + x_s, yl_pos + y_s))
 
 
 def left_hand_detect():
-    global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x
-
-    roil_map = []
-    distl_map = []
+    global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x, roil_map, distl_map
 
     place = 0
-
-
 
     for roi in left_roi:
         place += 1
@@ -2720,13 +2745,23 @@ def left_hand_detect():
 
     hand_x = [hand_l, hand_l0, hand_l1, hands, hands_0, hands_1, left_hand, right_hand]
 
-
+    roil_map.clear()
+    distl_map.clear()
 
 
 
 
 count_scale = color_max*64
 bong = 0
+
+history = []
+
+
+memory = np.zeros((h, l), dtype=np.float32)
+learn_rate = 0.05
+decay_rate = 0.98
+memory_scale = 8.0
+
 
 
 running = True
@@ -2888,6 +2923,7 @@ while running:
 
 
 
+        rainbow = 2
 
         if rainbow == 0:
 
@@ -3073,6 +3109,177 @@ while running:
                 rainbow_array %= color_max
 
 
+        if rainbow == 2:
+
+
+            if base == 2:
+
+                up_mask = (flow == 1)
+                down_mask = (flow == 0)
+
+                rainbow_strength = np.array([-1, 1], dtype=np.int8)
+
+            elif base == 3:
+                up_mask = (flow == 1)
+                down_mask = (flow == 2)
+
+
+
+                rainbow_strength = np.array([0, 1, -1], dtype=np.int8)
+
+            elif base == 4:
+
+                up_mask = (flow == 0) | (flow == 2)
+                down_mask = (flow == 1) | (flow == 3)
+
+
+                rainbow_strength = np.array([+1, -1, +2, -2], dtype=np.int8)
+
+
+
+            impulse = np.where(flow==1, +learn_rate, -learn_rate)
+            memory = memory * decay_rate + impulse
+            memory = np.clip(memory, -1.0, 1.0)
+
+
+            delta = rainbow_strength[flow] * (rainbow_speed + memory*memory_scale) * set
+
+
+
+            region = image_array[pos_x:pos_x+l, pos_y:pos_y+h]
+            region_original = region.copy()
+
+
+
+
+            rainbow_array = (rainbow_array + delta.astype(int)) % color_max
+
+            rainbow_flow = full_colors[rainbow_array]
+
+
+
+            ###edge###
+            edge = 1
+            edge_depth = 16
+
+            if edge == 1:
+
+                gray = region.mean(axis=2).astype(np.float32)
+                gx = np.abs(np.diff(gray, axis=1))
+                gy = np.abs(np.diff(gray, axis=0))
+
+                gx = np.pad(gx, ((0, 0), (0, 1)), mode='constant')
+                gy = np.pad(gy, ((0, 1), (0, 0)), mode='constant')
+
+                edges = (np.sqrt(gx ** 2 + gy ** 2))
+                edges = (edges / np.max(edges + 1e-6) * 255).astype(np.uint8)
+
+                edge_mask = edges > edge_depth
+
+                # Add CA turbulence at edge boundaries
+                flow[edge_mask] = (flow[edge_mask] + 1) % base
+
+
+
+            fade_max = 8
+
+            fade = score % fade_max
+            fade = 7
+
+            # print(fade)
+
+
+            if fade == 0:
+                region[:, :] = rainbow_flow
+
+            elif fade == 1:
+                mask = flow != 0
+                region[mask] = rainbow_flow[mask]
+
+            elif fade == 2:
+
+                region[:] = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+
+
+            elif fade == 3:
+
+                mixed = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                mask = (flow != 0)
+                mixed[mask] = rainbow_flow[mask]
+                region = mixed
+
+
+            elif fade == 4:
+
+                region = ((region.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+                region[flow != 0] = rainbow_flow[flow != 0]
+                region[edge_mask] = region_original[edge_mask]
+
+
+            elif fade == 5:
+
+                alpha = 1.0 if base == 2 else round(1 / base, 3)
+                flow_alpha = (flow[..., np.newaxis].astype(np.float32))
+
+                region = (
+                        region.astype(np.float32) * (1 - alpha * flow_alpha) +
+                        rainbow_flow.astype(np.float32) * (alpha * flow_alpha)
+                ).astype(np.uint8)
+
+                # Edge highlight momentum
+                speed_boost = len(message)
+                region[edge_mask] = region_original[edge_mask]
+                rainbow_array[edge_mask] += speed_boost + set
+                rainbow_array %= color_max
+
+            elif fade == 6:
+
+                image_flow = color_array[flow]
+                half_mix = ((image_flow.astype(np.float32) + rainbow_flow.astype(np.float32)) / 2).astype(np.uint8)
+
+                alpha = 1.0 if base == 2 else round(1 / base, 3)
+                flow_alpha = flow[..., np.newaxis].astype(np.float32)
+
+                region = (
+                        region.astype(np.float32) * (1 - alpha * flow_alpha) +
+                        half_mix.astype(np.float32) * (alpha * flow_alpha)
+                ).astype(np.uint8)
+
+                speed_boost = len(message)
+                region[edge_mask] = region_original[edge_mask]
+                rainbow_array[edge_mask] += speed_boost + set
+                rainbow_array %= color_max
+
+
+            elif fade == 7:
+
+                # Very complex mode from your original system, preserved fully
+                sum_up = np.sum(up_mask)
+                sum_down = np.sum(down_mask)
+
+                base_region = region.astype(np.float32)
+                rainbow_region = rainbow_flow.astype(np.float32)
+
+                up_mask = (flow == 1)
+                down_mask = (flow == 0)
+
+                result = base_region.copy()
+
+                alpha_fade = 0.5
+                alpha_full = 1.0
+
+                if sum_up > sum_down:
+                    result[up_mask] = base_region[up_mask] * (1 - alpha_fade) + rainbow_region[up_mask] * alpha_fade
+                    result[down_mask] = base_region[down_mask] * (1 - alpha_full) + rainbow_region[down_mask] * alpha_full
+                else:
+                    result[down_mask] = base_region[down_mask] * (1 - alpha_fade) + rainbow_region[down_mask] * alpha_fade
+                    result[up_mask] = base_region[up_mask] * (1 - alpha_full) + rainbow_region[up_mask] * alpha_full
+
+                region = result.astype(np.uint8)
+                region[edge_mask] = region_original[edge_mask]
+                rainbow_array[edge_mask] += len(message) + set
+                rainbow_array %= color_max
+
 
 
 
@@ -3085,16 +3292,6 @@ while running:
     image = pygame.surfarray.make_surface(image_array)
     screen.blit(image, (0, 0))
 
-
-
-
-
-    ######runner######
-
-    if runner == 1:
-
-        lesson_t = main_font.render(str((up_count, down_count)), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 16, screen_height / 16))
 
 
     #####hands######
@@ -3267,10 +3464,11 @@ while running:
         if x > times_limit:
             break
         lesson_t = text_font.render(str(times[x]), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 128, screen_height / 8 + lesson_t.get_height()*x))
+        screen.blit(lesson_t, (screen_width / 128, screen_height / 16 + lesson_t.get_height()*x))
 
     times_limit = 20
     sign_items = list(sign_bank.items())[::]
+
 
     for s in sign_items:
         if s[0] == 'steno':
@@ -3282,6 +3480,67 @@ while running:
             break
         lesson_t = text_font.render(str((sign_items[x][1][0], sign_items[x][0])), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 2 + screen_width/2.5, screen_height / 16 + lesson_t.get_height()*x))
+
+
+    def time_ladder(times):
+        """
+        Group times into rounded tenth-second buckets:
+        0.4s, 0.5s, 0.6s, 0.7s, etc.
+        Returns a dictionary like {0.4: 3, 0.5: 7, 0.6: 2}
+        """
+        ladders = {}
+
+        for t in times:
+            if t <= 0:
+                continue  # ignore invalid
+
+            key = round(t, 1)  # e.g. 0.412 → 0.4
+            ladders[key] = ladders.get(key, 0) + 1
+
+        return ladders
+
+
+    ladders = time_ladder(times)
+    ladder_most = sorted(ladders.items(), key=lambda x: x[1], reverse=True)
+
+
+    ladder_list = list(ladders.items())
+
+
+    for x in range(len(ladder_list)):
+
+        if x > 20:
+            break
+
+
+        lesson_t = text_font.render(str(ladder_list[x]), True, value_color[9])
+        screen.blit(lesson_t, (screen_width / 16, screen_height / 16 + lesson_t.get_height()*x))
+
+        lesson_t = text_font.render(str(ladder_most[x]), True, value_color[9])
+        screen.blit(lesson_t, (screen_width / 8, screen_height / 16 + lesson_t.get_height()*x))
+
+
+
+    if tts_0 < 10 and round(tts_0, 1) in ladders:
+
+        current_rung = ladders[round(tts_0, 1)]
+
+        lesson_t = small_font.render(str(current_rung), True, value_color[9])
+        screen.blit(lesson_t, (screen_width / 4, screen_height / 16 - 32))
+    else:
+        current_rung = 1
+
+
+
+    ###history
+    for x in range(len(history)):
+
+        if x > 20:
+            break
+
+        lesson_t = text_font.render(str(history[x]), True, value_color[9])
+        screen.blit(lesson_t, (screen_width / 8 + screen_width/16, screen_height / 16 + lesson_t.get_height()*x))
+
 
 
 
@@ -3697,21 +3956,23 @@ while running:
 
 
     lesson_t = main_font.render('rv: ' + str(rv), True, value_color[9])
-    screen.blit(lesson_t, (screen_width - screen_width/4, screen_height / 32 - 32))
+    screen.blit(lesson_t, (screen_width - screen_width/3, screen_height / 32 - 32))
 
 
     lesson_t = lable_font.render('score' + str(score), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 2 - 192, screen_height / 32 - 32))
+    screen.blit(lesson_t, (screen_width / 2 - lesson_t.get_width()/2, screen_height / 4 - 64))
 
     lesson_t = main_font.render('set' + str(set), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 4 - 256, screen_height / 32 - 32))
+    screen.blit(lesson_t, (screen_width - 224, screen_height / 32 - 32))
 
     lesson_t = main_font.render('speed' + str(rainbow_speed), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 4, screen_height / 32 - 32))
+    screen.blit(lesson_t, (screen_width - 128, screen_height / 32 - 32 ))
 
     lesson_t = small_font.render('tts: ' + str(round(tts_0, 3)), True, value_color[9])
-    screen.blit(lesson_t, (screen_width / 64, screen_height / 16 - 32))
+    screen.blit(lesson_t, (screen_width / 64, screen_height / 32 - 32))
 
+    lesson_t = main_font.render(str((up_count, down_count)), True, value_color[9])
+    screen.blit(lesson_t, (screen_width / 4, screen_height / 32 - 32))
 
 
     ###synth###
