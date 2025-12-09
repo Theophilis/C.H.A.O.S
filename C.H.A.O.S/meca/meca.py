@@ -635,7 +635,7 @@ lookup = np.array(rule, dtype=np.uint8)
 
 ruler = 4
 shift = 0
-flow_state = 3
+flow_state = 4
 
 print(rule)
 
@@ -650,7 +650,7 @@ mid_y = h // 2
 
 
 
-
+####flow_state####
 
 if dim == 1:
     flow = np.zeros(l, dtype=int)
@@ -802,11 +802,50 @@ if dim == 2:
         flow = flow_quad_circles(h, l)
         flow_base = flow.copy()
 
+    elif flow_state == 4:
+
+        def flow_quad_circle_stamp(h, l, base=2):
+            """
+            Creates a centered quad-inverted circle stamp pattern:
+            - 4 quadrants: TL=0, TR=1, BL=1, BR=0
+            - Inside circle: values are inverted
+            - Output: h x l array of 0/1 (mod base)
+            """
+
+            flow = np.zeros((h, l), dtype=np.uint8)
+            mid_y = h // 2
+            mid_x = l // 2
+
+            # quadrant base values
+            # TL=0, TR=1, BL=1, BR=0
+            flow[:mid_y, :mid_x] = 0  # TL
+            flow[:mid_y, mid_x:] = 1  # TR
+            flow[mid_y:, :mid_x] = 1  # BL
+            flow[mid_y:, mid_x:] = 0  # BR
+
+            # build circle mask
+            Y, X = np.ogrid[:h, :l]
+            dist = (X - mid_x) ** 2 + (Y - mid_y) ** 2
+
+            # radius chosen to give equal 1s and 0s
+            # area(circle) ~ half the square
+            r = int(min(h, l) * (1 / (2 * np.pi)) ** 0.5)
+
+            circle_mask = dist <= r * r
+
+            # inside circle → invert
+            flow[circle_mask] = (1 - flow[circle_mask]) % base
+
+            return flow
+
+        flow = flow_quad_circle_stamp(h, l)
+        flow_base = flow.copy()
 
 flow_0 = flow.copy()
 
 
 rainbow_array = np.zeros((h, l), dtype=int)
+rainbow_memory = np.zeros((h, l), dtype=int)
 uw = 256**3 - 1  # = 16,777,216
 
 
