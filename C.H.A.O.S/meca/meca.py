@@ -383,15 +383,17 @@ pygame.camera.init()
 
 
 
-signame = "Theophilis"
+signame = "Chaotomata"
 
 
+
+###theo screen###
+screen_width, screen_height = 1280, 960
 
 ###chao screen###
 screen_width, screen_height = 1800, 960
 
-###theo screen###
-screen_width, screen_height = 1280, 960
+
 
 
 
