@@ -610,8 +610,9 @@ pos_y = screen_height / 2
 dim = 2
 
 
-rainbow = 1
+rainbow = 0
 rainbow_speed = 2
+speed_limit = 42
 edge_speed = 1
 base = 2
 base2 = base * base
@@ -2964,7 +2965,8 @@ while running:
 
 
 
-        rainbow = 2
+        # rainbow = 2
+        region = image_array[pos_x:pos_x + l, pos_y:pos_y + h]
 
         if rainbow == 0:
 
@@ -4237,7 +4239,7 @@ while running:
         if click:
             print('rainbow')
             rainbow += 1
-            rainbow = rainbow%2
+            rainbow = rainbow%3
 
 
 
@@ -4356,13 +4358,16 @@ while running:
             #
             elif event.key == pygame.K_UP:
 
-                for x in range(len(thresholds)):
-                    thresholds[x] += 1
+                rainbow_speed += 1
+
+                if rainbow_speed > speed_limit:
+                    rainbow_speed = speed_limit
 
             elif event.key == pygame.K_DOWN:
 
-                for x in range(len(thresholds)):
-                    thresholds[x] = thresholds[x] - 1
+                rainbow_speed -= 1
+                if rainbow_speed < -int(speed_limit)/2:
+                    rainbow_speed = -int(speed_limit)/2
 
             # upper
             elif event.key == pygame.K_a and pygame.key.get_mods() & pygame.KMOD_SHIFT:
