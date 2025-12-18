@@ -610,9 +610,9 @@ pos_y = screen_height / 2
 dim = 2
 
 
-rainbow = 0
+rainbow = 1
 rainbow_speed = 2
-speed_limit = 42
+speed_limit = 99
 edge_speed = 1
 base = 2
 base2 = base * base
