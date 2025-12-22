@@ -611,7 +611,7 @@ dim = 2
 
 
 rainbow = 1
-rainbow_speed = 2
+rainbow_speed = 1
 speed_limit = 99
 edge_speed = 1
 base = 2
@@ -638,7 +638,7 @@ lookup = np.array(rule, dtype=np.uint8)
 
 ruler = 4
 shift = 0
-flow_state = 4
+flow_state = 8
 
 print(rule)
 
@@ -843,6 +843,492 @@ if dim == 2:
 
         flow = flow_quad_circle_stamp(h, l)
         flow_base = flow.copy()
+
+    elif flow_state == 5:
+
+
+        def fibonacci_spiral_mask(h, w, turns=6.0, stripes=10, center=None):
+            """
+            Returns a boolean mask with EXACTLY ~50% True/False (as close as possible),
+            with a golden (Fibonacci) spiral structure.
+            """
+            if center is None:
+                cy, cx = h // 2, w // 2
+            else:
+                cy, cx = center
+
+            Y, X = np.ogrid[:h, :w]
+            dx = (X - cx).astype(np.float32)
+            dy = (Y - cy).astype(np.float32)
+
+            r = np.sqrt(dx * dx + dy * dy) + 1e-6
+            theta = np.arctan2(dy, dx)  # [-pi, pi]
+
+            phi = (1 + 5 ** 0.5) / 2.0
+            b = (2.0 * np.log(phi)) / np.pi  # golden spiral growth rate
+
+            # Spiral coordinate (constant along the spiral)
+            F = np.log(r) - b * theta
+
+            # Optional: add "rings/stripes" perpendicular to the spiral
+            # This makes the spiral read more clearly than a single boundary.
+            F_striped = np.sin(2 * np.pi * stripes * (F - F.min()) / (F.max() - F.min() + 1e-9))
+
+            # Only keep a limited number of turns (window it) so it doesn't dominate edges
+            # (Optional – comment out if you want full-screen)
+            theta_span = turns * 2 * np.pi
+            # unwrap theta-ish by using F as the window driver: keep central portion
+            # Simple radial window:
+            rmax = min(h, w) * 0.48
+            window = r < rmax
+            vals = F_striped[window]
+
+            # Choose threshold so half of the *windowed* pixels are True
+            t = np.median(vals)
+
+            mask = np.zeros((h, w), dtype=bool)
+            mask[window] = F_striped[window] > t
+
+            # If you want 50/50 across the ENTIRE screen, not just window:
+            # t = np.median(F_striped)
+            # mask = F_striped > t
+
+            return mask
+
+
+        mask = fibonacci_spiral_mask(h, l, stripes=12, turns=6.0)
+        flow = np.zeros((h, l), dtype=np.uint8)
+        flow[mask] = 1
+        flow_base = flow.copy()
+
+    elif flow_state == 6:
+        def _segment_norm_dist(X, Y, ax, ay, bx, by, thickness_px):
+            """Normalized distance to segment A->B: dist/thickness."""
+            abx = bx - ax
+            aby = by - ay
+            ab2 = abx * abx + aby * aby + 1e-12
+
+            apx = X - ax
+            apy = Y - ay
+
+            t = (apx * abx + apy * aby) / ab2
+            t = np.clip(t, 0.0, 1.0)
+
+            cx = ax + t * abx
+            cy = ay + t * aby
+
+            dx = X - cx
+            dy = Y - cy
+            dist = np.sqrt(dx * dx + dy * dy)
+            return dist / (thickness_px + 1e-9)
+
+
+        def _hexagram_segments(cx, cy, R):
+            """
+            Return 6 segments (two equilateral triangles) for a Star of David centered at (cx,cy)
+            with circumradius R (pixel units).
+            """
+
+            def verts(deg_list):
+                ang = np.deg2rad(deg_list)
+                vx = cx + R * np.cos(ang)
+                vy = cy + R * np.sin(ang)
+                return list(zip(vx, vy))
+
+            up = verts([90, 210, 330])
+            dn = verts([270, 30, 150])
+
+            segs = [
+                (up[0], up[1]), (up[1], up[2]), (up[2], up[0]),
+                (dn[0], dn[1]), (dn[1], dn[2]), (dn[2], dn[0]),
+            ]
+            return segs
+
+
+        def _fractal_centers(cx, cy, R, depth, scale=1 / 3, ring_factor=2 / 3):
+            """
+            Make a list of (center_x, center_y, radius) stars:
+            - Start with one big star at center.
+            - Each star spawns 6 children arranged on a hex ring (the "spaces") around it.
+            - Child radius = parent_R * scale
+            - Child ring distance = parent_R * ring_factor
+            """
+            stars = [(cx, cy, R)]
+            if depth <= 0:
+                return stars
+
+            # recursive expansion (iterative stack)
+            stack = [(cx, cy, R, 0)]
+            while stack:
+                x0, y0, r0, d = stack.pop()
+                if d >= depth:
+                    continue
+
+                child_r = r0 * scale
+                ring = r0 * ring_factor  # where the "spaces" live
+
+                # 6 directions around the center (flat-top hex)
+                angles = np.deg2rad([0, 60, 120, 180, 240, 300])
+                for a in angles:
+                    x1 = x0 + ring * np.cos(a)
+                    y1 = y0 + ring * np.sin(a)
+                    stars.append((x1, y1, child_r))
+                    stack.append((x1, y1, child_r, d + 1))
+
+            return stars
+
+
+        def flow_fractal_star_50_50(
+                h=500, l=500,
+                depth=2,
+                base_radius_px=210.0,
+                thickness_px=1,
+                scale=1 / 3,
+                ring_factor=2 / 3,
+        ):
+            """
+            Returns a (h,l) uint8 flow where:
+            - background is 0 (black)
+            - fractal star linework is 1 (white)
+            - EXACTLY half the pixels are white (50/50), since h*l is even for 500x500.
+            """
+            total = h * l
+            if total % 2 != 0:
+                raise ValueError("Need even number of cells for exact 50/50.")
+
+            # coordinate grids
+            yy, xx = np.ogrid[:h, :l]
+            X = xx.astype(np.float32)
+            Y = yy.astype(np.float32)
+
+            # center
+            cx = (l - 1) / 2.0
+            cy = (h - 1) / 2.0
+
+            # build star list (fractal)
+            stars = _fractal_centers(cx, cy, base_radius_px, depth, scale=scale, ring_factor=ring_factor)
+
+            # distance field: for each pixel, how close to ANY line segment in the whole fractal?
+            best = None
+            for (sx, sy, sr) in stars:
+                for (a, b) in _hexagram_segments(sx, sy, sr):
+                    ax, ay = a
+                    bx, by = b
+                    nd = _segment_norm_dist(X, Y, ax, ay, bx, by, thickness_px)
+                    best = nd if best is None else np.minimum(best, nd)
+
+            # enforce EXACT 50/50: choose the closest half of pixels to the fractal lines as white
+            N = total // 2
+            flat = best.ravel()
+            kth = np.partition(flat, N - 1)[N - 1]
+
+            mask = best <= kth
+            count = int(mask.sum())
+
+            if count > N:
+                # trim ties deterministically
+                eq = (best == kth).ravel()
+                eq_idx = np.flatnonzero(eq)
+                extra = count - N
+                mask_flat = mask.ravel()
+                mask_flat[eq_idx[:extra]] = False
+                mask = mask_flat.reshape(h, l)
+
+            flow = np.zeros((h, l), dtype=np.uint8)
+            flow[mask] = 1  # 0 background, 1 linework-ish pixels (closest half)
+            return flow
+
+        flow = flow_fractal_star_50_50(500, 500, depth=2, base_radius_px=210, thickness_px=1.2)
+        flow_base = flow.copy()
+
+    elif flow_state == 7:
+
+
+        def _segment_norm_dist(X, Y, ax, ay, bx, by, thickness_px):
+            """Normalized distance to segment A->B: dist/thickness."""
+            abx = bx - ax
+            aby = by - ay
+            ab2 = abx * abx + aby * aby + 1e-12
+
+            apx = X - ax
+            apy = Y - ay
+
+            t = (apx * abx + apy * aby) / ab2
+            t = np.clip(t, 0.0, 1.0)
+
+            cx = ax + t * abx
+            cy = ay + t * aby
+
+            dx = X - cx
+            dy = Y - cy
+            dist = np.sqrt(dx * dx + dy * dy)
+            return dist / (thickness_px + 1e-9)
+
+
+        def _hexagram_segments(cx, cy, R):
+            """
+            Return 6 segments (two equilateral triangles) for a Star of David centered at (cx,cy)
+            with circumradius R (pixel units).
+            """
+
+            def verts(deg_list):
+                ang = np.deg2rad(deg_list)
+                vx = cx + R * np.cos(ang)
+                vy = cy + R * np.sin(ang)
+                return list(zip(vx, vy))
+
+            up = verts([90, 210, 330])
+            dn = verts([270, 30, 150])
+
+            segs = [
+                (up[0], up[1]), (up[1], up[2]), (up[2], up[0]),
+                (dn[0], dn[1]), (dn[1], dn[2]), (dn[2], dn[0]),
+            ]
+            return segs
+
+
+        def _nested_centers(cx, cy, R, depth,
+                            inner_scale=0.50,
+                            outer_scale=0.28,
+                            outer_ring=0.50,
+                            include_outer=True,
+                            min_radius=6.0):
+            """
+            Nested star system:
+              - each star spawns ONE inner star at same center (radius *= inner_scale)
+              - optionally spawns SIX outer stars in the spaces (radius *= outer_scale)
+                placed at distance R*outer_ring
+            """
+            stars = []
+            stack = [(cx, cy, R, 0)]
+
+            # angles for "spaces" between arms
+            angles = np.deg2rad([0, 60, 120, 180, 240, 300])
+
+            while stack:
+                x0, y0, r0, d = stack.pop()
+                if r0 < min_radius:
+                    continue
+
+                stars.append((x0, y0, r0))
+                if d >= depth:
+                    continue
+
+                # inner child
+                r_in = r0 * inner_scale
+                stack.append((x0, y0, r_in, d + 1))
+
+                # outer children (optional)
+                if include_outer:
+                    r_out = r0 * outer_scale
+                    ring = r0 * outer_ring
+                    for a in angles:
+                        x1 = x0 + ring * np.cos(a)
+                        y1 = y0 + ring * np.sin(a)
+                        stack.append((x1, y1, r_out, d + 1))
+
+            return stars
+
+        def flow_nested_star_50_50(
+                h=500, l=500,
+                depth=2,
+                base_radius_px=210.0,
+                thickness_px=1,
+                scale=1 / 3,
+                ring_factor=2 / 3,
+        ):
+            """
+            Returns a (h,l) uint8 flow where:
+            - background is 0 (black)
+            - fractal star linework is 1 (white)
+            - EXACTLY half the pixels are white (50/50), since h*l is even for 500x500.
+            """
+            total = h * l
+            if total % 2 != 0:
+                raise ValueError("Need even number of cells for exact 50/50.")
+
+            # coordinate grids
+            yy, xx = np.ogrid[:h, :l]
+            X = xx.astype(np.float32)
+            Y = yy.astype(np.float32)
+
+            # center
+            cx = (l - 1) / 2.0
+            cy = (h - 1) / 2.0
+
+            # build star list (fractal)
+            stars = _nested_centers(
+                cx, cy, base_radius_px, depth,
+                inner_scale=0.52,
+                outer_scale=0.26,
+                outer_ring=0.50,
+                include_outer=True,  # set False for pure nested-in-center only
+                min_radius=8.0
+            )
+
+            # distance field: for each pixel, how close to ANY line segment in the whole fractal?
+            best = None
+            for (sx, sy, sr) in stars:
+                for (a, b) in _hexagram_segments(sx, sy, sr):
+                    ax, ay = a
+                    bx, by = b
+                    nd = _segment_norm_dist(X, Y, ax, ay, bx, by, thickness_px)
+                    best = nd if best is None else np.minimum(best, nd)
+
+            # enforce EXACT 50/50: choose the closest half of pixels to the fractal lines as white
+            N = total // 2
+            flat = best.ravel()
+            kth = np.partition(flat, N - 1)[N - 1]
+
+            mask = best <= kth
+            count = int(mask.sum())
+
+            if count > N:
+                # trim ties deterministically
+                eq = (best == kth).ravel()
+                eq_idx = np.flatnonzero(eq)
+                extra = count - N
+                mask_flat = mask.ravel()
+                mask_flat[eq_idx[:extra]] = False
+                mask = mask_flat.reshape(h, l)
+
+            flow = np.zeros((h, l), dtype=np.uint8)
+            flow[mask] = 1  # 0 background, 1 linework-ish pixels (closest half)
+            return flow
+
+
+
+
+        flow = flow_nested_star_50_50(500, 500, depth=2, base_radius_px=210, thickness_px=1.2)
+        flow_base = flow.copy()
+
+    elif flow_state == 8:
+        def bezier_arc_points(A, B, bulge, n_samples=120):
+            """
+            A, B are (x,y) floats.
+            bulge is in pixels: how far the arc bows outward at midpoint.
+            Returns arrays px, py of sampled points along the arc.
+            """
+            ax, ay = A
+            bx, by = B
+
+            mx, my = (ax + bx) / 2.0, (ay + by) / 2.0
+            vx, vy = (bx - ax), (by - ay)
+
+            # perpendicular normal
+            L = (vx * vx + vy * vy) ** 0.5 + 1e-9
+            nx, ny = (-vy / L, vx / L)
+
+            # control point
+            cx, cy = (mx + bulge * nx, my + bulge * ny)
+
+            t = np.linspace(0.0, 1.0, n_samples, dtype=np.float32)
+            omt = 1.0 - t
+
+            px = omt * omt * ax + 2 * omt * t * cx + t * t * bx
+            py = omt * omt * ay + 2 * omt * t * cy + t * t * by
+            return px, py
+
+
+        def flow_star_radiating_arcs(
+                h=500, l=500,
+                base_radius_px=210.0,
+                thickness_px=1.0,
+                rainbow_speed=0,
+                arcs_per_edge_base=2,  # minimum arcs per edge
+                arc_step_px=10.0,  # spacing between arcs
+                arc_phase_px=0.0,  # animate bulge phase if desired
+                n_samples=110,
+                keep_outside_black=True,
+        ):
+            """
+            Makes a flow field where the prime Star-of-David edges radiate outward with curved arcs.
+            Background = 0, arcs/lines = 1.
+
+            - rainbow_speed controls how many arcs you get.
+            - each edge gets multiple arcs with increasing bulge.
+            """
+            # grid
+            yy, xx = np.ogrid[:h, :l]
+            X = xx.astype(np.float32)
+            Y = yy.astype(np.float32)
+
+            cx = (l - 1) / 2.0
+            cy = (h - 1) / 2.0
+            R = float(base_radius_px)
+
+            # Build prime star vertices (same as your _hexagram_segments)
+            def verts(deg_list):
+                ang = np.deg2rad(deg_list)
+                vx = cx + R * np.cos(ang)
+                vy = cy + R * np.sin(ang)
+                return list(zip(vx, vy))
+
+            up = verts([90, 210, 330])
+            dn = verts([270, 30, 150])
+
+            segs = [
+                (up[0], up[1]), (up[1], up[2]), (up[2], up[0]),
+                (dn[0], dn[1]), (dn[1], dn[2]), (dn[2], dn[0]),
+            ]
+
+            # How many arcs per edge this frame?
+            # Example: ramps up with rainbow_speed, but caps to keep it fast.
+            arcs_per_edge = arcs_per_edge_base + (rainbow_speed % 6)  # 2..7
+            arcs_per_edge = int(np.clip(arcs_per_edge, 1, 10))
+
+            # Distance field to arc points (we’ll take min)
+            best = np.full((h, l), np.inf, dtype=np.float32)
+
+            # bulge values: outward “ripples”
+            # arc_phase_px can be tied to rainbow_speed if you want animation
+            phase = float(arc_phase_px)
+
+            for (A, B) in segs:
+                # generate multiple arcs for this edge
+                for k in range(1, arcs_per_edge + 1):
+                    bulge = (k * arc_step_px) + phase
+
+                    px, py = bezier_arc_points(A, B, bulge, n_samples=n_samples)
+
+                    # Update distance field using sampled points
+                    # Compute min over samples: min_s sqrt((X-px[s])^2 + (Y-py[s])^2)
+                    # Do it incrementally to keep memory lower:
+                    for s in range(len(px)):
+                        dx = X - px[s]
+                        dy = Y - py[s]
+                        d = np.sqrt(dx * dx + dy * dy)
+                        best = np.minimum(best, d)
+
+            # Optional: keep everything outside the prime star’s outer circle black
+            if keep_outside_black:
+                inside = (X - cx) ** 2 + (Y - cy) ** 2 <= (R + 2) ** 2
+            else:
+                inside = np.ones((h, l), dtype=bool)
+
+            # Thin line mask
+            mask = (best <= float(thickness_px)) & inside
+
+            flow = np.zeros((h, l), dtype=np.uint8)
+            flow[mask] = 1
+            return flow
+
+
+        flow = flow_star_radiating_arcs(
+            500, 500,
+            base_radius_px=210,
+            thickness_px=1.0,
+            rainbow_speed=rainbow_speed,
+            arcs_per_edge_base=2,
+            arc_step_px=10.0,
+            arc_phase_px=(rainbow_speed % 20) * 0.7,  # optional animation
+            n_samples=90,
+            keep_outside_black=True
+        )
+        flow_base = flow.copy()
+    
+
+
 
 flow_0 = flow.copy()
 
@@ -2384,6 +2870,68 @@ def handle(hand, code_0):
                 # # print(shifts)
 
 
+
+            elif ruler == 7:
+
+                rv = score
+                rv = rv%bbv
+
+                # rv = rv_base
+
+
+                rules, rule_base = rule_gen(rv, base)
+                rule_base = np.array(rule_base)
+                rule = rule_base.copy()
+
+
+                shift = digibet[code_0]
+                shift = shift % len(rule)
+                rule[shift] = str((int(rule[shift]) + 1) % base)
+                shift_base = base_x(shift, base)
+                shift_base = fill_bin(shift_base)
+                shift_flip = shift_base[::-1]
+
+
+                shifts[0] = [c for c in shift_flip]
+                inv_base = shift_base.translate(str.maketrans('01', '10'))
+                inv_flip = inv_base[::-1]
+
+                shifts[1] = [c for c in inv_flip]
+                inv_digits = [int(c) for c in inv_base]
+                inv_index = digits_to_index(inv_digits, base)
+
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+                shifts[2] = shifts[0][::]
+                shifts[3] = shifts[1][::]
+
+                center = 0
+                for x in range(2):
+
+                    if shifts[2+x][center] == '0':
+
+                        shifts[2+x][center] = '1'
+
+                    elif shifts[2+x][center] == '1':
+
+                        if base == 2:
+                            shifts[2+x][center] = '0'
+                        else:
+                            shifts[2 + x][center] = '2'
+
+                    elif shifts[2+x][center] == '2':
+
+                        shifts[2 + x][center] = '0'
+
+                flip = shifts[2][::-1]
+                inv_index = digits_to_index([int(c) for c in flip], base)
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
+                flip = shifts[3][::-1]
+                inv_index = digits_to_index([int(c) for c in flip], base)
+                rule[inv_index] = str((int(rule[inv_index]) + 1) % base)
+
+
             lookup = np.array(rule, dtype=np.uint8)
 
 
@@ -2535,11 +3083,11 @@ x_g = 28
 y_g = 0
 flex_c = 16
 flex_m = 64
-flex_p = 128
+flex_p = 32
 
 
 ####right hand####
-xr_pos = 0
+xr_pos = (x_s + x_g) * 3
 yr_pos = 500
 palm_xr = xr_pos + x_s * 6
 palm_yr = yr_pos + y_s * 9
@@ -2549,9 +3097,12 @@ hand_r = [0, 0, 0, 0, 0, 0]
 hand_r0 = [0, 0, 0, 0, 0, 0]
 hand_r1 = [0, 0, 0, 0, 0, 0]
 
+
 palm_r = [0, 0, 0, 0, 0, 0]
 
 tips_r = [64, 16, 0, 24, 0]
+
+
 
 #fingers x
 right_x = {
@@ -2602,11 +3153,14 @@ right_hand = [0, 0, 0]
 roir_map = []
 distr_map = []
 
+hands_r = [hand_r, hand_r0, hand_r1, palm_r, tips_r, right_hand, roir_map, distr_map]
+
+right_hands = []
 
 
 
 ###left hand###
-xl_pos = screen_width - (x_s + x_g) * 7
+xl_pos = screen_width - (x_s + x_g) * 10
 yl_pos = 500
 palm_xl = xl_pos + x_s * 6
 palm_yl = yl_pos + y_s * 9
@@ -2627,10 +3181,128 @@ yl_pos = palm_yl - x_s * 2
 
 left_roi.append((xl_pos, yl_pos, xl_pos + x_s, yl_pos + y_s))
 
+left_hand = [0, 0, 0]
+
 
 roil_map = []
 distl_map = []
 
+hands_l = [hand_l, hand_l0, hand_l1, palm_l, tips_l, left_hand, roil_map, distl_map]
+
+left_hands = []
+
+hand_numb = 1
+
+if hand_numb > 1:
+
+    for x in range(hand_numb):
+        xr_pos = (x_s + x_g) * 3
+        yr_pos = 500 - (y_s + y_g) * 10 * x
+        palm_xr = xr_pos + x_s * 6
+        palm_yr = yr_pos + y_s * 9
+
+        hand_r = [0, 0, 0, 0, 0, 0]
+        hand_r0 = [0, 0, 0, 0, 0, 0]
+        hand_r1 = [0, 0, 0, 0, 0, 0]
+
+        palm_r = [0, 0, 0, 0, 0, 0]
+
+        tips_r = [64, 16, 0, 24, 0]
+
+        # fingers x
+        right_x = {
+            "size": x_s,
+            "gap": x_g,
+            "start": xr_pos,
+            "palm": palm_xr,
+            "step": x_s + x_g
+        }
+
+        # fingers y
+        right_y = {
+            "size": y_s,
+            "gap": y_g,
+            "start": yr_pos,
+            "palm": palm_yr,
+            "step": y_s + y_g
+        }
+
+        # fingers
+        right_roi = [
+            (
+                right_x["start"] + right_x["step"] * (n + 1),
+                right_y["start"] + tips_r[n],
+                right_x["start"] + right_x["step"] * (n + 1) + right_x["size"],
+                right_y["start"] + tips_r[n] + right_y["size"]
+            )
+            for n in range(5)
+        ]
+
+        # thumb
+        right_roi[4] = (
+            right_x["start"] + right_x["step"] * 5 + right_x["size"],
+            right_y["start"] + tips_r[4] + right_y["size"] * 5,
+            right_x["start"] + right_x["step"] * 5 + right_x["size"] * 2,
+            right_y["start"] + tips_r[4] + right_y["size"] * 6
+        )
+
+        xr_pos = palm_xr - x_s * 1
+        yr_pos = palm_yr - x_s * 2
+
+        # palm
+        right_roi.append((xr_pos, yr_pos, xr_pos + x_s, yr_pos + y_s))
+
+        right_hand = [0, 0, 0]
+
+        roir_map = []
+        distr_map = []
+        palm_xy = (palm_xr, palm_yr)
+
+        hands_r = [hand_r, hand_r0, hand_r1, palm_r, tips_r, right_hand, roir_map, distr_map, None, palm_xy]
+
+        right_hand_x = [right_roi, hands_r]
+        right_hands.append(right_hand_x)
+        print("")
+        print('right_hand_x')
+        print(x)
+        print(right_hand_x)
+
+    for x in range(hand_numb):
+
+        xl_pos = screen_width - (x_s + x_g) * 10
+        yl_pos = 500 + (y_s + y_g) * 3 * x
+        palm_xl = xl_pos + x_s * 6
+        palm_yl = yl_pos + y_s * 9
+
+        hand_l = [0, 0, 0, 0, 0, 0]
+        hand_l0 = [0, 0, 0, 0, 0, 0]
+        hand_l1 = [0, 0, 0, 0, 0, 0]
+
+        palm_l = [0, 0, 0, 0, 0, 0]
+        tips_l = [0, 24, 0, 16, 64]
+
+        left_roi = [(xl_pos + (x_s + x_g) * (n + 1), yl_pos + tips_l[n],
+                     xl_pos + (x_s + x_g) * (n + 1) + x_s, yl_pos + tips_l[n] + y_s) for n in range(5)]
+        left_roi[0] = (xl_pos + x_s, yl_pos + tips_l[4] + y_s * 4, xl_pos + x_s * 2, yl_pos + tips_l[4] + y_s * 5)
+
+        xl_pos = palm_xl - x_s * 1
+        yl_pos = palm_yl - x_s * 2
+
+        left_roi.append((xl_pos, yl_pos, xl_pos + x_s, yl_pos + y_s))
+
+        roil_map = []
+        distl_map = []
+
+        left_hand = [0, 0, 0]
+
+        hands_l = [hand_l, hand_l0, hand_l1, palm_l, tips_l, left_hand, roil_map, distl_map]
+
+        left_hand_x = [left_roi, hands_l]
+        left_hands.append(left_hand_x)
+        print("")
+        print('left_hand_x')
+        print(x)
+        print(left_hand_x)
 
 
 def right_hand_detect():
@@ -2706,6 +3378,70 @@ def right_hand_detect():
 
 
 
+def right_hand_detector():
+
+    global right_hands
+
+
+    for current_hand in right_hands:
+
+        rois = current_hand[0]
+        hands_r = current_hand[1]
+
+        hand_r, hand_r0, hand_r1, palm_r, tips_r, right_hand, roir_map, distr_map, palm_prev, palm_xy = hands_r
+        palm_xr, palm_yr = palm_xy
+
+        place = 0
+        for roi in rois:
+            place += 1
+            x1, y1, x2, y2 = roi
+
+            roi_prev = array_past[x1:x2, y1:y2]
+            roi_now = hand_array[x1:x2, y1:y2]
+            roir_map.append((roi_prev, roi_now))
+
+            if palm_prev is None:
+                palm_prev = roi_now.copy()
+
+            roi_dist = color_dist(roi_prev, roi_now)
+            roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
+            roi_palm = int(color_dist(roi_now, palm_prev))
+
+            palm_r[place - 1] = roi_palm
+            distr_map.append(roi_dist)
+
+
+            hand_r[place - 1]  = 1 if roi_dist > flex_c else 0
+            hand_r0[place - 1] = 1 if roi_mean > flex_m else 0
+            hand_r1[place - 1] = 1 if roi_palm > flex_p else 0
+
+
+            x = place - 1
+            value_rect = pygame.Rect(x1, y1, x_s, y_s)
+            pygame.draw.rect(screen, value_color[0 + hand_r[x] * 9], value_rect)
+
+            tip_rect = pygame.Rect(x1, y1, x_s / 2, y_s / 2)
+            pygame.draw.rect(screen, value_color[0 + hand_r0[x] * 5], tip_rect)
+
+            tip_rect = pygame.Rect(x1, y1, x_s / 3, y_s / 3)
+            pygame.draw.rect(screen, value_color[0 + hand_r1[x] * 7], tip_rect)
+
+            pygame.draw.line(screen, value_color[0 + int(goal_bin[x % len(goal_bin)]) * 9], (palm_xr, palm_yr),
+                             (roi[0], roi[1]))
+
+        palm_prev = roir_map[-1][1].copy()
+        hands_r[8] = palm_prev
+
+        right_hand[0] = hand_r[0] * 16 + hand_r[1] * 8 + hand_r[2] * 4 + hand_r[3] * 2 + hand_r[4] * 1
+        right_hand[1] = hand_r0[0] * 16 + hand_r0[1] * 8 + hand_r0[2] * 4 + hand_r0[3] * 2 + hand_r0[4] * 1
+        right_hand[2] = hand_r1[0] * 16 + hand_r1[1] * 8 + hand_r1[2] * 4 + hand_r1[3] * 2 + hand_r1[4] * 1
+
+        roir_map.clear()
+        distr_map.clear()
+
+        current_hand[1] = [hand_r, hand_r0, hand_r1, palm_r, tips_r, right_hand, roir_map, distr_map, palm_prev, palm_xy]
+
+
 
 
 def left_hand_detect():
@@ -2775,7 +3511,7 @@ def left_hand_detect():
     # print(palm)
     # print(hand_1)
 
-    left_hand = [0, 0, 0]
+
 
     left_hand[0] = hand_l[0] * 1 + hand_l[1] * 2 + hand_l[2] * 4 + hand_l[3] * 8 + hand_l[4] * 16
     left_hand[1] = hand_l0[0] * 1 + hand_l0[1] * 2 + hand_l0[2] * 4 + hand_l0[3] * 8 + hand_l0[4] * 16
@@ -2805,6 +3541,565 @@ decay_rate = 0.98
 memory_scale = 8.0
 
 
+####star write####
+
+GLYPH_MAP = {
+    'a': draw_a, 'b': draw_b, 'c': draw_c, 'd': draw_d, 'e': draw_e,
+    'f': draw_f, 'g': draw_g, 'h': draw_h, 'i': draw_i, 'j': draw_j,
+    'k': draw_k, 'l': draw_l, 'm': draw_m, 'n': draw_n, 'o': draw_o,
+    'p': draw_p, 'q': draw_q, 'r': draw_r, 's': draw_s, 't': draw_t,
+    'u': draw_u, 'v': draw_v, 'w': draw_w, 'x': draw_x, 'y': draw_y, 'z': draw_z,
+}
+
+
+
+glyphs = 1
+
+if glyphs == 1:
+
+
+    # --- use your existing GLYPH_MAP = {'a': draw_a, ...} ---
+
+    def _poly_signed_area(pts):
+        """Signed area (x,y). Negative => clockwise in screen coords (y down) depends on convention."""
+        # We'll use standard shoelace; then we can test both and force a direction by checking the loop.
+        x = np.array([p[0] for p in pts], dtype=np.float64)
+        y = np.array([p[1] for p in pts], dtype=np.float64)
+        return 0.5 * np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
+
+    def star_loop_vertices(cx, cy, R):
+        """
+        6-vertex star loop (outline) as a closed polyline.
+        IMPORTANT: y grows downward, so angle 270 is "up".
+        """
+        # These angles produce a nice hexagram loop. We'll reorder later anyway.
+        ang = np.deg2rad([270, 330, 30, 90, 150, 210])  # starts near "top", goes around
+        xs = cx + R * np.cos(ang)
+        ys = cy + R * np.sin(ang)  # sin positive = down
+        pts = list(zip(xs, ys))
+        pts.append(pts[0])
+        return pts
+
+    def sample_polyline(points, step):
+        out = []
+        for i in range(len(points) - 1):
+            x0, y0 = points[i]
+            x1, y1 = points[i + 1]
+            dx = x1 - x0
+            dy = y1 - y0
+            seg_len = float(np.hypot(dx, dy))
+            if seg_len < 1e-9:
+                continue
+            n = max(1, int(seg_len // step))
+            for k in range(n):
+                t = (k * step) / seg_len
+                out.append((x0 + t * dx, y0 + t * dy))
+        return out
+
+
+
+
+    def reorder_start_top_left_clockwise(loop_pts):
+        """
+        loop_pts: closed polyline [(x,y), ..., (x,y)=first]
+        Returns closed polyline starting at the TOP-LEFT point and going clockwise.
+        """
+        pts = loop_pts[:-1]  # remove closure
+
+        # start = smallest y, then smallest x  (top-left in screen coords)
+        start_i = min(range(len(pts)), key=lambda i: (pts[i][1], pts[i][0]))
+
+        pts = pts[start_i:] + pts[:start_i]
+        pts_closed = pts + [pts[0]]
+
+        # force clockwise: if area is positive, reverse order (keep same start)
+        x = np.array([p[0] for p in pts_closed], dtype=np.float64)
+        y = np.array([p[1] for p in pts_closed], dtype=np.float64)
+        area = 0.5 * np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
+
+        if area > 0:
+            # reverse while preserving start point pts[0]
+            pts_rev = [pts[0]] + list(reversed(pts[1:]))
+            pts_closed = pts_rev + [pts_rev[0]]
+
+        return pts_closed
+
+
+
+    def canvas_write_star_path_aligned(
+        message,
+        size, l_size, x_space, y_space,
+        offset_size, density,
+        x_o, y_o,
+        canvas,
+        *,
+        base_radius_px=210.0,   # MUST match your flow_state star radius
+        center_xy=(250.0, 250.0),  # for 500x500
+        loop=True,
+    ):
+        """
+        Writes glyphs along the SAME Star of David geometry used in your flow_state.
+        Starts at TOP-LEFT of the star path and moves CLOCKWISE.
+
+        Keeps the SAME coordinate transforms as your canvas_write() so glyphs aren't inverted.
+        """
+
+        rainbow_reset = 0
+        m_list = list(message.lower())
+
+        # --- match your canvas_write() transform ---
+        canvas = np.rot90(canvas)
+        canvas = np.flipud(canvas)
+
+        h, w = canvas.shape[:2]
+        x_shift = 128
+        y_shift = 16
+
+        # Align to the flow-state star: same center & radius, but allow an (x_o,y_o) offset
+        cx0, cy0 = center_xy
+        cx = cx0 + x_o - x_shift
+        cy = cy0 + y_o - y_shift
+        R = float(base_radius_px)
+
+        # Build loop and force start/top-left + clockwise
+        loop_pts = star_loop_vertices(cx, cy, R)
+        loop_pts = reorder_start_top_left_clockwise(loop_pts)
+        loop_pts = [(y, x) for (x, y) in loop_pts]
+
+        # Sample along the loop
+        step = max(1.0, float(l_size + x_space))
+        path_pts = sample_polyline(loop_pts, step=step)
+
+        if not path_pts:
+            canvas = np.flipud(canvas)
+            canvas = np.rot90(canvas, 3)
+            return canvas, rainbow_reset
+
+        idx = 0
+        for ch in m_list:
+            if ch == ' ':
+                idx += 1
+                continue
+
+            fn = GLYPH_MAP.get(ch)
+            if fn is None:
+                idx += 1
+                continue
+
+            if idx >= len(path_pts):
+                if not loop:
+                    break
+                idx = 0
+                rainbow_reset = 1
+
+            px, py = path_pts[idx]
+            idx += 1
+
+            # center glyph at path point
+            corner = (int(px - l_size / 2), int(py - l_size / 2))
+
+            # stamp with your "density" offsets
+            for off in (0, offset_size, density):
+                fn(l_size, canvas, (corner[0] + off, corner[1]))
+                fn(l_size, canvas, (corner[0] - off, corner[1]))
+                fn(l_size, canvas, (corner[0], corner[1] + off))
+                fn(l_size, canvas, (corner[0], corner[1] - off))
+
+        # --- undo transform ---
+        canvas = np.flipud(canvas)
+        canvas = np.rot90(canvas, 3)
+
+        return canvas, rainbow_reset
+
+
+
+
+
+
+    def star_loop_vertices(cx, cy, R):
+        # closed loop points (x,y); order doesn’t matter because we reorder start later
+        ang = np.deg2rad([270, 330, 30, 90, 150, 210])
+        xs = cx + R * np.cos(ang)
+        ys = cy + R * np.sin(ang)
+        pts = list(zip(xs, ys))
+        pts.append(pts[0])
+        return pts
+
+    def sample_polyline(points, step):
+        out = []
+        for i in range(len(points) - 1):
+            x0, y0 = points[i]
+            x1, y1 = points[i + 1]
+            dx = x1 - x0
+            dy = y1 - y0
+            seg_len = float(np.hypot(dx, dy))
+            if seg_len < 1e-9:
+                continue
+            n = max(1, int(seg_len // step))
+            for k in range(n):
+                t = (k * step) / seg_len
+                out.append((x0 + t * dx, y0 + t * dy))
+        return out
+
+    def reorder_start_top_left_clockwise(loop_pts):
+        pts = loop_pts[:-1]
+
+        # start at top-left (min y, then min x)
+        start_i = min(range(len(pts)), key=lambda i: (pts[i][1], pts[i][0]))
+        pts = pts[start_i:] + pts[:start_i]
+        pts_closed = pts + [pts[0]]
+
+        # force clockwise (area test)
+        x = np.array([p[0] for p in pts_closed], dtype=np.float64)
+        y = np.array([p[1] for p in pts_closed], dtype=np.float64)
+        area = 0.5 * np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
+        if area > 0:
+            pts_rev = [pts[0]] + list(reversed(pts[1:]))
+            pts_closed = pts_rev + [pts_rev[0]]
+
+        return pts_closed
+
+
+
+
+
+    def build_star_spiral_points(
+        l_size, x_space,
+        cx, cy,
+        base_radius_px,
+        in_step_px,
+        min_radius_px,
+    ):
+        step = max(1.0, float(l_size + x_space))
+        pts_all = []
+
+        R = float(base_radius_px)
+        while R >= float(min_radius_px):
+            loop_pts = star_loop_vertices(cx, cy, R)          # (x,y) original
+            loop_pts = [(y, x) for (x, y) in loop_pts]        # to transformed space
+            loop_pts = reorder_start_top_left_clockwise(loop_pts)
+            ring_pts = sample_polyline(loop_pts, step=step)
+            if not ring_pts:
+                break
+            pts_all.extend(ring_pts)
+            R -= float(in_step_px)
+
+        return pts_all
+
+
+    ###object of power###use with caution###
+    def canvas_write_star_spiral_wholy(
+        message,
+        size, l_size, x_space, y_space,
+        offset_size, density,
+        x_o, y_o,
+        canvas,
+        *,
+        base_radius_px=210.0,
+        center_xy=(250.0, 250.0),
+        x_shift=128,
+        y_shift=16,
+        in_step_px=18.0,
+        min_radius_px=60.0,
+        wrap_message=True,     # if False, will stop when message ends
+    ):
+        """
+        Pure renderer:
+        - builds the entire spiral path (all rings) each call
+        - types along the entire spiral each call
+        - does NOT assume any saved state in flow
+        """
+        m = message.lower()
+        if len(m) == 0:
+            return canvas, 0
+
+        # match your canvas_write() transform
+        canvas = np.rot90(canvas)
+        canvas = np.flipud(canvas)
+
+        cx0, cy0 = center_xy
+        cx = cx0 + x_o - x_shift
+        cy = cy0 + y_o - y_shift
+
+        spiral_pts = build_star_spiral_points(
+            l_size, x_space,
+            cx, cy,
+            base_radius_px,
+            in_step_px,
+            min_radius_px,
+        )
+
+        rainbow_reset = 0
+        if not spiral_pts:
+            canvas = np.flipud(canvas)
+            canvas = np.rot90(canvas, 3)
+            return canvas, rainbow_reset
+
+        # draw exactly the spiral length (or until message ends if wrap_message=False)
+        for i, (px, py) in enumerate(spiral_pts):
+            if wrap_message:
+                ch = m[i % len(m)]
+            else:
+                if i >= len(m):
+                    break
+                ch = m[i]
+
+            if ch == ' ':
+                continue
+
+            fn = GLYPH_MAP.get(ch)
+            if fn is None:
+                continue
+
+            corner = (int(px - l_size / 2), int(py - l_size / 2))
+
+            for off in (0, offset_size, density):
+                fn(l_size, canvas, (corner[0] + off, corner[1]))
+                fn(l_size, canvas, (corner[0] - off, corner[1]))
+                fn(l_size, canvas, (corner[0], corner[1] + off))
+                fn(l_size, canvas, (corner[0], corner[1] - off))
+
+        # undo transform
+        canvas = np.flipud(canvas)
+        canvas = np.rot90(canvas, 3)
+        return canvas, rainbow_reset
+
+
+
+
+
+
+    def canvas_write_star_spiral(
+        message,
+        size, l_size, x_space, y_space,
+        offset_size, density,
+        x_o, y_o,
+        canvas=0,
+        *,
+        base_radius_px=210.0,
+        in_step_px=18.0,
+        min_radius_px=60.0,
+        x_shift=128,     # you said these shifts look best
+        y_shift=16,
+        wrap_message=False,   # True => repeat message to fill whole spiral
+        start_on_sample_top_left=True,  # keeps start stable
+    ):
+        """
+        Like canvas_write(), but lays text along nested Star-of-David loops.
+        - Outer loop first, then steps inward after each full loop.
+        - Draws onto `canvas` (your flow array) in the same transformed coordinate system
+          as canvas_write (rot90 + flipud), then un-transforms at end.
+        - Does NOT keep state; it renders from `message` each call.
+        """
+        rainbow_reset = 0
+        m = message.lower()
+        if len(m) == 0:
+            return canvas, rainbow_reset
+
+        # --- match your canvas_write() coordinate transform ---
+        canvas = np.rot90(canvas)
+        canvas = np.flipud(canvas)
+
+        h, w = canvas.shape[:2]
+
+        # Your star is aligned relative to the canvas center, then offset by x_o/y_o and your shifts
+        cx0 = (w - 1) / 2.0
+        cy0 = (h - 1) / 2.0
+
+        cx = cx0 + x_o - x_shift
+        cy = cy0 + y_o - y_shift
+
+        step = max(1.0, float(l_size + x_space))
+
+        # --- build all spiral points (ring0 + ring1 + ...) ---
+        spiral_pts = []
+        R = float(base_radius_px)
+
+        while R >= float(min_radius_px):
+            loop_pts = star_loop_vertices(cx, cy, R)       # (x,y) in original space
+            loop_pts = [(y, x) for (x, y) in loop_pts]     # map into transformed space (transpose)
+            loop_pts = reorder_start_top_left_clockwise(loop_pts)
+
+            ring_pts = sample_polyline(loop_pts, step=step)
+            if not ring_pts:
+                break
+
+            # optional: start each ring at the most top-left sampled point (stabilizes visual start)
+            if start_on_sample_top_left:
+                si = min(range(len(ring_pts)), key=lambda i: (ring_pts[i][1], ring_pts[i][0]))
+                ring_pts = ring_pts[si:] + ring_pts[:si]
+
+            spiral_pts.extend(ring_pts)
+
+            R -= float(in_step_px)
+
+
+
+        spiral_pts = spiral_pts[::-1]
+
+        if not spiral_pts:
+            canvas = np.flipud(canvas)
+            canvas = np.rot90(canvas, 3)
+            return canvas, rainbow_reset
+
+        # --- draw message along spiral points ---
+        n_slots = len(spiral_pts)
+        if wrap_message:
+            n_draw = n_slots
+        else:
+            n_draw = min(len(m), n_slots)
+
+        for i in range(n_draw):
+            ch = m[i % len(m)] if wrap_message else m[i]
+            if ch == ' ':
+                continue
+
+            fn = GLYPH_MAP.get(ch)
+            if fn is None:
+                continue
+
+            px, py = spiral_pts[i]
+            corner = (int(px - l_size / 2), int(py - l_size / 2))
+
+            for off in (0, offset_size, density):
+                fn(l_size, canvas, (corner[0] + off, corner[1]))
+                fn(l_size, canvas, (corner[0] - off, corner[1]))
+                fn(l_size, canvas, (corner[0], corner[1] + off))
+                fn(l_size, canvas, (corner[0], corner[1] - off))
+
+        # --- undo transform ---
+        canvas = np.flipud(canvas)
+        canvas = np.rot90(canvas, 3)
+
+        print(len(message))
+        print(message)
+
+        if len(message) > 137:
+            rainbow_reset = 1
+
+        return canvas, rainbow_reset
+
+
+
+
+
+    def canvas_write_star_spiral_shrink(
+        message,
+        size, l_size, x_space, y_space,
+        offset_size, density,
+        x_o, y_o,
+        canvas=0,
+        *,
+        base_radius_px=210.0,
+        in_step_px=18.0,
+        min_radius_px=60.0,
+        x_shift=128,
+        y_shift=16,
+        wrap_message=False,
+        start_on_sample_top_left=True,
+
+        # NEW: shrink behavior
+        shrink_per_ring=0.7,   # 0.90–0.97 feels good
+        min_l_size=12,          # don’t go smaller than this
+    ):
+        rainbow_reset = 0
+        m = message.lower()
+        if len(m) == 0:
+            return canvas, rainbow_reset
+
+        canvas = np.rot90(canvas)
+        canvas = np.flipud(canvas)
+
+        h, w = canvas.shape[:2]
+        cx0 = (w - 1) / 2.0
+        cy0 = (h - 1) / 2.0
+
+        cx = cx0 + x_o - x_shift
+        cy = cy0 + y_o - y_shift
+
+        spiral_pts = []
+        spiral_sizes = []  # store per-point l_size to use when drawing
+
+        R = float(base_radius_px)
+        ring_idx = 0
+
+        while R >= float(min_radius_px):
+            # compute ring-specific glyph size
+            ring_l = int(round(l_size * (shrink_per_ring ** ring_idx)))
+            ring_l = max(int(min_l_size), ring_l)
+
+            # ring-specific spacing step (shrink with glyph)
+            ring_step = max(1.0, float(ring_l + x_space))
+
+            loop_pts = star_loop_vertices(cx, cy, R)       # (x,y)
+            loop_pts = [(y, x) for (x, y) in loop_pts]     # transpose into transformed canvas space
+            loop_pts = reorder_start_top_left_clockwise(loop_pts)
+
+            ring_pts = sample_polyline(loop_pts, step=ring_step)
+            if not ring_pts:
+                break
+
+            if start_on_sample_top_left:
+                si = min(range(len(ring_pts)), key=lambda i: (ring_pts[i][1], ring_pts[i][0]))
+                ring_pts = ring_pts[si:] + ring_pts[:si]
+
+            spiral_pts.extend(ring_pts)
+            spiral_sizes.extend([ring_l] * len(ring_pts))
+
+            R -= float(in_step_px)
+            ring_idx += 1
+
+            # optional early stop if glyphs are tiny
+            if ring_l <= min_l_size:
+                # still allow a couple inner rings if you want; otherwise break
+                pass
+
+        if not spiral_pts:
+            canvas = np.flipud(canvas)
+            canvas = np.rot90(canvas, 3)
+            return canvas, rainbow_reset
+
+        n_slots = len(spiral_pts)
+
+        # trigger “page full” exactly like your other writer
+        if not wrap_message and len(m) >= n_slots:
+            rainbow_reset = 1
+
+        n_draw = n_slots if wrap_message else min(len(m), n_slots)
+
+        spiral_pts = spiral_pts[::-1]
+
+
+        for i in range(n_draw):
+            ch = m[i % len(m)] if wrap_message else m[i]
+            if ch == ' ':
+                continue
+
+            fn = GLYPH_MAP.get(ch)
+            if fn is None:
+                continue
+
+            px, py = spiral_pts[i]
+            ring_l = spiral_sizes[i]
+
+            # optional: shrink boldness with ring size
+            ring_offset = 0 if ring_l < 18 else offset_size
+            ring_density = 0 if ring_l < 18 else density
+
+            corner = (int(px - ring_l / 2), int(py - ring_l / 2))
+
+            for off in (0, ring_offset, ring_density):
+                fn(ring_l, canvas, (corner[0] + off, corner[1]))
+                fn(ring_l, canvas, (corner[0] - off, corner[1]))
+                fn(ring_l, canvas, (corner[0], corner[1] + off))
+                fn(ring_l, canvas, (corner[0], corner[1] - off))
+
+        canvas = np.flipud(canvas)
+        canvas = np.rot90(canvas, 3)
+
+        return canvas, rainbow_reset
+
+
 
 running = True
 while running:
@@ -2819,26 +4114,129 @@ while running:
     hand_array = pygame.surfarray.array3d(image)
 
 
-
+    type = 5
     ####water type####
 
+    if type == 1:
+        size = 64
+        l_size = 32
+        x_space = 8
+        y_space = 16
+        offset_size = 1
+        density = 1
+        x_o = 128
+        y_o = 32 + water_line* (size+16)
 
-    size = 64
-    l_size = 32
-    x_space = 8
-    y_space = 16
-    offset_size = 1
-    density = 1
-    x_o = 128
-    y_o = 32 + water_line* (size+16)
+
+        if len(message) > 0:
+            canvas , rainbow_reset = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, flow)
+
+            # print()
+            # print("canvas")
+            # print(canvas)
 
 
-    if len(message) > 0:
-        canvas , rainbow_reset = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, flow)
+    if type == 2:
+        size = 64
+        l_size = 32
+        x_space = 8
+        y_space = 16
+        offset_size = 1
+        density = 1
+        x_o = 128
+        y_o = 32 + water_line* (size+16)
 
-        # print()
-        # print("canvas")
-        # print(canvas)
+
+        if len(message) > 0:
+            canvas, rainbow_reset = canvas_write_star_path_aligned(
+                message,
+                size, l_size, x_space, y_space,
+                offset_size, density,
+                x_o, y_o,
+                flow,
+                base_radius_px=210.0,  # match your flow_state star radius
+                center_xy=(250.0, 250.0),  # for 500x500
+                loop=True
+            )
+
+
+    if type == 3:
+        size = 64
+        l_size = 32
+        x_space = 8
+        y_space = 16
+        offset_size = 1
+        density = 1
+        x_o = 128
+        y_o = 32 + water_line* (size+16)
+
+
+        if len(message) > 0:
+
+
+
+            canvas, rainbow_reset = canvas_write_star_spiral_wholy(
+                message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, flow,
+                in_step_px=18.0, min_radius_px=60.0, wrap_message=True
+            )
+
+
+    if type == 4:
+        size = 64
+        l_size = 32
+        x_space = 8
+        y_space = 16
+        offset_size = 1
+        density = 1
+        x_o = 128
+        y_o = 32 + water_line * (size+16)
+
+
+        if len(message) > 0:
+
+
+            canvas, rainbow_reset = canvas_write_star_spiral(
+                message,
+                size, l_size, x_space, y_space, offset_size, density,
+                x_o, y_o,
+                flow,
+                base_radius_px=210.0,
+                in_step_px=l_size,
+                min_radius_px=60.0,
+                x_shift=128,
+                y_shift=16,
+                wrap_message=False,  # set True if you want to fill whole spiral every call
+            )
+
+
+    if type == 5:
+        size = 64
+        l_size = 32
+        x_space = 8
+        y_space = 16
+        offset_size = 1
+        density = 1
+        x_o = 128
+        y_o = 32 + water_line * (size+16)
+
+
+        if len(message) > 0:
+
+
+            canvas, rainbow_reset = canvas_write_star_spiral_shrink(
+                message,
+                size, l_size, x_space, y_space, offset_size, density,
+                x_o, y_o,
+                flow,
+                base_radius_px=210.0,
+                in_step_px=l_size,
+                min_radius_px=60.0,
+                x_shift=128,
+                y_shift=16,
+                wrap_message=False,  # set True if you want to fill whole spiral every call
+            )
+
+
 
 
     if rainbow_reset == 1:
@@ -2851,12 +4249,28 @@ while running:
         rainbow_reset = 0
 
         messages.append(message[::])
-        message = []
+        message = ''
 
 
         if ruler > 3:
+
+
             flow = flow_base.copy()
             water = flow.copy()
+
+        if flow_state == 8:
+            flow = flow_star_radiating_arcs(
+                500, 500,
+                base_radius_px=210,
+                thickness_px=1.0,
+                rainbow_speed=rainbow_speed,
+                arcs_per_edge_base=2,
+                arc_step_px=10.0,
+                arc_phase_px=(rainbow_speed % 20) * 0.7,  # optional animation
+                n_samples=90,
+                keep_outside_black=True
+            )
+            flow_base = flow.copy()
 
 
     ###messages###
@@ -3227,7 +4641,7 @@ while running:
             fade_max = 8
 
             fade = score % fade_max
-            fade = 7
+            fade = 0
 
             # print(fade)
 
@@ -3493,7 +4907,10 @@ while running:
 
         ####right hand####
 
-        right_hand_detect()
+        right_hand_detector()
+
+
+
 
 
         ####left hand####
