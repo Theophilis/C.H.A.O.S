@@ -383,16 +383,18 @@ pygame.camera.init()
 
 
 
-signame = "Chaotomata"
+signame = "Theophilis"
+
+
+
+
+###chao screen###
+screen_width, screen_height = 1800, 960
 
 
 
 ###theo screen###
 screen_width, screen_height = 1280, 960
-
-###chao screen###
-screen_width, screen_height = 1800, 960
-
 
 
 
@@ -638,7 +640,7 @@ lookup = np.array(rule, dtype=np.uint8)
 
 ruler = 4
 shift = 0
-flow_state = 8
+flow_state = 12
 
 print(rule)
 
@@ -1326,7 +1328,304 @@ if dim == 2:
             keep_outside_black=True
         )
         flow_base = flow.copy()
-    
+
+    elif flow_state == 9:  # Star of Bethlehem — radiant guiding star
+        def flow_star_of_bethlehem(h, l, base=2):
+            flow = np.zeros((h, l), dtype=np.uint8)
+            cx = l // 2
+            cy = h // 2
+
+            # Central bright star — small cross with halo
+            star_r = int(min(h, l) * 0.06)  # small bright core
+            halo_r = int(min(h, l) * 0.18)  # soft glow around it
+
+            Y, X = np.ogrid[:h, :l]
+            dist = np.sqrt((X - cx) ** 2 + (Y - cy) ** 2)
+
+            # Core star (bright center)
+            core = dist <= star_r
+            flow[core] = 1
+
+            # Halo (soft glow)
+            halo = (dist > star_r) & (dist <= halo_r)
+            flow[halo] = 1
+
+            # 8 radiating beams — like the classic Christmas star
+            angles = np.linspace(0, 360, 16, endpoint=False)  # 8 main beams
+            beam_width = 8  # thickness in pixels
+            beam_length = int(min(h, l) * 0.45)
+
+            for angle in angles:
+                rad = np.deg2rad(angle)
+                dx = np.cos(rad)
+                dy = np.sin(rad)
+
+                # Parametric line from center
+                t = np.linspace(0, beam_length, beam_length)
+                bx = cx + t * dx
+                by = cy + t * dy
+
+                bx = bx.astype(int)
+                by = by.astype(int)
+
+                # Thicken the beam
+                for offset in range(-beam_width // 2, beam_width // 2 + 1):
+                    perp_dx = -dy * offset
+                    perp_dy = dx * offset
+                    px = np.clip(bx + perp_dx, 0, l - 1).astype(int)
+                    py = np.clip(by + perp_dy, 0, h - 1).astype(int)
+                    flow[py, px] = 1
+
+            # Optional: subtle twinkle in the core
+            # flow[core] = (flow[core] + 1) % base  # if you want pulsing values
+
+            return flow % base
+
+
+        flow = flow_star_of_bethlehem(h, l)
+        flow_base = flow.copy()
+
+    elif flow_state == 10:  # Star of Bethlehem - classic 8-point with long cardinal, short diagonal, radiating beams
+
+        def flow_bethlehem_star(h, l):
+
+            flow = np.zeros((h, l), dtype=np.uint8)
+
+            cx = l // 2
+
+            cy = h // 2
+
+            Y, X = np.ogrid[:h, :l]
+
+            # Long cardinal arms (N/S/E/W) - diamond shape
+
+            long_len = int(min(h, l) * 0.48)
+
+            long_w = int(min(h, l) * 0.12)
+
+            flow[cy - long_len:cy + long_len, cx - long_w // 2:cx + long_w // 2] = 1  # vertical
+
+            flow[cy - long_w // 2:cy + long_w // 2, cx - long_len:cx + long_len] = 1  # horizontal
+
+            # Short diagonal arms
+
+            short_len = int(min(h, l) * 0.28)
+
+            short_w = int(min(h, l) * 0.08)
+
+            diag_angles = [45, 135, 225, 315]
+
+            for ang in diag_angles:
+
+                rad = np.deg2rad(ang)
+
+                dx = np.cos(rad)
+
+                dy = np.sin(rad)
+
+                for t in range(-short_len, short_len + 1):
+
+                    px = int(cx + t * dx)
+
+                    py = int(cy + t * dy)
+
+                    if 0 <= px < l and 0 <= py < h:
+
+                        for off in range(-short_w // 2, short_w // 2 + 1):
+
+                            ppx = int(px - dy * off)
+
+                            ppy = int(py + dx * off)
+
+                            if 0 <= ppx < l and 0 <= ppy < h:
+                                flow[ppy, ppx] = 1
+
+            # Radiating lines from all 8 tips to center
+
+            tips = [
+
+                (cx, cy - long_len), (cx, cy + long_len),
+
+                (cx - long_len, cy), (cx + long_len, cy)
+
+            ]
+
+            for a in diag_angles:
+                rad = np.deg2rad(a)
+
+                tips.append((int(cx + short_len * np.cos(rad)), int(cy + short_len * np.sin(rad))))
+
+            for tx, ty in tips:
+
+                steps = max(abs(tx - cx), abs(ty - cy)) or 1
+
+                for i in range(steps + 1):
+
+                    px = cx + int(i * (tx - cx) / steps)
+
+                    py = cy + int(i * (ty - cy) / steps)
+
+                    # Thick beams for visibility
+
+                    for ox in range(-5, 6):
+
+                        for oy in range(-5, 6):
+
+                            if ox ** 2 + oy ** 2 <= 25:
+
+                                ppx = px + ox
+
+                                ppy = py + oy
+
+                                if 0 <= ppx < l and 0 <= ppy < h:
+                                    flow[ppy, ppx] = 1
+
+            # Bright center with halo
+
+            center_r = int(min(h, l) * 0.08)
+
+            halo_r = int(min(h, l) * 0.15)
+
+            dist = np.sqrt((X - cx) ** 2 + (Y - cy) ** 2)
+
+            flow[dist <= center_r] = 1
+
+            flow[(dist > center_r) & (dist <= halo_r)] = 1
+
+            return flow
+
+
+        flow = flow_bethlehem_star(h, l)
+
+        flow_base = flow.copy()
+
+
+    elif flow_state == 11:  # Rhombus - obtuse left/right, acute top/bottom
+        def flow_rhombus_obtuse_lr_acute_tb(h, l):
+            flow = np.zeros((h, l), dtype=np.uint8)
+            cx = l // 2
+            cy = h // 2
+
+            # Wide horizontally (obtuse left/right), narrow vertically (acute top/bottom)
+            horiz_half = int(l * 0.45)  # wide for obtuse sides
+            vert_half = int(h * 0.25)  # narrow for acute top/bottom
+
+            Y, X = np.ogrid[:h, :l]
+
+            # Manhattan distance scaled — creates perfect rhombus
+            mask = (np.abs(X - cx) / horiz_half) + (np.abs(Y - cy) / vert_half) <= 1
+
+            flow[mask] = 1
+
+            # Optional: bright center for glow
+            center_r = int(min(h, l) * 0.05)
+            dist = np.sqrt((X - cx) ** 2 + (Y - cy) ** 2)
+            flow[dist <= center_r] = 1
+
+            return flow
+
+
+        flow = flow_rhombus_obtuse_lr_acute_tb(h, l)
+        flow_base = flow.copy()
+
+
+    elif flow_state == 12:  # Bethlehem star — OUTLINE ONLY (no fill)
+        def flow_bethlehem_outline(h, l, base=2):
+            flow = np.zeros((h, l), dtype=np.uint8)
+
+            cy = (h - 1) / 2.0
+            cx = (l - 1) / 2.0
+
+            Y, X = np.ogrid[:h, :l]
+            Xf = X.astype(np.float32) - cx
+            Yf = Y.astype(np.float32) - cy
+
+            angles = np.deg2rad([0, 45, 90, 135, 180, 225, 270, 315])
+
+            Rmax = min(h, l) * 0.48
+            long_len = Rmax * 1.00
+            short_len = Rmax * 0.62
+
+            # Sharp half-angles (+50% width already)
+            half_angle_long = 0.39
+            half_angle_short = 0.33
+
+            edge_thickness = max(1.5, min(h, l) * 0.004)
+            ray_thickness = max(2.0, min(h, l) * 0.006)
+
+            mask = np.zeros((h, l), dtype=bool)
+
+            for i, a in enumerate(angles):
+                ca = np.cos(a)
+                sa = np.sin(a)
+
+                forward = ca * Xf + sa * Yf
+                perp = -sa * Xf + ca * Yf
+
+                if i % 2 == 0:
+                    L = long_len
+                    ha = half_angle_long
+                else:
+                    L = short_len
+                    ha = half_angle_short
+
+                slope = np.tan(ha)
+
+                # -----------------------------
+                # OUTWARD TRIANGLE (edges only)
+                # |perp| = slope * (L - forward)
+                # -----------------------------
+                outer_edge = (
+                        (forward >= 0) & (forward <= L) &
+                        (np.abs(np.abs(perp) - slope * (L - forward)) <= edge_thickness)
+                )
+                mask |= outer_edge
+
+                # -----------------------------
+                # INVERTED TRIANGLE (edges only)
+                # |perp| = slope * forward
+                # -----------------------------
+                inner_edge = (
+                        (forward >= 0) & (forward <= L) &
+                        (np.abs(np.abs(perp) - slope * forward) <= edge_thickness)
+                )
+                mask |= inner_edge
+
+                # -----------------------------
+                # TIP → CENTER RAY (diamond)
+                # -----------------------------
+                tx = L * ca
+                ty = L * sa
+
+                t = (Xf * tx + Yf * ty) / (tx * tx + ty * ty + 1e-9)
+                t = np.clip(t, 0.0, 1.0)
+
+                px = t * tx
+                py = t * ty
+
+                dx = Xf - px
+                dy = Yf - py
+                mask |= (np.abs(dx) + np.abs(dy)) <= ray_thickness
+
+            # -----------------------------
+            # CENTER DIAMOND (outline only)
+            # -----------------------------
+            center_r = min(h, l) * 0.05
+            center_outline = np.abs((np.abs(Xf) + np.abs(Yf)) - center_r) <= edge_thickness
+            mask |= center_outline
+
+            flow[mask] = 1
+            return flow % base
+
+
+        flow = flow_bethlehem_outline(h, l, base=base)
+        flow_base = flow.copy()
+
+
+
+
+
+
 
 
 
@@ -3087,7 +3386,7 @@ flex_p = 32
 
 
 ####right hand####
-xr_pos = (x_s + x_g) * 3
+xr_pos = (x_s + x_g) * 0
 yr_pos = 500
 palm_xr = xr_pos + x_s * 6
 palm_yr = yr_pos + y_s * 9
@@ -3160,7 +3459,7 @@ right_hands = []
 
 
 ###left hand###
-xl_pos = screen_width - (x_s + x_g) * 10
+xl_pos = screen_width - (x_s + x_g) * 7
 yl_pos = 500
 palm_xl = xl_pos + x_s * 6
 palm_yl = yl_pos + y_s * 9
@@ -4436,6 +4735,9 @@ while running:
 
 
             delta = rainbow_strength[flow] * rainbow_speed * set
+            delta_base = rainbow_strength[flow_base] * rainbow_speed * set
+
+            delta += delta_base
 
             rainbow_array = (rainbow_array + delta) % color_max
 
@@ -4469,7 +4771,7 @@ while running:
             fade_max = 8
 
             fade = score % fade_max
-            fade = 7
+            fade = 1
 
             # print(fade)
 
