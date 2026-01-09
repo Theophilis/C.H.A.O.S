@@ -383,18 +383,20 @@ pygame.camera.init()
 
 
 
-signame = "Theophilis"
+signame = "Chaotomata"
 
 
 
+
+###theo screen###
+screen_width, screen_height = 1280, 960
 
 ###chao screen###
 screen_width, screen_height = 1800, 960
 
 
 
-###theo screen###
-screen_width, screen_height = 1280, 960
+
 
 
 
@@ -644,7 +646,7 @@ flow_state = 12
 
 print(rule)
 
-l = 500
+l = 550
 h = l
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
@@ -3248,16 +3250,26 @@ def handle(hand, code_0):
 
     return letter, code_0
 
+
+typed_total = 0
+last_typed_total = 0
+n_slots = 0
+
 def submit(letter):
 
     # print(letter)
 
-    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water, current_rung
+    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water, current_rung, typed_total, n_slots
 
     if letter == last_typed:
         letter = code_0
     elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos + 2]:
 
+        typed_total += 1
+
+        print("")
+        print(typed_total)
+        print(n_slots)
 
         message += phrase[phrase_pos]
         phrase_pos += 1
@@ -3270,6 +3282,7 @@ def submit(letter):
         if len(letter) == 2:
             message += phrase[(phrase_pos + 1)%len(phrase)]
             phrase_pos += 1
+            typed_total += 1
 
         if phrase_pos == 1:
             tts[0] = time.time()
@@ -3386,7 +3399,7 @@ flex_p = 32
 
 
 ####right hand####
-xr_pos = (x_s + x_g) * 0
+xr_pos = (x_s + x_g) * 4
 yr_pos = 500
 palm_xr = xr_pos + x_s * 6
 palm_yr = yr_pos + y_s * 9
@@ -3459,7 +3472,7 @@ right_hands = []
 
 
 ###left hand###
-xl_pos = screen_width - (x_s + x_g) * 7
+xl_pos = screen_width - (x_s + x_g) * 11
 yl_pos = 500
 palm_xl = xl_pos + x_s * 6
 palm_yl = yl_pos + y_s * 9
@@ -3853,6 +3866,8 @@ GLYPH_MAP = {
 
 
 glyphs = 1
+message_len = 150
+
 
 if glyphs == 1:
 
@@ -4060,8 +4075,6 @@ if glyphs == 1:
 
 
 
-
-
     def build_star_spiral_points(
         l_size, x_space,
         cx, cy,
@@ -4162,9 +4175,6 @@ if glyphs == 1:
         canvas = np.flipud(canvas)
         canvas = np.rot90(canvas, 3)
         return canvas, rainbow_reset
-
-
-
 
 
 
@@ -4280,7 +4290,7 @@ if glyphs == 1:
 
 
 
-
+    typed_total_0 = 0
 
     def canvas_write_star_spiral_shrink(
         message,
@@ -4301,6 +4311,8 @@ if glyphs == 1:
         shrink_per_ring=0.7,   # 0.90–0.97 feels good
         min_l_size=12,          # don’t go smaller than this
     ):
+
+        global typed_total, typed_total_0
         rainbow_reset = 0
         m = message.lower()
         if len(m) == 0:
@@ -4360,9 +4372,25 @@ if glyphs == 1:
 
         n_slots = len(spiral_pts)
 
+        message_len = len(spiral_pts)
+
         # trigger “page full” exactly like your other writer
-        if not wrap_message and len(m) >= n_slots:
-            rainbow_reset = 1
+        if typed_total%message_len == 0:
+            print('loop')
+            print(typed_total)
+            if typed_total == typed_total_0:
+                yeah = 1
+
+            else:
+                typed_total_0 = typed_total
+                print(typed_total_0)
+                if rainbow_reset == 0:
+                    rainbow_reset = 1
+                    print('reset')
+                    print(rainbow_reset)
+
+        if len(m) > n_slots:
+            m = m[-n_slots:]
 
         n_draw = n_slots if wrap_message else min(len(m), n_slots)
 
@@ -4400,6 +4428,376 @@ if glyphs == 1:
 
 
 
+
+
+
+
+
+    def _sample_segment_with_step(A, B, step):
+        """
+        Sample points along segment A->B with spacing ~step.
+        A,B are (x,y) floats.
+        Returns list of (x,y) floats including A and B.
+        """
+        ax, ay = A
+        bx, by = B
+        dx = bx - ax
+        dy = by - ay
+        L = float(np.hypot(dx, dy))
+        if L < 1e-9:
+            return []
+
+        # number of steps based on desired spacing
+        n = max(1, int(L // step))
+        pts = []
+        for i in range(n + 1):
+            t = (i * step) / L
+            if t >= 1.0:
+                pts.append((bx, by))
+                break
+            pts.append((ax + t * dx, ay + t * dy))
+        return pts
+
+
+    def _offsets_signed(spread, max_k):
+        """
+        Deterministic offset ordering:
+          -far left ... -near left, 0, +near right ... +far right
+        This tends to feel natural visually (and avoids "all right side first").
+        """
+        offs = []
+        for k in range(max_k, 0, -1):
+            offs.append(-k * spread)
+        offs.append(0.0)
+        for k in range(1, max_k + 1):
+            offs.append(+k * spread)
+        return offs
+
+
+    def _lane_basis(theta):
+        """
+        Unit direction (ux,uy) and unit normal (nx,ny) for lane direction theta.
+        """
+        ux = float(np.cos(theta))
+        uy = float(np.sin(theta))
+        nx = -uy
+        ny = ux
+        return ux, uy, nx, ny
+
+
+
+    def build_bethlehem_lane_slots_phased(
+            *,
+            cx, cy,
+            long_len,
+            short_len,
+            l_size,
+            x_space,
+            n_layers=7,
+            shrink_per_layer=0.86,
+            lane_width_layers=3,
+            lane_spread_px=10.0,
+            diag_scale=1.0,
+
+            # spacing safety
+            spacing_scale=0.45,
+            stamp_margin_px=3.0,
+            offset_size=1,
+            density=1,
+
+            reverse_all=False
+    ):
+        TH_VERT = np.deg2rad(90)
+        TH_HORZ = np.deg2rad(0)
+        TH_D1 = np.deg2rad(45)  # TL->BR
+        TH_D2 = np.deg2rad(-45)  # BL->TR
+
+        lanes = [
+            ("V", TH_VERT, long_len),
+            ("H", TH_HORZ, long_len),
+            ("D1", TH_D1, short_len * diag_scale),
+            ("D2", TH_D2, short_len * diag_scale),
+        ]
+
+        def basis(theta):
+            ux = float(np.cos(theta))
+            uy = float(np.sin(theta))
+            nx = -uy
+            ny = ux
+            return nx, ny
+
+        def endpoints(name, L):
+            if name == "V":
+                return (cx, cy - L), (cx, cy + L)  # top->bottom
+            if name == "H":
+                return (cx - L, cy), (cx + L, cy)  # left->right
+            if name == "D1":
+                return (cx - L, cy - L), (cx + L, cy + L)  # TL->BR
+            return (cx - L, cy + L), (cx + L, cy - L)  # BL->TR
+
+        slots = []
+
+        # phase bands: 0=centerline, 1=±1, 2=±2 ...
+        for phase_k in range(0, lane_width_layers + 1):
+            for name, th, L in lanes:
+                nx, ny = basis(th)
+                A0, B0 = endpoints(name, L)
+
+                for layer in range(n_layers):
+                    ring_l = int(round(l_size * (shrink_per_layer ** layer)))
+                    if ring_l < 8:
+                        break
+
+                    # triangle narrowing inward
+                    max_k_layer = max(0, lane_width_layers - (layer // 2))
+                    if phase_k > max_k_layer:
+                        continue
+
+                    spread = float(lane_spread_px) * (shrink_per_layer ** layer)
+
+                    # offsets for this phase
+                    if phase_k == 0:
+                        offsets = [0.0]
+                    else:
+                        offsets = [-phase_k * spread, +phase_k * spread]
+
+                    stamp_footprint = 2.0 * max(offset_size, density)
+                    step = (
+                            float(ring_l) + float(x_space) +
+                            float(ring_l) * float(spacing_scale) +
+                            float(stamp_footprint) +
+                            float(stamp_margin_px)
+                    )
+                    step = max(1.0, step)
+
+                    for off in offsets:
+                        A = (A0[0] + off * nx, A0[1] + off * ny)
+                        B = (B0[0] + off * nx, B0[1] + off * ny)
+
+                        pts = _sample_segment_with_step(A, B, step=step)
+                        for (px, py) in pts:
+                            slots.append((px, py, ring_l))
+
+        if reverse_all:
+            slots = slots[::-1]
+
+        return slots
+
+
+
+    def canvas_write_bethlehem_lanes(
+            message,
+            canvas,
+            *,
+            slots,  # [(x,y,ring_l), ...] original coords
+            offset_size=1,
+            density=1,
+            wrap_message=False
+    ):
+        global typed_total, typed_total_0, rainbow_reset
+
+
+        m = message.lower()
+        if len(m) == 0 or not slots:
+            return canvas, 0
+
+        n_slots = len(slots)
+        print(n_slots)
+
+
+        # trigger “page full” exactly like your other writer
+        if typed_total%n_slots == 0:
+            print('loop')
+            print(typed_total)
+            if typed_total == typed_total_0:
+                yeah = 1
+
+            else:
+                typed_total_0 = typed_total
+                print(typed_total_0)
+                if rainbow_reset == 0:
+                    rainbow_reset = 1
+                    print('reset')
+                    print(rainbow_reset)
+
+        if len(m) > n_slots:
+            m = m[-n_slots:]
+
+
+
+        # smooth rolling window
+        if (not wrap_message) and (len(m) > n_slots):
+            m = m[-n_slots:]
+
+        canvas = np.rot90(canvas)
+        canvas = np.flipud(canvas)
+
+        # mapping for your rot90+flipud (square): (x,y)->(y,x)
+        def to_transformed(x, y):
+            return (y, x)
+
+        n_draw = n_slots if wrap_message else min(len(m), n_slots)
+
+        for i in range(n_draw):
+            ch = m[i % len(m)] if wrap_message else m[i]
+            if ch == ' ':
+                continue
+
+            fn = GLYPH_MAP.get(ch)
+            if fn is None:
+                continue
+
+            x, y, ring_l = slots[i]
+            tx, ty = to_transformed(x, y)
+
+            corner = (int(tx - ring_l / 2), int(ty - ring_l / 2))
+
+            # prevent overlap on small rings
+            ring_offset = 0 if ring_l < 20 else offset_size
+            ring_density = 0 if ring_l < 20 else density
+
+            for off in (0, ring_offset, ring_density):
+                fn(ring_l, canvas, (corner[0] + off, corner[1]))
+                fn(ring_l, canvas, (corner[0] - off, corner[1]))
+                fn(ring_l, canvas, (corner[0], corner[1] + off))
+                fn(ring_l, canvas, (corner[0], corner[1] - off))
+
+        canvas = np.flipud(canvas)
+        canvas = np.rot90(canvas, 3)
+
+        return canvas, n_slots
+
+
+
+    def canvas_write_bethlehem_lanes(
+            message,
+            canvas,
+            *,
+            slots,  # [(x,y,ring_l), ...] original coords
+            offset_size=1,
+            density=1,
+            wrap_message=False,
+            clip_mode="skip",  # "skip" or "clamp"
+    ):
+        global typed_total, typed_total_0, rainbow_reset
+
+        m = message.lower()
+        if len(m) == 0 or not slots:
+            return canvas, 0
+
+        n_slots = len(slots)
+
+
+        if n_slots <= 0:
+            return canvas, 0
+
+        # rolling window once
+        if (not wrap_message) and (len(m) > n_slots):
+            m = m[-n_slots:]
+
+        # rotation clock: only once per new multiple, and not at 0
+        if (typed_total > 0) and (typed_total % n_slots == 0) and (typed_total != typed_total_0):
+            typed_total_0 = typed_total
+            rainbow_reset = 1
+            # print("reset", typed_total, "slots", n_slots)
+
+        # draw transform (matches your system)
+        canvas = np.rot90(canvas)
+        canvas = np.flipud(canvas)
+
+        H, W = canvas.shape[:2]
+
+        # mapping for your rot90+flipud (square): (x,y)->(y,x)
+        def to_transformed(x, y):
+            return (y, x)
+
+        def fits(cx0, cy0, size):
+            # glyph occupies size x size square starting at (cx0,cy0)
+            return (0 <= cx0) and (0 <= cy0) and (cx0 + size <= W) and (cy0 + size <= H)
+
+        n_draw = n_slots if wrap_message else min(len(m), n_slots)
+
+        for i in range(n_draw):
+            ch = m[i % len(m)] if wrap_message else m[i]
+            if ch == ' ':
+                continue
+
+            fn = GLYPH_MAP.get(ch)
+            if fn is None:
+                continue
+
+            x, y, ring_l = slots[i]
+            tx, ty = to_transformed(x, y)
+
+            base_corner = (int(tx - ring_l / 2), int(ty - ring_l / 2))
+
+            # reduce stamp expansion for small glyphs
+            ring_offset = 0 if ring_l < 20 else offset_size
+            ring_density = 0 if ring_l < 20 else density
+
+            for off in (0, ring_offset, ring_density):
+                corners = (
+                    (base_corner[0] + off, base_corner[1]),
+                    (base_corner[0] - off, base_corner[1]),
+                    (base_corner[0], base_corner[1] + off),
+                    (base_corner[0], base_corner[1] - off),
+                )
+
+                for cx0, cy0 in corners:
+                    if fits(cx0, cy0, ring_l):
+                        fn(ring_l, canvas, (cx0, cy0))
+                    else:
+                        if clip_mode == "clamp":
+                            # clamp so the entire glyph fits (prevents crash)
+                            cx1 = min(max(cx0, 0), W - ring_l)
+                            cy1 = min(max(cy0, 0), H - ring_l)
+                            fn(ring_l, canvas, (cx1, cy1))
+                        # clip_mode == "skip": do nothing (skip out-of-bounds stamp)
+
+        # undo transform
+        canvas = np.flipud(canvas)
+        canvas = np.rot90(canvas, 3)
+
+        return canvas, n_slots
+
+
+    size = 64
+    l_size = 32
+    x_space = 8
+    y_space = 16
+    offset_size = 1
+    density = 1
+    x_o = 128
+    y_o = 32 + water_line * (size + 16)
+
+
+
+    bethlehem_slots = build_bethlehem_lane_slots_phased(
+        cx=(l - 1) / 2.0,
+        cy=(h - 1) / 2.0,
+        long_len=min(h, l) * 0.48,
+        short_len=min(h, l) * 0.30,
+        l_size=l_size,
+        x_space=x_space,
+        n_layers=7,
+        shrink_per_layer=0.86,
+        lane_width_layers=3,
+        lane_spread_px=10.0,
+        diag_scale=1.0,
+        spacing_scale=0.45,
+        stamp_margin_px=3.0,
+        offset_size=offset_size,
+        density=density,
+    )
+
+
+
+
+
+
+
+
+
 running = True
 while running:
 
@@ -4413,7 +4811,7 @@ while running:
     hand_array = pygame.surfarray.array3d(image)
 
 
-    type = 5
+    type = 6
     ####water type####
 
     if type == 1:
@@ -4536,6 +4934,31 @@ while running:
             )
 
 
+    if type == 6:
+        size = 64
+        l_size = 32
+        x_space = 8
+        y_space = 16
+        offset_size = 1
+        density = 1
+        x_o = 128
+        y_o = 32 + water_line * (size+16)
+
+
+        if len(message) > 0:
+
+
+            flow, n_slots = canvas_write_bethlehem_lanes(
+                message,
+                flow,
+                slots=bethlehem_slots,
+                offset_size=offset_size,
+                density=density,
+                wrap_message=False
+            )
+
+
+
 
 
     if rainbow_reset == 1:
@@ -4547,8 +4970,9 @@ while running:
 
         rainbow_reset = 0
 
-        messages.append(message[::])
-        message = ''
+        if type < 5:
+            messages.append(message[::])
+            message = ''
 
 
         if ruler > 3:
@@ -5393,15 +5817,19 @@ while running:
             submit(letter)
             last_typed = letter
 
+
         elif letter_0 != last_typed:
             bong = 1
             submit(letter_0)
             last_typed = letter_0
 
+
         elif letter_1 != last_typed:
             bong = 1
             submit(letter_1)
             last_typed = letter_1
+
+
 
 
         # elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
