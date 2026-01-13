@@ -383,13 +383,11 @@ pygame.camera.init()
 
 
 
-signame = "Chaotomata"
+signame = "Theophilis"
 
 
 
 
-###theo screen###
-screen_width, screen_height = 1280, 960
 
 ###chao screen###
 screen_width, screen_height = 1800, 960
@@ -397,6 +395,8 @@ screen_width, screen_height = 1800, 960
 
 
 
+###theo screen###
+screen_width, screen_height = 1280, 960
 
 
 
@@ -3399,7 +3399,7 @@ flex_p = 32
 
 
 ####right hand####
-xr_pos = (x_s + x_g) * 4
+xr_pos = (x_s + x_g) * 1
 yr_pos = 500
 palm_xr = xr_pos + x_s * 6
 palm_yr = yr_pos + y_s * 9
@@ -3472,7 +3472,7 @@ right_hands = []
 
 
 ###left hand###
-xl_pos = screen_width - (x_s + x_g) * 11
+xl_pos = screen_width - (x_s + x_g) * 8
 yl_pos = 500
 palm_xl = xl_pos + x_s * 6
 palm_yl = yl_pos + y_s * 9
