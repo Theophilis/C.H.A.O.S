@@ -77,7 +77,7 @@ def Chaos_Window():
                     guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4), s / 2, s / 2)
                     pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-                # elbow
+                # shoulder
                 if n > 15:
                     pygame.draw.circle(WIN, value_color[7], (x, y - s + int(s / 16)), s / 4)
 
@@ -95,7 +95,7 @@ def Chaos_Window():
                     guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
                     pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-                # elbow
+                # shoulder
                 if n > 15:
                     pygame.draw.circle(WIN, value_color[7], (x - s, y - s + int(s / 16)), s / 4)
 
@@ -112,7 +112,7 @@ def Chaos_Window():
                     guide_b = pygame.Rect(x + s - int(s / 8), y - int(s / 4) - int(s / 2), s / 2, s / 2)
                     pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-                # elbow
+                # shoulder
                 if n > 15:
                     pygame.draw.circle(WIN, value_color[7], (x, y - int(s / 2)), s / 4)
 
@@ -130,7 +130,7 @@ def Chaos_Window():
                     guide_b = pygame.Rect(x + s - int(s / 4), y - s - int(s / 4), s / 2, s / 2)
                     pygame.draw.rect(WIN, value_color[int(n % 8 / 4) + 7], guide_b)
 
-                # elbow
+                # shoulder
                 if n > 15:
                     pygame.draw.circle(WIN, value_color[7], (x, y), s / 4)
 
@@ -210,7 +210,7 @@ def Chaos_Window():
 
         if n < 16:
             if n == 0:
-                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x + s/7, y + int(s / 16)), (x + s/7, y - s), int(s / 8))
 
             elif n == 1:
                 pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
@@ -289,44 +289,50 @@ def Chaos_Window():
                 pygame.draw.line(WIN, value_color[7], (x + int(s/2) + int(s / 2) - int(s/2), y - s), (x + int(s/2) -int(s/2), y - int(s / 2)), int(s / 8))
 
 
-            elif n == 12:
+            elif n == 13:
                 pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x + int(s/3), y-s), (x + int(s/3) + int(s/1.5), y - s), int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s/1.5), y - s), (x + int(s / 3) + int(s / 1.5), y-int(s/3)), int(s / 8))
 
-            elif n == 13:
+            elif n == 12:
                 pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x + int(s/3), y-int(s/3)), (x + int(s/3) + int(s/1.5), y - int(s/3)), int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s/1.5), y - s), (x + int(s / 3) + int(s / 1.5), y-int(s/3)), int(s / 8))
 
-            elif n == 14:
+            elif n == 15:
                 pygame.draw.line(WIN, value_color[7], (x + int(s), y), (x + int(s), y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x, y-s), (x + int(s/1.5), y - s), int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y-int(s/3)), int(s / 8))
 
-            elif n == 15:
+            elif n == 14:
                 pygame.draw.line(WIN, value_color[7], (x+s, y), (x+s, y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x, y-int(s/3)), (x+ int(s/1.5), y - int(s/3)), int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y-int(s/3)), int(s / 8))
 
+
+
         else:
             n -= 16
 
-            pygame.draw.circle(WIN, value_color[7], (x + 48, y - height_4), 32)
+            pygame.draw.circle(WIN, value_color[8], (x + 16, y - 48), 16)
 
             if n == 0:
-                pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
+                pygame.draw.line(WIN, value_color[7], (x+12, y + int(s / 16)), (x+12, y - s), int(s / 8))
 
             elif n == 1:
+                x = x + 5
                 pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 2), y + int(s / 16)), (x + int(s / 2), y - s),
                                  int(s / 8))
 
             elif n == 2:
+
+                x = x + 8
+
                 pygame.draw.line(WIN, value_color[7], (x, y + int(s / 16)), (x, y - s), int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y), (x + int(s / 2) + int(s / 3), y), int(s / 8))
 
@@ -424,7 +430,7 @@ def Chaos_Window():
                                  (x + int(s / 2) - int(s / 2), y - int(s / 2)), int(s / 8))
 
 
-            elif n == 12:
+            elif n == 13:
                 pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y - s), (x + int(s / 3) + int(s / 1.5), y - s),
@@ -432,7 +438,7 @@ def Chaos_Window():
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s / 1.5), y - s),
                                  (x + int(s / 3) + int(s / 1.5), y - int(s / 3)), int(s / 8))
 
-            elif n == 13:
+            elif n == 12:
                 pygame.draw.line(WIN, value_color[7], (x, y), (x, y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 3), y - int(s / 3)),
@@ -440,18 +446,19 @@ def Chaos_Window():
                 pygame.draw.line(WIN, value_color[7], (x + int(s / 3) + int(s / 1.5), y - s),
                                  (x + int(s / 3) + int(s / 1.5), y - int(s / 3)), int(s / 8))
 
-            elif n == 14:
+            elif n == 15:
                 pygame.draw.line(WIN, value_color[7], (x + int(s), y), (x + int(s), y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x, y - s), (x + int(s / 1.5), y - s), int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y - int(s / 3)), int(s / 8))
 
-            elif n == 15:
+            elif n == 14:
                 pygame.draw.line(WIN, value_color[7], (x + s, y), (x + s, y - s), int(s / 8))
 
                 pygame.draw.line(WIN, value_color[7], (x, y - int(s / 3)), (x + int(s / 1.5), y - int(s / 3)),
                                  int(s / 8))
                 pygame.draw.line(WIN, value_color[7], (x, y - s), (x, y - int(s / 3)), int(s / 8))
+
 
     print(HEIGHT, WIDTH)
     width_2 = int(WIDTH/2)
@@ -497,7 +504,7 @@ def Chaos_Window():
     armbet_size = 1
 
     #phrase
-    phrase = 'edwardconloncadden'
+    phrase = 'i am the one who lik es all the pr et ty son gs and i lov es to si ng al ong and i lov es to si gn for fu n but i kno ws not wh at i me ans wh en i say ye ah'
 
 
 
@@ -515,7 +522,7 @@ def Chaos_Window():
 
 
         lesson_t = main_font.render(phrase, True, value_color[7])
-        WIN.blit(lesson_t,(width_2 + width_4 + width_16 + width_32-lesson_t.get_width()/2, height_2 + height_4 + height_8))
+        WIN.blit(lesson_t,(width_16, height_2 + height_4 + height_8 + height_16))
 
         # digibet-c
         if guide == 0:
@@ -787,7 +794,7 @@ def Chaos_Window():
             space = 64
             step = 0
             step_lim = 6
-            size = 32
+            size = 16
             index = []
             arm_size = 48
 
@@ -795,21 +802,59 @@ def Chaos_Window():
 
             words = phrase.split(' ')
 
-            lesson_t = lable_font.render(str(words), True, value_color[7])
-            WIN.blit(lesson_t, (width_16, height_2 + height_4))
+            lesson_t = text_font.render(str(words), True, value_color[7])
+            WIN.blit(lesson_t, (width_16, height_2 + height_4 + height_8))
 
-            chunky = 0
+
             word_chunks = []
             for x in range(len(words)):
                 chunks = []
+                y = 0
 
-                for y in range(len(words[x])):
-                    if chunky == 1:
-                        chunky = 0
-                        continue
-                    if words[x][y:y+2] in armbet[words[x][y]]:
-                        chunks.append([words[x][y:y+2]])
-                        chunky = 1
+                while y < len(words[x]):
+
+                    len_word = len(words[x])
+
+
+                    d_h = 0
+                    if words[x][y:y+2] in digibet:
+                        print('double hand')
+                        print(words[x][y:y+2])
+                        d_h = 1
+
+
+
+
+                    if d_h == 1:
+                        if len_word == 3:
+                            if words[x][y:y+3] in armbet[words[x][y:y+2]]:
+                                chunks.append([words[x][y:y+3]])
+                                y += 3
+
+                        else:
+                            if words[x][y:y+4] in armbet[words[x][y:y+2]]:
+                                chunks.append([words[x][y:y+4]])
+                                y += 4
+
+
+                    elif d_h == 0:
+                        if len_word%2 == 1:
+                            if words[x][y:y+3] in armbet[words[x][y]]:
+                                chunks.append([words[x][y:y+3]])
+                                y += 3
+                            elif words[x][y:y+2] in armbet[words[x][y]]:
+                                chunks.append([words[x][y:y+2]])
+                                y += 2
+                        else:
+                            if words[x][y:y+2] in armbet[words[x][y]]:
+                                chunks.append([words[x][y:y+2]])
+                                y += 2
+                            elif words[x][y:y+3] in armbet[words[x][y]]:
+                                chunks.append([words[x][y:y+3]])
+                                y += 3
+
+
+
 
 
                 word_chunks.append(chunks)
@@ -822,419 +867,494 @@ def Chaos_Window():
                 # WIN.blit(lesson_t, (width_16, height_2 + height_16*x))
 
 
-            #right arm
-            space = 64
+            space = 70
             step = 0
             step_lim = 14
-            x0 = width_8 + int(step / step_lim) * width_4
-            y0 = height_8 + step % step_lim * space
+            x0 = int(step / step_lim) * width_32 - width_32
+            y0 = height_16 + step % step_lim * space
 
-            lesson_t = lable_font.render(str(word_chunks[0]), True, value_color[7])
+            lesson_t = text_font.render(str(word_chunks), True, value_color[7])
             WIN.blit(lesson_t, (width_16, height_2 + height_4 + height_16))
 
-            word_chunks = word_chunks[0]
+
+            print()
+            print('word chunks')
             print(word_chunks)
-            for x in range(len(word_chunks)):
-                x0 += space*2
-                for y in range(len(word_chunks[x])):
+            line_lim = 13
 
+            for z in range(len(word_chunks)):
+                word_chunk = word_chunks[z]
+                print()
+                print('word chunks z')
+                print(word_chunk)
+                print('z')
+                print(z)
+                print('place')
+                print(place)
+                print('line_lim')
+                print(line_lim)
 
 
 
 
-                    hand_bin = digibet[word_chunks[x][y][0]]
-                    bin_value = bin_gen(hand_bin, 2, 5)[::-1]
 
-                    # print(hand_bin)
-                    # print(bin_value)
 
-                    arm_pos = armbet[word_chunks[x][y][0]].index(word_chunks[x][y])
+                for x in range(len(word_chunk)):
 
-                    print(arm_pos)
 
-                    s=size*2
+                    x0 += space*2.5
 
-                    x2 = x0
-                    y2 = y0
 
-                    def right_arm(x2, y2):
+                    for y in range(len(word_chunk[x])):
 
-                        # first position
-                        if arm_pos % 4 == 0:
 
-                            x2 = x2 - size*1.5
-                            y2 = y2 + size*1.5
+                        print("word chunk x y")
+                        print(word_chunk[x][y])
+                        place +=1
+                        print('place +1')
+                        print(place)
 
-                            for z in range(5):
+                        if place == line_lim:
+                            print('new line please')
+                            x0 = width_16 + int(step / step_lim) * width_32
+                            y0 = height_4 + height_8 + step % step_lim * space - width_16
 
-                                x1 = x0
-                                y1 = y0
+                        if place == line_lim * 2 - 1:
+                            print('new line please too')
+                            x0 = width_16 + int(step / step_lim) * width_32
+                            y0 = height_2 + height_8 + step % step_lim * space - width_16 - width_32
 
-                                if z == 1:
-                                    x1 = x1 + size
-                                elif z == 2:
-                                    x1 = x1 + size
-                                    y1 = y1 + size
-                                elif z == 3:
-                                    x1 = x1 + size
-                                    y1 = y1 + size * 2
-                                elif z == 4:
-                                    x1 = x1
-                                    y1 = y1 + size * 2
+                        if place == line_lim * 3 - 2:
+                            print('new line please too')
+                            x0 = width_16 + int(step / step_lim) * width_32
+                            y0 = height_2 + height_4 + step % step_lim * space - height_8 + height_64
 
-                                # print(z)
-                                # print(x1,y1)
+                        lesson_t = main_font.render(str(word_chunk[x][y]), True, value_color[7])
+                        WIN.blit(lesson_t, (x0 - space * .5, y0 + space*.6))
 
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
 
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2, y2 + int(s / 16)), (x2, y2 - s), int(s / 8))
-                            pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
+                        hand_bin = digibet[word_chunk[x][y][0]]
+                        bin_value = bin_gen(hand_bin, 2, 5)[::-1]
 
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 + s - int(s / 8), y2 - int(s / 4), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+                        # print(hand_bin)
+                        # print(bin_value)
 
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2, y2 - s + int(s / 16)), s / 4)
+                        try:
+                            arm_pos = armbet[word_chunk[x][y][0]].index(word_chunk[x][y])
+                        except:
+                            arm_pos = armbet[word_chunk[x][y][0:2]].index(word_chunk[x][y])
 
-                        # second position
-                        if arm_pos % 4 == 1:
+                        print('arm pos')
+                        print(arm_pos)
 
-                            for z in range(5):
+                        s=size*2
 
-                                x1 = x0-size/2
-                                y1 = y0+size/2
+                        x2 = x0
+                        y2 = y0
 
-                                if z == 1:
-                                    x1 = x1
-                                    y1 = y1-size
-                                elif z == 2:
-                                    x1 = x1 + size
-                                    y1 = y1 - size
-                                elif z == 3:
-                                    x1 = x1 + size*2
-                                    y1 = y1 - size
-                                elif z == 4:
-                                    x1 = x1 + size*2
-                                    y1 = y1
+                        finger_scales_r = [.8, .9, 1, .7, .5]
+                        finger_scales_l = finger_scales_r[::-1]
 
-                                # print(z)
-                                # print(x1,y1)
+                        bin_value_l = bin_value[::-1]
+                        bin_value_r = bin_value[::]
 
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+                        def right_arm(x2, y2):
 
-                            x2 = x2
-                            y2 = y2 + size*3
+                            # first position
+                            if arm_pos % 4 == 0:
 
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s/2, y2 - s), int(s / 8))
-                            pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 - s/2, y2 - s), int(s / 8))
-
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[7 + int(arm_pos % 8 / 5)], (x2 + s/2, y2 - s), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 + s/2 - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
-
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2 - s, y2 - s + int(s / 16)), s / 4)
+                                x2 = x2 - size*1.5
+                                y2 = y2 + size*1.5
 
-                        # third position
-                        if arm_pos % 4 == 2:
+                                for z in range(5):
 
-                            x2 = x2 - size
-                            y2 = y2 + size*2.5
+                                    x1 = x0
+                                    y1 = y0
 
-                            for z in range(5):
+                                    if z == 1:
+                                        x1 = x1 + size
+                                    elif z == 2:
+                                        x1 = x1 + size
+                                        y1 = y1 + size
+                                    elif z == 3:
+                                        x1 = x1 + size
+                                        y1 = y1 + size * 2
+                                    elif z == 4:
+                                        x1 = x1
+                                        y1 = y1 + size * 2
+
+                                    # print(z)
+                                    # print(x1,y1)
+
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_r[z], size*finger_scales_r[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[z])], finger_sign)
+
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2, y2 + int(s / 16)), (x2, y2 - s), int(s / 8))
+                                pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
+
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 + s - int(s / 4), y2 - int(s / 4), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                                # elbow
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2, y2 - s + int(s / 16)), s / 4)
+
+                            # second position
+                            if arm_pos % 4 == 1:
+
+                                for z in range(5):
+
+                                    x1 = x0-size/2
+                                    y1 = y0+size/2
+
+                                    if z == 1:
+                                        x1 = x1
+                                        y1 = y1-size
+                                    elif z == 2:
+                                        x1 = x1 + size
+                                        y1 = y1 - size
+                                    elif z == 3:
+                                        x1 = x1 + size*2
+                                        y1 = y1 - size
+                                    elif z == 4:
+                                        x1 = x1 + size*2
+                                        y1 = y1
+
+                                    # print(z)
+                                    # print(x1,y1)
+
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_r[z], size*finger_scales_r[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[z])], finger_sign)
+
+                                x2 = x2
+                                y2 = y2 + size*3
+
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s/2, y2 - s), int(s / 8))
+                                pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 - s/2, y2 - s), int(s / 8))
+
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[7 + int(arm_pos % 8 / 5)], (x2 + s/2, y2 - s), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 + s/2 - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                                # elbow
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2 - s/2, y2 - s + int(s / 16)), s / 4)
+
+                            # third position
+                            if arm_pos % 4 == 2:
+
+                                x2 = x2 - size
+                                y2 = y2 + size*2.5
+
+                                for z in range(5):
 
-                                x1 = x0 + size*.75
-                                y1 = y0
+                                    x1 = x0 + size*.75
+                                    y1 = y0
 
-                                if z == 1:
-                                    x1 = x1 + size
-                                elif z == 2:
-                                    x1 = x1 + size
-                                    y1 = y1 + size
-                                elif z == 3:
-                                    x1 = x1 + size
-                                    y1 = y1 + size * 2
-                                elif z == 4:
-                                    x1 = x1
-                                    y1 = y1 + size * 2
+                                    if z == 1:
+                                        x1 = x1 + size
+                                    elif z == 2:
+                                        x1 = x1 + size
+                                        y1 = y1 + size
+                                    elif z == 3:
+                                        x1 = x1 + size
+                                        y1 = y1 + size * 2
+                                    elif z == 4:
+                                        x1 = x1
+                                        y1 = y1 + size * 2
+
+                                    # print(z)
+                                    # print(x1,y1)
+
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_r[z], size*finger_scales_r[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[z])], finger_sign)
+
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2, y2 - int(s / 2)), (x2 + s, y2 - int(s / 2)), int(s / 8))
 
-                                # print(z)
-                                # print(x1,y1)
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s + 5, y2 - int(s / 2)), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 + s - int(s / 8), y2 - int(s / 4) - int(s / 2), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
 
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+                                # elbow
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2, y2 - int(s / 2)), s / 4)
+
+                            # fourth position
+                            if arm_pos % 4 == 3:
+
+                                for z in range(5):
+
+                                    x1 = x0-size/2
+                                    y1 = y0+size/2
+
+                                    if z == 1:
+                                        x1 = x1
+                                        y1 = y1-size
+                                    elif z == 2:
+                                        x1 = x1 + size
+                                        y1 = y1 - size
+                                    elif z == 3:
+                                        x1 = x1 + size*2
+                                        y1 = y1 - size
+                                    elif z == 4:
+                                        x1 = x1 + size*2
+                                        y1 = y1
+
+                                    # print(z)
+                                    # print(x1,y1)
+
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_r[z], size*finger_scales_r[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[z])], finger_sign)
+
+                                x2 = x2 - size
+                                y2 = y2 + size*3
+
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2 + s, y2 + int(s / 16)), (x2 + s, y2 - s), int(s / 8))
+                                pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
+
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2 - s), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 + s - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                                # elbow
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2, y2), s / 4)
+
+                        right_arm(x2, y2)
+
+
+                        x2 = x0-space * .85
+                        y3 = y0
+
+
+
+                        print('bin')
+                        print(bin_value)
+                        bin_value_l = bin_value[::-1]
+                        bin_value_r = bin_value[::]
+
+                        def left_arm(x2, y2):
+                            y0 = y2
+
+                            # first position
+                            if arm_pos % 4 == 0:
+
+                                x2 = x2 - size*1.5 + size
+                                y2 = y2 + size*1.5
+
+                                for z in range(5):
+
+                                    x1 = x0 - size
+                                    y1 = y0
+
+                                    if z == 1:
+                                        x1 = x1 - size
+                                    elif z == 2:
+                                        x1 = x1 - size
+                                        y1 = y1 + size
+                                    elif z == 3:
+                                        x1 = x1 - size
+                                        y1 = y1 + size * 2
+                                    elif z == 4:
+                                        x1 = x1
+                                        y1 = y1 + size * 2
+
+                                    # print(z)
+                                    # print(x1,y1)
+
+
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_r[z], size*finger_scales_r[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[z])], finger_sign)
+
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2+s, y2 + int(s / 16)), (x2+s, y2 - s), int(s / 8))
+                                pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
+
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2, y2), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 - int(s / 4 ), y2 - int(s / 4), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                                # shoulder
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2 + s, y2 - s + int(s / 16)), s / 4)
+
+                            # second position
+                            if arm_pos % 4 == 1:
+
+                                for z in range(5):
+
+                                    x1 = x0-size/2 - size*1.5
+                                    y1 = y0+size/2
+
+                                    if z == 1:
+                                        x1 = x1
+                                        y1 = y1-size
+                                    elif z == 2:
+                                        x1 = x1 + size
+                                        y1 = y1 - size
+                                    elif z == 3:
+                                        x1 = x1 + size*2
+                                        y1 = y1 - size
+                                    elif z == 4:
+                                        x1 = x1 + size*2
+                                        y1 = y1
+
+                                    # print(z)
+                                    # print(x1,y1)
+
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_l[z], size*finger_scales_l[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_l[z])], finger_sign)
+
+                                x2 = x2 + size/2
+                                y2 = y2 + size*3
+
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s/2, y2 - s), int(s / 8))
+                                pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 - s/2, y2 - s), int(s / 8))
+
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[7 + int(arm_pos % 8 / 5)], (x2 - s/2, y2 - s), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 - s/2 - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+
+                                # shoulder
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2 + s/2, y2 - s + int(s / 16)), s / 4)
 
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2, y2 - int(s / 2)), (x2 + s, y2 - int(s / 2)), int(s / 8))
-
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2 - int(s / 2)), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 + s - int(s / 8), y2 - int(s / 4) - int(s / 2), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
-
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2, y2 - int(s / 2)), s / 4)
-
-                        # fourth position
-                        if arm_pos % 4 == 3:
-
-                            for z in range(5):
-
-                                x1 = x0-size/2
-                                y1 = y0+size/2
+                            # third position
+                            if arm_pos % 4 == 2:
 
-                                if z == 1:
-                                    x1 = x1
-                                    y1 = y1-size
-                                elif z == 2:
-                                    x1 = x1 + size
-                                    y1 = y1 - size
-                                elif z == 3:
-                                    x1 = x1 + size*2
-                                    y1 = y1 - size
-                                elif z == 4:
-                                    x1 = x1 + size*2
-                                    y1 = y1
-
-                                # print(z)
-                                # print(x1,y1)
-
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
-
-                            x2 = x2 - size
-                            y2 = y2 + size*3
-
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2 + s, y2 + int(s / 16)), (x2 + s, y2 - s), int(s / 8))
-                            pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
-
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2 - s), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 + s - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
-
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2, y2), s / 4)
-
-                    right_arm(x2, y2)
-
-
-                    x2 = x0
-                    y3 = height_8 + step % step_lim * space + 128
-
-
-
-                    def left_arm(x2, y2):
-                        y0 = y2
-
-                        # first position
-                        if arm_pos % 4 == 0:
-
-                            x2 = x2 - size*1.5 + size
-                            y2 = y2 + size*1.5
-
-                            for z in range(5):
-
-                                x1 = x0 - size
-                                y1 = y0
-
-                                if z == 1:
-                                    x1 = x1 - size
-                                elif z == 2:
-                                    x1 = x1 - size
-                                    y1 = y1 + size
-                                elif z == 3:
-                                    x1 = x1 - size
-                                    y1 = y1 + size * 2
-                                elif z == 4:
-                                    x1 = x1
-                                    y1 = y1 + size * 2
-
-                                # print(z)
-                                # print(x1,y1)
-
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
-
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2+s, y2 + int(s / 16)), (x2+s, y2 - s), int(s / 8))
-                            pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s, y2), int(s / 8))
-
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2, y2), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 - int(s / 8), y2 - int(s / 4), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
-
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2, y2 - s + int(s / 16)), s / 4)
-
-                        # second position
-                        if arm_pos % 4 == 1:
-
-                            for z in range(5):
-
-                                x1 = x0-size/2 - size*1.5
-                                y1 = y0+size/2
-
-                                if z == 1:
-                                    x1 = x1
-                                    y1 = y1-size
-                                elif z == 2:
-                                    x1 = x1 + size
-                                    y1 = y1 - size
-                                elif z == 3:
-                                    x1 = x1 + size*2
-                                    y1 = y1 - size
-                                elif z == 4:
-                                    x1 = x1 + size*2
-                                    y1 = y1
-
-                                # print(z)
-                                # print(x1,y1)
-
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
-
-                            x2 = x2 + size/2
-                            y2 = y2 + size*3
-
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 + s/2, y2 - s), int(s / 8))
-                            pygame.draw.line(WIN, value_color[7], (x2, y2), (x2 - s/2, y2 - s), int(s / 8))
-
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[7 + int(arm_pos % 8 / 5)], (x2 - s/2, y2 - s), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 - s/2 - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
-
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2 - s, y2 - s + int(s / 16)), s / 4)
+                                x2 = x2 - size
+                                y2 = y2 + size*2.5
 
-                        # third position
-                        if arm_pos % 4 == 2:
+                                for z in range(5):
 
-                            x2 = x2 - size
-                            y2 = y2 + size*2.5
+                                    x1 = x0 + size - size
+                                    y1 = y0
 
-                            for z in range(5):
+                                    if z == 1:
+                                        x1 = x1 - size
+                                    elif z == 2:
+                                        x1 = x1 - size
+                                        y1 = y1 + size
+                                    elif z == 3:
+                                        x1 = x1 - size
+                                        y1 = y1 + size * 2
+                                    elif z == 4:
+                                        x1 = x1
+                                        y1 = y1 + size * 2
 
-                                x1 = x0 + size - size
-                                y1 = y0
+                                    # print(z)
+                                    # print(x1,y1)
 
-                                if z == 1:
-                                    x1 = x1 - size
-                                elif z == 2:
-                                    x1 = x1 - size
-                                    y1 = y1 + size
-                                elif z == 3:
-                                    x1 = x1 - size
-                                    y1 = y1 + size * 2
-                                elif z == 4:
-                                    x1 = x1
-                                    y1 = y1 + size * 2
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_r[z], size*finger_scales_r[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_r[z])], finger_sign)
 
-                                # print(z)
-                                # print(x1,y1)
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2 + size, y2 - int(s / 2)), (x2 + s*1.8, y2 - int(s / 2)), int(s / 8))
 
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + size + 13, y2 - int(s / 2)), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 + size, y2 - int(s / 4) - int(s / 2), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
 
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2 + size, y2 - int(s / 2)), (x2 + s*1.8, y2 - int(s / 2)), int(s / 8))
+                                # shoulder
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2 + s*2, y2 - int(s / 2)), s / 4)
 
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + size, y2 - int(s / 2)), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 + size, y2 - int(s / 4) - int(s / 2), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
+                            # fourth position
+                            if arm_pos % 4 == 3:
 
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2, y2 - int(s / 2)), s / 4)
 
-                        # fourth position
-                        if arm_pos % 4 == 3:
+                                for z in range(5):
 
+                                    x1 = x0-size/2 - size
+                                    y1 = y0+size/2
 
-                            for z in range(5):
+                                    if z == 1:
+                                        x1 = x1
+                                        y1 = y1-size
+                                    elif z == 2:
+                                        x1 = x1 + size
+                                        y1 = y1 - size
+                                    elif z == 3:
+                                        x1 = x1 + size*2
+                                        y1 = y1 - size
+                                    elif z == 4:
+                                        x1 = x1 + size*2
+                                        y1 = y1
 
-                                x1 = x0-size/2 - size
-                                y1 = y0+size/2
+                                    # print(z)
+                                    # print(x1,y1)
 
-                                if z == 1:
-                                    x1 = x1
-                                    y1 = y1-size
-                                elif z == 2:
-                                    x1 = x1 + size
-                                    y1 = y1 - size
-                                elif z == 3:
-                                    x1 = x1 + size*2
-                                    y1 = y1 - size
-                                elif z == 4:
-                                    x1 = x1 + size*2
-                                    y1 = y1
+                                    finger_sign = pygame.Rect(x1, y1, size*finger_scales_l[z], size*finger_scales_l[z])
+                                    pygame.draw.rect(WIN, value_color[8 - int(bin_value_l[z])], finger_sign)
 
-                                # print(z)
-                                # print(x1,y1)
+                                x2 = x2 - size - size
+                                y2 = y2 + size*3
 
-                                finger_sign = pygame.Rect(x1, y1, size, size)
-                                pygame.draw.rect(WIN, value_color[8 - int(bin_value[z])], finger_sign)
+                                # arm
+                                pygame.draw.line(WIN, value_color[7], (x2 + s, y2 + int(s / 16)), (x2 + s, y2 - s), int(s / 8))
+                                pygame.draw.line(WIN, value_color[7], (x2 + s, y2), (x2 + s*2, y2), int(s / 8))
 
-                            x2 = x2 - size - size
-                            y2 = y2 + size*3
+                                # hand
+                                if arm_pos % 16 < 8:
+                                    pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2 - s), s / 4)
+                                else:
+                                    guide_b = pygame.Rect(x2 + s - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
+                                    pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
 
-                            # arm
-                            pygame.draw.line(WIN, value_color[7], (x2 + s, y2 + int(s / 16)), (x2 + s, y2 - s), int(s / 8))
-                            pygame.draw.line(WIN, value_color[7], (x2 + s, y2), (x2 + s*2, y2), int(s / 8))
+                                # shoulder
+                                if arm_pos > 15:
+                                    pygame.draw.circle(WIN, value_color[7], (x2 + s*2, y2), s / 4)
 
-                            # hand
-                            if arm_pos % 16 < 8:
-                                pygame.draw.circle(WIN, value_color[int(arm_pos % 8 / 4) + 7], (x2 + s, y2 - s), s / 4)
-                            else:
-                                guide_b = pygame.Rect(x2 + s - int(s / 4), y2 - s - int(s / 4), s / 2, s / 2)
-                                pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
 
-                            # elbow
-                            if arm_pos > 15:
-                                pygame.draw.circle(WIN, value_color[7], (x2, y2), s / 4)
+                        x0 -= space * .85
 
-                    left_arm(x2, y3)
+                        left_arm(x2, y3)
 
+                        x0 += space * .3
 
 
+                        y4 = height_2 - height_8 + step % step_lim * space - space * 2.3
 
-                    y4 = height_2 + step % step_lim * space
+                        if place > line_lim-1:
+                            y4 = height_2 + height_8 + step % step_lim * space - space * 3.05
 
+                        if place > (line_lim*2)-2:
+                            y4 = height_2 + height_4 + step % step_lim * space - space * 2.1
 
+                        if place > (line_lim*3)-3:
+                            y4 = height_2 + height_4 + height_8 + step % step_lim * space - space * 1.2
 
-                    kickroglyph(arm_pos, s, x0, y4)
+
+                        kickroglyph(arm_pos, s, x0, y4)
+
+
 
 
 
@@ -1549,4 +1669,5 @@ def Chaos_Window():
 
 
 Chaos_Window()
+
 
