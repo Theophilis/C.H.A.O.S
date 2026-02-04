@@ -383,7 +383,7 @@ pygame.camera.init()
 
 
 
-signame = "Chal"
+signame = "Chaotomata"
 
 
 
