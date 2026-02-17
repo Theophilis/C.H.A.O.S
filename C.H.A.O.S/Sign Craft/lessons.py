@@ -2179,7 +2179,7 @@ def Chaos_Window():
         sign_bank = pickle.load(infile)
         infile.close()
 
-        print("loading" + name)
+        print("loading: " + name)
 
 
     except:
@@ -2481,7 +2481,7 @@ def Chaos_Window():
 
         #bodyglyph
         if guide == 7:
-            print(phrase)
+            # print(phrase)
 
 
             len_phrase = len(phrase)
@@ -2492,11 +2492,14 @@ def Chaos_Window():
             #size 28 17 glyphs  476
             #size 56 1 glyph    56
 
+            # inside guide==7
+            target_cols = 16  # how many glyphs across you want
+            size_space_target = WIDTH / target_cols
+            size = max(8, int(size_space_target / 8))  # rough conversion; tune
 
 
-
-            glyph_count = len_chunks  # if chunk_data is already built
-            size = 14 + size_mod
+            # glyph_count = len_chunks  # if chunk_data is already built
+            # size = 10 + size_mod
 
 
 
@@ -2741,10 +2744,10 @@ def Chaos_Window():
 
                         bin_value_l = bin_value[::-1]
                         bin_value_r = bin_value[::]
-
-                        print(arm_pos)
-                        if arm_pos > 32:
-                            print('here')
+                        # print()
+                        # print(arm_pos)
+                        # if arm_pos > 32:
+                        #     print('here')
 
                         def right_arm(x2, y2):
 
@@ -2792,7 +2795,7 @@ def Chaos_Window():
                                     guide_b = pygame.Rect(x2 + s - int(s / 4), y2 - int(s / 4), s / 2, s / 2)
                                     pygame.draw.rect(WIN, value_color[int(arm_pos % 8 / 4) + 7], guide_b)
                                 elif arm_pos < 48:
-                                    print('triangle')
+                                    # print('triangle')
                                     # triangle in the same area as the old guide_b rect:
                                     # box top-left = (x2 + s - s/4, y2 - s/4), box size = s/2
                                     bx = x2 + s - int(s / 4)
