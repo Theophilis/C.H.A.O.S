@@ -539,6 +539,8 @@ def Chaos_Window():
 
     while run == 1:
 
+        click = False
+
         WIN.fill((0, 0, 0))
         mx, my = pygame.mouse.get_pos()
         time_0 = round(time.time() - clock[0], 3)

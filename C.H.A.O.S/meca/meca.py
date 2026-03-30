@@ -7,6 +7,10 @@ import pickle
 import time
 import os
 from datetime import datetime
+import pyautogui
+
+pyautogui.FAILSAFE = False
+pyautogui.PAUSE = 0.02
 
 # Get the directory where this script is located
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -4794,7 +4798,8 @@ if glyphs == 1:
 
 
 
-
+last_letter_typed = ' '
+current_voted_letter = ' '
 
 
 
@@ -5758,265 +5763,295 @@ while running:
     letter_0, code_00 = handle(hands_0, code_00)
     letter_1, code_01 = handle(hands_1, code_01)
 
-
+    typing_mode = 0
 
     ###typing###
-    if phrase != '':
+    if typing_mode == 0 or typing_mode == 2:
 
-        goal_bin = base_x(digibet[phrase[phrase_pos]], 2)
-        if len(goal_bin) < gb_len:
-            zeros = ''
-            for x in range(5-len(goal_bin)):
-                zeros += '0'
-            goal_bin = zeros + goal_bin
-        # print(goal_bin)
+        if phrase != '':
 
-        if phrase != phrase_past:
+            goal_bin = base_x(digibet[phrase[phrase_pos]], 2)
+            if len(goal_bin) < gb_len:
+                zeros = ''
+                for x in range(5-len(goal_bin)):
+                    zeros += '0'
+                goal_bin = zeros + goal_bin
+            # print(goal_bin)
 
-            rainbow_array = np.zeros((h, l), dtype=int)
+            if phrase != phrase_past:
+
+                rainbow_array = np.zeros((h, l), dtype=int)
 
 
-            tts[0] = time.time()
-            score = 1
+                tts[0] = time.time()
+                score = 1
 
-            if phrase not in sign_bank:
-                sign_bank[phrase] = (score, rv, [])
+                if phrase not in sign_bank:
+                    sign_bank[phrase] = (score, rv, [])
 
-                score, rv, times = sign_bank[phrase]
-            else:
-
-                try:
-                    score, rv , times = sign_bank[phrase]
-                except:
+                    score, rv, times = sign_bank[phrase]
+                else:
 
                     try:
-                        score, rv = sign_bank[phrase]
-                        times = []
-
+                        score, rv , times = sign_bank[phrase]
                     except:
 
-                        score = sign_bank[phrase]
-                        rv = rv
-                        times = []
+                        try:
+                            score, rv = sign_bank[phrase]
+                            times = []
+
+                        except:
+
+                            score = sign_bank[phrase]
+                            rv = rv
+                            times = []
 
 
 
 
-            # print(phrase, sign_bank[phrase])
+                # print(phrase, sign_bank[phrase])
 
-            phrase_past = phrase[::]
+                phrase_past = phrase[::]
 
-            filename = os.path.join(SCRIPT_DIR, 'sign_bank', signame)
-            outfile = open(filename, 'wb')
-            pickle.dump(sign_bank, outfile)
-            outfile.close()
-
-
-        if letter != last_typed:
-            bong = 1
-            submit(letter)
-            last_typed = letter
+                filename = os.path.join(SCRIPT_DIR, 'sign_bank', signame)
+                outfile = open(filename, 'wb')
+                pickle.dump(sign_bank, outfile)
+                outfile.close()
 
 
-        elif letter_0 != last_typed:
-            bong = 1
-            submit(letter_0)
-            last_typed = letter_0
+            if letter != last_typed:
+                bong = 1
+                submit(letter)
+                last_typed = letter
 
 
-        elif letter_1 != last_typed:
-            bong = 1
-            submit(letter_1)
-            last_typed = letter_1
+            elif letter_0 != last_typed:
+                bong = 1
+                submit(letter_0)
+                last_typed = letter_0
+
+
+            elif letter_1 != last_typed:
+                bong = 1
+                submit(letter_1)
+                last_typed = letter_1
 
 
 
 
-        # elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
-        #
-        #     message += phrase[phrase_pos]
-        #
-        #     if len(letter) == 2:
-        #         message += phrase[phrase_pos + 1]
-        #         phrase_pos += 1
-        #
-        #     phrase_pos += 1
-        #
-        #     if phrase_pos == 1:
-        #         tts[0] = time.time()
-        #
-        #     if phrase_pos == len(phrase):
-        #
-        #
-        #         message += ' '
-        #
-        #         score += 1
-        #         phrase_pos = 0
-        #         tts[1] = time.time()
-        #
-        #
-        #         tts_0 = round(tts[1] - tts[0], 3)
-        #         tts[0] = time.time()
-        #
-        #         times_0 = []
-        #         t_max = 99999999999999999999999999999999999999
-        #         for t in times:
-        #             if t < t_max and t > 0:
-        #                 times_0.append(round(t, 3))
-        #         times = times_0
-        #
-        #         # print()
-        #         # print(tts)
-        #         # print(tts_0)
-        #
-        #         times.append(tts_0)
-        #         times = sorted(times)
-        #
-        #         # print()
-        #         # print("times")
-        #         # print(times)
-        #
-        #
-        #
-        #         if phrase == code[len(code)-len(phrase):len(code)]:
-        #             set += 1
-        #
-        #         else:
-        #             set = int(set/2)
-        #
-        #
-        #         code = ''
-        #
-        #         sign_bank[phrase] = (score, rv, times)
-        #
-        #
-        #         filename = 'sign_bank/' + signame
-        #         outfile = open(filename, 'wb')
-        #         pickle.dump(sign_bank, outfile)
-        #         outfile.close
-        #
-        #
-        #
-        #
-        #
-        #
-        #         if ruler == 0:
-        #             set_scale = 1
-        #             for x in range(len(phrase)):
-        #                 rv += digibet[phrase[x]]*int(set/set_scale)
-        #             rv = rv % bbv
-        #
-        #             # print("")
-        #             # print(rv)
-        #             # print(rule)
-        #             rules, rule = rule_gen(rv, base)
-        #             # print(rule)
-        #
-        #             rule = np.array(rule)
-        #
-        #         if dim == 1:
-        #             flow = np.zeros(l, dtype=int)
-        #             flow[int(l / 2)] = 1
-        #             water = np.zeros((h, l), dtype=int)
-        #             water[0] = flow
-        #
-        #         if dim == 2:
-        #             flow = np.zeros((h, l), dtype=int)
-        #             flow[int(l / 2), int(h / 2)] = 1
-        #             water = np.zeros((h, l), dtype=int)
-        #
-        # elif letter_0 == phrase[phrase_pos] or letter_0 == phrase[phrase_pos:phrase_pos+2]:
-        #
-        #     message += phrase[phrase_pos]
-        #
-        #     if len(letter_0) == 2:
-        #         message += phrase[phrase_pos + 1]
-        #         phrase_pos += 1
-        #
-        #     phrase_pos += 1
-        #
-        #     if phrase_pos == 1:
-        #         tts[0] = time.time()
-        #
-        #     if phrase_pos == len(phrase):
-        #
-        #
-        #         message += ' '
-        #
-        #         score += 1
-        #         phrase_pos = 0
-        #         tts[1] = time.time()
-        #
-        #
-        #         tts_0 = round(tts[1] - tts[0], 3)
-        #         tts[0] = time.time()
-        #
-        #         times_0 = []
-        #         t_max = 99999999999999999999999999999999999999
-        #         for t in times:
-        #             if t < t_max and t > 0:
-        #                 times_0.append(round(t, 3))
-        #         times = times_0
-        #
-        #         # print()
-        #         # print(tts)
-        #         # print(tts_0)
-        #
-        #         times.append(tts_0)
-        #         times = sorted(times)
-        #
-        #         # print()
-        #         # print("times")
-        #         # print(times)
-        #
-        #
-        #
-        #         if phrase == code[len(code)-len(phrase):len(code)]:
-        #             set += 1
-        #
-        #         else:
-        #             set = int(set/2)
-        #
-        #
-        #         code = ''
-        #
-        #         sign_bank[phrase] = (score, rv, times)
-        #
-        #
-        #         filename = 'sign_bank/' + signame
-        #         outfile = open(filename, 'wb')
-        #         pickle.dump(sign_bank, outfile)
-        #         outfile.close
-        #
-        #
-        #
-        #
-        #
-        #
-        #         if ruler == 0:
-        #             set_scale = 1
-        #             for x in range(len(phrase)):
-        #                 rv += digibet[phrase[x]]*int(set/set_scale)
-        #             rv = rv % bbv
-        #
-        #             # print("")
-        #             # print(rv)
-        #             # print(rule)
-        #             rules, rule = rule_gen(rv, base)
-        #             # print(rule)
-        #
-        #             rule = np.array(rule)
-        #
-        #         if dim == 1:
-        #             flow = np.zeros(l, dtype=int)
-        #             flow[int(l / 2)] = 1
-        #             water = np.zeros((h, l), dtype=int)
-        #             water[0] = flow
-        #
-        #         if dim == 2:
-        #             flow = np.zeros((h, l), dtype=int)
-        #             flow[int(l / 2), int(h / 2)] = 1
-        #             water = np.zeros((h, l), dtype=int)
+            # elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
+            #
+            #     message += phrase[phrase_pos]
+            #
+            #     if len(letter) == 2:
+            #         message += phrase[phrase_pos + 1]
+            #         phrase_pos += 1
+            #
+            #     phrase_pos += 1
+            #
+            #     if phrase_pos == 1:
+            #         tts[0] = time.time()
+            #
+            #     if phrase_pos == len(phrase):
+            #
+            #
+            #         message += ' '
+            #
+            #         score += 1
+            #         phrase_pos = 0
+            #         tts[1] = time.time()
+            #
+            #
+            #         tts_0 = round(tts[1] - tts[0], 3)
+            #         tts[0] = time.time()
+            #
+            #         times_0 = []
+            #         t_max = 99999999999999999999999999999999999999
+            #         for t in times:
+            #             if t < t_max and t > 0:
+            #                 times_0.append(round(t, 3))
+            #         times = times_0
+            #
+            #         # print()
+            #         # print(tts)
+            #         # print(tts_0)
+            #
+            #         times.append(tts_0)
+            #         times = sorted(times)
+            #
+            #         # print()
+            #         # print("times")
+            #         # print(times)
+            #
+            #
+            #
+            #         if phrase == code[len(code)-len(phrase):len(code)]:
+            #             set += 1
+            #
+            #         else:
+            #             set = int(set/2)
+            #
+            #
+            #         code = ''
+            #
+            #         sign_bank[phrase] = (score, rv, times)
+            #
+            #
+            #         filename = 'sign_bank/' + signame
+            #         outfile = open(filename, 'wb')
+            #         pickle.dump(sign_bank, outfile)
+            #         outfile.close
+            #
+            #
+            #
+            #
+            #
+            #
+            #         if ruler == 0:
+            #             set_scale = 1
+            #             for x in range(len(phrase)):
+            #                 rv += digibet[phrase[x]]*int(set/set_scale)
+            #             rv = rv % bbv
+            #
+            #             # print("")
+            #             # print(rv)
+            #             # print(rule)
+            #             rules, rule = rule_gen(rv, base)
+            #             # print(rule)
+            #
+            #             rule = np.array(rule)
+            #
+            #         if dim == 1:
+            #             flow = np.zeros(l, dtype=int)
+            #             flow[int(l / 2)] = 1
+            #             water = np.zeros((h, l), dtype=int)
+            #             water[0] = flow
+            #
+            #         if dim == 2:
+            #             flow = np.zeros((h, l), dtype=int)
+            #             flow[int(l / 2), int(h / 2)] = 1
+            #             water = np.zeros((h, l), dtype=int)
+            #
+            # elif letter_0 == phrase[phrase_pos] or letter_0 == phrase[phrase_pos:phrase_pos+2]:
+            #
+            #     message += phrase[phrase_pos]
+            #
+            #     if len(letter_0) == 2:
+            #         message += phrase[phrase_pos + 1]
+            #         phrase_pos += 1
+            #
+            #     phrase_pos += 1
+            #
+            #     if phrase_pos == 1:
+            #         tts[0] = time.time()
+            #
+            #     if phrase_pos == len(phrase):
+            #
+            #
+            #         message += ' '
+            #
+            #         score += 1
+            #         phrase_pos = 0
+            #         tts[1] = time.time()
+            #
+            #
+            #         tts_0 = round(tts[1] - tts[0], 3)
+            #         tts[0] = time.time()
+            #
+            #         times_0 = []
+            #         t_max = 99999999999999999999999999999999999999
+            #         for t in times:
+            #             if t < t_max and t > 0:
+            #                 times_0.append(round(t, 3))
+            #         times = times_0
+            #
+            #         # print()
+            #         # print(tts)
+            #         # print(tts_0)
+            #
+            #         times.append(tts_0)
+            #         times = sorted(times)
+            #
+            #         # print()
+            #         # print("times")
+            #         # print(times)
+            #
+            #
+            #
+            #         if phrase == code[len(code)-len(phrase):len(code)]:
+            #             set += 1
+            #
+            #         else:
+            #             set = int(set/2)
+            #
+            #
+            #         code = ''
+            #
+            #         sign_bank[phrase] = (score, rv, times)
+            #
+            #
+            #         filename = 'sign_bank/' + signame
+            #         outfile = open(filename, 'wb')
+            #         pickle.dump(sign_bank, outfile)
+            #         outfile.close
+            #
+            #
+            #
+            #
+            #
+            #
+            #         if ruler == 0:
+            #             set_scale = 1
+            #             for x in range(len(phrase)):
+            #                 rv += digibet[phrase[x]]*int(set/set_scale)
+            #             rv = rv % bbv
+            #
+            #             # print("")
+            #             # print(rv)
+            #             # print(rule)
+            #             rules, rule = rule_gen(rv, base)
+            #             # print(rule)
+            #
+            #             rule = np.array(rule)
+            #
+            #         if dim == 1:
+            #             flow = np.zeros(l, dtype=int)
+            #             flow[int(l / 2)] = 1
+            #             water = np.zeros((h, l), dtype=int)
+            #             water[0] = flow
+            #
+            #         if dim == 2:
+            #             flow = np.zeros((h, l), dtype=int)
+            #             flow[int(l / 2), int(h / 2)] = 1
+            #             water = np.zeros((h, l), dtype=int)
+
+
+    if typing_mode == 1 or typing_mode == 2:
+
+        def send_sign_to_keyboard(sign):
+
+            try:
+                pyautogui.write(sign)
+                print("SENT TO KEYBOARD:", sign)
+            except Exception as e:
+                print("pyautogui error:", e)
+
+
+
+
+        if letter == letter_0:
+            if letter_0 == letter_1:
+                if letter != last_letter_typed:
+                    last_letter_typed = letter
+
+
+                    if letter == '':
+                        letter = ' '
+
+                    send_sign_to_keyboard(letter)
+
+
+
 
 
 

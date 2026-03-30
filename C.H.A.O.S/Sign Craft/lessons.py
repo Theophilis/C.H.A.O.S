@@ -2133,9 +2133,7 @@ def Chaos_Window():
 
     name = "Theophilis Chaotomata"
 
-    phrase = ('i am the one who lik es all the pr et ty son gs and i lov es to si ng al ong and i lov es to si gn for fu n '
-              'but i kno ws not wh at i me ans wh en i say ye ah yea h '
-              'ce ll the keys for good we at her ch ang es foo ds sp ri ng is he re ag ain re pro du ct ive gla nds')
+    phrase = ('god bless you jesus christ')
 
     # phrase = ('est eir ess eat ead eop lis eca ese end eli ell rem efo eas een eac omm esu eth ene eig eep eav evi oes elf eph ect eal emp eet')
 
@@ -2691,12 +2689,26 @@ def Chaos_Window():
 
 
                             if word_chunk[x][y] in armbet[word[:2]]:
-                                arm_pos = armbet[word_key].index(word_chunk[x][y])
+                                arm_pos = armbet[word[:2]].index(word_chunk[x][y])
 
                                 if arm_pos > 48:
 
                                     word_key = word[:2]
 
+
+                        word_key = word[0]
+                        arm_pos = 0
+
+                        # Prefer a digibet bigram like th/an/er/ou/in when the current chunk belongs to it
+                        if len(word) >= 2 and word[:2] in digibet and word[:2] in armbet:
+                            if word in armbet[word[:2]]:
+                                word_key = word[:2]
+                                arm_pos = armbet[word[:2]].index(word)
+
+                        # Otherwise fall back to single-letter key
+                        if arm_pos == 0 and word_key in armbet:
+                            if word in armbet[word_key]:
+                                arm_pos = armbet[word_key].index(word)
 
 
                         # inside guide==7, after you compute size
