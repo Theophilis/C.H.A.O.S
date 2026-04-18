@@ -650,7 +650,7 @@ flow_state = 12
 
 print(rule)
 
-l = 550
+l = 500
 h = l
 lh = l * h
 pos_x = int(screen_width / 2) - int(l / 2)
@@ -3404,7 +3404,7 @@ flex_p = 32
 
 ####right hand####
 xr_pos = (x_s + x_g) * 3
-yr_pos = 500
+yr_pos = 400
 palm_xr = xr_pos + x_s * 6
 palm_yr = yr_pos + y_s * 9
 
@@ -3477,7 +3477,7 @@ right_hands = []
 
 ###left hand###
 xl_pos = screen_width - (x_s + x_g) * 10
-yl_pos = 500
+yl_pos = 400
 palm_xl = xl_pos + x_s * 6
 palm_yl = yl_pos + y_s * 9
 
@@ -4803,6 +4803,2033 @@ current_voted_letter = ' '
 
 
 
+
+
+### hand sensor####
+
+hand_sensor = 1
+
+
+
+if hand_sensor == 1:
+
+    hand_box_pad = 48
+
+    right_box = None
+    right_open_hand_mask = None
+    right_open_hand_frame = None
+
+    edge_library = {}
+    current_edge_label = "a"
+    recognized_edge_label = " "
+    recognized_edge_score = 999.0
+
+    right_exclusion_edge_mask = None
+    right_exclusion_threshold = 0.03
+
+    right_change_speed = None
+    right_cluster_count = 0
+
+    right_shadow_mask = None
+
+    tracked_squares = {
+        "pinky": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "ring": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "middle": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "index": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "thumb": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+    }
+
+    left_box = None
+    left_open_hand_mask = None
+    left_open_hand_frame = None
+
+    left_exclusion_edge_mask = None
+    left_exclusion_threshold = 0.03
+
+    left_change_speed = None
+    left_cluster_count = 0
+
+    left_shadow_mask = None
+
+    tracked_squares_left = {
+        "pinky": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "ring": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "middle": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "index": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+        "thumb": {"color": None, "point": None, "strength": 0.0, "misses": 0},
+    }
+
+
+
+
+    def update_shadow_mask(current_mask, shadow_mask=None, rise=1.0, decay=0.92):
+        """
+        current_mask: (H,W) float/bool mask of current fast clusters
+        shadow_mask: persistent fading memory in [0,1]
+
+        rise:
+            how strongly current pixels refresh the shadow
+        decay:
+            how long old pixels remain visible
+        """
+        if current_mask is None:
+            return shadow_mask
+
+        cur = current_mask.astype(np.float32)
+
+        if shadow_mask is None or shadow_mask.shape != cur.shape:
+            shadow_mask = np.zeros_like(cur, dtype=np.float32)
+
+        shadow_mask = np.maximum(shadow_mask * decay, cur * rise)
+        shadow_mask = np.clip(shadow_mask, 0.0, 1.0)
+
+        return shadow_mask
+
+
+    def draw_shadow_mask_on_field(screen, shadow_mask, box,
+                                  live_mask=None,
+                                  shadow_threshold=0.08,
+                                  live_threshold=0.5):
+        """
+        Draw only the fading shadow.
+        Live pixels are omitted here so they can be drawn separately if desired.
+        """
+        if shadow_mask is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+        mh, mw = shadow_mask.shape
+
+        if w <= 0 or h <= 0:
+            return
+
+        sx = w / float(mw)
+        sy = h / float(mh)
+
+        if live_mask is None or live_mask.shape != shadow_mask.shape:
+            live_mask = np.zeros_like(shadow_mask, dtype=np.float32)
+
+        ys, xs = np.where(shadow_mask >= shadow_threshold)
+        for yy, xx in zip(ys, xs):
+            if live_mask[yy, xx] >= live_threshold:
+                continue
+
+            v = float(shadow_mask[yy, xx])
+            g = int(max(40, min(180, 180 * v)))   # soft grey shadow
+
+            px = x1 + int(xx * sx)
+            py = y1 + int(yy * sy)
+            if 0 <= px < screen_width and 0 <= py < screen_height:
+                screen.set_at((px, py), (g, g, g))
+
+    def build_exclusionary_edge_mask(current_edge_mask, exclusion_edge_mask, keep_threshold=0.02):
+        """
+        Remove edges that were already present during calibration.
+        Keeps only edges that are sufficiently stronger/different than exclusion edges.
+        """
+        if current_edge_mask is None:
+            return None
+
+        if exclusion_edge_mask is None:
+            return (current_edge_mask >= keep_threshold).astype(np.float32)
+
+        if current_edge_mask.shape != exclusion_edge_mask.shape:
+            return (current_edge_mask >= keep_threshold).astype(np.float32)
+
+        # subtract old/background edges
+        diff = current_edge_mask - exclusion_edge_mask
+        diff = np.clip(diff, 0.0, 1.0)
+
+        return (diff >= keep_threshold).astype(np.float32)
+
+
+    def threshold_edge_mask(edge_mask, threshold=0.03):
+        if edge_mask is None:
+            return None
+        return (edge_mask >= threshold).astype(np.float32)
+
+
+    def resize_binary_image(img, out_size=(64, 64)):
+        if img is None:
+            return None
+
+        h, w = img.shape
+        out_h, out_w = out_size
+
+        ys = np.linspace(0, h - 1, out_h).astype(int)
+        xs = np.linspace(0, w - 1, out_w).astype(int)
+
+        return img[np.ix_(ys, xs)].astype(np.float32)
+
+
+    def prepare_edge_template(field, edge_threshold=0.03, out_size=(64, 64)):
+        edge_mask = build_hand_sensor(field)
+        if edge_mask is None:
+            return None
+
+        binary = threshold_edge_mask(edge_mask, threshold=edge_threshold)
+        templ = resize_binary_image(binary, out_size=out_size)
+        return templ
+
+
+    def edge_template_distance(a, b):
+        if a is None or b is None:
+            return 999.0
+        if a.shape != b.shape:
+            return 999.0
+
+        # mean absolute difference
+        return float(np.mean(np.abs(a - b)))
+
+
+    def save_edge_template(template):
+        global edge_library, phrase
+
+        if template is None:
+            print("no edge template to save")
+            return
+
+        if phrase == '':
+            print("phrase is empty")
+            return
+
+        if phrase not in edge_library:
+            edge_library[phrase] = []
+
+        edge_library[phrase].append(template.copy())
+
+        print("saved edge label:", phrase)
+        print("templates for label:", len(edge_library[phrase]))
+        print("template shape:", template.shape)
+
+
+    def recognize_edge_template(template, library, threshold=0.18):
+        if template is None:
+            return " ", 999.0
+
+        best_label = " "
+        best_score = 999.0
+
+        for label, templates in library.items():
+            for templ in templates:
+                score = edge_template_distance(template, templ)
+                if score < best_score:
+                    best_score = score
+                    best_label = label
+
+        if best_score > threshold:
+            return " ", best_score
+
+        return best_label, best_score
+
+
+
+    def outline_hand_window(screen, rois, color, pad=40, width=3):
+        xs = [r[0] for r in rois] + [r[2] for r in rois]
+        ys = [r[1] for r in rois] + [r[3] for r in rois]
+
+        x1 = max(0, min(xs) - pad)
+        y1 = max(0, min(ys) - pad)
+        x2 = min(screen_width, max(xs) + pad)
+        y2 = min(screen_height, max(ys) + pad)
+
+        pygame.draw.rect(
+            screen,
+            color,
+            pygame.Rect(x1, y1, x2 - x1, y2 - y1),
+            width
+        )
+
+        return (x1, y1, x2, y2)
+
+
+    def mean_color(region):
+        if region is None or region.size == 0:
+            return None
+        return region.reshape(-1, 3).mean(axis=0)
+
+
+    def sample_hand_color(frame_array, rois):
+        px1, py1, px2, py2 = rois[-1]
+        palm_region = frame_array[px1:px2, py1:py2]
+        return mean_color(palm_region)
+
+
+    def hand_color_mask(field, target_color, color_threshold=60, brightness_threshold=90):
+        if field is None or field.size == 0 or target_color is None:
+            return None
+
+        field_f = field.astype(np.float32)
+        target = np.array(target_color, dtype=np.float32)
+
+        diff = field_f - target
+        dist = np.sqrt(np.sum(diff * diff, axis=2))
+
+        field_brightness = field_f.mean(axis=2)
+        target_brightness = target.mean()
+        brightness_diff = np.abs(field_brightness - target_brightness)
+
+        mask = (dist <= color_threshold) | (
+            (dist <= color_threshold * 1.5) & (brightness_diff <= brightness_threshold)
+        )
+
+        return mask.astype(np.float32)
+
+
+    def largest_connected_blob(mask):
+        if mask is None:
+            return None
+
+        mask = mask > 0.5
+        h, w = mask.shape
+        visited = np.zeros((h, w), dtype=bool)
+
+        best_coords = []
+        best_size = 0
+
+        for y in range(h):
+            for x in range(w):
+                if not mask[y, x] or visited[y, x]:
+                    continue
+
+                stack = [(y, x)]
+                visited[y, x] = True
+                coords = []
+
+                while stack:
+                    cy, cx = stack.pop()
+                    coords.append((cy, cx))
+
+                    for ny, nx in ((cy - 1, cx), (cy + 1, cx), (cy, cx - 1), (cy, cx + 1)):
+                        if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not visited[ny, nx]:
+                            visited[ny, nx] = True
+                            stack.append((ny, nx))
+
+                if len(coords) > best_size:
+                    best_size = len(coords)
+                    best_coords = coords
+
+        out = np.zeros((h, w), dtype=np.float32)
+        for y, x in best_coords:
+            out[y, x] = 1.0
+
+        return out
+
+
+    def capture_open_hand_mask(frame_array, rois, pad=60, color_threshold=60, brightness_threshold=90):
+        xs = [r[0] for r in rois] + [r[2] for r in rois]
+        ys = [r[1] for r in rois] + [r[3] for r in rois]
+
+        x1 = max(0, min(xs) - pad)
+        y1 = max(0, min(ys) - pad)
+        x2 = min(screen_width, max(xs) + pad)
+        y2 = min(screen_height, max(ys) + pad)
+
+        field = frame_array[x1:x2, y1:y2].copy()
+        target_color = sample_hand_color(frame_array, rois)
+
+        raw_mask = hand_color_mask(
+            field,
+            target_color,
+            color_threshold=color_threshold,
+            brightness_threshold=brightness_threshold
+        )
+        if raw_mask is None:
+            return None, (x1, y1, x2, y2)
+
+        raw_mask = raw_mask.T
+        blob = largest_connected_blob(raw_mask)
+
+        return blob, (x1, y1, x2, y2)
+
+
+    def capture_frame_from_fixed_box(frame_array, box):
+        if box is None:
+            return None
+
+        x1, y1, x2, y2 = box
+        return frame_array[x1:x2, y1:y2].copy()
+
+
+    def draw_sensor_field(screen, sensor_rgb, pos):
+        if sensor_rgb is None:
+            return
+
+        surf = pygame.surfarray.make_surface(np.transpose(sensor_rgb, (1, 0, 2)))
+        screen.blit(surf, pos)
+
+
+    x1, y1, x2, y2 = outline_hand_window(
+        screen,
+        right_roi,
+        value_color[9],
+        pad=hand_box_pad,
+        width=3
+    )
+
+
+
+
+    def connected_components_with_stats(mask, field):
+        """
+        mask: (H,W) bool/float
+        field: (W,H,3) raw crop
+        returns list of dicts with:
+          mask, size, bbox, mean_color
+        """
+        if mask is None:
+            return []
+
+        mask = mask > 0.5
+        h, w = mask.shape
+        visited = np.zeros((h, w), dtype=bool)
+
+        # convert field to (H,W,3) to match mask coordinates
+        img = np.transpose(field, (1, 0, 2)).astype(np.float32)
+
+        comps = []
+
+        for y in range(h):
+            for x in range(w):
+                if not mask[y, x] or visited[y, x]:
+                    continue
+
+                stack = [(y, x)]
+                visited[y, x] = True
+                coords = []
+
+                while stack:
+                    cy, cx = stack.pop()
+                    coords.append((cy, cx))
+
+                    for ny, nx in (
+                        (cy - 1, cx), (cy + 1, cx),
+                        (cy, cx - 1), (cy, cx + 1),
+                        (cy - 1, cx - 1), (cy - 1, cx + 1),
+                        (cy + 1, cx - 1), (cy + 1, cx + 1),
+                    ):
+                        if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not visited[ny, nx]:
+                            visited[ny, nx] = True
+                            stack.append((ny, nx))
+
+                comp_mask = np.zeros((h, w), dtype=np.float32)
+                ys = []
+                xs = []
+                pixels = []
+
+                for cy, cx in coords:
+                    comp_mask[cy, cx] = 1.0
+                    ys.append(cy)
+                    xs.append(cx)
+                    pixels.append(img[cy, cx])
+
+                pixels = np.array(pixels, dtype=np.float32)
+                mean_color = pixels.mean(axis=0) if len(pixels) > 0 else np.array([0, 0, 0], dtype=np.float32)
+
+                comps.append({
+                    "mask": comp_mask,
+                    "size": len(coords),
+                    "bbox": (min(xs), min(ys), max(xs) + 1, max(ys) + 1),
+                    "mean_color": mean_color,
+                })
+
+        return comps
+
+
+    def merge_largest_with_similar_neighbors(mask, field, color_threshold=50, gap_threshold=14, min_size_ratio=0.008):
+        """
+        Keep the largest blob, plus nearby blobs whose color is similar.
+        mask: (H,W)
+        field: (W,H,3)
+        """
+        comps = connected_components_with_stats(mask, field)
+        if not comps:
+            return None
+
+        comps = sorted(comps, key=lambda c: c["size"], reverse=True)
+        main = comps[0]
+
+        main_size = main["size"]
+        main_color = main["mean_color"]
+        merged = main["mask"].copy()
+
+        mx1, my1, mx2, my2 = main["bbox"]
+
+        for comp in comps[1:]:
+            if comp["size"] < max(4, int(main_size * min_size_ratio)):
+                continue
+
+            cx1, cy1, cx2, cy2 = comp["bbox"]
+
+            dx = max(0, max(mx1 - cx2, cx1 - mx2))
+            dy = max(0, max(my1 - cy2, cy1 - my2))
+            gap = (dx * dx + dy * dy) ** 0.5
+
+            color_dist = np.linalg.norm(comp["mean_color"] - main_color)
+
+            if gap <= gap_threshold and color_dist <= color_threshold:
+                merged = np.maximum(merged, comp["mask"])
+
+        return merged.astype(np.float32)
+
+
+    def build_hand_sensor(field):
+        """
+        field: raw hand crop in (W,H,3)
+
+        returns:
+            edge_mask: (H,W) float32 in [0,1]
+        """
+        if field is None or field.size == 0:
+            return None
+
+        img = np.transpose(field, (1, 0, 2)).astype(np.float32)  # (H,W,3)
+
+        gray = (
+            0.299 * img[:, :, 0] +
+            0.587 * img[:, :, 1] +
+            0.114 * img[:, :, 2]
+        )
+
+        gx = np.zeros_like(gray, dtype=np.float32)
+        gy = np.zeros_like(gray, dtype=np.float32)
+
+        gx[:, 1:] = np.abs(gray[:, 1:] - gray[:, :-1])
+        gy[1:, :] = np.abs(gray[1:, :] - gray[:-1, :])
+
+        edge = np.sqrt(gx * gx + gy * gy)
+
+        emax = edge.max()
+        if emax > 1e-6:
+            edge_mask = edge / emax
+        else:
+            edge_mask = np.zeros_like(edge, dtype=np.float32)
+
+        return edge_mask
+
+
+
+
+
+
+    def overlay_edge_sensor_on_field(screen, sensor_rgb, box, alpha=0.65):
+        """
+        Draw edge sensor directly on top of the hand detector field.
+        box = (x1, y1, x2, y2) in screen coordinates
+        sensor_rgb should be (H,W,3)
+        """
+        if sensor_rgb is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+
+        if w <= 0 or h <= 0:
+            return
+
+        surf = pygame.surfarray.make_surface(np.transpose(sensor_rgb, (1, 0, 2)))
+        surf = pygame.transform.scale(surf, (w, h))
+        surf.set_alpha(int(alpha * 255))
+        screen.blit(surf, (x1, y1))
+
+
+    def draw_edge_overlay_on_field(screen, edge_mask, box, threshold=0.22, edge_color=(140, 140, 140)):
+        """
+        Draw only the strong edges in grey over the live camera hand field.
+        """
+        if edge_mask is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+
+        if w <= 0 or h <= 0:
+            return
+
+        edge_on = edge_mask >= threshold
+        eh, ew = edge_on.shape
+
+        # map edge mask coordinates to screen box coordinates
+        sx = w / float(ew)
+        sy = h / float(eh)
+
+        for yy in range(eh):
+            for xx in range(ew):
+                if edge_on[yy, xx]:
+                    px = x1 + int(xx * sx)
+                    py = y1 + int(yy * sy)
+                    if 0 <= px < screen_width and 0 <= py < screen_height:
+                        screen.set_at((px, py), edge_color)
+
+
+    def dilate_mask(mask, radius=2):
+        if mask is None:
+            return None
+
+        out = mask.copy().astype(bool)
+
+        for _ in range(radius):
+            up = np.roll(out, -1, axis=0)
+            down = np.roll(out, 1, axis=0)
+            left = np.roll(out, -1, axis=1)
+            right = np.roll(out, 1, axis=1)
+
+            ul = np.roll(up, -1, axis=1)
+            ur = np.roll(up, 1, axis=1)
+            dl = np.roll(down, -1, axis=1)
+            dr = np.roll(down, 1, axis=1)
+
+            out = out | up | down | left | right | ul | ur | dl | dr
+
+        return out.astype(np.float32)
+
+
+
+    def build_calibrated_hand_region():
+        global right_open_hand_mask
+
+        if right_open_hand_mask is None:
+            return None
+
+        return dilate_mask(right_open_hand_mask, radius=4)
+
+
+
+
+    def clean_edge_mask(edge_mask, hand_region, edge_threshold=0.02):
+        """
+        Keep only strong edges inside the calibrated hand region.
+        """
+        if edge_mask is None:
+            return None
+
+        edges_on = (edge_mask >= edge_threshold).astype(np.float32)
+
+        if hand_region is None:
+            return edges_on
+
+        if hand_region.shape != edge_mask.shape:
+            return edges_on
+
+        cleaned = edges_on * (hand_region > 0.5)
+        return cleaned.astype(np.float32)
+
+
+
+
+    edge_library = {}
+    current_edge_label = phrase
+
+
+    def save_edge_mask(label, edge_mask):
+        global edge_library
+
+        if edge_mask is None:
+            print("no edge mask to save")
+            return
+
+        if label not in edge_library:
+            edge_library[label] = []
+
+        edge_library[label].append(edge_mask.copy())
+
+        print("saved edge label:", label)
+        print("templates for label:", len(edge_library[label]))
+        print("edge mask shape:", edge_mask.shape)
+
+
+    def build_hand_isolation_mask(field, rois,
+                                  color_threshold=70,
+                                  brightness_threshold=110,
+                                  gap_threshold=18,
+                                  min_size_ratio=0.004,
+                                  dilate_radius=4):
+        """
+        Build a forgiving hand-region mask in (H,W).
+        Keeps likely hand area without throwing away finger detail too early.
+        """
+        if field is None or field.size == 0:
+            return None
+
+        target_color = sample_hand_color(hand_array, rois)
+
+        raw_mask = hand_color_mask(
+            field,
+            target_color,
+            color_threshold=color_threshold,
+            brightness_threshold=brightness_threshold
+        )
+        if raw_mask is None:
+            return None
+
+        # (W,H) -> (H,W)
+        mask = raw_mask.T
+
+        # merge nearby similar components instead of strict single blob
+        mask = merge_largest_with_similar_neighbors(
+            mask,
+            field,
+            color_threshold=55,
+            gap_threshold=gap_threshold,
+            min_size_ratio=min_size_ratio
+        )
+        if mask is None:
+            return None
+
+        # expand slightly so thin finger edges are not clipped
+        mask = dilate_mask(mask, radius=dilate_radius)
+
+        return mask.astype(np.float32)
+
+
+
+
+
+
+
+
+
+
+
+    def skin_closeness_map(field, target_color, brightness_threshold=110):
+        """
+        field: (W,H,3)
+        target_color: sampled palm mean RGB
+        returns closeness map in (H,W), values in [0,1]
+        """
+        if field is None or field.size == 0 or target_color is None:
+            return None
+
+        field_f = field.astype(np.float32)
+        target = np.array(target_color, dtype=np.float32)
+
+        diff = field_f - target
+        dist = np.sqrt(np.sum(diff * diff, axis=2))
+
+        field_brightness = field_f.mean(axis=2)
+        target_brightness = target.mean()
+        brightness_diff = np.abs(field_brightness - target_brightness)
+
+        # convert to closeness instead of hard threshold
+        color_score = 1.0 - np.clip(dist / 120.0, 0.0, 1.0)
+        bright_score = 1.0 - np.clip(brightness_diff / float(brightness_threshold), 0.0, 1.0)
+
+        closeness = color_score * 0.75 + bright_score * 0.25
+
+        # transpose to (H,W) to match edge_mask
+        return closeness.T.astype(np.float32)
+
+
+
+
+    def heat_color(score):
+        """
+        score in [0,1]
+        low -> blue
+        mid -> green
+        high -> yellow/red
+        """
+        s = float(np.clip(score, 0.0, 1.0))
+
+        if s < 0.33:
+            t = s / 0.33
+            r = 0
+            g = int(255 * t)
+            b = int(255 * (1.0 - t))
+        elif s < 0.66:
+            t = (s - 0.33) / 0.33
+            r = int(255 * t)
+            g = 255
+            b = 0
+        else:
+            t = (s - 0.66) / 0.34
+            r = 255
+            g = int(255 * (1.0 - t))
+            b = 0
+
+        return (r, g, b)
+
+
+    def draw_edge_heat_overlay_on_field(screen, edge_mask, closeness_map, box, threshold=0.5):
+        """
+        Draw edge pixels colored by skin closeness heat.
+        edge_mask, closeness_map are (H,W)
+        """
+        if edge_mask is None or closeness_map is None or box is None:
+            return
+
+        if edge_mask.shape != closeness_map.shape:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+
+        if w <= 0 or h <= 0:
+            return
+
+        edge_on = edge_mask >= threshold
+        eh, ew = edge_on.shape
+
+        sx = w / float(ew)
+        sy = h / float(eh)
+
+        for yy in range(eh):
+            for xx in range(ew):
+                if edge_on[yy, xx]:
+                    px = x1 + int(xx * sx)
+                    py = y1 + int(yy * sy)
+                    if 0 <= px < screen_width and 0 <= py < screen_height:
+                        score = closeness_map[yy, xx]
+                        screen.set_at((px, py), heat_color(score))
+
+
+
+    def get_top_seed_points(mask, min_gap=6):
+        """
+        Starting points from the upper silhouette of the blob.
+        """
+        if mask is None:
+            return []
+
+        m = mask > 0.5
+        h, w = m.shape
+
+        seeds = []
+        last_x = -999
+
+        for x in range(w):
+            ys = np.where(m[:, x])[0]
+            if len(ys) == 0:
+                continue
+
+            y = int(ys.min())
+
+            if x - last_x >= min_gap:
+                seeds.append((x, y))
+                last_x = x
+
+        return seeds
+
+
+    def trace_downward_path(mask, start, max_steps=90, lateral=2, angle_dot_min=-0.15):
+        """
+        Follow a finger-like route downward through the blob.
+        angle_dot_min:
+            higher = straighter
+            lower = more bend allowed
+        """
+        if mask is None:
+            return []
+
+        m = mask > 0.5
+        h, w = m.shape
+        x, y = start
+
+        if not (0 <= x < w and 0 <= y < h):
+            return []
+        if not m[y, x]:
+            return []
+
+        path = [(x, y)]
+        prev_step = np.array([0.0, 1.0], dtype=np.float32)  # downward bias
+
+        for _ in range(max_steps):
+            candidates = []
+
+            for dx in range(-lateral, lateral + 1):
+                nx = x + dx
+                ny = y + 1
+
+                if 0 <= nx < w and 0 <= ny < h and m[ny, nx]:
+                    step = np.array([nx - x, ny - y], dtype=np.float32)
+                    nrm = np.linalg.norm(step)
+                    if nrm <= 1e-6:
+                        continue
+                    step = step / nrm
+
+                    dot = float(np.dot(prev_step, step))
+
+                    # allow gentle or obtuse bends, reject strong reversals
+                    if dot >= angle_dot_min:
+                        # prefer straighter and more centered continuation
+                        score = dot - 0.10 * abs(dx)
+                        candidates.append((score, nx, ny, step))
+
+            if not candidates:
+                break
+
+            candidates.sort(key=lambda t: t[0], reverse=True)
+            _, x, y, step = candidates[0]
+
+            if (x, y) in path:
+                break
+
+            path.append((x, y))
+            prev_step = step
+
+        return path
+
+
+    def path_score(path):
+        """
+        Long, downward, not-too-wobbly paths score best.
+        """
+        if not path:
+            return -999.0
+
+        xs = np.array([p[0] for p in path], dtype=np.float32)
+        ys = np.array([p[1] for p in path], dtype=np.float32)
+
+        length = float(len(path))
+        x_span = float(xs.max() - xs.min()) if len(xs) > 0 else 0.0
+        y_span = float(ys.max() - ys.min()) if len(ys) > 0 else 0.0
+
+        return length + 1.2 * y_span - 0.6 * x_span
+
+
+    def paths_overlap_too_much(p1, p2, x_tol=8):
+        if not p1 or not p2:
+            return False
+
+        c1 = np.mean([x for x, y in p1])
+        c2 = np.mean([x for x, y in p2])
+
+        return abs(c1 - c2) < x_tol
+
+
+    def find_finger_paths(mask, max_fingers=5):
+        if mask is None:
+            return []
+
+        seeds = get_top_seed_points(mask, min_gap=5)
+        candidates = []
+
+        for s in seeds:
+            p = trace_downward_path(
+                mask,
+                s,
+                max_steps=90,
+                lateral=2,
+                angle_dot_min=-0.15
+            )
+
+            if len(p) >= 10:
+                candidates.append((path_score(p), p))
+
+        candidates.sort(key=lambda t: t[0], reverse=True)
+
+        chosen = []
+        for score, p in candidates:
+            keep = True
+            for q in chosen:
+                if paths_overlap_too_much(p, q, x_tol=8):
+                    keep = False
+                    break
+            if keep:
+                chosen.append(p)
+
+            if len(chosen) >= max_fingers:
+                break
+
+        return chosen
+
+
+    def draw_paths_on_field(screen, paths, box, mask_shape, color=(255, 0, 0), width=3):
+        if not paths or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        h, w = mask_shape
+
+        sx = (x2 - x1) / float(w)
+        sy = (y2 - y1) / float(h)
+
+        for path in paths:
+            if len(path) < 2:
+                continue
+
+            pts = []
+            for px, py in path:
+                sxp = x1 + int(px * sx)
+                syp = y1 + int(py * sy)
+                pts.append((sxp, syp))
+
+            if len(pts) >= 2:
+                pygame.draw.lines(screen, color, False, pts, width)
+
+            # top endpoint
+            pygame.draw.circle(screen, (255, 255, 255), pts[0], 4)
+
+
+
+    def build_hyper_edge_mask(edge_mask, radius=6, min_balance=0.18, min_total=0.10):
+        """
+        Hyper edges:
+        an edge pixel is kept if, in a meaningful neighborhood around it,
+        one side has lots of edge activity and the other side has little.
+
+        edge_mask: (H,W) float in [0,1]
+        returns: (H,W) float mask in [0,1]
+        """
+        if edge_mask is None:
+            return None
+
+        e = edge_mask.astype(np.float32)
+        h, w = e.shape
+        out = np.zeros((h, w), dtype=np.float32)
+
+        # gradients of the edge field give a local normal direction
+        gx = np.zeros_like(e, dtype=np.float32)
+        gy = np.zeros_like(e, dtype=np.float32)
+
+        gx[:, 1:-1] = (e[:, 2:] - e[:, :-2]) * 0.5
+        gy[1:-1, :] = (e[2:, :] - e[:-2, :]) * 0.5
+
+        for y in range(radius, h - radius):
+            for x in range(radius, w - radius):
+                if e[y, x] <= 0.0:
+                    continue
+
+                nx = gx[y, x]
+                ny = gy[y, x]
+                nrm = float((nx * nx + ny * ny) ** 0.5)
+
+                if nrm < 1e-6:
+                    continue
+
+                nx /= nrm
+                ny /= nrm
+
+                pos_sum = 0.0
+                neg_sum = 0.0
+                pos_n = 0
+                neg_n = 0
+
+                for r in range(1, radius + 1):
+                    xp = int(round(x + nx * r))
+                    yp = int(round(y + ny * r))
+                    xm = int(round(x - nx * r))
+                    ym = int(round(y - ny * r))
+
+                    if 0 <= xp < w and 0 <= yp < h:
+                        pos_sum += e[yp, xp]
+                        pos_n += 1
+
+                    if 0 <= xm < w and 0 <= ym < h:
+                        neg_sum += e[ym, xm]
+                        neg_n += 1
+
+                if pos_n == 0 or neg_n == 0:
+                    continue
+
+                pos_mean = pos_sum / pos_n
+                neg_mean = neg_sum / neg_n
+                total = pos_mean + neg_mean
+                balance = abs(pos_mean - neg_mean)
+
+                if total >= min_total and balance >= min_balance:
+                    out[y, x] = min(1.0, balance / max(total, 1e-6))
+
+        return out
+
+
+    def draw_hyper_edge_overlay_on_field(screen, hyper_edge_mask, box, threshold=0.25, color=(255, 255, 255)):
+        if hyper_edge_mask is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+        eh, ew = hyper_edge_mask.shape
+
+        sx = w / float(ew)
+        sy = h / float(eh)
+
+        for yy in range(eh):
+            for xx in range(ew):
+                if hyper_edge_mask[yy, xx] >= threshold:
+                    px = x1 + int(xx * sx)
+                    py = y1 + int(yy * sy)
+                    if 0 <= px < screen_width and 0 <= py < screen_height:
+                        screen.set_at((px, py), color)
+
+
+
+    def longest_connected_line(mask, threshold=0.25):
+        """
+        mask: (H,W) float
+        returns a float mask with only the largest connected component kept
+        """
+        if mask is None:
+            return None
+
+        on = mask >= threshold
+        h, w = on.shape
+        visited = np.zeros((h, w), dtype=bool)
+
+        best_coords = []
+        best_size = 0
+
+        for y in range(h):
+            for x in range(w):
+                if not on[y, x] or visited[y, x]:
+                    continue
+
+                stack = [(y, x)]
+                visited[y, x] = True
+                coords = []
+
+                while stack:
+                    cy, cx = stack.pop()
+                    coords.append((cy, cx))
+
+                    for ny, nx in (
+                        (cy - 1, cx), (cy + 1, cx),
+                        (cy, cx - 1), (cy, cx + 1),
+                        (cy - 1, cx - 1), (cy - 1, cx + 1),
+                        (cy + 1, cx - 1), (cy + 1, cx + 1),
+                    ):
+                        if 0 <= ny < h and 0 <= nx < w and on[ny, nx] and not visited[ny, nx]:
+                            visited[ny, nx] = True
+                            stack.append((ny, nx))
+
+                if len(coords) > best_size:
+                    best_size = len(coords)
+                    best_coords = coords
+
+        out = np.zeros((h, w), dtype=np.float32)
+        for y, x in best_coords:
+            out[y, x] = 1.0
+
+        return out
+
+
+    def draw_binary_mask_on_field(screen, mask, box, color=(255, 255, 255)):
+        if mask is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+
+        if w <= 0 or h <= 0:
+            return
+
+        mh, mw = mask.shape
+        sx = w / float(mw)
+        sy = h / float(mh)
+
+        for yy in range(mh):
+            for xx in range(mw):
+                if mask[yy, xx] > 0.5:
+                    px = x1 + int(xx * sx)
+                    py = y1 + int(yy * sy)
+                    if 0 <= px < screen_width and 0 <= py < screen_height:
+                        screen.set_at((px, py), color)
+
+
+
+
+
+
+
+
+
+
+    def draw_perimeter_on_field(screen, perimeter, box, color=(255, 255, 255)):
+        if perimeter is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+
+        if w <= 0 or h <= 0:
+            return
+
+        ph, pw = perimeter.shape
+        sx = w / float(pw)
+        sy = h / float(ph)
+
+        for yy in range(ph):
+            for xx in range(pw):
+                if perimeter[yy, xx] > 0.5:
+                    px = x1 + int(xx * sx)
+                    py = y1 + int(yy * sy)
+                    if 0 <= px < screen_width and 0 <= py < screen_height:
+                        screen.set_at((px, py), color)
+
+
+
+
+    def fast_hand_perimeter(edge_mask, hand_region, edge_threshold=0.023, close_radius=1):
+        """
+        One compact pass:
+        1. threshold edges
+        2. apply hand region
+        3. small close
+        4. extract perimeter
+
+        returns:
+            filled_mask, perimeter_mask
+        """
+        if edge_mask is None:
+            return None, None
+
+        m = edge_mask >= edge_threshold
+
+        if hand_region is not None and hand_region.shape == edge_mask.shape:
+            m &= (hand_region > 0.5)
+
+        # small close = dilate then erode
+        for _ in range(close_radius):
+            up = np.roll(m, -1, axis=0)
+            down = np.roll(m, 1, axis=0)
+            left = np.roll(m, -1, axis=1)
+            right = np.roll(m, 1, axis=1)
+            ul = np.roll(up, -1, axis=1)
+            ur = np.roll(up, 1, axis=1)
+            dl = np.roll(down, -1, axis=1)
+            dr = np.roll(down, 1, axis=1)
+            m = m | up | down | left | right | ul | ur | dl | dr
+
+        for _ in range(close_radius):
+            up = np.roll(m, -1, axis=0)
+            down = np.roll(m, 1, axis=0)
+            left = np.roll(m, -1, axis=1)
+            right = np.roll(m, 1, axis=1)
+            ul = np.roll(up, -1, axis=1)
+            ur = np.roll(up, 1, axis=1)
+            dl = np.roll(down, -1, axis=1)
+            dr = np.roll(down, 1, axis=1)
+            m = m & up & down & left & right & ul & ur & dl & dr
+
+        up = np.roll(m, -1, axis=0)
+        down = np.roll(m, 1, axis=0)
+        left = np.roll(m, -1, axis=1)
+        right = np.roll(m, 1, axis=1)
+
+        perimeter = m & ((~up) | (~down) | (~left) | (~right))
+
+        return m.astype(np.float32), perimeter.astype(np.float32)
+
+
+
+
+    def draw_binary_overlay_on_field(screen, mask, box, color=(255, 255, 255)):
+        if mask is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+        mh, mw = mask.shape
+
+        if w <= 0 or h <= 0 or mw <= 0 or mh <= 0:
+            return
+
+        sx = w / float(mw)
+        sy = h / float(mh)
+
+        ys, xs = np.where(mask > 0.5)
+        for yy, xx in zip(ys, xs):
+            px = x1 + int(xx * sx)
+            py = y1 + int(yy * sy)
+            if 0 <= px < screen_width and 0 <= py < screen_height:
+                screen.set_at((px, py), color)
+
+
+
+
+
+    def build_change_speed_map(current_field, previous_field, prev_speed_map=None, alpha=0.35):
+        """
+        current_field, previous_field: (W,H,3)
+        prev_speed_map: (H,W) float or None
+
+        returns:
+            speed_map: (H,W) float in [0,1]
+        """
+        if current_field is None or previous_field is None:
+            return prev_speed_map
+
+        if current_field.shape != previous_field.shape:
+            return prev_speed_map
+
+        cur = np.transpose(current_field, (1, 0, 2)).astype(np.float32)
+        prev = np.transpose(previous_field, (1, 0, 2)).astype(np.float32)
+
+        diff = np.abs(cur - prev)
+        dist = np.sqrt(np.sum(diff * diff, axis=2))
+
+        dmax = dist.max()
+        if dmax > 1e-6:
+            instant = dist / dmax
+        else:
+            instant = np.zeros_like(dist, dtype=np.float32)
+
+        if prev_speed_map is None or prev_speed_map.shape != instant.shape:
+            speed_map = instant
+        else:
+            speed_map = (1.0 - alpha) * prev_speed_map + alpha * instant
+
+        return speed_map.astype(np.float32)
+
+
+    def threshold_fast_pixels(speed_map, threshold=0.35):
+        if speed_map is None:
+            return None
+        return (speed_map >= threshold).astype(np.float32)
+
+
+    def count_clusters(mask, min_size=6):
+        """
+        mask: (H,W) float/bool
+        returns:
+            count, labeled_mask
+        """
+        if mask is None:
+            return 0, None
+
+        on = mask > 0.5
+        h, w = on.shape
+        visited = np.zeros((h, w), dtype=bool)
+        out = np.zeros((h, w), dtype=np.float32)
+
+        count = 0
+
+        for y in range(h):
+            for x in range(w):
+                if not on[y, x] or visited[y, x]:
+                    continue
+
+                stack = [(y, x)]
+                visited[y, x] = True
+                coords = []
+
+                while stack:
+                    cy, cx = stack.pop()
+                    coords.append((cy, cx))
+
+                    for ny, nx in (
+                        (cy - 1, cx), (cy + 1, cx),
+                        (cy, cx - 1), (cy, cx + 1),
+                        (cy - 1, cx - 1), (cy - 1, cx + 1),
+                        (cy + 1, cx - 1), (cy + 1, cx + 1),
+                    ):
+                        if 0 <= ny < h and 0 <= nx < w and on[ny, nx] and not visited[ny, nx]:
+                            visited[ny, nx] = True
+                            stack.append((ny, nx))
+
+                if len(coords) >= min_size:
+                    count += 1
+                    for cy, cx in coords:
+                        out[cy, cx] = 1.0
+
+        return count, out
+
+
+    def draw_speed_heat_on_field(screen, speed_map, box, threshold=0.0):
+        if speed_map is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+        sh, sw = speed_map.shape
+
+        if w <= 0 or h <= 0:
+            return
+
+        sx = w / float(sw)
+        sy = h / float(sh)
+
+        for yy in range(sh):
+            for xx in range(sw):
+                s = speed_map[yy, xx]
+                if s < threshold:
+                    continue
+                px = x1 + int(xx * sx)
+                py = y1 + int(yy * sy)
+                if 0 <= px < screen_width and 0 <= py < screen_height:
+                    screen.set_at((px, py), heat_color(s))
+
+
+    def draw_cluster_mask_on_field(screen, mask, box, color=(255, 255, 255)):
+        if mask is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+        mh, mw = mask.shape
+
+        if w <= 0 or h <= 0:
+            return
+
+        sx = w / float(mw)
+        sy = h / float(mh)
+
+        ys, xs = np.where(mask > 0.5)
+        for yy, xx in zip(ys, xs):
+            px = x1 + int(xx * sx)
+            py = y1 + int(yy * sy)
+            if 0 <= px < screen_width and 0 <= py < screen_height:
+                screen.set_at((px, py), color)
+
+
+
+
+
+    def xy_field_color(xx, yy, w, h):
+        """
+        Color by position in the local hand field.
+        x -> red
+        y -> green
+        diagonal mix -> blue
+        """
+        if w <= 1:
+            xr = 0.0
+        else:
+            xr = xx / float(w - 1)
+
+        if h <= 1:
+            yg = 0.0
+        else:
+            yg = yy / float(h - 1)
+
+        r = int(255 * xr)
+        g = int(255 * yg)
+        b = int(255 * (0.5 * (1.0 - xr) + 0.5 * yg))
+
+        return (r, g, b)
+
+
+    def draw_binary_overlay_xycolor_on_field(screen, mask, box):
+        if mask is None or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        w = x2 - x1
+        h = y2 - y1
+        mh, mw = mask.shape
+
+        if w <= 0 or h <= 0 or mw <= 0 or mh <= 0:
+            return
+
+        sx = w / float(mw)
+        sy = h / float(mh)
+
+        ys, xs = np.where(mask > 0.5)
+        for yy, xx in zip(ys, xs):
+            px = x1 + int(xx * sx)
+            py = y1 + int(yy * sy)
+            if 0 <= px < screen_width and 0 <= py < screen_height:
+                screen.set_at((px, py), xy_field_color(xx, yy, mw, mh))
+
+
+
+
+    def thin_cluster_mask(mask, step=2):
+        """
+        Reduce density by keeping only every Nth pixel in x and y.
+        step=2 keeps about 1/4
+        step=3 keeps about 1/9
+        """
+        if mask is None:
+            return None
+
+        out = np.zeros_like(mask, dtype=np.float32)
+        out[::step, ::step] = mask[::step, ::step]
+        return out
+
+
+
+
+    def sample_perimeter_neighborhood_colors(field, perimeter_mask, radius=2):
+        """
+        field: (W,H,3)
+        perimeter_mask: (H,W)
+
+        returns list of RGB samples near perimeter pixels
+        """
+        if field is None or perimeter_mask is None:
+            return []
+
+        img = np.transpose(field, (1, 0, 2)).astype(np.float32)  # (H,W,3)
+        h, w = perimeter_mask.shape
+
+        ys, xs = np.where(perimeter_mask > 0.5)
+        colors = []
+
+        for yy, xx in zip(ys, xs):
+            y1 = max(0, yy - radius)
+            y2 = min(h, yy + radius + 1)
+            x1 = max(0, xx - radius)
+            x2 = min(w, xx + radius + 1)
+
+            patch = img[y1:y2, x1:x2]
+            if patch.size == 0:
+                continue
+
+            c = patch.reshape(-1, 3).mean(axis=0)
+            colors.append(c)
+
+        return colors
+
+
+    def pick_most_distinct_colors(colors, k=5, min_dist=60.0):
+        """
+        Greedy distinct-color picker.
+        """
+        if not colors:
+            return []
+
+        arr = np.array(colors, dtype=np.float32)
+
+        # start from mean-brightness spread
+        brightness = arr.mean(axis=1)
+        order = np.argsort(brightness)
+
+        chosen = [arr[order[len(order) // 2]]]
+
+        while len(chosen) < k:
+            best_i = -1
+            best_d = -1.0
+
+            for i in range(len(arr)):
+                c = arr[i]
+                d = min(np.linalg.norm(c - cc) for cc in chosen)
+                if d > best_d:
+                    best_d = d
+                    best_i = i
+
+            if best_i < 0 or best_d < min_dist:
+                break
+
+            chosen.append(arr[best_i])
+
+        return [np.clip(c, 0, 255).astype(np.uint8) for c in chosen]
+
+
+    def color_presence_on_perimeter(field, perimeter_mask, target_color, color_tol=50.0, radius=2):
+        """
+        Count how much a target color appears near the perimeter.
+        """
+        if field is None or perimeter_mask is None:
+            return 0.0
+
+        img = np.transpose(field, (1, 0, 2)).astype(np.float32)
+        h, w = perimeter_mask.shape
+
+        ys, xs = np.where(perimeter_mask > 0.5)
+        score = 0.0
+
+        for yy, xx in zip(ys, xs):
+            y1 = max(0, yy - radius)
+            y2 = min(h, yy + radius + 1)
+            x1 = max(0, xx - radius)
+            x2 = min(w, xx + radius + 1)
+
+            patch = img[y1:y2, x1:x2]
+            if patch.size == 0:
+                continue
+
+            mean_c = patch.reshape(-1, 3).mean(axis=0)
+            dist = np.linalg.norm(mean_c - target_color.astype(np.float32))
+
+            if dist <= color_tol:
+                score += 1.0
+
+        return score
+
+
+    def draw_distinct_color_squares(screen, colors, box, square_size=18, gap=4):
+        """
+        Draw little color squares above the hand box.
+        """
+        if not colors or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        start_x = x1
+        start_y = max(0, y1 - square_size - 6)
+
+        for i, c in enumerate(colors):
+            rx = start_x + i * (square_size + gap)
+            ry = start_y
+            rect = pygame.Rect(rx, ry, square_size, square_size)
+            pygame.draw.rect(screen, tuple(int(v) for v in c), rect)
+            pygame.draw.rect(screen, (255, 255, 255), rect, 1)
+
+
+
+    def perimeter_xy_colors(perimeter_mask):
+        """
+        Returns:
+          colors: list of RGB colors from the perimeter grid coloring
+          points: matching (x,y) positions in local field coords
+        """
+        if perimeter_mask is None:
+            return [], []
+
+        h, w = perimeter_mask.shape
+        ys, xs = np.where(perimeter_mask > 0.5)
+
+        colors = []
+        points = []
+
+        for yy, xx in zip(ys, xs):
+            colors.append(np.array(xy_field_color(xx, yy, w, h), dtype=np.float32))
+            points.append((xx, yy))
+
+        return colors, points
+
+
+    def pick_structured_perimeter_xy_colors(colors, points, mask_shape,
+                                            edge_margin=12,
+                                            top_margin=10,
+                                            color_min_dist=35.0):
+        """
+        Pick 5 perimeter color points in this order:
+          1 left-most
+          3 top-most
+          1 right-most
+
+        Reject points too close to the outer field edges.
+        """
+        if not colors or not points:
+            return [], []
+
+        h, w = mask_shape
+
+        # keep only safe interior points
+        valid = []
+        for c, (x, y) in zip(colors, points):
+            if x < edge_margin or x > (w - 1 - edge_margin):
+                continue
+            if y < top_margin:
+                continue
+            valid.append((c, (x, y)))
+
+        if not valid:
+            return [], []
+
+        chosen = []
+
+        def far_enough(new_c):
+            if not chosen:
+                return True
+            return min(np.linalg.norm(new_c - old_c) for old_c, _ in chosen) >= color_min_dist
+
+        # 1) left-most
+        left_candidates = sorted(valid, key=lambda t: (t[1][0], t[1][1]))
+        for c, p in left_candidates:
+            if far_enough(c):
+                chosen.append((c, p))
+                break
+
+        # 2) three top-most, but not too close in x to already chosen
+        top_candidates = sorted(valid, key=lambda t: (t[1][1], t[1][0]))
+        for c, p in top_candidates:
+            if len(chosen) >= 4:
+                break
+
+            if not far_enough(c):
+                continue
+
+            px = p[0]
+            too_close_x = False
+            for _, q in chosen:
+                if abs(px - q[0]) < max(12, w // 10):
+                    too_close_x = True
+                    break
+
+            if not too_close_x:
+                chosen.append((c, p))
+
+        # 3) right-most
+        right_candidates = sorted(valid, key=lambda t: (-t[1][0], t[1][1]))
+        for c, p in right_candidates:
+            if len(chosen) >= 5:
+                break
+            if far_enough(c):
+                px = p[0]
+                too_close_x = False
+                for _, q in chosen:
+                    if abs(px - q[0]) < max(12, w // 10):
+                        too_close_x = True
+                        break
+                if not too_close_x:
+                    chosen.append((c, p))
+                    break
+
+        # fallback: fill any missing slots with best remaining top candidates
+        if len(chosen) < 5:
+            for c, p in top_candidates:
+                if len(chosen) >= 5:
+                    break
+                if not far_enough(c):
+                    continue
+                px = p[0]
+                too_close_x = False
+                for _, q in chosen:
+                    if abs(px - q[0]) < max(10, w // 12):
+                        too_close_x = True
+                        break
+                if not too_close_x:
+                    chosen.append((c, p))
+
+        chosen_colors = [np.clip(c, 0, 255).astype(np.uint8) for c, _ in chosen]
+        chosen_points = [p for _, p in chosen]
+
+        return chosen_colors, chosen_points
+
+
+
+
+    def draw_color_squares_at_points(screen, colors, points, box, mask_shape, square_size=14):
+        """
+        Draw little squares at the representative perimeter locations.
+        """
+        if not colors or not points or box is None:
+            return
+
+        x1, y1, x2, y2 = box
+        h, w = mask_shape
+        sx = (x2 - x1) / float(w)
+        sy = (y2 - y1) / float(h)
+
+        for c, (px, py) in zip(colors, points):
+            sxp = x1 + int(px * sx)
+            syp = y1 + int(py * sy)
+
+            rect = pygame.Rect(
+                sxp - square_size // 2,
+                syp - square_size // 2,
+                square_size,
+                square_size
+            )
+            pygame.draw.rect(screen, tuple(int(v) for v in c), rect)
+            pygame.draw.rect(screen, (255, 255, 255), rect, 1)
+
+
+    def init_finger_orbit_anchors(mask_shape, edge_margin=12, top_margin=10, bottom_margin=12):
+        h, w = mask_shape
+
+        # outer top vertices
+        top_left = np.array([edge_margin, top_margin], dtype=np.float32)
+        top_mid = np.array([w * 0.50, top_margin], dtype=np.float32)
+        top_right = np.array([w - 1 - edge_margin, top_margin], dtype=np.float32)
+
+        # center-ish reference points for inward pull
+        center = np.array([w * 0.50, h * 0.36], dtype=np.float32)
+        left_center = np.array([w * 0.30, h * 0.40], dtype=np.float32)
+        right_center = np.array([w * 0.70, h * 0.40], dtype=np.float32)
+
+        # 1/4 of the way from vertex toward interior reference
+        ring_up = top_left + 0.25 * (left_center - top_left)
+        index_up = top_right + 0.25 * (right_center - top_right)
+
+        return {
+            "pinky": {
+                "up": (int(w * 0.18), int(h * 0.18)),
+                "down": (int(w * 0.16), int(h * 0.52)),
+            },
+            "ring": {
+                "up": (int(ring_up[0]), int(ring_up[1])),
+                "down": (int(w * 0.30), int(h * 0.40)),
+            },
+            "middle": {
+                "up": (int(top_mid[0]), int(h * 0.10)),
+                "down": (int(w * 0.50), int(h * 0.36)),
+            },
+            "index": {
+                "up": (int(index_up[0]), int(index_up[1])),
+                "down": (int(w * 0.68), int(h * 0.40)),
+            },
+            "thumb": {
+                "up": (int(w * 0.84), int(h * 0.50)),
+                "down": (int(w * 0.78), int(h * 0.72)),
+            },
+        }
+
+
+    def init_tracked_squares():
+        return {
+            "pinky": {"color": None, "point": None, "strength": 0.0, "misses": 0, "state": "down"},
+            "ring": {"color": None, "point": None, "strength": 0.0, "misses": 0, "state": "down"},
+            "middle": {"color": None, "point": None, "strength": 0.0, "misses": 0, "state": "down"},
+            "index": {"color": None, "point": None, "strength": 0.0, "misses": 0, "state": "down"},
+            "thumb": {"color": None, "point": None, "strength": 0.0, "misses": 0, "state": "down"},
+        }
+
+
+    def point_distance(p1, p2):
+        if p1 is None or p2 is None:
+            return 9999.0
+        dx = float(p1[0] - p2[0])
+        dy = float(p1[1] - p2[1])
+        return float((dx * dx + dy * dy) ** 0.5)
+
+
+    def color_distance(c1, c2):
+        if c1 is None or c2 is None:
+            return 9999.0
+        c1 = np.array(c1, dtype=np.float32)
+        c2 = np.array(c2, dtype=np.float32)
+        return float(np.linalg.norm(c1 - c2))
+
+
+    def finger_candidate_score(candidate_color, candidate_point, mem, anchors):
+        up_d = point_distance(candidate_point, anchors["up"])
+        down_d = point_distance(candidate_point, anchors["down"])
+
+        if mem["point"] is None:
+            mem_d = min(up_d, down_d)
+        else:
+            mem_d = point_distance(candidate_point, mem["point"])
+
+        if mem["color"] is None:
+            col_d = 0.0
+        else:
+            col_d = color_distance(candidate_color, mem["color"])
+
+        # Let both orbit endpoints participate
+        orbit_d = min(up_d, down_d)
+
+        return 1.1 * orbit_d + 0.9 * mem_d + 1.0 * col_d, up_d, down_d
+
+
+    def finger_order_ok(name, candidate_point, chosen_points):
+        x = candidate_point[0]
+
+        if name == "pinky":
+            return True
+        if name == "ring":
+            return chosen_points["pinky"] is None or x > chosen_points["pinky"][0]
+        if name == "middle":
+            return chosen_points["ring"] is None or x > chosen_points["ring"][0]
+        if name == "index":
+            return chosen_points["middle"] is None or x > chosen_points["middle"][0]
+        if name == "thumb":
+            return chosen_points["index"] is None or x > chosen_points["index"][0]
+
+        return True
+
+
+    def hand_present(mask, min_pixels=1200):
+        """
+        True only when enough hand-region pixels are present.
+        """
+        if mask is None:
+            return False
+        return int(np.sum(mask > 0.5)) >= min_pixels
+
+
+    def extract_clusters(mask, min_size=6):
+        """
+        Returns a list of clusters:
+          {
+            "coords": [(y,x), ...],
+            "size": int,
+            "mask": (H,W) float32,
+            "centroid": (x,y)
+          }
+        """
+        if mask is None:
+            return []
+
+        on = mask > 0.5
+        h, w = on.shape
+        visited = np.zeros((h, w), dtype=bool)
+
+        clusters = []
+
+        for y in range(h):
+            for x in range(w):
+                if not on[y, x] or visited[y, x]:
+                    continue
+
+                stack = [(y, x)]
+                visited[y, x] = True
+                coords = []
+
+                while stack:
+                    cy, cx = stack.pop()
+                    coords.append((cy, cx))
+
+                    for ny, nx in (
+                            (cy - 1, cx), (cy + 1, cx),
+                            (cy, cx - 1), (cy, cx + 1),
+                            (cy - 1, cx - 1), (cy - 1, cx + 1),
+                            (cy + 1, cx - 1), (cy + 1, cx + 1),
+                    ):
+                        if 0 <= ny < h and 0 <= nx < w and on[ny, nx] and not visited[ny, nx]:
+                            visited[ny, nx] = True
+                            stack.append((ny, nx))
+
+                if len(coords) < min_size:
+                    continue
+
+                out = np.zeros((h, w), dtype=np.float32)
+                xs = []
+                ys = []
+
+                for cy, cx in coords:
+                    out[cy, cx] = 1.0
+                    xs.append(cx)
+                    ys.append(cy)
+
+                centroid = (float(np.mean(xs)), float(np.mean(ys)))
+
+                clusters.append({
+                    "coords": coords,
+                    "size": len(coords),
+                    "mask": out,
+                    "centroid": centroid,
+                })
+
+        return clusters
+
+
+    def score_shadow_clusters_with_proximity(clusters, prev_shadow_mask=None, reference_point=None,
+                                             proximity_scale=40.0):
+        """
+        Score clusters by:
+          - size
+          - recency (overlap with previous shadow)
+          - proximity to a reference point
+
+        Higher score is better.
+        """
+        if not clusters:
+            return []
+
+        max_size = max(c["size"] for c in clusters)
+
+        scored = []
+        for c in clusters:
+            size_norm = c["size"] / float(max_size)
+
+            if prev_shadow_mask is None or prev_shadow_mask.shape != c["mask"].shape:
+                recency = 0.0
+            else:
+                overlap = np.sum((c["mask"] > 0.5) & (prev_shadow_mask > 0.08))
+                recency = overlap / float(max(1, c["size"]))
+
+            if reference_point is None:
+                proximity = 0.0
+            else:
+                d = point_distance(c["centroid"], reference_point)
+                proximity = max(0.0, 1.0 - d / float(proximity_scale))
+
+            score = (
+                    1.2 * size_norm +
+                    1.8 * recency +
+                    1.6 * proximity
+            )
+
+            cc = dict(c)
+            cc["score"] = float(score)
+            cc["size_norm"] = float(size_norm)
+            cc["recency"] = float(recency)
+            cc["proximity"] = float(proximity)
+            scored.append(cc)
+
+        scored.sort(key=lambda c: c["score"], reverse=True)
+        return scored
+
+
+    def top_shadow_cluster_mask(scored_clusters, keep_n=1):
+        if not scored_clusters:
+            return None
+
+        h, w = scored_clusters[0]["mask"].shape
+        out = np.zeros((h, w), dtype=np.float32)
+
+        for c in scored_clusters[:keep_n]:
+            out = np.maximum(out, c["mask"])
+
+        return out
+
+
+    def best_cluster_for_point(clusters, prev_shadow_mask, reference_point, proximity_scale=40.0):
+        scored = score_shadow_clusters_with_proximity(
+            clusters,
+            prev_shadow_mask=prev_shadow_mask,
+            reference_point=reference_point,
+            proximity_scale=proximity_scale
+        )
+        if not scored:
+            return None
+        return scored[0]
+
+
+    def mask_perimeter(mask):
+        """
+        Return the outer perimeter of a binary mask.
+        mask is (H,W) float or bool.
+        """
+        if mask is None:
+            return None
+
+        m = mask > 0.5
+
+        up = np.zeros_like(m, dtype=bool)
+        down = np.zeros_like(m, dtype=bool)
+        left = np.zeros_like(m, dtype=bool)
+        right = np.zeros_like(m, dtype=bool)
+
+        up[1:, :] = m[:-1, :]
+        down[:-1, :] = m[1:, :]
+        left[:, 1:] = m[:, :-1]
+        right[:, :-1] = m[:, 1:]
+
+        perimeter = m & (~up | ~down | ~left | ~right)
+        return perimeter.astype(np.float32)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 running = True
 while running:
 
@@ -5483,7 +7510,7 @@ while running:
 
 
     #####hands######
-    detect_change = 1
+    detect_change = 3
 
 
     if detect_change == 1:
@@ -5648,6 +7675,345 @@ while running:
         left_hand_detect()
 
 
+    elif detect_change == 3:
+
+        right_dc3 = 1
+        left_dc3 = 1
+
+        lr_edge_threshold = 0.032
+
+
+        if right_dc3 == 1:
+
+            x1, y1, x2, y2 = outline_hand_window(
+                screen,
+                right_roi,
+                value_color[9],
+                pad=hand_box_pad,
+                width=3
+            )
+
+            ###right hand###
+            if right_box is not None:
+                bx1, by1, bx2, by2 = right_box
+            else:
+                bx1, by1, bx2, by2 = x1, y1, x2, y2
+
+            right_field = hand_array[bx1:bx2, by1:by2].copy()
+
+            if array_past is not None:
+                previous_right_field = array_past[bx1:bx2, by1:by2].copy()
+            else:
+                previous_right_field = None
+
+            right_change_speed = build_change_speed_map(
+                right_field,
+                previous_right_field,
+                prev_speed_map=right_change_speed,
+                alpha=0.35
+            )
+
+            edge_mask = build_hand_sensor(right_field)
+
+            hand_region = build_hand_isolation_mask(
+                right_field,
+                right_roi,
+                color_threshold=50,
+                brightness_threshold=50,
+                gap_threshold=18,
+                min_size_ratio=0.004,
+                dilate_radius=4
+            )
+
+            hand_is_present = hand_present(hand_region, min_pixels=1200)
+
+            if right_change_speed is not None and hand_region is not None and right_change_speed.shape == hand_region.shape:
+                right_change_speed = right_change_speed * (hand_region > 0.5)
+
+
+
+            cleaned_edge_mask, hand_perimeter = fast_hand_perimeter(
+                edge_mask,
+                hand_region,
+                edge_threshold=lr_edge_threshold,
+                close_radius=1
+            )
+
+            skin_perimeter = mask_perimeter(hand_region)
+
+            if skin_perimeter is not None:
+                hand_perimeter = np.maximum(hand_perimeter, skin_perimeter).astype(np.float32)
+
+
+            xy_colors, xy_points = perimeter_xy_colors(hand_perimeter)
+
+            distinct_xy_colors, distinct_xy_points = pick_structured_perimeter_xy_colors(
+                xy_colors,
+                xy_points,
+                hand_perimeter.shape,
+                edge_margin=12,
+                top_margin=10,
+                color_min_dist=42.0
+            )
+
+
+            draw_color_squares_at_points(
+                screen,
+                distinct_xy_colors,
+                distinct_xy_points,
+                (bx1, by1, bx2, by2),
+                hand_perimeter.shape,
+                square_size=14
+            )
+
+            fast_pixels = threshold_fast_pixels(right_change_speed, threshold=0.42)
+
+            clusters = extract_clusters(fast_pixels, min_size=7)
+
+            # use a proximity reference if you have one
+            # for now, simplest is the middle of the chosen squares if they exist
+            if distinct_xy_points:
+                ref_x = float(np.mean([p[0] for p in distinct_xy_points]))
+                ref_y = float(np.mean([p[1] for p in distinct_xy_points]))
+                reference_point = (ref_x, ref_y)
+            else:
+                reference_point = None
+
+            scored_clusters = score_shadow_clusters_with_proximity(
+                clusters,
+                prev_shadow_mask=right_shadow_mask,
+                reference_point=reference_point,
+                proximity_scale=40.0
+            )
+
+            right_cluster_count = len(scored_clusters)
+
+            priority_cluster_mask = top_shadow_cluster_mask(scored_clusters, keep_n=1)
+
+            thin_clusters = thin_cluster_mask(priority_cluster_mask,
+                                              step=2) if priority_cluster_mask is not None else None
+
+
+
+
+            edge_shadow_source = (
+                hand_perimeter * thin_clusters
+                if thin_clusters is not None
+                else np.zeros_like(hand_perimeter, dtype=np.float32)
+            )
+
+
+
+            right_shadow_mask = update_shadow_mask(
+                edge_shadow_source,
+                shadow_mask=right_shadow_mask,
+                rise=1.0,
+                decay=0.82
+            )
+
+            draw_shadow_mask_on_field(
+                screen,
+                right_shadow_mask,
+                (bx1, by1, bx2, by2),
+                live_mask=hand_perimeter,
+                shadow_threshold=0.08,
+                live_threshold=0.5
+            )
+
+            draw_binary_overlay_xycolor_on_field(
+                screen,
+                hand_perimeter,
+                (bx1, by1, bx2, by2)
+            )
+
+
+
+
+
+            current_template = prepare_edge_template(
+                right_field,
+                edge_threshold=0.04,
+                out_size=(64, 64)
+            )
+
+            recognized_edge_label, recognized_edge_score = recognize_edge_template(
+                current_template,
+                edge_library,
+                threshold=0.18
+            )
+
+            label = text_font.render(
+                f"edge label: {phrase}   match: {recognized_edge_label}   score: {round(recognized_edge_score, 4)}",
+                True,
+                value_color[9]
+            )
+            screen.blit(label, (x1, max(0, y1 - 20)))
+
+            cluster_label = text_font.render(
+                f"clusters: {right_cluster_count}",
+                True,
+                value_color[9]
+            )
+            screen.blit(cluster_label, (x1, max(0, y1 - 40)))
+
+
+        if left_dc3 == 1:
+
+            ### left hand ###
+
+            lx1, ly1, lx2, ly2 = outline_hand_window(
+                screen,
+                left_roi,
+                value_color[9],
+                pad=hand_box_pad,
+                width=3
+            )
+
+            if left_box is not None:
+                lbx1, lby1, lbx2, lby2 = left_box
+            else:
+                lbx1, lby1, lbx2, lby2 = lx1, ly1, lx2, ly2
+
+            left_field = hand_array[lbx1:lbx2, lby1:lby2].copy()
+
+            if array_past is not None:
+                previous_left_field = array_past[lbx1:lbx2, lby1:lby2].copy()
+            else:
+                previous_left_field = None
+
+            left_change_speed = build_change_speed_map(
+                left_field,
+                previous_left_field,
+                prev_speed_map=left_change_speed,
+                alpha=0.35
+            )
+
+            left_edge_mask = build_hand_sensor(left_field)
+
+            left_hand_region = build_hand_isolation_mask(
+                left_field,
+                left_roi,
+                color_threshold=19,
+                brightness_threshold=80,
+                gap_threshold=18,
+                min_size_ratio=0.004,
+                dilate_radius=4
+            )
+
+            left_hand_is_present = hand_present(left_hand_region, min_pixels=1200)
+
+            if left_change_speed is not None and left_hand_region is not None and left_change_speed.shape == left_hand_region.shape:
+                left_change_speed = left_change_speed * (left_hand_region > 0.5)
+
+            left_cleaned_edge_mask, left_hand_perimeter = fast_hand_perimeter(
+                left_edge_mask,
+                left_hand_region,
+                edge_threshold=lr_edge_threshold,
+                close_radius=1
+            )
+
+            left_skin_perimeter = mask_perimeter(left_hand_region)
+
+            if left_skin_perimeter is not None:
+                left_hand_perimeter = np.maximum(left_hand_perimeter, left_skin_perimeter).astype(np.float32)
+
+            left_xy_colors, left_xy_points = perimeter_xy_colors(left_hand_perimeter)
+
+            left_distinct_xy_colors, left_distinct_xy_points = pick_structured_perimeter_xy_colors(
+                left_xy_colors,
+                left_xy_points,
+                left_hand_perimeter.shape,
+                edge_margin=12,
+                top_margin=10,
+                color_min_dist=42.0
+            )
+
+            draw_color_squares_at_points(
+                screen,
+                left_distinct_xy_colors,
+                left_distinct_xy_points,
+                (lbx1, lby1, lbx2, lby2),
+                left_hand_perimeter.shape,
+                square_size=14
+            )
+
+            left_fast_pixels = threshold_fast_pixels(left_change_speed, threshold=0.42)
+
+            left_cluster_count, left_fast_clusters = count_clusters(
+                left_fast_pixels,
+                min_size=7
+            )
+
+            left_thin_clusters = thin_cluster_mask(left_fast_clusters, step=2)
+
+            left_edge_shadow_source = left_hand_perimeter * left_thin_clusters
+
+            left_shadow_mask = update_shadow_mask(
+                left_edge_shadow_source,
+                shadow_mask=left_shadow_mask,
+                rise=1.0,
+                decay=0.82
+            )
+
+            draw_shadow_mask_on_field(
+                screen,
+                left_shadow_mask,
+                (lbx1, lby1, lbx2, lby2),
+                live_mask=left_hand_perimeter,
+                shadow_threshold=0.08,
+                live_threshold=0.5
+            )
+
+            draw_binary_overlay_xycolor_on_field(
+                screen,
+                left_hand_perimeter,
+                (lbx1, lby1, lbx2, lby2)
+            )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if rethresh == 1:
+            rethresh = 0
+
+            if right_box is not None:
+                current_field = capture_frame_from_fixed_box(hand_array, right_box)
+            else:
+                bx1, by1, bx2, by2 = outline_hand_window(screen, right_roi, value_color[9], pad=hand_box_pad, width=3)
+                current_field = hand_array[bx1:bx2, by1:by2].copy()
+
+            current_template = prepare_edge_template(
+                current_field,
+                edge_threshold=0.03,
+                out_size=(64, 64)
+            )
+
+            save_edge_template(current_template)
+
+
+
+
+
+
+
+
+
 
     ###stats###
     times_limit = 20
@@ -5755,300 +8121,302 @@ while running:
         walk += lesson_t.get_width()
 
 
+    letters_on = 0
 
-    letters = []
-
-
-    letter, code_0 = handle(hands, code_0)
-    letter_0, code_00 = handle(hands_0, code_00)
-    letter_1, code_01 = handle(hands_1, code_01)
-
-    typing_mode = 0
-
-    ###typing###
-    if typing_mode == 0 or typing_mode == 2:
-
-        if phrase != '':
-
-            goal_bin = base_x(digibet[phrase[phrase_pos]], 2)
-            if len(goal_bin) < gb_len:
-                zeros = ''
-                for x in range(5-len(goal_bin)):
-                    zeros += '0'
-                goal_bin = zeros + goal_bin
-            # print(goal_bin)
-
-            if phrase != phrase_past:
-
-                rainbow_array = np.zeros((h, l), dtype=int)
+    if letters_on == 1:
+        letters = []
 
 
-                tts[0] = time.time()
-                score = 1
+        letter, code_0 = handle(hands, code_0)
+        letter_0, code_00 = handle(hands_0, code_00)
+        letter_1, code_01 = handle(hands_1, code_01)
 
-                if phrase not in sign_bank:
-                    sign_bank[phrase] = (score, rv, [])
+        typing_mode = 0
 
-                    score, rv, times = sign_bank[phrase]
-                else:
+        ###typing###
+        if typing_mode == 0 or typing_mode == 2:
 
-                    try:
-                        score, rv , times = sign_bank[phrase]
-                    except:
+            if phrase != '':
+
+                goal_bin = base_x(digibet[phrase[phrase_pos]], 2)
+                if len(goal_bin) < gb_len:
+                    zeros = ''
+                    for x in range(5-len(goal_bin)):
+                        zeros += '0'
+                    goal_bin = zeros + goal_bin
+                # print(goal_bin)
+
+                if phrase != phrase_past:
+
+                    rainbow_array = np.zeros((h, l), dtype=int)
+
+
+                    tts[0] = time.time()
+                    score = 1
+
+                    if phrase not in sign_bank:
+                        sign_bank[phrase] = (score, rv, [])
+
+                        score, rv, times = sign_bank[phrase]
+                    else:
 
                         try:
-                            score, rv = sign_bank[phrase]
-                            times = []
-
+                            score, rv , times = sign_bank[phrase]
                         except:
 
-                            score = sign_bank[phrase]
-                            rv = rv
-                            times = []
+                            try:
+                                score, rv = sign_bank[phrase]
+                                times = []
+
+                            except:
+
+                                score = sign_bank[phrase]
+                                rv = rv
+                                times = []
 
 
 
 
-                # print(phrase, sign_bank[phrase])
+                    # print(phrase, sign_bank[phrase])
 
-                phrase_past = phrase[::]
+                    phrase_past = phrase[::]
 
-                filename = os.path.join(SCRIPT_DIR, 'sign_bank', signame)
-                outfile = open(filename, 'wb')
-                pickle.dump(sign_bank, outfile)
-                outfile.close()
-
-
-            if letter != last_typed:
-                bong = 1
-                submit(letter)
-                last_typed = letter
+                    filename = os.path.join(SCRIPT_DIR, 'sign_bank', signame)
+                    outfile = open(filename, 'wb')
+                    pickle.dump(sign_bank, outfile)
+                    outfile.close()
 
 
-            elif letter_0 != last_typed:
-                bong = 1
-                submit(letter_0)
-                last_typed = letter_0
+                if letter != last_typed:
+                    bong = 1
+                    submit(letter)
+                    last_typed = letter
 
 
-            elif letter_1 != last_typed:
-                bong = 1
-                submit(letter_1)
-                last_typed = letter_1
+                elif letter_0 != last_typed:
+                    bong = 1
+                    submit(letter_0)
+                    last_typed = letter_0
 
 
-
-
-            # elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
-            #
-            #     message += phrase[phrase_pos]
-            #
-            #     if len(letter) == 2:
-            #         message += phrase[phrase_pos + 1]
-            #         phrase_pos += 1
-            #
-            #     phrase_pos += 1
-            #
-            #     if phrase_pos == 1:
-            #         tts[0] = time.time()
-            #
-            #     if phrase_pos == len(phrase):
-            #
-            #
-            #         message += ' '
-            #
-            #         score += 1
-            #         phrase_pos = 0
-            #         tts[1] = time.time()
-            #
-            #
-            #         tts_0 = round(tts[1] - tts[0], 3)
-            #         tts[0] = time.time()
-            #
-            #         times_0 = []
-            #         t_max = 99999999999999999999999999999999999999
-            #         for t in times:
-            #             if t < t_max and t > 0:
-            #                 times_0.append(round(t, 3))
-            #         times = times_0
-            #
-            #         # print()
-            #         # print(tts)
-            #         # print(tts_0)
-            #
-            #         times.append(tts_0)
-            #         times = sorted(times)
-            #
-            #         # print()
-            #         # print("times")
-            #         # print(times)
-            #
-            #
-            #
-            #         if phrase == code[len(code)-len(phrase):len(code)]:
-            #             set += 1
-            #
-            #         else:
-            #             set = int(set/2)
-            #
-            #
-            #         code = ''
-            #
-            #         sign_bank[phrase] = (score, rv, times)
-            #
-            #
-            #         filename = 'sign_bank/' + signame
-            #         outfile = open(filename, 'wb')
-            #         pickle.dump(sign_bank, outfile)
-            #         outfile.close
-            #
-            #
-            #
-            #
-            #
-            #
-            #         if ruler == 0:
-            #             set_scale = 1
-            #             for x in range(len(phrase)):
-            #                 rv += digibet[phrase[x]]*int(set/set_scale)
-            #             rv = rv % bbv
-            #
-            #             # print("")
-            #             # print(rv)
-            #             # print(rule)
-            #             rules, rule = rule_gen(rv, base)
-            #             # print(rule)
-            #
-            #             rule = np.array(rule)
-            #
-            #         if dim == 1:
-            #             flow = np.zeros(l, dtype=int)
-            #             flow[int(l / 2)] = 1
-            #             water = np.zeros((h, l), dtype=int)
-            #             water[0] = flow
-            #
-            #         if dim == 2:
-            #             flow = np.zeros((h, l), dtype=int)
-            #             flow[int(l / 2), int(h / 2)] = 1
-            #             water = np.zeros((h, l), dtype=int)
-            #
-            # elif letter_0 == phrase[phrase_pos] or letter_0 == phrase[phrase_pos:phrase_pos+2]:
-            #
-            #     message += phrase[phrase_pos]
-            #
-            #     if len(letter_0) == 2:
-            #         message += phrase[phrase_pos + 1]
-            #         phrase_pos += 1
-            #
-            #     phrase_pos += 1
-            #
-            #     if phrase_pos == 1:
-            #         tts[0] = time.time()
-            #
-            #     if phrase_pos == len(phrase):
-            #
-            #
-            #         message += ' '
-            #
-            #         score += 1
-            #         phrase_pos = 0
-            #         tts[1] = time.time()
-            #
-            #
-            #         tts_0 = round(tts[1] - tts[0], 3)
-            #         tts[0] = time.time()
-            #
-            #         times_0 = []
-            #         t_max = 99999999999999999999999999999999999999
-            #         for t in times:
-            #             if t < t_max and t > 0:
-            #                 times_0.append(round(t, 3))
-            #         times = times_0
-            #
-            #         # print()
-            #         # print(tts)
-            #         # print(tts_0)
-            #
-            #         times.append(tts_0)
-            #         times = sorted(times)
-            #
-            #         # print()
-            #         # print("times")
-            #         # print(times)
-            #
-            #
-            #
-            #         if phrase == code[len(code)-len(phrase):len(code)]:
-            #             set += 1
-            #
-            #         else:
-            #             set = int(set/2)
-            #
-            #
-            #         code = ''
-            #
-            #         sign_bank[phrase] = (score, rv, times)
-            #
-            #
-            #         filename = 'sign_bank/' + signame
-            #         outfile = open(filename, 'wb')
-            #         pickle.dump(sign_bank, outfile)
-            #         outfile.close
-            #
-            #
-            #
-            #
-            #
-            #
-            #         if ruler == 0:
-            #             set_scale = 1
-            #             for x in range(len(phrase)):
-            #                 rv += digibet[phrase[x]]*int(set/set_scale)
-            #             rv = rv % bbv
-            #
-            #             # print("")
-            #             # print(rv)
-            #             # print(rule)
-            #             rules, rule = rule_gen(rv, base)
-            #             # print(rule)
-            #
-            #             rule = np.array(rule)
-            #
-            #         if dim == 1:
-            #             flow = np.zeros(l, dtype=int)
-            #             flow[int(l / 2)] = 1
-            #             water = np.zeros((h, l), dtype=int)
-            #             water[0] = flow
-            #
-            #         if dim == 2:
-            #             flow = np.zeros((h, l), dtype=int)
-            #             flow[int(l / 2), int(h / 2)] = 1
-            #             water = np.zeros((h, l), dtype=int)
-
-
-    if typing_mode == 1 or typing_mode == 2:
-
-        def send_sign_to_keyboard(sign):
-
-            try:
-                pyautogui.write(sign)
-                print("SENT TO KEYBOARD:", sign)
-            except Exception as e:
-                print("pyautogui error:", e)
+                elif letter_1 != last_typed:
+                    bong = 1
+                    submit(letter_1)
+                    last_typed = letter_1
 
 
 
 
-        if letter == letter_0:
-            if letter_0 == letter_1:
-                if letter != last_letter_typed:
-                    last_letter_typed = letter
+                # elif letter == phrase[phrase_pos] or letter == phrase[phrase_pos:phrase_pos+2]:
+                #
+                #     message += phrase[phrase_pos]
+                #
+                #     if len(letter) == 2:
+                #         message += phrase[phrase_pos + 1]
+                #         phrase_pos += 1
+                #
+                #     phrase_pos += 1
+                #
+                #     if phrase_pos == 1:
+                #         tts[0] = time.time()
+                #
+                #     if phrase_pos == len(phrase):
+                #
+                #
+                #         message += ' '
+                #
+                #         score += 1
+                #         phrase_pos = 0
+                #         tts[1] = time.time()
+                #
+                #
+                #         tts_0 = round(tts[1] - tts[0], 3)
+                #         tts[0] = time.time()
+                #
+                #         times_0 = []
+                #         t_max = 99999999999999999999999999999999999999
+                #         for t in times:
+                #             if t < t_max and t > 0:
+                #                 times_0.append(round(t, 3))
+                #         times = times_0
+                #
+                #         # print()
+                #         # print(tts)
+                #         # print(tts_0)
+                #
+                #         times.append(tts_0)
+                #         times = sorted(times)
+                #
+                #         # print()
+                #         # print("times")
+                #         # print(times)
+                #
+                #
+                #
+                #         if phrase == code[len(code)-len(phrase):len(code)]:
+                #             set += 1
+                #
+                #         else:
+                #             set = int(set/2)
+                #
+                #
+                #         code = ''
+                #
+                #         sign_bank[phrase] = (score, rv, times)
+                #
+                #
+                #         filename = 'sign_bank/' + signame
+                #         outfile = open(filename, 'wb')
+                #         pickle.dump(sign_bank, outfile)
+                #         outfile.close
+                #
+                #
+                #
+                #
+                #
+                #
+                #         if ruler == 0:
+                #             set_scale = 1
+                #             for x in range(len(phrase)):
+                #                 rv += digibet[phrase[x]]*int(set/set_scale)
+                #             rv = rv % bbv
+                #
+                #             # print("")
+                #             # print(rv)
+                #             # print(rule)
+                #             rules, rule = rule_gen(rv, base)
+                #             # print(rule)
+                #
+                #             rule = np.array(rule)
+                #
+                #         if dim == 1:
+                #             flow = np.zeros(l, dtype=int)
+                #             flow[int(l / 2)] = 1
+                #             water = np.zeros((h, l), dtype=int)
+                #             water[0] = flow
+                #
+                #         if dim == 2:
+                #             flow = np.zeros((h, l), dtype=int)
+                #             flow[int(l / 2), int(h / 2)] = 1
+                #             water = np.zeros((h, l), dtype=int)
+                #
+                # elif letter_0 == phrase[phrase_pos] or letter_0 == phrase[phrase_pos:phrase_pos+2]:
+                #
+                #     message += phrase[phrase_pos]
+                #
+                #     if len(letter_0) == 2:
+                #         message += phrase[phrase_pos + 1]
+                #         phrase_pos += 1
+                #
+                #     phrase_pos += 1
+                #
+                #     if phrase_pos == 1:
+                #         tts[0] = time.time()
+                #
+                #     if phrase_pos == len(phrase):
+                #
+                #
+                #         message += ' '
+                #
+                #         score += 1
+                #         phrase_pos = 0
+                #         tts[1] = time.time()
+                #
+                #
+                #         tts_0 = round(tts[1] - tts[0], 3)
+                #         tts[0] = time.time()
+                #
+                #         times_0 = []
+                #         t_max = 99999999999999999999999999999999999999
+                #         for t in times:
+                #             if t < t_max and t > 0:
+                #                 times_0.append(round(t, 3))
+                #         times = times_0
+                #
+                #         # print()
+                #         # print(tts)
+                #         # print(tts_0)
+                #
+                #         times.append(tts_0)
+                #         times = sorted(times)
+                #
+                #         # print()
+                #         # print("times")
+                #         # print(times)
+                #
+                #
+                #
+                #         if phrase == code[len(code)-len(phrase):len(code)]:
+                #             set += 1
+                #
+                #         else:
+                #             set = int(set/2)
+                #
+                #
+                #         code = ''
+                #
+                #         sign_bank[phrase] = (score, rv, times)
+                #
+                #
+                #         filename = 'sign_bank/' + signame
+                #         outfile = open(filename, 'wb')
+                #         pickle.dump(sign_bank, outfile)
+                #         outfile.close
+                #
+                #
+                #
+                #
+                #
+                #
+                #         if ruler == 0:
+                #             set_scale = 1
+                #             for x in range(len(phrase)):
+                #                 rv += digibet[phrase[x]]*int(set/set_scale)
+                #             rv = rv % bbv
+                #
+                #             # print("")
+                #             # print(rv)
+                #             # print(rule)
+                #             rules, rule = rule_gen(rv, base)
+                #             # print(rule)
+                #
+                #             rule = np.array(rule)
+                #
+                #         if dim == 1:
+                #             flow = np.zeros(l, dtype=int)
+                #             flow[int(l / 2)] = 1
+                #             water = np.zeros((h, l), dtype=int)
+                #             water[0] = flow
+                #
+                #         if dim == 2:
+                #             flow = np.zeros((h, l), dtype=int)
+                #             flow[int(l / 2), int(h / 2)] = 1
+                #             water = np.zeros((h, l), dtype=int)
 
 
-                    if letter == '':
-                        letter = ' '
+        if typing_mode == 1 or typing_mode == 2:
 
-                    send_sign_to_keyboard(letter)
+            def send_sign_to_keyboard(sign):
+
+                try:
+                    pyautogui.write(sign)
+                    print("SENT TO KEYBOARD:", sign)
+                except Exception as e:
+                    print("pyautogui error:", e)
+
+
+
+
+            if letter == letter_0:
+                if letter_0 == letter_1:
+                    if letter != last_letter_typed:
+                        last_letter_typed = letter
+
+
+                        if letter == '':
+                            letter = ' '
+
+                        send_sign_to_keyboard(letter)
 
 
 
@@ -6531,6 +8899,49 @@ while running:
 
             elif event.key == pygame.K_F2:
                 array_past = image_array
+
+
+
+
+
+
+            elif event.key == pygame.K_F3:
+
+                right_open_hand_mask, right_box = capture_open_hand_mask(
+
+                    hand_array,
+
+                    right_roi,
+
+                    pad=hand_box_pad,
+
+                    color_threshold=60,
+
+                    brightness_threshold=90
+
+                )
+
+                right_open_hand_frame = capture_frame_from_fixed_box(hand_array, right_box)
+
+                if right_open_hand_frame is not None:
+                    right_exclusion_edge_mask = build_hand_sensor(right_open_hand_frame)
+
+                if right_open_hand_mask is not None and right_open_hand_frame is not None:
+
+                    print("exclusion calibration saved")
+
+                    print("box:", right_box)
+
+                    print("mask shape:", right_open_hand_mask.shape)
+
+                    print("frame shape:", right_open_hand_frame.shape)
+
+                    if right_exclusion_edge_mask is not None:
+                        print("exclusion edge shape:", right_exclusion_edge_mask.shape)
+
+                else:
+
+                    print("exclusion calibration failed")
 
             # elif event.key == pygame.K_LEFT:
             #     current -= 1
