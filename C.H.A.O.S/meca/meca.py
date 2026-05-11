@@ -8,6 +8,7 @@ import time
 import os
 from datetime import datetime
 import pyautogui
+import pygame.midi
 
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0.02
@@ -3846,7 +3847,7 @@ def left_hand_detect():
 
 
 count_scale = color_max*64
-bong = 0
+bong = 1
 
 history = []
 
@@ -4716,8 +4717,13 @@ if glyphs == 1:
             return (y, x)
 
         def fits(cx0, cy0, size):
-            # glyph occupies size x size square starting at (cx0,cy0)
-            return (0 <= cx0) and (0 <= cy0) and (cx0 + size <= W) and (cy0 + size <= H)
+            pad = size
+            return (
+                    0 <= cx0 and
+                    0 <= cy0 and
+                    cx0 + pad < W and
+                    cy0 + pad < H
+            )
 
         n_draw = n_slots if wrap_message else min(len(m), n_slots)
 
@@ -6798,6 +6804,908 @@ if hand_sensor == 1:
 
 
 
+### cave_table ###
+
+note = ' '
+# chord build-out
+chord_intervals = [0, 4, 7, 12]
+
+# amplitudes per voice
+voice_amps = [0.22, 0.12, 0.16, 0.10]
+
+# pan positions: 1=center, 4=outer sides
+voice_pans = [0.50, 0.35, 0.65, 0.85]
+
+# optional mirrored outer version if you want both left/right sides explicitly
+voice_pans_left  = [0.50, 0.35, 0.22, 0.15]
+voice_pans_right = [0.50, 0.65, 0.78, 0.85]
+
+# smoothing
+water_smooth_passes = 12
+rainbow_smooth_passes = 10
+audio_smooth_passes = 2
+
+# envelopes
+attack_ms = 12
+release_ms = 120
+
+# echo / reverb
+fx_on = 1
+echo_mix = 0.16
+echo_feedback = 0.28
+echo_delay_ms = 140
+
+reverb_mix = 0.18
+reverb_decay = 0.42
+reverb_delays_ms = [31, 47, 73, 109]
+
+
+
+
+
+
+
+
+
+
+def build_swell_envelope(n, peak_pos=0.38, swell_curve=1.8, tail_curve=1.4):
+    """
+    Slow bloom up to peak, then long curved release.
+    Returns float32 envelope in [0,1].
+    """
+    if n <= 1:
+        return np.ones(max(1, n), dtype=np.float32)
+
+    peak_idx = int(np.clip(peak_pos, 0.05, 0.95) * n)
+    peak_idx = max(1, min(n - 1, peak_idx))
+
+    env = np.zeros(n, dtype=np.float32)
+
+    # swell up
+    up = np.linspace(0.0, 1.0, peak_idx, endpoint=False, dtype=np.float32)
+    env[:peak_idx] = up ** swell_curve
+
+    # tail down
+    down_len = n - peak_idx
+    down = np.linspace(1.0, 0.0, down_len, endpoint=True, dtype=np.float32)
+    env[peak_idx:] = down ** tail_curve
+
+    return env
+
+
+def lerp(a, b, t):
+    return a + (b - a) * t
+
+
+def stepped_smooth_from_env(env, smooth_start, smooth_end, steps=4):
+    """
+    Build a per-sample smoothness control from the envelope.
+    High env -> smoother front, low env -> rougher tail.
+    """
+    # invert so tail gets less smooth
+    inv = 1.0 - env
+    raw = lerp(float(smooth_start), float(smooth_end), inv)
+    return np.clip(np.round(raw), min(smooth_start, smooth_end), max(smooth_start, smooth_end)).astype(np.int32)
+
+
+def build_segmented_wavetable_audio(freq, table_builder, field, n, sample_rate,
+                                    smooth_start, smooth_end,
+                                    segment_len=2048):
+    """
+    Rebuild wavetable in segments so smoothness can change over the note.
+    """
+    mono = np.zeros(n, dtype=np.float32)
+    phase0 = 0.0
+    i = 0
+
+    while i < n:
+        j = min(n, i + segment_len)
+        tpos = i / float(max(1, n - 1))
+        smooth_passes = int(round(lerp(smooth_start, smooth_end, tpos)))
+
+        table = table_builder(field, smooth_passes=smooth_passes)
+        seg_n = j - i
+
+        phase = (phase0 + (np.arange(seg_n, dtype=np.float32) * freq / sample_rate)) % 1.0
+        idx = (phase * len(table)).astype(np.int32) % len(table)
+        mono[i:j] = table[idx]
+
+        phase0 = float((phase[-1] + freq / sample_rate) % 1.0)
+        i = j
+
+    return mono
+
+
+def apply_dynamic_fx_chain(stereo_i16, env, sample_rate=44100):
+    """
+    More wetness as the note decays.
+    """
+    if stereo_i16 is None:
+        return None
+
+    x = stereo_i16.astype(np.float32)
+
+    echo_wet = apply_echo_stereo(
+        stereo_i16,
+        sample_rate=sample_rate,
+        delay_ms=echo_delay_ms,
+        mix=1.0,
+        feedback=echo_feedback
+    ).astype(np.float32)
+
+    reverb_wet = apply_reverb_stereo(
+        stereo_i16,
+        sample_rate=sample_rate,
+        mix=1.0,
+        decay=reverb_decay,
+        delays_ms=reverb_delays_ms
+    ).astype(np.float32)
+
+    # tail gets wetter
+    inv = 1.0 - env
+    echo_mix_curve = lerp(echo_mix_start, echo_mix_end, inv).reshape(-1, 1)
+    reverb_mix_curve = lerp(reverb_mix_start, reverb_mix_end, inv).reshape(-1, 1)
+
+    y = x * (1.0 - echo_mix_curve) + echo_wet * echo_mix_curve
+    y = y * (1.0 - reverb_mix_curve) + reverb_wet * reverb_mix_curve
+
+    y = np.clip(y, -32767, 32767).astype(np.int16)
+    return y
+
+
+
+def smooth_audio_mono(mono, passes=2):
+    x = mono.astype(np.float32).copy()
+    for _ in range(max(0, passes)):
+        x = (np.roll(x, 1) + 2.0 * x + np.roll(x, -1)) / 4.0
+    return x
+
+
+def apply_echo_stereo(stereo_i16, sample_rate=44100, delay_ms=140, mix=0.16, feedback=0.28):
+    if stereo_i16 is None:
+        return None
+
+    x = stereo_i16.astype(np.float32).copy()
+    y = x.copy()
+
+    delay = max(1, int(sample_rate * delay_ms / 1000.0))
+    if delay >= len(x):
+        return stereo_i16
+
+    echo = np.zeros_like(x, dtype=np.float32)
+    echo[delay:] = x[:-delay] * feedback
+
+    y = x * (1.0 - mix) + echo * mix
+    y = np.clip(y, -32767, 32767).astype(np.int16)
+    return y
+
+
+def apply_reverb_stereo(stereo_i16, sample_rate=44100, mix=0.18, decay=0.42, delays_ms=(31, 47, 73, 109)):
+    if stereo_i16 is None:
+        return None
+
+    x = stereo_i16.astype(np.float32).copy()
+    wet = np.zeros_like(x, dtype=np.float32)
+
+    for i, d_ms in enumerate(delays_ms):
+        delay_samples = max(1, int(sample_rate * d_ms / 1000.0))
+        if delay_samples >= len(x):
+            continue
+        gain = decay ** (i + 1)
+        wet[delay_samples:] += x[:-delay_samples] * gain
+
+    y = x * (1.0 - mix) + wet * mix
+    y = np.clip(y, -32767, 32767).astype(np.int16)
+    return y
+
+
+def apply_fx_chain(stereo_i16, sample_rate=44100):
+    if stereo_i16 is None:
+        return None
+
+    y = stereo_i16
+
+    if fx_on == 1:
+        y = apply_echo_stereo(
+            y,
+            sample_rate=sample_rate,
+            delay_ms=echo_delay_ms,
+            mix=echo_mix,
+            feedback=echo_feedback
+        )
+
+        y = apply_reverb_stereo(
+            y,
+            sample_rate=sample_rate,
+            mix=reverb_mix,
+            decay=reverb_decay,
+            delays_ms=reverb_delays_ms
+        )
+
+    return y
+
+
+
+
+
+
+
+def build_ca_wavetable(water_field, base=2, table_size=2048, smooth_passes=8):
+    arr = np.asarray(water_field, dtype=np.float32)
+    flat = arr.flatten()
+
+    if flat.size == 0:
+        return np.zeros(table_size, dtype=np.float32)
+
+    # normalize CA states into [-1, 1]
+    if base <= 1:
+        wave = np.zeros_like(flat, dtype=np.float32)
+    else:
+        wave = (flat / float(base - 1)) * 2.0 - 1.0
+
+    # remove DC
+    wave = wave - np.mean(wave)
+
+    peak = np.max(np.abs(wave))
+    if peak < 1e-6:
+        wave = np.zeros_like(wave, dtype=np.float32)
+        wave[0] = 1.0
+    else:
+        wave = wave / peak
+
+    # smooth raw source circularly
+    for _ in range(max(0, smooth_passes // 2)):
+        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+    # resample to fixed table
+    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+    table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+    # smooth again after resampling
+    for _ in range(max(0, smooth_passes)):
+        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+    # remove DC again
+    table = table - np.mean(table)
+
+    peak = np.max(np.abs(table))
+    if peak > 1e-6:
+        table = table / peak
+
+    return table
+
+
+def ca_tone_from_note(sign, water_field, digibet, *,
+                      base=2,
+                      sample_rate=44100,
+                      duration=0.35,
+                      amp=0.25,
+                      midi_base_hz=55.0,
+                      note_offset=12):
+    """
+    sign -> digibet value controls pitch
+    CA field controls waveform shape
+    """
+    if sign not in digibet:
+        return None
+
+    sign_value = digibet[sign] -1
+
+    if sign_value == -1:
+        return None
+
+    # pitch from digibet value
+    semitone = note_offset + sign_value
+    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+
+    table = build_ca_wavetable(water_field, base=base, table_size=2048)
+    n = int(sample_rate * duration)
+
+    # phase accumulation through the wavetable
+    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+    idx = (phase * len(table)).astype(np.int32) % len(table)
+    mono = table[idx]
+
+    # short envelope to avoid clicks
+    attack = max(1, int(0.01 * sample_rate))
+    release = max(1, int(0.05 * sample_rate))
+    env = np.ones(n, dtype=np.float32)
+    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+    mono = mono * env * amp
+
+    # int16 stereo for pygame
+    mono_i16 = np.clip(mono * 32767.0, -32767, 32767).astype(np.int16)
+    stereo = np.repeat(mono_i16.reshape(-1, 1), 2, axis=1)
+
+    return pygame.sndarray.make_sound(stereo)
+
+
+
+def build_rainbow_wavetable(rainbow_field, color_max=2048, table_size=2048, smooth_passes=6):
+    arr = np.asarray(rainbow_field, dtype=np.float32)
+    flat = arr.flatten()
+
+    if flat.size == 0:
+        return np.zeros(table_size, dtype=np.float32)
+
+    # normalize rainbow values into [-1, 1]
+    wave = (flat / float(color_max - 1)) * 2.0 - 1.0
+
+    # remove DC
+    wave = wave - np.mean(wave)
+
+    peak = np.max(np.abs(wave))
+    if peak < 1e-6:
+        wave = np.zeros_like(wave, dtype=np.float32)
+        wave[0] = 1.0
+    else:
+        wave = wave / peak
+
+    # smooth raw source
+    for _ in range(max(0, smooth_passes // 2)):
+        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+    # resample to fixed table
+    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+    table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+    # smooth again
+    for _ in range(max(0, smooth_passes)):
+        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+    table = table - np.mean(table)
+    peak = np.max(np.abs(table))
+    if peak > 1e-6:
+        table = table / peak
+
+    return table
+
+
+
+
+def rainbow_tone_from_note(sign, rainbow_field, digibet, *,
+                           color_max=2048,
+                           sample_rate=44100,
+                           duration=0.35,
+                           amp=0.18,
+                           midi_base_hz=55.0,
+                           note_offset=24,
+                           octave_shift=0,
+                           harmony_offset=0,
+                           pitch_detune=0.0,
+                           pan=0.8):
+    if sign not in digibet:
+        return None
+
+    sign_value = digibet[sign] - 1
+    if sign_value == -1:
+        return None
+
+    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+
+    # optional slight detune for side shimmer
+    freq *= (2.0 ** (pitch_detune / 12.0))
+
+    table = build_rainbow_wavetable(rainbow_field, color_max=color_max, table_size=2048)
+    n = int(sample_rate * duration)
+
+    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+    idx = (phase * len(table)).astype(np.int32) % len(table)
+    mono = table[idx]
+
+    # envelope
+    attack = max(1, int(0.01 * sample_rate))
+    release = max(1, int(0.08 * sample_rate))
+    env = np.ones(n, dtype=np.float32)
+    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+    mono = mono * env * amp
+
+    # pan outward
+    pan = float(np.clip(pan, 0.0, 1.0))
+    left_gain = np.sqrt(1.0 - pan)
+    right_gain = np.sqrt(pan)
+
+    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+    stereo = np.column_stack((left, right))
+    return pygame.sndarray.make_sound(stereo)
+
+
+base_hz = 55.0
+note_offset = 0
+
+
+def ca_tone_from_note(sign, water_field, digibet, *,
+                      base=2,
+                      sample_rate=44100,
+                      duration=0.35,
+                      amp=0.25,
+                      midi_base_hz=55.0,
+                      note_offset=0,
+                      octave_shift=0,
+                      harmony_offset=0,
+                      pan=0.5):
+    if sign not in digibet:
+        return None
+
+    sign_value = digibet[sign] - 1
+    if sign_value == -1:
+        return None
+
+    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+
+    table = build_ca_wavetable(water_field, base=base, table_size=2048)
+    n = int(sample_rate * duration)
+
+    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+    idx = (phase * len(table)).astype(np.int32) % len(table)
+    mono = table[idx]
+
+    attack = max(1, int(0.01 * sample_rate))
+    release = max(1, int(0.05 * sample_rate))
+    env = np.ones(n, dtype=np.float32)
+    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+    mono = mono * env * amp
+
+    pan = float(np.clip(pan, 0.0, 1.0))
+    left_gain = np.sqrt(1.0 - pan)
+    right_gain = np.sqrt(pan)
+
+    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+    stereo = np.column_stack((left, right))
+    return pygame.sndarray.make_sound(stereo)
+
+
+
+
+
+def play_water_rainbow_chord(sign, water_field, rainbow_field):
+    if sign not in digibet or digibet[sign] == 0:
+        return
+
+    voices = [
+        ("water",   0, 0.14, 0.47, -0.01),
+        ("water",   0, 0.14, 0.53,  0.01),
+
+        ("rainbow", 4, 0.08, 0.35, -0.03),
+        ("rainbow", 4, 0.08, 0.65,  0.03),
+
+        ("water",   7, 0.10, 0.22, -0.01),
+        ("water",   7, 0.10, 0.78,  0.01),
+
+        ("rainbow", 12, 0.06, 0.15, -0.04),
+        ("rainbow", 12, 0.06, 0.85,  0.04),
+    ]
+
+    for source, interval, amp, pan, detune in voices:
+        if source == "water":
+            snd = ca_tone_from_note(
+                sign,
+                water_field,
+                digibet,
+                base=base,
+                sample_rate=sample_rate,
+                duration=0.35,
+                amp=amp,
+                midi_base_hz=base_hz,
+                note_offset=base_note_offset,
+                octave_shift=octave_shift,
+                harmony_offset=interval,
+                pan=pan
+            )
+        else:
+            snd = rainbow_tone_from_note(
+                sign,
+                rainbow_field,
+                digibet,
+                color_max=color_max,
+                sample_rate=sample_rate,
+                duration=0.35,
+                amp=amp,
+                midi_base_hz=base_hz,
+                note_offset=base_note_offset,
+                octave_shift=octave_shift,
+                harmony_offset=interval,
+                pitch_detune=detune,
+                pan=pan
+            )
+
+        if snd is not None:
+            snd.play()
+
+
+
+
+
+def build_ca_wavetable(water_field, base=2, table_size=2048, smooth_passes=None):
+    if smooth_passes is None:
+        smooth_passes = water_smooth_passes
+
+    arr = np.asarray(water_field, dtype=np.float32)
+    flat = arr.flatten()
+
+    if flat.size == 0:
+        return np.zeros(table_size, dtype=np.float32)
+
+    if base <= 1:
+        wave = np.zeros_like(flat, dtype=np.float32)
+    else:
+        wave = (flat / float(base - 1)) * 2.0 - 1.0
+
+    wave = wave - np.mean(wave)
+
+    peak = np.max(np.abs(wave))
+    if peak < 1e-6:
+        wave = np.zeros_like(wave, dtype=np.float32)
+        wave[0] = 1.0
+    else:
+        wave = wave / peak
+
+    for _ in range(max(0, smooth_passes // 2)):
+        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+    table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+    for _ in range(max(0, smooth_passes)):
+        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+    # soften the wrap point a little
+    seam = min(48, len(table) // 8)
+    if seam > 1:
+        start = table[:seam].copy()
+        end = table[-seam:].copy()
+        blend = np.linspace(0.0, 1.0, seam, endpoint=False)
+        mixed = end * (1.0 - blend) + start * blend
+        table[:seam] = mixed
+        table[-seam:] = mixed
+
+    table = table - np.mean(table)
+    peak = np.max(np.abs(table))
+    if peak > 1e-6:
+        table = table / peak
+
+    return table
+
+
+
+
+def build_rainbow_wavetable(rainbow_field, color_max=2048, table_size=2048, smooth_passes=None):
+    if smooth_passes is None:
+        smooth_passes = rainbow_smooth_passes
+
+    arr = np.asarray(rainbow_field, dtype=np.float32)
+    flat = arr.flatten()
+
+    if flat.size == 0:
+        return np.zeros(table_size, dtype=np.float32)
+
+    wave = (flat / float(color_max - 1)) * 2.0 - 1.0
+    wave = wave - np.mean(wave)
+
+    peak = np.max(np.abs(wave))
+    if peak < 1e-6:
+        wave = np.zeros_like(wave, dtype=np.float32)
+        wave[0] = 1.0
+    else:
+        wave = wave / peak
+
+    for _ in range(max(0, smooth_passes // 2)):
+        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+    table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+    for _ in range(max(0, smooth_passes)):
+        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+    seam = min(48, len(table) // 8)
+    if seam > 1:
+        start = table[:seam].copy()
+        end = table[-seam:].copy()
+        blend = np.linspace(0.0, 1.0, seam, endpoint=False)
+        mixed = end * (1.0 - blend) + start * blend
+        table[:seam] = mixed
+        table[-seam:] = mixed
+
+    table = table - np.mean(table)
+    peak = np.max(np.abs(table))
+    if peak > 1e-6:
+        table = table / peak
+
+    return table
+
+
+
+
+
+
+
+
+def ca_tone_from_note_4(sign, water_field, digibet, *,
+                      base=2,
+                      sample_rate=44100,
+                      duration=0.35,
+                      amp=0.25,
+                      midi_base_hz=55.0,
+                      note_offset=0,
+                      octave_shift=0,
+                      harmony_offset=0,
+                      pitch_detune=0.0,
+                      pan=0.5):
+    if sign not in digibet:
+        return None
+
+    sign_value = digibet[sign] - 1
+    if sign_value == -1:
+        return None
+
+    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+    freq *= (2.0 ** (pitch_detune / 12.0))
+
+    table = build_ca_wavetable(water_field, base=base, table_size=2048)
+    n = int(sample_rate * duration)
+
+    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+    idx = (phase * len(table)).astype(np.int32) % len(table)
+    mono = table[idx]
+
+    mono = smooth_audio_mono(mono, passes=audio_smooth_passes)
+
+    attack = max(1, int((attack_ms / 1000.0) * sample_rate))
+    release = max(1, int((release_ms / 1000.0) * sample_rate))
+    env = np.ones(n, dtype=np.float32)
+    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+    mono = mono * env * amp
+
+    pan = float(np.clip(pan, 0.0, 1.0))
+    left_gain = np.sqrt(1.0 - pan)
+    right_gain = np.sqrt(pan)
+
+    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+    stereo = np.column_stack((left, right))
+    stereo = apply_fx_chain(stereo, sample_rate=sample_rate)
+
+    return pygame.sndarray.make_sound(stereo)
+
+
+
+
+def rainbow_tone_from_note_4(sign, rainbow_field, digibet, *,
+                           color_max=2048,
+                           sample_rate=44100,
+                           duration=0.35,
+                           amp=0.18,
+                           midi_base_hz=55.0,
+                           note_offset=0,
+                           octave_shift=0,
+                           harmony_offset=0,
+                           pitch_detune=0.0,
+                           pan=0.8):
+    if sign not in digibet:
+        return None
+
+    sign_value = digibet[sign] - 1
+    if sign_value == -1:
+        return None
+
+    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+    freq *= (2.0 ** (pitch_detune / 12.0))
+
+    table = build_rainbow_wavetable(rainbow_field, color_max=color_max, table_size=2048)
+    n = int(sample_rate * duration)
+
+    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+    idx = (phase * len(table)).astype(np.int32) % len(table)
+    mono = table[idx]
+
+    mono = smooth_audio_mono(mono, passes=audio_smooth_passes)
+
+    attack = max(1, int((attack_ms / 1000.0) * sample_rate))
+    release = max(1, int((release_ms / 1000.0) * sample_rate))
+    env = np.ones(n, dtype=np.float32)
+    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+    mono = mono * env * amp
+
+    pan = float(np.clip(pan, 0.0, 1.0))
+    left_gain = np.sqrt(1.0 - pan)
+    right_gain = np.sqrt(pan)
+
+    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+    stereo = np.column_stack((left, right))
+    stereo = apply_fx_chain(stereo, sample_rate=sample_rate)
+
+    return pygame.sndarray.make_sound(stereo)
+
+
+
+
+
+
+
+
+
+# note shape
+note_duration = .7
+
+# swell envelope
+swell_peak_pos = .01     # where the note reaches max body, 0..1
+swell_curve = 1        # larger = more dramatic swell
+tail_curve = 1          # release shape
+
+# dynamic smoothness
+water_smooth_start = 10
+water_smooth_end = 1
+
+rainbow_smooth_start = 14
+rainbow_smooth_end = 1
+
+# dynamic fx
+echo_mix_start = 0.16
+echo_mix_end = 0.32
+
+reverb_mix_start = 0.16
+reverb_mix_end = 0.32
+
+
+
+
+def ca_tone_from_note(sign, water_field, digibet, *,
+                      base=2,
+                      sample_rate=44100,
+                      duration=0.85,
+                      amp=0.25,
+                      midi_base_hz=55.0,
+                      note_offset=0,
+                      octave_shift=0,
+                      harmony_offset=0,
+                      pitch_detune=0.0,
+                      pan=0.5):
+    if sign not in digibet:
+        return None
+
+    sign_value = digibet[sign] - 1
+    if sign_value == -1:
+        return None
+
+    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+    freq *= (2.0 ** (pitch_detune / 12.0))
+
+    n = int(sample_rate * duration)
+
+    mono = build_segmented_wavetable_audio(
+        freq,
+        lambda field, smooth_passes: build_ca_wavetable(
+            field, base=base, table_size=2048, smooth_passes=smooth_passes
+        ),
+        water_field,
+        n,
+        sample_rate,
+        smooth_start=water_smooth_start,
+        smooth_end=water_smooth_end,
+        segment_len=2048
+    )
+
+    mono = smooth_audio_mono(mono, passes=max(0, audio_smooth_passes - 1))
+
+    env = build_swell_envelope(
+        n,
+        peak_pos=swell_peak_pos,
+        swell_curve=swell_curve,
+        tail_curve=tail_curve
+    )
+
+    mono = mono * env * amp
+
+    pan = float(np.clip(pan, 0.0, 1.0))
+    left_gain = np.sqrt(1.0 - pan)
+    right_gain = np.sqrt(pan)
+
+    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+    stereo = np.column_stack((left, right))
+
+    if fx_on == 1:
+        stereo = apply_dynamic_fx_chain(stereo, env, sample_rate=sample_rate)
+
+    return pygame.sndarray.make_sound(stereo)
+
+
+
+
+
+def rainbow_tone_from_note(sign, rainbow_field, digibet, *,
+                           color_max=2048,
+                           sample_rate=44100,
+                           duration=0.85,
+                           amp=0.18,
+                           midi_base_hz=55.0,
+                           note_offset=0,
+                           octave_shift=0,
+                           harmony_offset=0,
+                           pitch_detune=0.0,
+                           pan=0.8):
+    if sign not in digibet:
+        return None
+
+    sign_value = digibet[sign] - 1
+    if sign_value == -1:
+        return None
+
+    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+    freq *= (2.0 ** (pitch_detune / 12.0))
+
+    n = int(sample_rate * duration)
+
+    mono = build_segmented_wavetable_audio(
+        freq,
+        lambda field, smooth_passes: build_rainbow_wavetable(
+            field, color_max=color_max, table_size=2048, smooth_passes=smooth_passes
+        ),
+        rainbow_field,
+        n,
+        sample_rate,
+        smooth_start=rainbow_smooth_start,
+        smooth_end=rainbow_smooth_end,
+        segment_len=2048
+    )
+
+    mono = smooth_audio_mono(mono, passes=max(0, audio_smooth_passes - 1))
+
+    env = build_swell_envelope(
+        n,
+        peak_pos=swell_peak_pos,
+        swell_curve=swell_curve,
+        tail_curve=tail_curve
+    )
+
+    mono = mono * env * amp
+
+    pan = float(np.clip(pan, 0.0, 1.0))
+    left_gain = np.sqrt(1.0 - pan)
+    right_gain = np.sqrt(pan)
+
+    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+    stereo = np.column_stack((left, right))
+
+    if fx_on == 1:
+        stereo = apply_dynamic_fx_chain(stereo, env, sample_rate=sample_rate)
+
+    return pygame.sndarray.make_sound(stereo)
+
+
+
+
 
 
 
@@ -7510,7 +8418,7 @@ while running:
 
 
     #####hands######
-    detect_change = 3
+    detect_change = 1
 
 
     if detect_change == 1:
@@ -8121,7 +9029,7 @@ while running:
         walk += lesson_t.get_width()
 
 
-    letters_on = 0
+    letters_on = 1
 
     if letters_on == 1:
         letters = []
@@ -8131,7 +9039,7 @@ while running:
         letter_0, code_00 = handle(hands_0, code_00)
         letter_1, code_01 = handle(hands_1, code_01)
 
-        typing_mode = 0
+        typing_mode = 3
 
         ###typing###
         if typing_mode == 0 or typing_mode == 2:
@@ -8419,6 +9327,47 @@ while running:
                         send_sign_to_keyboard(letter)
 
 
+        if typing_mode == 3:
+
+            r_hand = ' '
+            l_hand = ' '
+
+
+            if hands[0] == hands_0[0]:
+                r_hand = hands[0]
+            elif hands_0[0] == hands_1[0]:
+                r_hand = hands_0[0]
+            elif hands[0] == hands_1[0]:
+                r_hand = hands_1[0]
+
+
+            if hands[1] == hands_0[1]:
+                l_hand = hands[1]
+            elif hands_0[1] == hands_1[1]:
+                l_hand = hands_0[1]
+            elif hands[1] == hands_1[1]:
+                l_hand = hands_1[1]
+
+
+            print(r_hand)
+            print(l_hand)
+
+            if r_hand == l_hand and r_hand != last_typed:
+                bong_on = 1
+                code = ' '
+                message += l_hand
+                note = r_hand
+                last_typed = r_hand
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -8571,6 +9520,7 @@ while running:
     ###synth###
     beat = 1
     volume = 0.3
+    bong = 4
     ######bong#####
     if bong_on == 1:
         if bong == 1:
@@ -8650,6 +9600,252 @@ while running:
             #     key_triangle[note_scale].set_volume(volume)
             #     key_triangle[note_scale].play()
             #
+
+
+
+        elif bong == 2:
+            bong_on = 0
+            # print('gong', note)
+
+            if dim == 1:
+                water0 = np.rot90(water[::], 2)
+            elif dim == 2:
+                water0 = water
+            else:
+                water0 = flow
+
+            if note in digibet:
+                flow_sound = ca_tone_from_note(
+                    note,
+                    water0,
+                    digibet,
+                    base=base,
+                    sample_rate=sample_rate,
+                    duration=0.35,
+                    amp=volume,
+                    midi_base_hz=55.0,
+                    note_offset=0
+                )
+
+                if flow_sound is not None:
+                    flow_sound.play()
+
+
+
+
+        elif bong == 3:
+            bong_on = 0
+            # print('gong', note)
+
+            if dim == 1:
+                water0 = np.rot90(water[::], 2)
+            elif dim == 2:
+                water0 = water
+            else:
+                water0 = flow
+
+            rainbow0 = rainbow_array.copy()
+
+            if note in digibet:
+                # main centered water voice
+                flow_sound = ca_tone_from_note(
+                    note,
+                    water0,
+                    digibet,
+                    base=base,
+                    sample_rate=sample_rate,
+                    duration=0.35,
+                    amp=0.22,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pan=0.5
+                )
+
+                # left rainbow side voice
+                rainbow_left = rainbow_tone_from_note(
+                    note,
+                    rainbow0,
+                    digibet,
+                    color_max=color_max,
+                    sample_rate=sample_rate,
+                    duration=0.35,
+                    amp=0.10,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=-0.01,
+                    pan=0.3
+                )
+
+                # right rainbow side voice
+                rainbow_right = rainbow_tone_from_note(
+                    note,
+                    rainbow0,
+                    digibet,
+                    color_max=color_max,
+                    sample_rate=sample_rate,
+                    duration=0.35,
+                    amp=0.10,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=0.01,
+                    pan=0.7
+                )
+
+                if flow_sound is not None:
+                    flow_sound.play()
+
+                if rainbow_left is not None:
+                    rainbow_left.play()
+
+                if rainbow_right is not None:
+                    rainbow_right.play()
+
+
+
+        elif bong == 4:
+            bong_on = 0
+            # print('gong', note)
+
+            if dim == 1:
+                water0 = np.rot90(water[::], 2)
+            elif dim == 2:
+                water0 = water
+            else:
+                water0 = flow
+
+            rainbow0 = rainbow_array.copy()
+
+            if note in digibet:
+                flow_sound = ca_tone_from_note(
+                    note,
+                    water0,
+                    digibet,
+                    base=base,
+                    sample_rate=sample_rate,
+                    duration=0.40,
+                    amp=0.22,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=0.0,
+                    pan=0.5
+                )
+
+                rainbow_left = rainbow_tone_from_note(
+                    note,
+                    rainbow0,
+                    digibet,
+                    color_max=color_max,
+                    sample_rate=sample_rate,
+                    duration=0.40,
+                    amp=0.10,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=-0.008,
+                    pan=0.34
+                )
+
+                rainbow_right = rainbow_tone_from_note(
+                    note,
+                    rainbow0,
+                    digibet,
+                    color_max=color_max,
+                    sample_rate=sample_rate,
+                    duration=0.40,
+                    amp=0.10,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=0.008,
+                    pan=0.66
+                )
+
+                if flow_sound is not None:
+                    flow_sound.play()
+                if rainbow_left is not None:
+                    rainbow_left.play()
+                if rainbow_right is not None:
+                    rainbow_right.play()
+
+
+
+
+
+        elif bong == 5:
+            bong_on = 0
+            # print('gong', note)
+
+            if dim == 1:
+                water0 = np.rot90(water[::], 2)
+            elif dim == 2:
+                water0 = water
+            else:
+                water0 = flow
+
+            rainbow0 = rainbow_array.copy()
+
+            if note in digibet:
+                flow_sound = ca_tone_from_note(
+                    note,
+                    water0,
+                    digibet,
+                    base=base,
+                    sample_rate=sample_rate,
+                    duration=note_duration,
+                    amp=0.24,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=0.0,
+                    pan=0.5
+                )
+
+                rainbow_left = rainbow_tone_from_note(
+                    note,
+                    rainbow0,
+                    digibet,
+                    color_max=color_max,
+                    sample_rate=sample_rate,
+                    duration=note_duration,
+                    amp=0.11,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=-0.008,
+                    pan=0.32
+                )
+
+                rainbow_right = rainbow_tone_from_note(
+                    note,
+                    rainbow0,
+                    digibet,
+                    color_max=color_max,
+                    sample_rate=sample_rate,
+                    duration=note_duration,
+                    amp=0.11,
+                    midi_base_hz=55.0,
+                    note_offset=0,
+                    octave_shift=0,
+                    pitch_detune=0.008,
+                    pan=0.68
+                )
+
+                if flow_sound is not None:
+                    flow_sound.play()
+                if rainbow_left is not None:
+                    rainbow_left.play()
+                if rainbow_right is not None:
+                    rainbow_right.play()
+
+
+
+
+
+
 
 
     ###shifts###
