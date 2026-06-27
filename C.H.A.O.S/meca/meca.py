@@ -388,7 +388,7 @@ pygame.camera.init()
 
 
 
-signame = "Chaotomata"
+signame = "Theophilis"
 
 
 
@@ -3405,7 +3405,7 @@ flex_p = 32
 
 ####right hand####
 xr_pos = (x_s + x_g) * 3
-yr_pos = 400
+yr_pos = 500
 palm_xr = xr_pos + x_s * 6
 palm_yr = yr_pos + y_s * 9
 
@@ -3478,7 +3478,7 @@ right_hands = []
 
 ###left hand###
 xl_pos = screen_width - (x_s + x_g) * 10
-yl_pos = 400
+yl_pos = 500
 palm_xl = xl_pos + x_s * 6
 palm_yl = yl_pos + y_s * 9
 
@@ -9039,7 +9039,7 @@ while running:
         letter_0, code_00 = handle(hands_0, code_00)
         letter_1, code_01 = handle(hands_1, code_01)
 
-        typing_mode = 3
+        typing_mode = 0
 
         ###typing###
         if typing_mode == 0 or typing_mode == 2:
@@ -9519,7 +9519,7 @@ while running:
 
     ###synth###
     beat = 1
-    volume = 0.3
+    volume = 0.0
     bong = 4
     ######bong#####
     if bong_on == 1:
