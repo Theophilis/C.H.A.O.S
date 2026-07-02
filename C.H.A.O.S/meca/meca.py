@@ -9,12 +9,93 @@ import os
 from datetime import datetime
 import pyautogui
 import pygame.midi
+import socket
+
+
+
+
+
+# -----------------------------
+# FLOW NETWORK CLIENT
+# -----------------------------
+FLOW_HOST = "127.0.0.1"   # same computer
+FLOW_PORT = 50505
+
+flow_client = None
+flow_last_connect_try = 0
+
+
+def connect_to_flow():
+    global flow_client, flow_last_connect_try
+
+    if flow_client is not None:
+        return flow_client
+
+    now = time.time()
+    if now - flow_last_connect_try < 2.0:
+        return None
+
+    flow_last_connect_try = now
+
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1.0)
+        s.connect((FLOW_HOST, FLOW_PORT))
+        s.settimeout(None)
+
+        flow_client = s
+        print("Connected to Flow:", FLOW_HOST, FLOW_PORT)
+        return flow_client
+
+    except Exception as e:
+        print("Flow not connected yet:", e)
+        flow_client = None
+        return None
+
+
+def send_sign_to_flow(sign):
+    global flow_client
+
+    if sign == "":
+        sign = " "
+
+    if sign == " ":
+        msg = "<SPACE>"
+    elif sign == "\n":
+        msg = "<ENTER>"
+    elif sign == "\b":
+        msg = "<BACKSPACE>"
+    else:
+        msg = sign
+
+    s = connect_to_flow()
+    if s is None:
+        return
+
+    try:
+        s.sendall((msg + "\n").encode("utf-8"))
+        print("SENT TO FLOW:", repr(msg))
+
+    except Exception as e:
+        print("Flow send failed:", e)
+
+        try:
+            s.close()
+        except:
+            pass
+
+        flow_client = None
+
+
+
+
 
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0.02
 
 # Get the directory where this script is located
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 
 
@@ -388,7 +469,12 @@ pygame.camera.init()
 
 
 
+<<<<<<< Updated upstream
 signame = "Theophilis"
+=======
+
+signame = "Chaotomata"
+>>>>>>> Stashed changes
 
 
 
@@ -505,7 +591,13 @@ def rule_gen(rule, base=2, width=0, string=0):
 
 
 
+
+###pygame cam###
+
 cam_list = pygame.camera.list_cameras()
+
+
+
 if not cam_list:
     print("no cameras found")
     pygame.quit()
@@ -517,6 +609,10 @@ print(cam_list)
 camera = pygame.camera.Camera(cam_list[0], (screen_width, screen_height))
 
 camera.start()
+
+
+
+
 
 image = camera.get_image()
 value_color = {0: (0, 0, 0), 1: (255, 0, 255), 2: (0, 255, 255), 3: (255, 255, 0), 4: (128, 128, 128), 5: (255, 0, 0),
@@ -7726,7 +7822,15 @@ def rainbow_tone_from_note(sign, rainbow_field, digibet, *,
 
 
 
-
+digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+           's': 4, 'c': 5, 'd': 6, 'm': 7,
+           'g': 8, 'f': 9, 'w': 10, 'v': 11,
+           'z': 12, 'q': 13, 'an': 14, 'er': 15,
+           'ou': 16, 'in': 17, 'th': 18, 'j': 19,
+           'x': 20, 'k': 21, 'y': 22, 'b': 23,
+           'h': 24, 'p': 25, 'u': 26, 'l': 27,
+           'n': 28, 'o': 29, 'r': 30, 'e': 31}
+digibetu = {v: k for k, v in digibet.items()}
 
 
 
@@ -9039,7 +9143,7 @@ while running:
         letter_0, code_00 = handle(hands_0, code_00)
         letter_1, code_01 = handle(hands_1, code_01)
 
-        typing_mode = 0
+        typing_mode = 2
 
         ###typing###
         if typing_mode == 0 or typing_mode == 2:
@@ -9325,6 +9429,8 @@ while running:
                             letter = ' '
 
                         send_sign_to_keyboard(letter)
+
+                        send_sign_to_flow(letter)
 
 
         if typing_mode == 3:

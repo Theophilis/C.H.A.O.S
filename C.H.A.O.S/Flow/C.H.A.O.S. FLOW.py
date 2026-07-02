@@ -10,6 +10,7 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib import colors as c
 from os import listdir
+import socket
 
 sys.setrecursionlimit(999999999)
 
@@ -275,6 +276,18 @@ letter_values = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7,
                  'd': 12, 'f': 13,
                  'g': 14, 'h': 15, 'j': 16, 'k': 17, 'l': 18, 'z': 19, 'x': 20, 'c': 21, 'v': 22, 'b': 23, 'n': 24,
                  'm': 25, ' ': 0}
+
+digibet = {' ': 0, 'a': 1, 'i': 2, 't': 3,
+           's': 4, 'c': 5, 'd': 6, 'm': 7,
+           'g': 8, 'f': 9, 'w': 10, 'v': 11,
+           'z': 12, 'q': 13, 'an': 14, 'er': 15,
+           'ou': 16, 'in': 17, 'th': 18, 'j': 19,
+           'x': 20, 'k': 21, 'y': 22, 'b': 23,
+           'h': 24, 'p': 25, 'u': 26, 'l': 27,
+           'n': 28, 'o': 29, 'r': 30, 'e': 31}
+digibetu = {v: k for k, v in digibet.items()}
+
+
 
 pygame.display.set_caption("C.H.A.O.S")
 
@@ -1103,33 +1116,33 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
 
 
-    # value_color = {0: (0, 0, 0),
-    #                1: (31, 31, 31), 2: (255, 0, 255), 3: (0, 255, 255), 4: (255, 255, 0),
-    #                5: (63, 63, 192), 6: (127, 0, 127), 7: (0, 127, 127), 8: (127, 127, 0),
-    #                9: (255, 255, 255), 10: (255, 0, 0), 11: (0, 255, 0), 12: (0, 0, 255),
-    #                13: (223, 223, 223), 14: (127, 0, 0), 15: (0, 127, 0), 16: (0, 0, 127)}
-    # color_value = {v: k for k, v in value_color.items()}
+    value_color = {0: (0, 0, 0),
+                   1: (31, 31, 31), 2: (255, 0, 255), 3: (0, 255, 255), 4: (255, 255, 0),
+                   5: (63, 63, 192), 6: (127, 0, 127), 7: (0, 127, 127), 8: (127, 127, 0),
+                   9: (255, 255, 255), 10: (255, 0, 0), 11: (0, 255, 0), 12: (0, 0, 255),
+                   13: (223, 223, 223), 14: (127, 0, 0), 15: (0, 127, 0), 16: (0, 0, 127)}
+    color_value = {v: k for k, v in value_color.items()}
 
 
 
-    # if base < 5:
-    #
-    #     value_color = {0:color_0, 1:color_2, 2:color_3, 3:color_4}
-    #     color_value = {v:k for k, v in value_color.items()}
-    #
-    # elif base < 10:
-    #
-    #     value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
-    #                   6:color_6, 7:color_7, 8:color_8}
-    #     color_value = {v:k for k, v in value_color.items()}
-    #
-    # else:
-    #     value_color = {0:(0, 0, 0),
-    #                    1:(31, 31, 31), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0),
-    #                    5:(63, 63, 192), 6:(127, 0, 127), 7:(0, 127, 127), 8:(127, 127, 0),
-    #                    9:(255, 255, 255), 10:(255, 0, 0), 11:(0, 255, 0), 12:(0, 0, 255),
-    #                    13:(223, 223, 223), 14:(127, 0, 0), 15:(0, 127, 0), 16:(0, 0, 127)}
-    #     color_value = {v:k for k, v in value_color.items()}
+    if base < 5:
+
+        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3}
+        color_value = {v:k for k, v in value_color.items()}
+
+    elif base < 10:
+
+        value_color = {0:color_0, 1:color_1, 2:color_2, 3:color_3, 4:color_4, 5:color_5,
+                      6:color_6, 7:color_7, 8:color_8}
+        color_value = {v:k for k, v in value_color.items()}
+
+    else:
+        value_color = {0:(0, 0, 0),
+                       1:(31, 31, 31), 2:(255, 0, 255), 3:(0, 255, 255), 4:(255, 255, 0),
+                       5:(63, 63, 192), 6:(127, 0, 127), 7:(0, 127, 127), 8:(127, 127, 0),
+                       9:(255, 255, 255), 10:(255, 0, 0), 11:(0, 255, 0), 12:(0, 0, 255),
+                       13:(223, 223, 223), 14:(127, 0, 0), 15:(0, 127, 0), 16:(0, 0, 127)}
+        color_value = {v:k for k, v in value_color.items()}
 
 
     def redraw_window(input_box, v_input, dt, timer):
@@ -1172,6 +1185,23 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
         #miliseconds per frame
         draw_text(str(dt), small_font, (255, 255, 255), WIN, WIDTH - 40, 80)
 
+
+
+
+        # MECA network display
+        if meca_conn is None:
+            meca_status = "MECA: disconnected"
+        else:
+            meca_status = "MECA: connected " + str(meca_addr)
+
+        draw_text(meca_status, small_font, (255, 255, 255), WIN, 20, HEIGHT - 90)
+        draw_text("MECA last: " + str(meca_last), small_font, (255, 255, 255), WIN, 20, HEIGHT - 65)
+
+        meca_line = meca_text[-100:].replace("\n", " / ")
+        draw_text("MECA text: " + meca_line, small_font, (255, 255, 255), WIN, 20, HEIGHT - 40)
+
+
+
         pygame.display.update()
 
     def input(letter, base, page, input_box, v_input):
@@ -1191,6 +1221,28 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
         d_rule[list(d_rule.keys())[place]] = i_rule[place]
 
         return v_input
+
+
+
+    def input_0(letter, base, page, input_box, v_input):
+
+        if input_box == 1:
+            v_input += letter
+
+        place = (digibet[letter] + (space * 31)) % bv
+
+        # for x in range(base):
+        #     place = (letter_values[letter] + (space * 26))*(x+1) % bv
+
+        # print('')
+        # print(place)
+
+        i_rule[place] = (i_rule[place] + 1) % base
+        d_rule[list(d_rule.keys())[place]] = i_rule[place]
+
+        return v_input
+
+
 
     #active variables
     run = 1
@@ -1239,6 +1291,30 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
     v_input = ''
     write = 0
     j_name = ''
+
+
+    # -----------------------------
+    # MECA NETWORK HOST / SERVER
+    # -----------------------------
+    MECA_HOST = "0.0.0.0"  # accept local/LAN connections
+    MECA_PORT = 50505
+
+    meca_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    meca_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    meca_server.bind((MECA_HOST, MECA_PORT))
+    meca_server.listen(1)
+    meca_server.setblocking(False)
+
+    meca_conn = None
+    meca_addr = None
+    meca_buffer = ""
+    meca_text = "hi"
+    meca_last = " "
+
+    print("Flow is hosting MECA network on port", MECA_PORT)
+
+
+
 
     #cell design
     cell_row_width = int(CELL_WIDTH)
@@ -1339,6 +1415,75 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
         timer = ts_1 - ts_0
         WIN.fill((0, 0, 0))
         dt = clock.tick(FPS)
+
+        # -----------------------------
+        # RECEIVE MECA SIGNS
+        # Does NOT change Flow rules
+        # -----------------------------
+        if meca_conn is None:
+            try:
+                meca_conn, meca_addr = meca_server.accept()
+                meca_conn.setblocking(False)
+                print("MECA connected:", meca_addr)
+            except BlockingIOError:
+                pass
+
+        if meca_conn is not None:
+            try:
+                data = meca_conn.recv(4096)
+
+                if not data:
+                    print("MECA disconnected")
+                    meca_conn.close()
+                    meca_conn = None
+                    meca_addr = None
+
+                else:
+                    meca_buffer += data.decode("utf-8", errors="ignore")
+
+                    while "\n" in meca_buffer:
+
+                        if meca_last in digibet and meca_last != meca_text[-2]:
+                            v_input = input_0(meca_last, base, page, input_box, v_input)
+
+
+
+                        msg, meca_buffer = meca_buffer.split("\n", 1)
+                        msg = msg.rstrip("\r")
+
+                        if msg == "<SPACE>":
+                            meca_text += " "
+                            meca_last = "space"
+
+                        elif msg == "<ENTER>":
+                            meca_text += "\n"
+                            meca_last = "enter"
+
+                        elif msg == "<BACKSPACE>":
+                            meca_text = meca_text[:-1]
+                            meca_last = "backspace"
+
+                        else:
+                            meca_text += msg
+                            meca_last = msg
+
+                        if len(meca_text) > 500:
+                            meca_text = meca_text[-500:]
+
+                        print("MECA SIGN:", repr(msg))
+
+            except BlockingIOError:
+                pass
+
+            except ConnectionResetError:
+                print("MECA connection reset")
+                meca_conn.close()
+                meca_conn = None
+                meca_addr = None
+
+
+
+
         redraw_window(input_box, v_input, dt, timer)
 
 
@@ -1406,6 +1551,9 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
             rule_list = rule_list[1:]
 
             list_count -= 1
+
+
+
 
 
         #inputs
@@ -1880,6 +2028,14 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
 
                     for m_e in midi_evs:
                         event_post(m_e)
+
+
+    try:
+        if meca_conn is not None:
+            meca_conn.close()
+        meca_server.close()
+    except Exception as e:
+        print("MECA server close error:", e)
 
     pygame.midi.quit()
 
