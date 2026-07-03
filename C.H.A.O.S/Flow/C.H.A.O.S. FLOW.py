@@ -1197,7 +1197,7 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
         draw_text(meca_status, small_font, (255, 255, 255), WIN, 20, HEIGHT - 90)
         draw_text("MECA last: " + str(meca_last), small_font, (255, 255, 255), WIN, 20, HEIGHT - 65)
 
-        meca_line = meca_text[-100:].replace("\n", " / ")
+        meca_line = meca_text[-20:].replace("\n", " / ")
         draw_text("MECA text: " + meca_line, small_font, (255, 255, 255), WIN, 20, HEIGHT - 40)
 
 
@@ -1446,31 +1446,47 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
                         if meca_last in digibet and meca_last != meca_text[-2]:
                             v_input = input_0(meca_last, base, page, input_box, v_input)
 
+                        packet, meca_buffer = meca_buffer.split("\n", 1)
+                        packet = packet.strip("\r")
+
+                        print()
+                        print("packet")
+                        print(repr(packet))
+
+                        try:
+                            msg, score_0 = packet.split("|", 1)
+                            score_0 = int(score_0)
+
+                        except ValueError:
+                            print("BAD MECA PACKET:", repr(packet))
+                            continue
+
+                        print("msg:", repr(msg))
+                        print("score_0:", score_0)
+
+                        print(msg)
+                        print(score_0)
 
 
-                        msg, meca_buffer = meca_buffer.split("\n", 1)
-                        msg = msg.rstrip("\r")
 
-                        if msg == "<SPACE>":
-                            meca_text += " "
-                            meca_last = "space"
 
-                        elif msg == "<ENTER>":
-                            meca_text += "\n"
-                            meca_last = "enter"
 
-                        elif msg == "<BACKSPACE>":
-                            meca_text = meca_text[:-1]
-                            meca_last = "backspace"
+                        if msg == " ":
+                            space += 1
 
-                        else:
-                            meca_text += msg
-                            meca_last = msg
+                        meca_text += msg
+                        meca_last = msg
 
                         if len(meca_text) > 500:
                             meca_text = meca_text[-500:]
 
                         print("MECA SIGN:", repr(msg))
+
+
+                        if score_0 == 1:
+                            print('score')
+                            space += 1
+
 
             except BlockingIOError:
                 pass

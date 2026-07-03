@@ -53,28 +53,22 @@ def connect_to_flow():
         return None
 
 
-def send_sign_to_flow(sign):
+def send_sign_to_flow(sign, score_0):
     global flow_client
 
-    if sign == "":
-        sign = " "
+    # make one readable network line
+    msg = str(sign)
+    score_0 = int(score_0)
 
-    if sign == " ":
-        msg = "<SPACE>"
-    elif sign == "\n":
-        msg = "<ENTER>"
-    elif sign == "\b":
-        msg = "<BACKSPACE>"
-    else:
-        msg = sign
+    packet = msg + "|" + str(score_0) + "\n"
 
     s = connect_to_flow()
     if s is None:
         return
 
     try:
-        s.sendall((msg + "\n").encode("utf-8"))
-        print("SENT TO FLOW:", repr(msg))
+        s.sendall(packet.encode("utf-8"))
+        print("SENT TO FLOW:", repr(packet))
 
     except Exception as e:
         print("Flow send failed:", e)
@@ -469,12 +463,12 @@ pygame.camera.init()
 
 
 
-<<<<<<< Updated upstream
+
 signame = "Theophilis"
-=======
+
 
 signame = "Chaotomata"
->>>>>>> Stashed changes
+
 
 
 
@@ -3355,12 +3349,14 @@ def handle(hand, code_0):
 typed_total = 0
 last_typed_total = 0
 n_slots = 0
+score_0 = 0
+
 
 def submit(letter):
 
     # print(letter)
 
-    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water, current_rung, typed_total, n_slots
+    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water, current_rung, typed_total, n_slots, score_0
 
     if letter == last_typed:
         letter = code_0
@@ -3394,6 +3390,7 @@ def submit(letter):
             message += ' '
 
             score += 1
+            score_0 = 1
             phrase_pos = 0
             tts[1] = time.time()
 
@@ -7839,6 +7836,102 @@ digibetu = {v: k for k, v in digibet.items()}
 
 
 
+last_score = 0
+#to send
+
+
+
+
+
+# -----------------------------
+# WOW HELD KEY OUTPUT
+# -----------------------------
+
+# Try DirectInput-style output first for games.
+# Install with: pip install pydirectinput
+try:
+    import pydirectinput as keyout
+    keyout.PAUSE = 0.0
+    print("Using pydirectinput for WoW keys")
+except ImportError:
+    import pyautogui as keyout
+    keyout.PAUSE = 0.0
+    print("Using pyautogui for WoW keys")
+
+# Map your detected signs to WoW movement keys.
+# Change these however you want.
+WOW_HOLD_KEYS = {
+    "w": ["e"],       # forward
+    "q": ["w"],       # strafe left default
+    "e": ["r"],       # strafe right default
+}
+
+held_keys = set()
+last_wow_sign = None
+
+
+def press_key_down(key):
+    global held_keys
+
+    if key not in held_keys:
+        try:
+            keyout.keyDown(key)
+            held_keys.add(key)
+            print("KEY DOWN:", key)
+        except Exception as e:
+            print("keyDown error:", key, e)
+
+
+def release_key_up(key):
+    global held_keys
+
+    if key in held_keys:
+        try:
+            keyout.keyUp(key)
+            held_keys.remove(key)
+            print("KEY UP:", key)
+        except Exception as e:
+            print("keyUp error:", key, e)
+
+
+def release_all_wow_keys():
+    for key in list(held_keys):
+        release_key_up(key)
+
+
+def send_sign_to_keyboard(sign):
+    """
+    WoW movement mode:
+    - movement signs hold keys down
+    - changing signs releases old keys
+    - neutral/unknown signs release movement
+    """
+    global last_wow_sign
+
+    if sign == "":
+        sign = " "
+
+    # Only update if sign changed.
+    if sign == last_wow_sign:
+        return
+
+    last_wow_sign = sign
+
+    desired_keys = set(WOW_HOLD_KEYS.get(sign, []))
+
+    # Release keys we no longer want held.
+    for key in list(held_keys):
+        if key not in desired_keys:
+            release_key_up(key)
+
+    # Press new keys.
+    for key in desired_keys:
+        press_key_down(key)
+
+
+
+
+
 
 
 
@@ -9145,6 +9238,9 @@ while running:
 
         typing_mode = 2
 
+        typed = 0
+        bong = 0
+
         ###typing###
         if typing_mode == 0 or typing_mode == 2:
 
@@ -9204,17 +9300,31 @@ while running:
                     submit(letter)
                     last_typed = letter
 
+                    if typing_mode == 2:
+
+                        send_sign_to_keyboard(letter)
+                        send_sign_to_flow(letter, score_0)
+
+
 
                 elif letter_0 != last_typed:
                     bong = 1
                     submit(letter_0)
                     last_typed = letter_0
 
+                    if typing_mode == 2:
+                        send_sign_to_keyboard(letter)
+                        send_sign_to_flow(letter, score_0)
+
 
                 elif letter_1 != last_typed:
                     bong = 1
                     submit(letter_1)
                     last_typed = letter_1
+
+                    if typing_mode == 2:
+                        send_sign_to_keyboard(letter)
+                        send_sign_to_flow(letter, score_0)
 
 
 
@@ -9416,7 +9526,7 @@ while running:
                 except Exception as e:
                     print("pyautogui error:", e)
 
-
+            ####thank you####
 
 
             if letter == letter_0:
@@ -9430,7 +9540,11 @@ while running:
 
                         send_sign_to_keyboard(letter)
 
-                        send_sign_to_flow(letter)
+                        send_sign_to_flow(letter, score_0)
+
+
+        score_0 = 0
+
 
 
         if typing_mode == 3:
