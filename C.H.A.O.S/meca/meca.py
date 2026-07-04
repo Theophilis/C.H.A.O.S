@@ -649,7 +649,7 @@ code_00 = ' '
 code_01 = ' '
 
 score = 1
-set = 0
+se = 0
 score_h = 0
 sign_bank = {}
 bank_past = sign_bank
@@ -3352,11 +3352,13 @@ n_slots = 0
 score_0 = 0
 
 
+
+
 def submit(letter):
 
     # print(letter)
 
-    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, set, tts_0, flow, water, current_rung, typed_total, n_slots, score_0
+    global phrase, phrase_pos, message, tts, score, times, code, rv, code_0, last_typed, se, tts_0, flow, water, current_rung, typed_total, n_slots, score_0
 
     if letter == last_typed:
         letter = code_0
@@ -3416,10 +3418,10 @@ def submit(letter):
             # print(times)
 
             if phrase == code[len(code) - len(phrase):len(code)]:
-                set += 1
+                se += 1
 
             else:
-                set = int(set / 2)
+                se = int(se / 2)
 
             code = ''
 
@@ -3433,7 +3435,7 @@ def submit(letter):
             if ruler == 0:
                 set_scale = 1
                 for x in range(len(phrase)):
-                    rv += digibet[phrase[x]] * int(set / set_scale)
+                    rv += digibet[phrase[x]] * int(se / set_scale)
                 rv = rv % bbv
 
                 # print("")
@@ -7861,9 +7863,9 @@ except ImportError:
 # Map your detected signs to WoW movement keys.
 # Change these however you want.
 WOW_HOLD_KEYS = {
-    "w": ["e"],       # forward
-    "q": ["w"],       # strafe left default
-    "e": ["r"],       # strafe right default
+    "e": ["e"],       # forward
+    "w": ["w"],       # strafe left default
+    "r": ["r"],       # strafe right default
 }
 
 held_keys = set()
@@ -7931,6 +7933,77 @@ def send_sign_to_keyboard(sign):
 
 
 
+
+
+
+
+# -----------------------------
+# SIMPLE WOW HOLD OUTPUT
+# uses pyautogui because it at least got W recognized once
+# -----------------------------
+
+WOW_HOLD_SIGNS = {"e", "w", "r", "z", "x"}
+
+held_keys = set()
+
+
+def hold_key_down(key):
+    if key not in held_keys:
+        try:
+            pyautogui.keyDown(key)
+            held_keys.add(key)
+            print("KEY DOWN:", key)
+        except Exception as e:
+            print("keyDown error:", key, e)
+
+
+def hold_key_up(key):
+    if key in held_keys:
+        try:
+            pyautogui.keyUp(key)
+            held_keys.remove(key)
+            print("KEY UP:", key)
+        except Exception as e:
+            print("keyUp error:", key, e)
+
+
+def release_all_held_keys():
+    for key in list(held_keys):
+        hold_key_up(key)
+
+
+def send_sign_to_keyboard(sign):
+    """
+    Movement mode:
+    - if sign is a hold sign, hold that key down
+    - if sign changes, release the old held key
+    - if sign becomes neutral/blank, release everything
+    """
+    if sign == "":
+        sign = " "
+
+    # Hold movement keys
+    if sign in WOW_HOLD_SIGNS:
+
+        # release other held keys first
+        for key in list(held_keys):
+            if key != sign:
+                hold_key_up(key)
+
+        hold_key_down(sign)
+        return
+
+    # Neutral or non-hold sign releases movement
+    release_all_held_keys()
+
+
+
+
+
+
+
+
+held = ''
 
 
 
@@ -8101,7 +8174,7 @@ while running:
     if rainbow_reset == 1:
         rainbow_array = np.zeros((h, l), dtype=int)
         rainbow_speed += 1
-        set += 1
+        se += 1
 
 
 
@@ -8295,8 +8368,8 @@ while running:
             region_original = region.copy()
 
 
-            delta = rainbow_strength[flow] * rainbow_speed * set
-            delta_base = rainbow_strength[flow_base] * rainbow_speed * set
+            delta = rainbow_strength[flow] * rainbow_speed * se
+            delta_base = rainbow_strength[flow_base] * rainbow_speed * se
 
             delta += delta_base
 
@@ -9236,10 +9309,11 @@ while running:
         letter_0, code_00 = handle(hands_0, code_00)
         letter_1, code_01 = handle(hands_1, code_01)
 
-        typing_mode = 2
+        typing_mode = 3
 
         typed = 0
         bong = 0
+        score_0 = 0
 
         ###typing###
         if typing_mode == 0 or typing_mode == 2:
@@ -9543,41 +9617,56 @@ while running:
                         send_sign_to_flow(letter, score_0)
 
 
-        score_0 = 0
-
-
-
         if typing_mode == 3:
 
-            r_hand = ' '
-            l_hand = ' '
+            def send_sign_to_keyboard(sign):
+
+                global held
+
+                holds = ['e', 'w', 'r', 'z', 'x']
+
+                if sign not in holds:
+                    try:
+                        pyautogui.write(sign)
+                        print("write:", sign)
+                    except Exception as e:
+                        print("pyautogui error:", e)
+
+                else:
+                    try:
+                        press_key_down(sign)
+                        print("Press:", sign)
+                        held = sign
+                    except Exception as e:
+                        print("pyautogui error:", e)
 
 
-            if hands[0] == hands_0[0]:
-                r_hand = hands[0]
-            elif hands_0[0] == hands_1[0]:
-                r_hand = hands_0[0]
-            elif hands[0] == hands_1[0]:
-                r_hand = hands_1[0]
+            match = ''
 
 
-            if hands[1] == hands_0[1]:
-                l_hand = hands[1]
-            elif hands_0[1] == hands_1[1]:
-                l_hand = hands_0[1]
-            elif hands[1] == hands_1[1]:
-                l_hand = hands_1[1]
+            if letter == letter_0:
+                match = letter
+            elif letter_0 == letter_1:
+                match = letter_0
+            elif letter_1 == letter:
+                match = letter_1
 
 
-            print(r_hand)
-            print(l_hand)
 
-            if r_hand == l_hand and r_hand != last_typed:
+
+            if match != last_typed:
+                hold_key_up(held)
+
+
+                print('')
+                print('match')
+                print(match)
+
+
                 bong_on = 1
                 code = ' '
-                message += l_hand
-                note = r_hand
-                last_typed = r_hand
+                send_sign_to_keyboard(match)
+                last_typed = match
 
 
 
