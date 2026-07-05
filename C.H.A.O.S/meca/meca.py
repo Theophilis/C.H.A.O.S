@@ -3495,7 +3495,78 @@ x_g = 28
 y_g = 0
 flex_c = 16
 flex_m = 64
-flex_p = 32
+flex_p = 42
+
+
+ambient = 1
+ambient_rgb_ref = None
+ambient_delta = 0.0
+# 0.0 = no correction, 1.0 = full correction.
+# Start gentle.
+AMBIENT_CORRECT_STRENGTH = 0.75
+
+
+
+if ambient == 1:
+    # -----------------------------
+    # AMBIENT LIGHT COMPENSATION
+    # -----------------------------
+
+    # Pick empty background zones, away from your hand boxes.
+    # array3d uses [x, y], so these are x1, y1, x2, y2.
+    AMBIENT_SAMPLE_BOXES = [
+        (20, 20, 180, 180),  # upper left background
+        (screen_width - 180, 20, screen_width - 20, 180),  # upper right background
+    ]
+
+
+    def sample_ambient_rgb(frame):
+        samples = []
+
+        for x1, y1, x2, y2 in AMBIENT_SAMPLE_BOXES:
+            crop = frame[x1:x2, y1:y2]
+
+            if crop.size > 0:
+                samples.append(crop.reshape(-1, 3).mean(axis=0))
+
+        if len(samples) == 0:
+            return frame.reshape(-1, 3).mean(axis=0)
+
+        return np.mean(samples, axis=0)
+
+
+    def calibrate_ambient(frame):
+        global ambient_rgb_ref
+
+        ambient_rgb_ref = sample_ambient_rgb(frame).astype(np.float32)
+        print("AMBIENT CALIBRATED:", ambient_rgb_ref)
+
+
+    def correct_ambient_light(frame):
+        global ambient_rgb_ref, ambient_delta
+
+        if ambient_rgb_ref is None:
+            calibrate_ambient(frame)
+            return frame
+
+        now_rgb = sample_ambient_rgb(frame).astype(np.float32)
+
+        # How much the room lighting changed from calibration.
+        ambient_delta = float(np.mean(np.abs(now_rgb - ambient_rgb_ref)))
+
+        # Per-channel gain correction.
+        gain = ambient_rgb_ref / np.maximum(now_rgb, 1.0)
+
+        # Prevent wild correction if a hand/object covers the sample box.
+        gain = np.clip(gain, 0.65, 1.55)
+
+        # Blend correction strength.
+        blended_gain = 1.0 + AMBIENT_CORRECT_STRENGTH * (gain - 1.0)
+
+        corrected = frame.astype(np.float32) * blended_gain
+        corrected = np.clip(corrected, 0, 255).astype(np.uint8)
+
+        return corrected
 
 
 ####right hand####
@@ -3721,9 +3792,13 @@ def right_hand_detect():
     global hand_r, hand_r0, hand_r1, right_hand, right_roi, hand_x, hands, hands_0, hands_1, roir_map, distr_map
 
 
-
-
     place = 0
+
+    flex_c_live = flex_c + ambient_delta * 0.35
+    flex_m_live = flex_m + (ambient_delta ** 2) * 0.05
+    flex_p_live = flex_p + ambient_delta * 0.35
+
+
 
 
     for roi in right_roi:
@@ -3747,20 +3822,37 @@ def right_hand_detect():
         # print(roi_dist)
 
         distr_map.append(roi_dist)
-        if roi_dist > flex_c:
-            hand_r[place - 1] = 1
-        else:
-            hand_r[place - 1] = 0
 
-        if roi_mean > flex_m:
-            hand_r0[place - 1] = 1
-        else:
-            hand_r0[place - 1] = 0
+        if ambient == 0:
+            if roi_dist > flex_c:
+                hand_r[place - 1] = 1
+            else:
+                hand_r[place - 1] = 0
 
-        if roi_mean > flex_p:
-            hand_r1[place - 1] = 1
+            if roi_mean > flex_m:
+                hand_r0[place - 1] = 1
+            else:
+                hand_r0[place - 1] = 0
+
+            if roi_palm > flex_p:
+                hand_r1[place - 1] = 1
+            else:
+                hand_r1[place - 1] = 0
         else:
-            hand_r1[place - 1] = 0
+            if roi_dist > flex_c_live:
+                hand_r[place - 1] = 1
+            else:
+                hand_r[place - 1] = 0
+
+            if roi_mean > flex_m_live:
+                hand_r0[place - 1] = 1
+            else:
+                hand_r0[place - 1] = 0
+
+            if roi_palm > flex_p_live:
+                hand_r1[place - 1] = 1
+            else:
+                hand_r1[place - 1] = 0
 
         x = place - 1
         value_rect = pygame.Rect(x1, y1, x_s, y_s)
@@ -3787,6 +3879,119 @@ def right_hand_detect():
 
     roir_map.clear()
     distr_map.clear()
+
+
+
+
+def left_hand_detect():
+    global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x, roil_map, distl_map
+
+    place = 0
+
+    flex_c_live = flex_c + ambient_delta * 0.35
+    flex_m_live = flex_m + (ambient_delta ** 2) * 0.05
+    flex_p_live = flex_p + ambient_delta * 0.35
+
+
+
+
+
+    for roi in left_roi:
+        place += 1
+        # print(place)
+
+        x1, y1, x2, y2 = roi
+        roi_prev = array_past[x1:x2, y1:y2]
+        roi_now = hand_array[x1:x2, y1:y2]
+        roil_map.append((roi_prev, roi_now))
+
+        if palm_prev[1] is None:
+            palm_prev[1] = roi_now.copy()
+
+        roi_dist = color_dist(roi_prev, roi_now)
+        roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
+        roi_palm = int(color_dist(roi_now, palm_prev[1]))
+
+        palm_l[place - 1] = roi_palm
+
+        # print(roi_dist)
+
+        distl_map.append(roi_dist)
+
+
+        if ambient == 0:
+            if roi_dist > flex_c:
+                hand_l[place - 1] = 1
+            else:
+                hand_l[place - 1] = 0
+
+            if roi_mean > flex_m:
+                hand_l0[place - 1] = 1
+            else:
+                hand_l0[place - 1] = 0
+
+            if roi_palm > flex_p:
+                hand_l1[place - 1] = 1
+            else:
+                hand_l1[place - 1] = 0
+        else:
+            if roi_dist > flex_c_live:
+                hand_l[place - 1] = 1
+            else:
+                hand_l[place - 1] = 0
+
+            if roi_mean > flex_m_live:
+                hand_l0[place - 1] = 1
+            else:
+                hand_l0[place - 1] = 0
+
+            if roi_palm > flex_p_live:
+                hand_l1[place - 1] = 1
+            else:
+                hand_l1[place - 1] = 0
+
+        x = place - 1
+        value_rect = pygame.Rect(x1, y1, x_s, y_s)
+        pygame.draw.rect(screen, value_color[0 + hand_l[x] * 9], value_rect)
+
+        tip_rect = pygame.Rect(x1, y1, x_s / 2, y_s / 2)
+        pygame.draw.rect(screen, value_color[0 + hand_l0[x] * 5], tip_rect)
+
+        tip_rect = pygame.Rect(x1, y1, x_s / 3, y_s / 3)
+        pygame.draw.rect(screen, value_color[0 + hand_l1[x] * 7], tip_rect)
+
+        pygame.draw.line(screen, value_color[0 + int(goal_bin[x % len(goal_bin)]) * 9], (palm_xl, palm_yl),
+                         (roi[0], roi[1]))
+
+    # print(left_roi)
+    # print(dist_map)
+    # print("")
+    # print("hand")
+    # print(hand)
+    # print(hand_0)
+
+    palm_prev[1] = roil_map[-1][1].copy()
+
+    # print('palm l')
+    # print(palm)
+    # print(hand_1)
+
+
+
+    left_hand[0] = hand_l[0] * 1 + hand_l[1] * 2 + hand_l[2] * 4 + hand_l[3] * 8 + hand_l[4] * 16
+    left_hand[1] = hand_l0[0] * 1 + hand_l0[1] * 2 + hand_l0[2] * 4 + hand_l0[3] * 8 + hand_l0[4] * 16
+    left_hand[2] = hand_l1[0] * 1 + hand_l1[1] * 2 + hand_l1[2] * 4 + hand_l1[3] * 8 + hand_l1[4] * 16
+
+    hands[1] = digibetu[left_hand[0]]
+    hands_0[1] = digibetu[left_hand[1]]
+    hands_1[1] = digibetu[left_hand[2]]
+
+    hand_x = [hand_l, hand_l0, hand_l1, hands, hands_0, hands_1, left_hand, right_hand]
+
+    roil_map.clear()
+    distl_map.clear()
+
+
 
 
 
@@ -3856,87 +4061,7 @@ def right_hand_detector():
 
 
 
-def left_hand_detect():
-    global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x, roil_map, distl_map
 
-    place = 0
-
-    for roi in left_roi:
-        place += 1
-        # print(place)
-
-        x1, y1, x2, y2 = roi
-        roi_prev = array_past[x1:x2, y1:y2]
-        roi_now = hand_array[x1:x2, y1:y2]
-        roil_map.append((roi_prev, roi_now))
-
-        if palm_prev[1] is None:
-            palm_prev[1] = roi_now.copy()
-
-        roi_dist = color_dist(roi_prev, roi_now)
-        roi_mean = np.mean((roi_prev.astype(np.float32) - roi_now.astype(np.float32)) ** 2)
-        roi_palm = int(color_dist(roi_now, palm_prev[1]))
-
-        palm_l[place - 1] = roi_palm
-
-        # print(roi_dist)
-
-        distl_map.append(roi_dist)
-        if roi_dist > flex_c:
-            hand_l[place - 1] = 1
-        else:
-            hand_l[place - 1] = 0
-
-        if roi_mean > flex_m:
-            hand_l0[place - 1] = 1
-        else:
-            hand_l0[place - 1] = 0
-
-        if roi_mean > flex_p:
-            hand_l1[place - 1] = 1
-        else:
-            hand_l1[place - 1] = 0
-
-        x = place - 1
-        value_rect = pygame.Rect(x1, y1, x_s, y_s)
-        pygame.draw.rect(screen, value_color[0 + hand_l[x] * 9], value_rect)
-
-        tip_rect = pygame.Rect(x1, y1, x_s / 2, y_s / 2)
-        pygame.draw.rect(screen, value_color[0 + hand_l0[x] * 5], tip_rect)
-
-        tip_rect = pygame.Rect(x1, y1, x_s / 3, y_s / 3)
-        pygame.draw.rect(screen, value_color[0 + hand_l1[x] * 7], tip_rect)
-
-        pygame.draw.line(screen, value_color[0 + int(goal_bin[x % len(goal_bin)]) * 9], (palm_xl, palm_yl),
-                         (roi[0], roi[1]))
-
-    # print(left_roi)
-    # print(dist_map)
-    # print("")
-    # print("hand")
-    # print(hand)
-    # print(hand_0)
-
-    palm_prev[1] = roil_map[-1][1].copy()
-
-    # print('palm l')
-    # print(palm)
-    # print(hand_1)
-
-
-
-    left_hand[0] = hand_l[0] * 1 + hand_l[1] * 2 + hand_l[2] * 4 + hand_l[3] * 8 + hand_l[4] * 16
-    left_hand[1] = hand_l0[0] * 1 + hand_l0[1] * 2 + hand_l0[2] * 4 + hand_l0[3] * 8 + hand_l0[4] * 16
-    left_hand[2] = hand_l1[0] * 1 + hand_l1[1] * 2 + hand_l1[2] * 4 + hand_l1[3] * 8 + hand_l1[4] * 16
-
-    hands[1] = digibetu[left_hand[0]]
-    hands_0[1] = digibetu[left_hand[1]]
-    hands_1[1] = digibetu[left_hand[2]]
-
-    hand_x = [hand_l, hand_l0, hand_l1, hands, hands_0, hands_1, left_hand, right_hand]
-
-    roil_map.clear()
-    distl_map.clear()
 
 
 
@@ -8017,8 +8142,18 @@ while running:
     mx, my = pygame.mouse.get_pos()
 
     image = camera.get_image()
-    image_array = pygame.surfarray.array3d(image)
-    hand_array = pygame.surfarray.array3d(image)
+
+    if ambient == 0:
+        image_array = pygame.surfarray.array3d(image)
+        hand_array = pygame.surfarray.array3d(image)
+    else:
+        image_array = pygame.surfarray.array3d(image)
+
+        # Raw camera frame for display / reference
+        hand_array_raw = pygame.surfarray.array3d(image)
+
+        # Lighting-corrected frame for finger detection
+        hand_array = correct_ambient_light(hand_array_raw)
 
 
     type = 6
@@ -9309,7 +9444,7 @@ while running:
         letter_0, code_00 = handle(hands_0, code_00)
         letter_1, code_01 = handle(hands_1, code_01)
 
-        typing_mode = 3
+        typing_mode = 0
 
         typed = 0
         bong = 0
@@ -9799,12 +9934,19 @@ while running:
 
 
 
-    ###code display####
-
-    for x in range(int(len(code)/64)+1):
-        lesson_t = main_font.render(str(code), True, value_color[9])
-        screen.blit(lesson_t, (screen_width / 2 - int(lesson_t.get_width()/2), screen_height / 8 - 128 + x*lesson_t.get_height()))
-
+    # ###code display####
+    #
+    # for x in range(int(len(code)/64)+1):
+    #     lesson_t = main_font.render(str(code), True, value_color[9])
+    #     screen.blit(lesson_t, (screen_width / 2 - int(lesson_t.get_width()/2), screen_height / 8 - 128 + x*lesson_t.get_height()))
+    #ambient display
+    if ambient == 1:
+        ambient_label = text_font.render(
+            f"ambient Δ: {round(ambient_delta, 2)}",
+            True,
+            value_color[9]
+        )
+        screen.blit(ambient_label, (screen_width / 64, screen_height / 32))
 
     lesson_t = main_font.render('rv: ' + str(rv), True, value_color[9])
     screen.blit(lesson_t, (screen_width - screen_width/3, screen_height / 32 - 32))
@@ -10348,9 +10490,15 @@ while running:
 
             elif event.key == pygame.K_RETURN:
 
+                if ambient == 0:
+                    rethresh = 1
+                    array_past = hand_array.copy()
+                else:
+                    rethresh = 1
+                    array_past = hand_array.copy()
+                    palm_prev = [None, None]
+                    print("detector baseline reset")
 
-                rethresh = 1
-                array_past = hand_array
 
                 # print()
                 # print(current)
@@ -10403,7 +10551,13 @@ while running:
 
 
             elif event.key == pygame.K_F2:
-                array_past = image_array
+
+                if ambient == 0:
+                    array_past = hand_array.copy()
+                else:
+                    array_past = hand_array.copy()
+                    palm_prev = [None, None]
+                    print("finger box baseline reset")
 
 
 
@@ -10447,6 +10601,20 @@ while running:
                 else:
 
                     print("exclusion calibration failed")
+
+
+            elif event.key == pygame.K_F4:
+                if ambient == 1:
+                    calibrate_ambient(hand_array_raw)
+                    array_past = correct_ambient_light(hand_array_raw).copy()
+                    palm_prev = [None, None]
+                    print("ambient + detector baseline reset")
+                else:
+                    array_past = hand_array.copy()
+                    palm_prev = [None, None]
+                    print("detector baseline reset")
+
+
 
             # elif event.key == pygame.K_LEFT:
             #     current -= 1
