@@ -480,7 +480,7 @@ screen_width, screen_height = 1280, 960
 
 
 ###chao screen###
-screen_width, screen_height = 1800, 960
+screen_width, screen_height = 1922, 1082
 
 
 
