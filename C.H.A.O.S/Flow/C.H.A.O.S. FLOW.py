@@ -959,11 +959,11 @@ def Chaos_Window(base, analytics, device_id=-1, rule_0=0, gloves=0):
     color_1 = (255, 0, 255)
     color_2 = (0, 255, 255)
     color_3 = (255, 255, 0)
-    color_4 = (32, 32, 32)
+    color_4 = (255, 255, 255)
     color_5 = (255, 0, 0)
     color_6 = (0, 255, 0)
     color_7 = (0, 0, 255)
-    color_8 = (255, 255, 255)
+    color_8 = (128, 128, 128)
 
     #rainbow
     # color_0 = (0, 0, 0)

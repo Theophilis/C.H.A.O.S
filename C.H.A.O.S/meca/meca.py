@@ -464,11 +464,11 @@ pygame.camera.init()
 
 
 
-signame = "Theophilis"
-
 
 signame = "Chaotomata"
 
+
+signame = "Theophilis"
 
 
 
@@ -2034,6 +2034,8 @@ letter = ' '
 letter_0 = ' '
 letter_1 = ' '
 last_typed = letter
+last_l = ''
+last_r = ''
 shifts = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 
 palm_prev = [None, None]
@@ -3493,6 +3495,32 @@ x_s = 36
 y_s = 36
 x_g = 28
 y_g = 0
+flex_c = 16
+flex_m = 64
+flex_p = 42
+
+HAND_SIZE_SCALE = 1.0
+HAND_SIZE_MIN = 0.55
+HAND_SIZE_MAX = 1.00
+HAND_SIZE_STEP = 0.05
+
+BASE_X_S = 36
+BASE_Y_S = 36
+BASE_X_G = 28
+BASE_Y_G = 0
+
+def apply_hand_size_scale():
+    global x_s, y_s, x_g, y_g
+
+    s = float(np.clip(HAND_SIZE_SCALE, HAND_SIZE_MIN, HAND_SIZE_MAX))
+
+    x_s = max(4, int(round(BASE_X_S * s)))
+    y_s = max(4, int(round(BASE_Y_S * s)))
+    x_g = max(0, int(round(BASE_X_G * s)))
+    y_g = max(0, int(round(BASE_Y_G * s)))
+
+apply_hand_size_scale()
+
 flex_c = 16
 flex_m = 64
 flex_p = 42
@@ -7064,880 +7092,867 @@ reverb_delays_ms = [31, 47, 73, 109]
 
 
 
+hello_please_thank_you = 1
+
+if hello_please_thank_you == 1:
 
 
 
 
-def build_swell_envelope(n, peak_pos=0.38, swell_curve=1.8, tail_curve=1.4):
-    """
-    Slow bloom up to peak, then long curved release.
-    Returns float32 envelope in [0,1].
-    """
-    if n <= 1:
-        return np.ones(max(1, n), dtype=np.float32)
+    def build_swell_envelope(n, peak_pos=0.38, swell_curve=1.8, tail_curve=1.4):
+        """
+        Slow bloom up to peak, then long curved release.
+        Returns float32 envelope in [0,1].
+        """
+        if n <= 1:
+            return np.ones(max(1, n), dtype=np.float32)
 
-    peak_idx = int(np.clip(peak_pos, 0.05, 0.95) * n)
-    peak_idx = max(1, min(n - 1, peak_idx))
+        peak_idx = int(np.clip(peak_pos, 0.05, 0.95) * n)
+        peak_idx = max(1, min(n - 1, peak_idx))
 
-    env = np.zeros(n, dtype=np.float32)
+        env = np.zeros(n, dtype=np.float32)
 
-    # swell up
-    up = np.linspace(0.0, 1.0, peak_idx, endpoint=False, dtype=np.float32)
-    env[:peak_idx] = up ** swell_curve
+        # swell up
+        up = np.linspace(0.0, 1.0, peak_idx, endpoint=False, dtype=np.float32)
+        env[:peak_idx] = up ** swell_curve
 
-    # tail down
-    down_len = n - peak_idx
-    down = np.linspace(1.0, 0.0, down_len, endpoint=True, dtype=np.float32)
-    env[peak_idx:] = down ** tail_curve
+        # tail down
+        down_len = n - peak_idx
+        down = np.linspace(1.0, 0.0, down_len, endpoint=True, dtype=np.float32)
+        env[peak_idx:] = down ** tail_curve
 
-    return env
-
-
-def lerp(a, b, t):
-    return a + (b - a) * t
+        return env
 
 
-def stepped_smooth_from_env(env, smooth_start, smooth_end, steps=4):
-    """
-    Build a per-sample smoothness control from the envelope.
-    High env -> smoother front, low env -> rougher tail.
-    """
-    # invert so tail gets less smooth
-    inv = 1.0 - env
-    raw = lerp(float(smooth_start), float(smooth_end), inv)
-    return np.clip(np.round(raw), min(smooth_start, smooth_end), max(smooth_start, smooth_end)).astype(np.int32)
+    def lerp(a, b, t):
+        return a + (b - a) * t
 
 
-def build_segmented_wavetable_audio(freq, table_builder, field, n, sample_rate,
-                                    smooth_start, smooth_end,
-                                    segment_len=2048):
-    """
-    Rebuild wavetable in segments so smoothness can change over the note.
-    """
-    mono = np.zeros(n, dtype=np.float32)
-    phase0 = 0.0
-    i = 0
-
-    while i < n:
-        j = min(n, i + segment_len)
-        tpos = i / float(max(1, n - 1))
-        smooth_passes = int(round(lerp(smooth_start, smooth_end, tpos)))
-
-        table = table_builder(field, smooth_passes=smooth_passes)
-        seg_n = j - i
-
-        phase = (phase0 + (np.arange(seg_n, dtype=np.float32) * freq / sample_rate)) % 1.0
-        idx = (phase * len(table)).astype(np.int32) % len(table)
-        mono[i:j] = table[idx]
-
-        phase0 = float((phase[-1] + freq / sample_rate) % 1.0)
-        i = j
-
-    return mono
+    def stepped_smooth_from_env(env, smooth_start, smooth_end, steps=4):
+        """
+        Build a per-sample smoothness control from the envelope.
+        High env -> smoother front, low env -> rougher tail.
+        """
+        # invert so tail gets less smooth
+        inv = 1.0 - env
+        raw = lerp(float(smooth_start), float(smooth_end), inv)
+        return np.clip(np.round(raw), min(smooth_start, smooth_end), max(smooth_start, smooth_end)).astype(np.int32)
 
 
-def apply_dynamic_fx_chain(stereo_i16, env, sample_rate=44100):
-    """
-    More wetness as the note decays.
-    """
-    if stereo_i16 is None:
-        return None
+    def build_segmented_wavetable_audio(freq, table_builder, field, n, sample_rate,
+                                        smooth_start, smooth_end,
+                                        segment_len=2048):
+        """
+        Rebuild wavetable in segments so smoothness can change over the note.
+        """
+        mono = np.zeros(n, dtype=np.float32)
+        phase0 = 0.0
+        i = 0
 
-    x = stereo_i16.astype(np.float32)
+        while i < n:
+            j = min(n, i + segment_len)
+            tpos = i / float(max(1, n - 1))
+            smooth_passes = int(round(lerp(smooth_start, smooth_end, tpos)))
 
-    echo_wet = apply_echo_stereo(
-        stereo_i16,
-        sample_rate=sample_rate,
-        delay_ms=echo_delay_ms,
-        mix=1.0,
-        feedback=echo_feedback
-    ).astype(np.float32)
+            table = table_builder(field, smooth_passes=smooth_passes)
+            seg_n = j - i
 
-    reverb_wet = apply_reverb_stereo(
-        stereo_i16,
-        sample_rate=sample_rate,
-        mix=1.0,
-        decay=reverb_decay,
-        delays_ms=reverb_delays_ms
-    ).astype(np.float32)
+            phase = (phase0 + (np.arange(seg_n, dtype=np.float32) * freq / sample_rate)) % 1.0
+            idx = (phase * len(table)).astype(np.int32) % len(table)
+            mono[i:j] = table[idx]
 
-    # tail gets wetter
-    inv = 1.0 - env
-    echo_mix_curve = lerp(echo_mix_start, echo_mix_end, inv).reshape(-1, 1)
-    reverb_mix_curve = lerp(reverb_mix_start, reverb_mix_end, inv).reshape(-1, 1)
+            phase0 = float((phase[-1] + freq / sample_rate) % 1.0)
+            i = j
 
-    y = x * (1.0 - echo_mix_curve) + echo_wet * echo_mix_curve
-    y = y * (1.0 - reverb_mix_curve) + reverb_wet * reverb_mix_curve
-
-    y = np.clip(y, -32767, 32767).astype(np.int16)
-    return y
+        return mono
 
 
+    def apply_dynamic_fx_chain(stereo_i16, env, sample_rate=44100):
+        """
+        More wetness as the note decays.
+        """
+        if stereo_i16 is None:
+            return None
 
-def smooth_audio_mono(mono, passes=2):
-    x = mono.astype(np.float32).copy()
-    for _ in range(max(0, passes)):
-        x = (np.roll(x, 1) + 2.0 * x + np.roll(x, -1)) / 4.0
-    return x
+        x = stereo_i16.astype(np.float32)
 
-
-def apply_echo_stereo(stereo_i16, sample_rate=44100, delay_ms=140, mix=0.16, feedback=0.28):
-    if stereo_i16 is None:
-        return None
-
-    x = stereo_i16.astype(np.float32).copy()
-    y = x.copy()
-
-    delay = max(1, int(sample_rate * delay_ms / 1000.0))
-    if delay >= len(x):
-        return stereo_i16
-
-    echo = np.zeros_like(x, dtype=np.float32)
-    echo[delay:] = x[:-delay] * feedback
-
-    y = x * (1.0 - mix) + echo * mix
-    y = np.clip(y, -32767, 32767).astype(np.int16)
-    return y
-
-
-def apply_reverb_stereo(stereo_i16, sample_rate=44100, mix=0.18, decay=0.42, delays_ms=(31, 47, 73, 109)):
-    if stereo_i16 is None:
-        return None
-
-    x = stereo_i16.astype(np.float32).copy()
-    wet = np.zeros_like(x, dtype=np.float32)
-
-    for i, d_ms in enumerate(delays_ms):
-        delay_samples = max(1, int(sample_rate * d_ms / 1000.0))
-        if delay_samples >= len(x):
-            continue
-        gain = decay ** (i + 1)
-        wet[delay_samples:] += x[:-delay_samples] * gain
-
-    y = x * (1.0 - mix) + wet * mix
-    y = np.clip(y, -32767, 32767).astype(np.int16)
-    return y
-
-
-def apply_fx_chain(stereo_i16, sample_rate=44100):
-    if stereo_i16 is None:
-        return None
-
-    y = stereo_i16
-
-    if fx_on == 1:
-        y = apply_echo_stereo(
-            y,
+        echo_wet = apply_echo_stereo(
+            stereo_i16,
             sample_rate=sample_rate,
             delay_ms=echo_delay_ms,
-            mix=echo_mix,
+            mix=1.0,
             feedback=echo_feedback
-        )
+        ).astype(np.float32)
 
-        y = apply_reverb_stereo(
-            y,
+        reverb_wet = apply_reverb_stereo(
+            stereo_i16,
             sample_rate=sample_rate,
-            mix=reverb_mix,
+            mix=1.0,
             decay=reverb_decay,
             delays_ms=reverb_delays_ms
+        ).astype(np.float32)
+
+        # tail gets wetter
+        inv = 1.0 - env
+        echo_mix_curve = lerp(echo_mix_start, echo_mix_end, inv).reshape(-1, 1)
+        reverb_mix_curve = lerp(reverb_mix_start, reverb_mix_end, inv).reshape(-1, 1)
+
+        y = x * (1.0 - echo_mix_curve) + echo_wet * echo_mix_curve
+        y = y * (1.0 - reverb_mix_curve) + reverb_wet * reverb_mix_curve
+
+        y = np.clip(y, -32767, 32767).astype(np.int16)
+        return y
+
+
+
+    def smooth_audio_mono(mono, passes=2):
+        x = mono.astype(np.float32).copy()
+        for _ in range(max(0, passes)):
+            x = (np.roll(x, 1) + 2.0 * x + np.roll(x, -1)) / 4.0
+        return x
+
+
+    def apply_echo_stereo(stereo_i16, sample_rate=44100, delay_ms=140, mix=0.16, feedback=0.28):
+        if stereo_i16 is None:
+            return None
+
+        x = stereo_i16.astype(np.float32).copy()
+        y = x.copy()
+
+        delay = max(1, int(sample_rate * delay_ms / 1000.0))
+        if delay >= len(x):
+            return stereo_i16
+
+        echo = np.zeros_like(x, dtype=np.float32)
+        echo[delay:] = x[:-delay] * feedback
+
+        y = x * (1.0 - mix) + echo * mix
+        y = np.clip(y, -32767, 32767).astype(np.int16)
+        return y
+
+
+    def apply_reverb_stereo(stereo_i16, sample_rate=44100, mix=0.18, decay=0.42, delays_ms=(31, 47, 73, 109)):
+        if stereo_i16 is None:
+            return None
+
+        x = stereo_i16.astype(np.float32).copy()
+        wet = np.zeros_like(x, dtype=np.float32)
+
+        for i, d_ms in enumerate(delays_ms):
+            delay_samples = max(1, int(sample_rate * d_ms / 1000.0))
+            if delay_samples >= len(x):
+                continue
+            gain = decay ** (i + 1)
+            wet[delay_samples:] += x[:-delay_samples] * gain
+
+        y = x * (1.0 - mix) + wet * mix
+        y = np.clip(y, -32767, 32767).astype(np.int16)
+        return y
+
+
+    def apply_fx_chain(stereo_i16, sample_rate=44100):
+        if stereo_i16 is None:
+            return None
+
+        y = stereo_i16
+
+        if fx_on == 1:
+            y = apply_echo_stereo(
+                y,
+                sample_rate=sample_rate,
+                delay_ms=echo_delay_ms,
+                mix=echo_mix,
+                feedback=echo_feedback
+            )
+
+            y = apply_reverb_stereo(
+                y,
+                sample_rate=sample_rate,
+                mix=reverb_mix,
+                decay=reverb_decay,
+                delays_ms=reverb_delays_ms
+            )
+
+        return y
+
+
+
+
+
+
+
+    def build_ca_wavetable(water_field, base=2, table_size=2048, smooth_passes=8):
+        arr = np.asarray(water_field, dtype=np.float32)
+        flat = arr.flatten()
+
+        if flat.size == 0:
+            return np.zeros(table_size, dtype=np.float32)
+
+        # normalize CA states into [-1, 1]
+        if base <= 1:
+            wave = np.zeros_like(flat, dtype=np.float32)
+        else:
+            wave = (flat / float(base - 1)) * 2.0 - 1.0
+
+        # remove DC
+        wave = wave - np.mean(wave)
+
+        peak = np.max(np.abs(wave))
+        if peak < 1e-6:
+            wave = np.zeros_like(wave, dtype=np.float32)
+            wave[0] = 1.0
+        else:
+            wave = wave / peak
+
+        # smooth raw source circularly
+        for _ in range(max(0, smooth_passes // 2)):
+            wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+        # resample to fixed table
+        src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+        dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+        table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+        # smooth again after resampling
+        for _ in range(max(0, smooth_passes)):
+            table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+        # remove DC again
+        table = table - np.mean(table)
+
+        peak = np.max(np.abs(table))
+        if peak > 1e-6:
+            table = table / peak
+
+        return table
+
+
+    def ca_tone_from_note(sign, water_field, digibet, *,
+                          base=2,
+                          sample_rate=44100,
+                          duration=0.35,
+                          amp=0.25,
+                          midi_base_hz=55.0,
+                          note_offset=12):
+        """
+        sign -> digibet value controls pitch
+        CA field controls waveform shape
+        """
+        if sign not in digibet:
+            return None
+
+        sign_value = digibet[sign] -1
+
+        if sign_value == -1:
+            return None
+
+        # pitch from digibet value
+        semitone = note_offset + sign_value
+        freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+
+        table = build_ca_wavetable(water_field, base=base, table_size=2048)
+        n = int(sample_rate * duration)
+
+        # phase accumulation through the wavetable
+        phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+        idx = (phase * len(table)).astype(np.int32) % len(table)
+        mono = table[idx]
+
+        # short envelope to avoid clicks
+        attack = max(1, int(0.01 * sample_rate))
+        release = max(1, int(0.05 * sample_rate))
+        env = np.ones(n, dtype=np.float32)
+        env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+        env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+        mono = mono * env * amp
+
+        # int16 stereo for pygame
+        mono_i16 = np.clip(mono * 32767.0, -32767, 32767).astype(np.int16)
+        stereo = np.repeat(mono_i16.reshape(-1, 1), 2, axis=1)
+
+        return pygame.sndarray.make_sound(stereo)
+
+
+
+    def build_rainbow_wavetable(rainbow_field, color_max=2048, table_size=2048, smooth_passes=6):
+        arr = np.asarray(rainbow_field, dtype=np.float32)
+        flat = arr.flatten()
+
+        if flat.size == 0:
+            return np.zeros(table_size, dtype=np.float32)
+
+        # normalize rainbow values into [-1, 1]
+        wave = (flat / float(color_max - 1)) * 2.0 - 1.0
+
+        # remove DC
+        wave = wave - np.mean(wave)
+
+        peak = np.max(np.abs(wave))
+        if peak < 1e-6:
+            wave = np.zeros_like(wave, dtype=np.float32)
+            wave[0] = 1.0
+        else:
+            wave = wave / peak
+
+        # smooth raw source
+        for _ in range(max(0, smooth_passes // 2)):
+            wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+        # resample to fixed table
+        src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+        dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+        table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+        # smooth again
+        for _ in range(max(0, smooth_passes)):
+            table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+        table = table - np.mean(table)
+        peak = np.max(np.abs(table))
+        if peak > 1e-6:
+            table = table / peak
+
+        return table
+
+
+
+
+    def rainbow_tone_from_note(sign, rainbow_field, digibet, *,
+                               color_max=2048,
+                               sample_rate=44100,
+                               duration=0.35,
+                               amp=0.18,
+                               midi_base_hz=55.0,
+                               note_offset=24,
+                               octave_shift=0,
+                               harmony_offset=0,
+                               pitch_detune=0.0,
+                               pan=0.8):
+        if sign not in digibet:
+            return None
+
+        sign_value = digibet[sign] - 1
+        if sign_value == -1:
+            return None
+
+        semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+        freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+
+        # optional slight detune for side shimmer
+        freq *= (2.0 ** (pitch_detune / 12.0))
+
+        table = build_rainbow_wavetable(rainbow_field, color_max=color_max, table_size=2048)
+        n = int(sample_rate * duration)
+
+        phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+        idx = (phase * len(table)).astype(np.int32) % len(table)
+        mono = table[idx]
+
+        # envelope
+        attack = max(1, int(0.01 * sample_rate))
+        release = max(1, int(0.08 * sample_rate))
+        env = np.ones(n, dtype=np.float32)
+        env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+        env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+        mono = mono * env * amp
+
+        # pan outward
+        pan = float(np.clip(pan, 0.0, 1.0))
+        left_gain = np.sqrt(1.0 - pan)
+        right_gain = np.sqrt(pan)
+
+        left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+        right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+        stereo = np.column_stack((left, right))
+        return pygame.sndarray.make_sound(stereo)
+
+
+    base_hz = 55.0
+    note_offset = 0
+
+
+    def ca_tone_from_note(sign, water_field, digibet, *,
+                          base=2,
+                          sample_rate=44100,
+                          duration=0.35,
+                          amp=0.25,
+                          midi_base_hz=55.0,
+                          note_offset=0,
+                          octave_shift=0,
+                          harmony_offset=0,
+                          pan=0.5):
+        if sign not in digibet:
+            return None
+
+        sign_value = digibet[sign] - 1
+        if sign_value == -1:
+            return None
+
+        semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+        freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+
+        table = build_ca_wavetable(water_field, base=base, table_size=2048)
+        n = int(sample_rate * duration)
+
+        phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+        idx = (phase * len(table)).astype(np.int32) % len(table)
+        mono = table[idx]
+
+        attack = max(1, int(0.01 * sample_rate))
+        release = max(1, int(0.05 * sample_rate))
+        env = np.ones(n, dtype=np.float32)
+        env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+        env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+        mono = mono * env * amp
+
+        pan = float(np.clip(pan, 0.0, 1.0))
+        left_gain = np.sqrt(1.0 - pan)
+        right_gain = np.sqrt(pan)
+
+        left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+        right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+        stereo = np.column_stack((left, right))
+        return pygame.sndarray.make_sound(stereo)
+
+
+
+
+
+    def play_water_rainbow_chord(sign, water_field, rainbow_field):
+        if sign not in digibet or digibet[sign] == 0:
+            return
+
+        voices = [
+            ("water",   0, 0.14, 0.47, -0.01),
+            ("water",   0, 0.14, 0.53,  0.01),
+
+            ("rainbow", 4, 0.08, 0.35, -0.03),
+            ("rainbow", 4, 0.08, 0.65,  0.03),
+
+            ("water",   7, 0.10, 0.22, -0.01),
+            ("water",   7, 0.10, 0.78,  0.01),
+
+            ("rainbow", 12, 0.06, 0.15, -0.04),
+            ("rainbow", 12, 0.06, 0.85,  0.04),
+        ]
+
+        for source, interval, amp, pan, detune in voices:
+            if source == "water":
+                snd = ca_tone_from_note(
+                    sign,
+                    water_field,
+                    digibet,
+                    base=base,
+                    sample_rate=sample_rate,
+                    duration=0.35,
+                    amp=amp,
+                    midi_base_hz=base_hz,
+                    note_offset=base_note_offset,
+                    octave_shift=octave_shift,
+                    harmony_offset=interval,
+                    pan=pan
+                )
+            else:
+                snd = rainbow_tone_from_note(
+                    sign,
+                    rainbow_field,
+                    digibet,
+                    color_max=color_max,
+                    sample_rate=sample_rate,
+                    duration=0.35,
+                    amp=amp,
+                    midi_base_hz=base_hz,
+                    note_offset=base_note_offset,
+                    octave_shift=octave_shift,
+                    harmony_offset=interval,
+                    pitch_detune=detune,
+                    pan=pan
+                )
+
+            if snd is not None:
+                snd.play()
+
+
+
+
+
+    def build_ca_wavetable(water_field, base=2, table_size=2048, smooth_passes=None):
+        if smooth_passes is None:
+            smooth_passes = water_smooth_passes
+
+        arr = np.asarray(water_field, dtype=np.float32)
+        flat = arr.flatten()
+
+        if flat.size == 0:
+            return np.zeros(table_size, dtype=np.float32)
+
+        if base <= 1:
+            wave = np.zeros_like(flat, dtype=np.float32)
+        else:
+            wave = (flat / float(base - 1)) * 2.0 - 1.0
+
+        wave = wave - np.mean(wave)
+
+        peak = np.max(np.abs(wave))
+        if peak < 1e-6:
+            wave = np.zeros_like(wave, dtype=np.float32)
+            wave[0] = 1.0
+        else:
+            wave = wave / peak
+
+        for _ in range(max(0, smooth_passes // 2)):
+            wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+        src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+        dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+        table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+        for _ in range(max(0, smooth_passes)):
+            table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+        # soften the wrap point a little
+        seam = min(48, len(table) // 8)
+        if seam > 1:
+            start = table[:seam].copy()
+            end = table[-seam:].copy()
+            blend = np.linspace(0.0, 1.0, seam, endpoint=False)
+            mixed = end * (1.0 - blend) + start * blend
+            table[:seam] = mixed
+            table[-seam:] = mixed
+
+        table = table - np.mean(table)
+        peak = np.max(np.abs(table))
+        if peak > 1e-6:
+            table = table / peak
+
+        return table
+
+
+
+
+    def build_rainbow_wavetable(rainbow_field, color_max=2048, table_size=2048, smooth_passes=None):
+        if smooth_passes is None:
+            smooth_passes = rainbow_smooth_passes
+
+        arr = np.asarray(rainbow_field, dtype=np.float32)
+        flat = arr.flatten()
+
+        if flat.size == 0:
+            return np.zeros(table_size, dtype=np.float32)
+
+        wave = (flat / float(color_max - 1)) * 2.0 - 1.0
+        wave = wave - np.mean(wave)
+
+        peak = np.max(np.abs(wave))
+        if peak < 1e-6:
+            wave = np.zeros_like(wave, dtype=np.float32)
+            wave[0] = 1.0
+        else:
+            wave = wave / peak
+
+        for _ in range(max(0, smooth_passes // 2)):
+            wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+
+        src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
+        dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
+        table = np.interp(dst_x, src_x, wave).astype(np.float32)
+
+        for _ in range(max(0, smooth_passes)):
+            table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+
+        seam = min(48, len(table) // 8)
+        if seam > 1:
+            start = table[:seam].copy()
+            end = table[-seam:].copy()
+            blend = np.linspace(0.0, 1.0, seam, endpoint=False)
+            mixed = end * (1.0 - blend) + start * blend
+            table[:seam] = mixed
+            table[-seam:] = mixed
+
+        table = table - np.mean(table)
+        peak = np.max(np.abs(table))
+        if peak > 1e-6:
+            table = table / peak
+
+        return table
+
+
+
+
+
+
+
+
+    def ca_tone_from_note_4(sign, water_field, digibet, *,
+                          base=2,
+                          sample_rate=44100,
+                          duration=0.35,
+                          amp=0.25,
+                          midi_base_hz=55.0,
+                          note_offset=0,
+                          octave_shift=0,
+                          harmony_offset=0,
+                          pitch_detune=0.0,
+                          pan=0.5):
+        if sign not in digibet:
+            return None
+
+        sign_value = digibet[sign] - 1
+        if sign_value == -1:
+            return None
+
+        semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+        freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+        freq *= (2.0 ** (pitch_detune / 12.0))
+
+        table = build_ca_wavetable(water_field, base=base, table_size=2048)
+        n = int(sample_rate * duration)
+
+        phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+        idx = (phase * len(table)).astype(np.int32) % len(table)
+        mono = table[idx]
+
+        mono = smooth_audio_mono(mono, passes=audio_smooth_passes)
+
+        attack = max(1, int((attack_ms / 1000.0) * sample_rate))
+        release = max(1, int((release_ms / 1000.0) * sample_rate))
+        env = np.ones(n, dtype=np.float32)
+        env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+        env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+        mono = mono * env * amp
+
+        pan = float(np.clip(pan, 0.0, 1.0))
+        left_gain = np.sqrt(1.0 - pan)
+        right_gain = np.sqrt(pan)
+
+        left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+        right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+        stereo = np.column_stack((left, right))
+        stereo = apply_fx_chain(stereo, sample_rate=sample_rate)
+
+        return pygame.sndarray.make_sound(stereo)
+
+
+
+
+    def rainbow_tone_from_note_4(sign, rainbow_field, digibet, *,
+                               color_max=2048,
+                               sample_rate=44100,
+                               duration=0.35,
+                               amp=0.18,
+                               midi_base_hz=55.0,
+                               note_offset=0,
+                               octave_shift=0,
+                               harmony_offset=0,
+                               pitch_detune=0.0,
+                               pan=0.8):
+        if sign not in digibet:
+            return None
+
+        sign_value = digibet[sign] - 1
+        if sign_value == -1:
+            return None
+
+        semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+        freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+        freq *= (2.0 ** (pitch_detune / 12.0))
+
+        table = build_rainbow_wavetable(rainbow_field, color_max=color_max, table_size=2048)
+        n = int(sample_rate * duration)
+
+        phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
+        idx = (phase * len(table)).astype(np.int32) % len(table)
+        mono = table[idx]
+
+        mono = smooth_audio_mono(mono, passes=audio_smooth_passes)
+
+        attack = max(1, int((attack_ms / 1000.0) * sample_rate))
+        release = max(1, int((release_ms / 1000.0) * sample_rate))
+        env = np.ones(n, dtype=np.float32)
+        env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
+        env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
+
+        mono = mono * env * amp
+
+        pan = float(np.clip(pan, 0.0, 1.0))
+        left_gain = np.sqrt(1.0 - pan)
+        right_gain = np.sqrt(pan)
+
+        left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+        right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
+
+        stereo = np.column_stack((left, right))
+        stereo = apply_fx_chain(stereo, sample_rate=sample_rate)
+
+        return pygame.sndarray.make_sound(stereo)
+
+
+
+
+
+
+
+
+
+    # note shape
+    note_duration = .7
+
+    # swell envelope
+    swell_peak_pos = .01     # where the note reaches max body, 0..1
+    swell_curve = 1        # larger = more dramatic swell
+    tail_curve = 1          # release shape
+
+    # dynamic smoothness
+    water_smooth_start = 10
+    water_smooth_end = 1
+
+    rainbow_smooth_start = 14
+    rainbow_smooth_end = 1
+
+    # dynamic fx
+    echo_mix_start = 0.16
+    echo_mix_end = 0.32
+
+    reverb_mix_start = 0.16
+    reverb_mix_end = 0.32
+
+
+
+
+    def ca_tone_from_note(sign, water_field, digibet, *,
+                          base=2,
+                          sample_rate=44100,
+                          duration=0.85,
+                          amp=0.25,
+                          midi_base_hz=55.0,
+                          note_offset=0,
+                          octave_shift=0,
+                          harmony_offset=0,
+                          pitch_detune=0.0,
+                          pan=0.5):
+        if sign not in digibet:
+            return None
+
+        sign_value = digibet[sign] - 1
+        if sign_value == -1:
+            return None
+
+        semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+        freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+        freq *= (2.0 ** (pitch_detune / 12.0))
+
+        n = int(sample_rate * duration)
+
+        mono = build_segmented_wavetable_audio(
+            freq,
+            lambda field, smooth_passes: build_ca_wavetable(
+                field, base=base, table_size=2048, smooth_passes=smooth_passes
+            ),
+            water_field,
+            n,
+            sample_rate,
+            smooth_start=water_smooth_start,
+            smooth_end=water_smooth_end,
+            segment_len=2048
         )
 
-    return y
+        mono = smooth_audio_mono(mono, passes=max(0, audio_smooth_passes - 1))
 
+        env = build_swell_envelope(
+            n,
+            peak_pos=swell_peak_pos,
+            swell_curve=swell_curve,
+            tail_curve=tail_curve
+        )
 
+        mono = mono * env * amp
 
+        pan = float(np.clip(pan, 0.0, 1.0))
+        left_gain = np.sqrt(1.0 - pan)
+        right_gain = np.sqrt(pan)
 
+        left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+        right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
 
+        stereo = np.column_stack((left, right))
 
+        if fx_on == 1:
+            stereo = apply_dynamic_fx_chain(stereo, env, sample_rate=sample_rate)
 
-def build_ca_wavetable(water_field, base=2, table_size=2048, smooth_passes=8):
-    arr = np.asarray(water_field, dtype=np.float32)
-    flat = arr.flatten()
+        return pygame.sndarray.make_sound(stereo)
 
-    if flat.size == 0:
-        return np.zeros(table_size, dtype=np.float32)
 
-    # normalize CA states into [-1, 1]
-    if base <= 1:
-        wave = np.zeros_like(flat, dtype=np.float32)
-    else:
-        wave = (flat / float(base - 1)) * 2.0 - 1.0
 
-    # remove DC
-    wave = wave - np.mean(wave)
 
-    peak = np.max(np.abs(wave))
-    if peak < 1e-6:
-        wave = np.zeros_like(wave, dtype=np.float32)
-        wave[0] = 1.0
-    else:
-        wave = wave / peak
 
-    # smooth raw source circularly
-    for _ in range(max(0, smooth_passes // 2)):
-        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
+    def rainbow_tone_from_note(sign, rainbow_field, digibet, *,
+                               color_max=2048,
+                               sample_rate=44100,
+                               duration=0.85,
+                               amp=0.18,
+                               midi_base_hz=55.0,
+                               note_offset=0,
+                               octave_shift=0,
+                               harmony_offset=0,
+                               pitch_detune=0.0,
+                               pan=0.8):
+        if sign not in digibet:
+            return None
 
-    # resample to fixed table
-    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
-    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
-    table = np.interp(dst_x, src_x, wave).astype(np.float32)
+        sign_value = digibet[sign] - 1
+        if sign_value == -1:
+            return None
 
-    # smooth again after resampling
-    for _ in range(max(0, smooth_passes)):
-        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
+        semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
+        freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+        freq *= (2.0 ** (pitch_detune / 12.0))
 
-    # remove DC again
-    table = table - np.mean(table)
+        n = int(sample_rate * duration)
 
-    peak = np.max(np.abs(table))
-    if peak > 1e-6:
-        table = table / peak
+        mono = build_segmented_wavetable_audio(
+            freq,
+            lambda field, smooth_passes: build_rainbow_wavetable(
+                field, color_max=color_max, table_size=2048, smooth_passes=smooth_passes
+            ),
+            rainbow_field,
+            n,
+            sample_rate,
+            smooth_start=rainbow_smooth_start,
+            smooth_end=rainbow_smooth_end,
+            segment_len=2048
+        )
 
-    return table
+        mono = smooth_audio_mono(mono, passes=max(0, audio_smooth_passes - 1))
 
+        env = build_swell_envelope(
+            n,
+            peak_pos=swell_peak_pos,
+            swell_curve=swell_curve,
+            tail_curve=tail_curve
+        )
 
-def ca_tone_from_note(sign, water_field, digibet, *,
-                      base=2,
-                      sample_rate=44100,
-                      duration=0.35,
-                      amp=0.25,
-                      midi_base_hz=55.0,
-                      note_offset=12):
-    """
-    sign -> digibet value controls pitch
-    CA field controls waveform shape
-    """
-    if sign not in digibet:
-        return None
+        mono = mono * env * amp
 
-    sign_value = digibet[sign] -1
+        pan = float(np.clip(pan, 0.0, 1.0))
+        left_gain = np.sqrt(1.0 - pan)
+        right_gain = np.sqrt(pan)
 
-    if sign_value == -1:
-        return None
+        left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
+        right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
 
-    # pitch from digibet value
-    semitone = note_offset + sign_value
-    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
+        stereo = np.column_stack((left, right))
 
-    table = build_ca_wavetable(water_field, base=base, table_size=2048)
-    n = int(sample_rate * duration)
+        if fx_on == 1:
+            stereo = apply_dynamic_fx_chain(stereo, env, sample_rate=sample_rate)
 
-    # phase accumulation through the wavetable
-    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
-    idx = (phase * len(table)).astype(np.int32) % len(table)
-    mono = table[idx]
-
-    # short envelope to avoid clicks
-    attack = max(1, int(0.01 * sample_rate))
-    release = max(1, int(0.05 * sample_rate))
-    env = np.ones(n, dtype=np.float32)
-    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
-    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
-
-    mono = mono * env * amp
-
-    # int16 stereo for pygame
-    mono_i16 = np.clip(mono * 32767.0, -32767, 32767).astype(np.int16)
-    stereo = np.repeat(mono_i16.reshape(-1, 1), 2, axis=1)
-
-    return pygame.sndarray.make_sound(stereo)
-
-
-
-def build_rainbow_wavetable(rainbow_field, color_max=2048, table_size=2048, smooth_passes=6):
-    arr = np.asarray(rainbow_field, dtype=np.float32)
-    flat = arr.flatten()
-
-    if flat.size == 0:
-        return np.zeros(table_size, dtype=np.float32)
-
-    # normalize rainbow values into [-1, 1]
-    wave = (flat / float(color_max - 1)) * 2.0 - 1.0
-
-    # remove DC
-    wave = wave - np.mean(wave)
-
-    peak = np.max(np.abs(wave))
-    if peak < 1e-6:
-        wave = np.zeros_like(wave, dtype=np.float32)
-        wave[0] = 1.0
-    else:
-        wave = wave / peak
-
-    # smooth raw source
-    for _ in range(max(0, smooth_passes // 2)):
-        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
-
-    # resample to fixed table
-    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
-    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
-    table = np.interp(dst_x, src_x, wave).astype(np.float32)
-
-    # smooth again
-    for _ in range(max(0, smooth_passes)):
-        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
-
-    table = table - np.mean(table)
-    peak = np.max(np.abs(table))
-    if peak > 1e-6:
-        table = table / peak
-
-    return table
-
-
-
-
-def rainbow_tone_from_note(sign, rainbow_field, digibet, *,
-                           color_max=2048,
-                           sample_rate=44100,
-                           duration=0.35,
-                           amp=0.18,
-                           midi_base_hz=55.0,
-                           note_offset=24,
-                           octave_shift=0,
-                           harmony_offset=0,
-                           pitch_detune=0.0,
-                           pan=0.8):
-    if sign not in digibet:
-        return None
-
-    sign_value = digibet[sign] - 1
-    if sign_value == -1:
-        return None
-
-    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
-    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
-
-    # optional slight detune for side shimmer
-    freq *= (2.0 ** (pitch_detune / 12.0))
-
-    table = build_rainbow_wavetable(rainbow_field, color_max=color_max, table_size=2048)
-    n = int(sample_rate * duration)
-
-    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
-    idx = (phase * len(table)).astype(np.int32) % len(table)
-    mono = table[idx]
-
-    # envelope
-    attack = max(1, int(0.01 * sample_rate))
-    release = max(1, int(0.08 * sample_rate))
-    env = np.ones(n, dtype=np.float32)
-    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
-    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
-
-    mono = mono * env * amp
-
-    # pan outward
-    pan = float(np.clip(pan, 0.0, 1.0))
-    left_gain = np.sqrt(1.0 - pan)
-    right_gain = np.sqrt(pan)
-
-    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
-    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
-
-    stereo = np.column_stack((left, right))
-    return pygame.sndarray.make_sound(stereo)
-
-
-base_hz = 55.0
-note_offset = 0
-
-
-def ca_tone_from_note(sign, water_field, digibet, *,
-                      base=2,
-                      sample_rate=44100,
-                      duration=0.35,
-                      amp=0.25,
-                      midi_base_hz=55.0,
-                      note_offset=0,
-                      octave_shift=0,
-                      harmony_offset=0,
-                      pan=0.5):
-    if sign not in digibet:
-        return None
-
-    sign_value = digibet[sign] - 1
-    if sign_value == -1:
-        return None
-
-    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
-    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
-
-    table = build_ca_wavetable(water_field, base=base, table_size=2048)
-    n = int(sample_rate * duration)
-
-    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
-    idx = (phase * len(table)).astype(np.int32) % len(table)
-    mono = table[idx]
-
-    attack = max(1, int(0.01 * sample_rate))
-    release = max(1, int(0.05 * sample_rate))
-    env = np.ones(n, dtype=np.float32)
-    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
-    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
-
-    mono = mono * env * amp
-
-    pan = float(np.clip(pan, 0.0, 1.0))
-    left_gain = np.sqrt(1.0 - pan)
-    right_gain = np.sqrt(pan)
-
-    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
-    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
-
-    stereo = np.column_stack((left, right))
-    return pygame.sndarray.make_sound(stereo)
-
-
-
-
-
-def play_water_rainbow_chord(sign, water_field, rainbow_field):
-    if sign not in digibet or digibet[sign] == 0:
-        return
-
-    voices = [
-        ("water",   0, 0.14, 0.47, -0.01),
-        ("water",   0, 0.14, 0.53,  0.01),
-
-        ("rainbow", 4, 0.08, 0.35, -0.03),
-        ("rainbow", 4, 0.08, 0.65,  0.03),
-
-        ("water",   7, 0.10, 0.22, -0.01),
-        ("water",   7, 0.10, 0.78,  0.01),
-
-        ("rainbow", 12, 0.06, 0.15, -0.04),
-        ("rainbow", 12, 0.06, 0.85,  0.04),
-    ]
-
-    for source, interval, amp, pan, detune in voices:
-        if source == "water":
-            snd = ca_tone_from_note(
-                sign,
-                water_field,
-                digibet,
-                base=base,
-                sample_rate=sample_rate,
-                duration=0.35,
-                amp=amp,
-                midi_base_hz=base_hz,
-                note_offset=base_note_offset,
-                octave_shift=octave_shift,
-                harmony_offset=interval,
-                pan=pan
-            )
-        else:
-            snd = rainbow_tone_from_note(
-                sign,
-                rainbow_field,
-                digibet,
-                color_max=color_max,
-                sample_rate=sample_rate,
-                duration=0.35,
-                amp=amp,
-                midi_base_hz=base_hz,
-                note_offset=base_note_offset,
-                octave_shift=octave_shift,
-                harmony_offset=interval,
-                pitch_detune=detune,
-                pan=pan
-            )
-
-        if snd is not None:
-            snd.play()
-
-
-
-
-
-def build_ca_wavetable(water_field, base=2, table_size=2048, smooth_passes=None):
-    if smooth_passes is None:
-        smooth_passes = water_smooth_passes
-
-    arr = np.asarray(water_field, dtype=np.float32)
-    flat = arr.flatten()
-
-    if flat.size == 0:
-        return np.zeros(table_size, dtype=np.float32)
-
-    if base <= 1:
-        wave = np.zeros_like(flat, dtype=np.float32)
-    else:
-        wave = (flat / float(base - 1)) * 2.0 - 1.0
-
-    wave = wave - np.mean(wave)
-
-    peak = np.max(np.abs(wave))
-    if peak < 1e-6:
-        wave = np.zeros_like(wave, dtype=np.float32)
-        wave[0] = 1.0
-    else:
-        wave = wave / peak
-
-    for _ in range(max(0, smooth_passes // 2)):
-        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
-
-    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
-    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
-    table = np.interp(dst_x, src_x, wave).astype(np.float32)
-
-    for _ in range(max(0, smooth_passes)):
-        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
-
-    # soften the wrap point a little
-    seam = min(48, len(table) // 8)
-    if seam > 1:
-        start = table[:seam].copy()
-        end = table[-seam:].copy()
-        blend = np.linspace(0.0, 1.0, seam, endpoint=False)
-        mixed = end * (1.0 - blend) + start * blend
-        table[:seam] = mixed
-        table[-seam:] = mixed
-
-    table = table - np.mean(table)
-    peak = np.max(np.abs(table))
-    if peak > 1e-6:
-        table = table / peak
-
-    return table
-
-
-
-
-def build_rainbow_wavetable(rainbow_field, color_max=2048, table_size=2048, smooth_passes=None):
-    if smooth_passes is None:
-        smooth_passes = rainbow_smooth_passes
-
-    arr = np.asarray(rainbow_field, dtype=np.float32)
-    flat = arr.flatten()
-
-    if flat.size == 0:
-        return np.zeros(table_size, dtype=np.float32)
-
-    wave = (flat / float(color_max - 1)) * 2.0 - 1.0
-    wave = wave - np.mean(wave)
-
-    peak = np.max(np.abs(wave))
-    if peak < 1e-6:
-        wave = np.zeros_like(wave, dtype=np.float32)
-        wave[0] = 1.0
-    else:
-        wave = wave / peak
-
-    for _ in range(max(0, smooth_passes // 2)):
-        wave = (np.roll(wave, 1) + 2.0 * wave + np.roll(wave, -1)) / 4.0
-
-    src_x = np.linspace(0.0, 1.0, num=wave.size, endpoint=False)
-    dst_x = np.linspace(0.0, 1.0, num=table_size, endpoint=False)
-    table = np.interp(dst_x, src_x, wave).astype(np.float32)
-
-    for _ in range(max(0, smooth_passes)):
-        table = (np.roll(table, 1) + 2.0 * table + np.roll(table, -1)) / 4.0
-
-    seam = min(48, len(table) // 8)
-    if seam > 1:
-        start = table[:seam].copy()
-        end = table[-seam:].copy()
-        blend = np.linspace(0.0, 1.0, seam, endpoint=False)
-        mixed = end * (1.0 - blend) + start * blend
-        table[:seam] = mixed
-        table[-seam:] = mixed
-
-    table = table - np.mean(table)
-    peak = np.max(np.abs(table))
-    if peak > 1e-6:
-        table = table / peak
-
-    return table
-
-
-
-
-
-
-
-
-def ca_tone_from_note_4(sign, water_field, digibet, *,
-                      base=2,
-                      sample_rate=44100,
-                      duration=0.35,
-                      amp=0.25,
-                      midi_base_hz=55.0,
-                      note_offset=0,
-                      octave_shift=0,
-                      harmony_offset=0,
-                      pitch_detune=0.0,
-                      pan=0.5):
-    if sign not in digibet:
-        return None
-
-    sign_value = digibet[sign] - 1
-    if sign_value == -1:
-        return None
-
-    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
-    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
-    freq *= (2.0 ** (pitch_detune / 12.0))
-
-    table = build_ca_wavetable(water_field, base=base, table_size=2048)
-    n = int(sample_rate * duration)
-
-    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
-    idx = (phase * len(table)).astype(np.int32) % len(table)
-    mono = table[idx]
-
-    mono = smooth_audio_mono(mono, passes=audio_smooth_passes)
-
-    attack = max(1, int((attack_ms / 1000.0) * sample_rate))
-    release = max(1, int((release_ms / 1000.0) * sample_rate))
-    env = np.ones(n, dtype=np.float32)
-    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
-    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
-
-    mono = mono * env * amp
-
-    pan = float(np.clip(pan, 0.0, 1.0))
-    left_gain = np.sqrt(1.0 - pan)
-    right_gain = np.sqrt(pan)
-
-    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
-    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
-
-    stereo = np.column_stack((left, right))
-    stereo = apply_fx_chain(stereo, sample_rate=sample_rate)
-
-    return pygame.sndarray.make_sound(stereo)
-
-
-
-
-def rainbow_tone_from_note_4(sign, rainbow_field, digibet, *,
-                           color_max=2048,
-                           sample_rate=44100,
-                           duration=0.35,
-                           amp=0.18,
-                           midi_base_hz=55.0,
-                           note_offset=0,
-                           octave_shift=0,
-                           harmony_offset=0,
-                           pitch_detune=0.0,
-                           pan=0.8):
-    if sign not in digibet:
-        return None
-
-    sign_value = digibet[sign] - 1
-    if sign_value == -1:
-        return None
-
-    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
-    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
-    freq *= (2.0 ** (pitch_detune / 12.0))
-
-    table = build_rainbow_wavetable(rainbow_field, color_max=color_max, table_size=2048)
-    n = int(sample_rate * duration)
-
-    phase = (np.arange(n, dtype=np.float32) * freq / sample_rate) % 1.0
-    idx = (phase * len(table)).astype(np.int32) % len(table)
-    mono = table[idx]
-
-    mono = smooth_audio_mono(mono, passes=audio_smooth_passes)
-
-    attack = max(1, int((attack_ms / 1000.0) * sample_rate))
-    release = max(1, int((release_ms / 1000.0) * sample_rate))
-    env = np.ones(n, dtype=np.float32)
-    env[:attack] = np.linspace(0.0, 1.0, attack, endpoint=False)
-    env[-release:] = np.linspace(1.0, 0.0, release, endpoint=True)
-
-    mono = mono * env * amp
-
-    pan = float(np.clip(pan, 0.0, 1.0))
-    left_gain = np.sqrt(1.0 - pan)
-    right_gain = np.sqrt(pan)
-
-    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
-    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
-
-    stereo = np.column_stack((left, right))
-    stereo = apply_fx_chain(stereo, sample_rate=sample_rate)
-
-    return pygame.sndarray.make_sound(stereo)
-
-
-
-
-
-
-
-
-
-# note shape
-note_duration = .7
-
-# swell envelope
-swell_peak_pos = .01     # where the note reaches max body, 0..1
-swell_curve = 1        # larger = more dramatic swell
-tail_curve = 1          # release shape
-
-# dynamic smoothness
-water_smooth_start = 10
-water_smooth_end = 1
-
-rainbow_smooth_start = 14
-rainbow_smooth_end = 1
-
-# dynamic fx
-echo_mix_start = 0.16
-echo_mix_end = 0.32
-
-reverb_mix_start = 0.16
-reverb_mix_end = 0.32
-
-
-
-
-def ca_tone_from_note(sign, water_field, digibet, *,
-                      base=2,
-                      sample_rate=44100,
-                      duration=0.85,
-                      amp=0.25,
-                      midi_base_hz=55.0,
-                      note_offset=0,
-                      octave_shift=0,
-                      harmony_offset=0,
-                      pitch_detune=0.0,
-                      pan=0.5):
-    if sign not in digibet:
-        return None
-
-    sign_value = digibet[sign] - 1
-    if sign_value == -1:
-        return None
-
-    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
-    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
-    freq *= (2.0 ** (pitch_detune / 12.0))
-
-    n = int(sample_rate * duration)
-
-    mono = build_segmented_wavetable_audio(
-        freq,
-        lambda field, smooth_passes: build_ca_wavetable(
-            field, base=base, table_size=2048, smooth_passes=smooth_passes
-        ),
-        water_field,
-        n,
-        sample_rate,
-        smooth_start=water_smooth_start,
-        smooth_end=water_smooth_end,
-        segment_len=2048
-    )
-
-    mono = smooth_audio_mono(mono, passes=max(0, audio_smooth_passes - 1))
-
-    env = build_swell_envelope(
-        n,
-        peak_pos=swell_peak_pos,
-        swell_curve=swell_curve,
-        tail_curve=tail_curve
-    )
-
-    mono = mono * env * amp
-
-    pan = float(np.clip(pan, 0.0, 1.0))
-    left_gain = np.sqrt(1.0 - pan)
-    right_gain = np.sqrt(pan)
-
-    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
-    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
-
-    stereo = np.column_stack((left, right))
-
-    if fx_on == 1:
-        stereo = apply_dynamic_fx_chain(stereo, env, sample_rate=sample_rate)
-
-    return pygame.sndarray.make_sound(stereo)
-
-
-
-
-
-def rainbow_tone_from_note(sign, rainbow_field, digibet, *,
-                           color_max=2048,
-                           sample_rate=44100,
-                           duration=0.85,
-                           amp=0.18,
-                           midi_base_hz=55.0,
-                           note_offset=0,
-                           octave_shift=0,
-                           harmony_offset=0,
-                           pitch_detune=0.0,
-                           pan=0.8):
-    if sign not in digibet:
-        return None
-
-    sign_value = digibet[sign] - 1
-    if sign_value == -1:
-        return None
-
-    semitone = note_offset + sign_value + (octave_shift * 12) + harmony_offset
-    freq = midi_base_hz * (2.0 ** (semitone / 12.0))
-    freq *= (2.0 ** (pitch_detune / 12.0))
-
-    n = int(sample_rate * duration)
-
-    mono = build_segmented_wavetable_audio(
-        freq,
-        lambda field, smooth_passes: build_rainbow_wavetable(
-            field, color_max=color_max, table_size=2048, smooth_passes=smooth_passes
-        ),
-        rainbow_field,
-        n,
-        sample_rate,
-        smooth_start=rainbow_smooth_start,
-        smooth_end=rainbow_smooth_end,
-        segment_len=2048
-    )
-
-    mono = smooth_audio_mono(mono, passes=max(0, audio_smooth_passes - 1))
-
-    env = build_swell_envelope(
-        n,
-        peak_pos=swell_peak_pos,
-        swell_curve=swell_curve,
-        tail_curve=tail_curve
-    )
-
-    mono = mono * env * amp
-
-    pan = float(np.clip(pan, 0.0, 1.0))
-    left_gain = np.sqrt(1.0 - pan)
-    right_gain = np.sqrt(pan)
-
-    left = np.clip(mono * left_gain * 32767.0, -32767, 32767).astype(np.int16)
-    right = np.clip(mono * right_gain * 32767.0, -32767, 32767).astype(np.int16)
-
-    stereo = np.column_stack((left, right))
-
-    if fx_on == 1:
-        stereo = apply_dynamic_fx_chain(stereo, env, sample_rate=sample_rate)
-
-    return pygame.sndarray.make_sound(stereo)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return pygame.sndarray.make_sound(stereo)
 
 
 
@@ -8129,6 +8144,614 @@ def send_sign_to_keyboard(sign):
 
 
 held = ''
+
+
+
+detect_change = 4
+
+if detect_change == 4:
+
+    state = 1  # finger is on / near / tracked by this button
+    state = 0  # finger is gone / button returned to baseline
+
+    DC4_FINGER_NAMES = ["pinky", "ring", "middle", "index", "thumb"]
+
+    DC4_RIGHT_FINGER_NAMES = ["pinky", "ring", "middle", "index", "thumb"]
+    DC4_LEFT_FINGER_NAMES = ["pinky", "ring", "middle", "index", "thumb"]
+
+    dc4_buttons = {
+        "right": [],
+        "left": [],
+    }
+
+    DC4_CHANGE_THRESHOLD = 22.0
+    DC4_COLOR_MATCH_THRESHOLD = 55.0
+    DC4_SEARCH_RADIUS = 80
+    DC4_LOCK_FRAMES = 2
+    DC4_RELEASE_FRAMES = 5
+    DC4_COLOR_LEARN_RATE = 0.08
+    DC4_POINT_SMOOTH = 0.35
+
+    DC4_CHANGE_THRESHOLD = 22.0
+
+    # stricter matching
+    DC4_COLOR_MATCH_THRESHOLD = 32.0  # was 55. Lower = stricter finger color match
+    DC4_BASELINE_REJECT_THRESHOLD = 28.0  # must be this different from empty button/background
+    DC4_BRIGHTNESS_MATCH_THRESHOLD = 28.0  # keeps wall highlights from matching skin color
+    DC4_RELEASE_CHANGE_THRESHOLD = 10.0  # if button returns near baseline, release
+    DC4_MIN_MATCH_PIXELS = 10
+    DC4_MAX_POINT_JUMP = 38
+
+    DC4_SEARCH_RADIUS = 45  # was 80. Smaller = less wall grabbing
+    DC4_LOCK_FRAMES = 2
+    DC4_RELEASE_FRAMES = 3
+    DC4_COLOR_LEARN_RATE = 0.03  # was 0.08. Slower = less drift into wall/background
+    DC4_POINT_SMOOTH = 0.35
+
+    # visuals
+    DC4_COLOR_ON = (255, 0, 0)
+    DC4_COLOR_OFF = (255, 255, 255)
+
+    DC4_COLOR_LINE_ACTIVE = (0, 0, 255)
+    DC4_COLOR_DOT_ACTIVE = (0, 0, 255)
+
+    DC4_COLOR_LINE_PASSIVE = (0, 0, 128)
+    DC4_COLOR_DOT_PASSIVE = (0, 0, 128)
+
+    DC4_COLOR_LANE_CENTER = (80, 80, 180)
+    DC4_COLOR_LANE_RAIL = (45, 45, 100)
+
+    DC4_COLOR_TEXT = (255, 255, 255)
+
+
+    DC4_BUTTON_THICKNESS = 4
+
+    DC4_LINE_THICKNESS_ACTIVE = 4
+    DC4_LINE_THICKNESS_PASSIVE = 2
+
+    DC4_DOT_RADIUS_ACTIVE = 4
+    DC4_DOT_RADIUS_PASSIVE = 2
+
+    DC4_RESET_LINE_ON_PRESS = 1
+    DC4_RELEARN_COLOR_ON_PRESS = 1
+
+
+    DC4_USE_LANES = 1
+    DC4_DRAW_LANES = 1
+
+    DC4_LANE_FORWARD = 128
+    DC4_LANE_BACK = 28
+    DC4_LANE_WIDTH = 20
+    DC4_THUMB_LANE_WIDTH = 28
+
+    DC4_TRACK_MISS_LIMIT = 12
+
+    DC4_COLOR_LANE = (255, 255, 255)
+    DC4_LANE_THICKNESS = 1
+
+
+
+
+    def roi_center(roi):
+        x1, y1, x2, y2 = roi
+        return ((x1 + x2) // 2, (y1 + y2) // 2)
+
+
+    def mean_rgb(region):
+        if region is None or region.size == 0:
+            return None
+        return region.reshape(-1, 3).mean(axis=0).astype(np.float32)
+
+
+    def rgb_dist(a, b):
+        if a is None or b is None:
+            return 9999.0
+        return float(np.linalg.norm(np.array(a, dtype=np.float32) - np.array(b, dtype=np.float32)))
+
+
+
+
+    def dc4_norm_vec(v):
+        vx, vy = v
+        mag = float((vx * vx + vy * vy) ** 0.5)
+
+        if mag <= 1e-6:
+            return (0.0, -1.0)
+
+        return (vx / mag, vy / mag)
+
+
+    def dc4_angle_to_vec(degrees):
+        """
+        Pygame angle system:
+        0   = right
+        45  = down-right
+        90  = straight down
+        135 = down-left
+        180 = left
+        -90 = up
+        """
+        rad = np.deg2rad(degrees)
+        return dc4_norm_vec((np.cos(rad), np.sin(rad)))
+
+
+    # Manually tune these.
+    # Bigger angle turns lane left.
+    # Smaller angle turns lane right.
+    DC4_LANE_ANGLES = {
+        "right": {
+            "pinky": 96,
+            "ring": 93,
+            "middle": 90,
+            "index": 87,
+            "thumb": 135,
+        },
+
+        # LEFT HAND:
+        # pinky is on the left, thumb is on the right.
+        "left": {
+            "pinky": 84,
+            "ring": 87,
+            "middle": 90,
+            "index": 93,
+            "thumb": 135,
+        },
+    }
+
+
+    def dc4_lane_vector(hand_name, finger_name):
+        angle = DC4_LANE_ANGLES.get(hand_name, {}).get(finger_name, 90)
+        return dc4_angle_to_vec(angle)
+
+
+    def dc4_points_in_lane(
+            global_xs,
+            global_ys,
+            lane_anchor,
+            lane_dir,
+            lane_width,
+            lane_forward,
+            lane_back
+    ):
+        """
+        global_xs/global_ys are arrays of candidate pixel positions.
+        Keeps only candidates inside a capsule-like finger lane.
+        """
+
+        ax, ay = lane_anchor
+        vx, vy = dc4_norm_vec(lane_dir)
+
+        dx = global_xs.astype(np.float32) - float(ax)
+        dy = global_ys.astype(np.float32) - float(ay)
+
+        # distance along the lane direction
+        forward = dx * vx + dy * vy
+
+        # side distance from the lane centerline
+        perp = np.abs(dx * (-vy) + dy * vx)
+
+        inside = (
+                (forward >= -float(lane_back)) &
+                (forward <= float(lane_forward)) &
+                (perp <= float(lane_width))
+        )
+
+        return inside
+
+
+    def activate_dc4_button(b, current_color):
+        """
+        Rising-edge button activation:
+        this is where the line resets and color can be relearned.
+        """
+
+        b["state"] = 1
+        b["tracking"] = 1
+        b["misses"] = 0
+        b["track_misses"] = 0
+        b["candidate_frames"] = 0
+        b["press_count"] = b.get("press_count", 0) + 1
+
+        if current_color is not None:
+            if DC4_RELEARN_COLOR_ON_PRESS == 1 or b["finger_color"] is None:
+                b["finger_color"] = current_color.copy()
+
+        if DC4_RESET_LINE_ON_PRESS == 1:
+            b["finger_point"] = b["anchor"]
+
+
+
+    def make_dc4_buttons():
+        global dc4_buttons
+
+        dc4_buttons = {
+            "right": [],
+            "left": [],
+        }
+
+        # right_roi and left_roi already include 5 finger boxes + 1 palm box.
+        # We only want the first 5 finger boxes.
+        for hand_name, rois, names in (
+                ("right", right_roi[:5], DC4_RIGHT_FINGER_NAMES),
+                ("left", left_roi[:5], DC4_LEFT_FINGER_NAMES),
+        ):
+            for name, roi in zip(names, rois):
+                dc4_buttons[hand_name].append({
+                    "hand": hand_name,
+                    "name": name,
+                    "roi": roi,
+                    "anchor": roi_center(roi),
+
+                    "baseline_color": None,
+                    "finger_color": None,
+                    "finger_point": None,
+
+                    "state": 0,
+                    "tracking": 0,
+                    "candidate_frames": 0,
+                    "misses": 0,
+                    "track_misses": 0,
+                    "press_count": 0,
+
+                    "lane_dir": dc4_lane_vector(hand_name, name),
+                    "lane_width": DC4_THUMB_LANE_WIDTH if name == "thumb" else DC4_LANE_WIDTH,
+                })
+
+        print("DC4 buttons made")
+        print("right:", [b["name"] for b in dc4_buttons["right"]])
+        print("left:", [b["name"] for b in dc4_buttons["left"]])
+
+
+
+    def calibrate_dc4_buttons(frame):
+        for hand_name in ("right", "left"):
+            for b in dc4_buttons[hand_name]:
+                x1, y1, x2, y2 = b["roi"]
+                crop = frame[x1:x2, y1:y2]
+
+                b["baseline_color"] = mean_rgb(crop)
+                b["finger_color"] = None
+                b["finger_point"] = b["anchor"]
+                b["state"] = 0
+                b["candidate_frames"] = 0
+                b["misses"] = 0
+
+                b["tracking"] = 0
+                b["track_misses"] = 0
+                b["press_count"] = 0
+                b["lane_dir"] = dc4_lane_vector(hand_name, b["name"])
+                b["lane_width"] = DC4_THUMB_LANE_WIDTH if b["name"] == "thumb" else DC4_LANE_WIDTH
+
+
+        print("DC4 finger buttons calibrated")
+
+
+    def find_finger_color_point(
+            frame,
+            target_color,
+            start_point,
+            baseline_color=None,
+            search_radius=45,
+            color_threshold=32,
+            baseline_reject_threshold=28,
+            brightness_threshold=28,
+            min_pixels=10,
+            max_point_jump=38,
+            lane_anchor=None,
+            lane_dir=None,
+            lane_width=34,
+            lane_forward=220,
+            lane_back=28
+    ):
+        if target_color is None or start_point is None:
+            return None, 0.0
+
+        sx, sy = start_point
+
+        x1 = max(0, int(sx - search_radius))
+        x2 = min(screen_width, int(sx + search_radius))
+        y1 = max(0, int(sy - search_radius))
+        y2 = min(screen_height, int(sy + search_radius))
+
+        field = frame[x1:x2, y1:y2]
+        if field.size == 0:
+            return None, 0.0
+
+        field_f = field.astype(np.float32)
+        target = np.array(target_color, dtype=np.float32)
+
+        diff = field_f - target
+        finger_dist = np.sqrt(np.sum(diff * diff, axis=2))
+
+        field_brightness = field_f.mean(axis=2)
+        target_brightness = target.mean()
+        brightness_diff = np.abs(field_brightness - target_brightness)
+
+        mask = (
+                (finger_dist <= color_threshold) &
+                (brightness_diff <= brightness_threshold)
+        )
+
+        if baseline_color is not None:
+            baseline = np.array(baseline_color, dtype=np.float32)
+            base_diff = field_f - baseline
+            baseline_dist = np.sqrt(np.sum(base_diff * base_diff, axis=2))
+            mask = mask & (baseline_dist >= baseline_reject_threshold)
+
+        if np.sum(mask) < min_pixels:
+            return None, 0.0
+
+        xs, ys = np.where(mask)
+
+        global_xs = x1 + xs
+        global_ys = y1 + ys
+
+        # normal nearby-point guard
+        jump_dist = np.sqrt((global_xs - sx) ** 2 + (global_ys - sy) ** 2)
+        near = jump_dist <= max_point_jump
+
+        if np.sum(near) < min_pixels:
+            return None, 0.0
+
+        xs = xs[near]
+        ys = ys[near]
+        global_xs = global_xs[near]
+        global_ys = global_ys[near]
+
+        # lane guard
+        if DC4_USE_LANES == 1 and lane_anchor is not None and lane_dir is not None:
+            lane_ok = dc4_points_in_lane(
+                global_xs,
+                global_ys,
+                lane_anchor,
+                lane_dir,
+                lane_width,
+                lane_forward,
+                lane_back
+            )
+
+            if np.sum(lane_ok) < min_pixels:
+                return None, 0.0
+
+            xs = xs[lane_ok]
+            ys = ys[lane_ok]
+
+        match_dist = finger_dist[xs, ys]
+
+        order = np.argsort(match_dist)
+        keep_n = max(min_pixels, int(len(order) * 0.35))
+        keep = order[:keep_n]
+
+        px = int(x1 + np.mean(xs[keep]))
+        py = int(y1 + np.mean(ys[keep]))
+
+        confidence = float(np.clip(1.0 - np.mean(match_dist[keep]) / color_threshold, 0.0, 1.0))
+
+        return (px, py), confidence
+
+
+    def update_dc4_button(frame, b):
+        x1, y1, x2, y2 = b["roi"]
+        crop = frame[x1:x2, y1:y2]
+        current_color = mean_rgb(crop)
+
+        if current_color is None:
+            return 0.0, 0.0
+
+        if b["baseline_color"] is None:
+            b["finger_point"] = b["anchor"]
+            b["state"] = 0
+            b["tracking"] = 0
+            b["candidate_frames"] = 0
+            b["misses"] = 0
+            b["track_misses"] = 0
+            return 0.0, 0.0
+
+        change = rgb_dist(current_color, b["baseline_color"])
+        was_pressed = b["state"] == 1
+
+        # -------------------------------------------------
+        # FIRST CONTACT:
+        # No finger color has been learned yet.
+        # -------------------------------------------------
+        if b["finger_color"] is None:
+            if change > DC4_CHANGE_THRESHOLD:
+                b["candidate_frames"] += 1
+
+                if b["candidate_frames"] >= DC4_LOCK_FRAMES:
+                    activate_dc4_button(b, current_color)
+            else:
+                b["candidate_frames"] = 0
+                b["state"] = 0
+
+            return change, 0.0
+
+        # -------------------------------------------------
+        # BUTTON STATE:
+        # Button can release, but tracking can continue.
+        # Re-pressing the button resets/relearns the line.
+        # -------------------------------------------------
+        if change < DC4_RELEASE_CHANGE_THRESHOLD:
+            b["misses"] += 1
+
+            if b["misses"] >= DC4_RELEASE_FRAMES:
+                b["state"] = 0
+                b["candidate_frames"] = 0
+
+        elif change > DC4_CHANGE_THRESHOLD:
+            # Rising edge: released -> pressed.
+            # This resets the line and relearns the current finger color.
+            if not was_pressed:
+                activate_dc4_button(b, current_color)
+            else:
+                b["state"] = 1
+                b["misses"] = 0
+
+        # -------------------------------------------------
+        # TRACKING STATE:
+        # If this button has ever activated, keep tracking
+        # inside its own lane until tracking misses too long.
+        # -------------------------------------------------
+        if b.get("tracking", 0) != 1:
+            return change, 0.0
+
+        search_start = b["finger_point"] if b["finger_point"] is not None else b["anchor"]
+
+        point, confidence = find_finger_color_point(
+            frame,
+            b["finger_color"],
+            search_start,
+            baseline_color=b["baseline_color"],
+            search_radius=DC4_SEARCH_RADIUS,
+            color_threshold=DC4_COLOR_MATCH_THRESHOLD,
+            baseline_reject_threshold=DC4_BASELINE_REJECT_THRESHOLD,
+            brightness_threshold=DC4_BRIGHTNESS_MATCH_THRESHOLD,
+            min_pixels=DC4_MIN_MATCH_PIXELS,
+            max_point_jump=DC4_MAX_POINT_JUMP,
+
+            # lane limits
+            lane_anchor=b["anchor"],
+            lane_dir=b.get("lane_dir", (0.0, -1.0)),
+            lane_width=b.get("lane_width", DC4_LANE_WIDTH),
+            lane_forward=DC4_LANE_FORWARD,
+            lane_back=DC4_LANE_BACK
+        )
+
+        if point is not None:
+            old_x, old_y = b["finger_point"]
+            new_x, new_y = point
+
+            smooth = DC4_POINT_SMOOTH
+            b["finger_point"] = (
+                int(old_x * (1.0 - smooth) + new_x * smooth),
+                int(old_y * (1.0 - smooth) + new_y * smooth),
+            )
+
+            b["track_misses"] = 0
+
+            # Only adapt finger color while actively pressed.
+            if b["state"] == 1 and change > DC4_CHANGE_THRESHOLD:
+                b["finger_color"] = (
+                        b["finger_color"] * (1.0 - DC4_COLOR_LEARN_RATE)
+                        + current_color * DC4_COLOR_LEARN_RATE
+                )
+
+        else:
+            b["track_misses"] = b.get("track_misses", 0) + 1
+
+            if b["track_misses"] >= DC4_TRACK_MISS_LIMIT:
+                b["tracking"] = 0
+                b["finger_point"] = b["anchor"]
+
+        return change, confidence
+
+
+
+    def draw_dc4_lane(b):
+        if DC4_DRAW_LANES != 1:
+            return
+
+        ax, ay = b["anchor"]
+        vx, vy = dc4_norm_vec(b.get("lane_dir", (0.0, -1.0)))
+        width = b.get("lane_width", DC4_LANE_WIDTH)
+
+        bx = ax - vx * DC4_LANE_BACK
+        by = ay - vy * DC4_LANE_BACK
+
+        ex = ax + vx * DC4_LANE_FORWARD
+        ey = ay + vy * DC4_LANE_FORWARD
+
+        nx = -vy
+        ny = vx
+
+        # lane center
+        pygame.draw.line(
+            screen,
+            DC4_COLOR_LANE_CENTER,
+            (int(bx), int(by)),
+            (int(ex), int(ey)),
+            DC4_LANE_THICKNESS
+        )
+
+        # lane rails
+        for off in (-width, width):
+            pygame.draw.line(
+                screen,
+                DC4_COLOR_LANE_RAIL,
+                (int(bx + nx * off), int(by + ny * off)),
+                (int(ex + nx * off), int(ey + ny * off)),
+                DC4_LANE_THICKNESS
+            )
+
+
+    def draw_dc4_button(b, change=0.0, confidence=0.0):
+        x1, y1, x2, y2 = b["roi"]
+        ax, ay = b["anchor"]
+
+
+        draw_dc4_lane(b)
+
+
+        if b["state"] == 1:
+            color = DC4_COLOR_ON
+        else:
+            color = DC4_COLOR_OFF
+
+        pygame.draw.rect(
+            screen,
+            color,
+            pygame.Rect(x1, y1, x2 - x1, y2 - y1),
+            DC4_BUTTON_THICKNESS
+        )
+
+        if b["finger_point"] is not None:
+            fx, fy = b["finger_point"]
+
+            if b["state"] == 1:
+                line_color = DC4_COLOR_LINE_ACTIVE
+                dot_color = DC4_COLOR_DOT_ACTIVE
+                line_thickness = DC4_LINE_THICKNESS_ACTIVE
+                dot_radius = DC4_DOT_RADIUS_ACTIVE
+
+            else:
+                line_color = DC4_COLOR_LINE_PASSIVE
+                dot_color = DC4_COLOR_DOT_PASSIVE
+                line_thickness = DC4_LINE_THICKNESS_PASSIVE
+                dot_radius = DC4_DOT_RADIUS_PASSIVE
+
+            pygame.draw.line(
+                screen,
+                line_color,
+                (ax, ay),
+                (fx, fy),
+                line_thickness
+            )
+
+            pygame.draw.circle(
+                screen,
+                dot_color,
+                (fx, fy),
+                dot_radius
+            )
+
+
+        label = text_font.render(
+            f'{b["name"]}:{b["state"]} c:{round(change, 1)} f:{round(confidence, 2)}',
+            True,
+            DC4_COLOR_TEXT
+        )
+        screen.blit(label, (x1, y1 - 18))
+
+
+    def dc4_finger_buttons_detect():
+        for hand_name in ("right", "left"):
+            for b in dc4_buttons[hand_name]:
+                change, confidence = update_dc4_button(hand_array, b)
+                draw_dc4_button(b, change, confidence)
+
+make_dc4_buttons()
+
+
 
 
 
@@ -9319,9 +9942,9 @@ while running:
 
             save_edge_template(current_template)
 
+    elif detect_change == 4:
 
-
-
+        dc4_finger_buttons_detect()
 
 
 
@@ -9758,7 +10381,7 @@ while running:
 
                 global held
 
-                holds = ['e', 'w', 'r', 'z', 'x']
+                holds = ['e', 'w', 'r', 'z', 'x', 'l', 'o', 'v', 'p', 'a', 'r', 'd', 'b', 'i', 'q', 'f', 'm', 'h']
 
                 if sign not in holds:
                     try:
@@ -9802,6 +10425,80 @@ while running:
                 code = ' '
                 send_sign_to_keyboard(match)
                 last_typed = match
+
+
+        if typing_mode == 4:
+
+            def send_sign_to_keyboard(sign):
+
+                global held
+
+                holds = ['e', 'w', 'r', 'z', 'x', 'l', 'o', 'v', 'p', 'a', 'r', 'd', 'b', 'i', 'q', 'f', 'm', 'h', 's', 't', 'u', 'g']
+
+                if sign not in holds:
+                    try:
+                        pyautogui.write(sign)
+                        print("write:", sign)
+                    except Exception as e:
+                        print("pyautogui error:", e)
+
+                else:
+                    try:
+                        press_key_down(sign)
+                        print("Press:", sign)
+                        held = sign
+                    except Exception as e:
+                        print("pyautogui error:", e)
+
+
+            match_l = ''
+            match_r = ''
+
+
+            if hands[0] == hands_0[0]:
+                match_r = hands[0]
+            elif hands_0[0] == hands_1[0]:
+                match_r = hands_0[0]
+            elif hands_1[0] == hands[0]:
+                match_r = hands_1[0]
+
+
+            if hands[1] == hands_0[1]:
+                match_l = hands[1]
+            elif hands_0[1] == hands_1[1]:
+                match_l = hands_0[1]
+            elif hands_1[1] == hands[1]:
+                match_l = hands_1[1]
+
+
+            if match_r != last_r:
+
+                print()
+                print('match_r')
+                print(match_r)
+
+                hold_key_up(last_r)
+                bong_on = 1
+                code = ''
+                send_sign_to_keyboard(match_r)
+                last_r = match_r
+
+            if match_l != last_l:
+
+                print()
+                print('match_l')
+                print(match_l)
+
+                hold_key_up(last_l)
+                bong_on = 1
+                code = ''
+                send_sign_to_keyboard(match_l)
+                last_l = match_l
+
+
+
+
+
 
 
 
@@ -10613,6 +11310,10 @@ while running:
                     array_past = hand_array.copy()
                     palm_prev = [None, None]
                     print("detector baseline reset")
+
+
+            elif event.key == pygame.K_F8:
+                calibrate_dc4_buttons(hand_array)
 
 
 
