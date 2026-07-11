@@ -465,12 +465,15 @@ pygame.camera.init()
 
 
 
+signame = 'Chal'
+
+
 signame = "Chaotomata"
+
 
 
 signame = "Theophilis"
 
-signame = 'Chal'
 
 
 
@@ -8756,6 +8759,43 @@ make_dc4_buttons()
 
 
 
+match_l = ''
+match_r = ''
+
+
+# typing mode 4 held memory
+# index 0 = right hand
+# index 1 = left hand
+HELD_RIGHT = 0
+HELD_LEFT = 1
+held_by_hand = ["", ""]
+
+
+def hold_key_up_hand(hand_index):
+    """
+    Release this hand's old held key,
+    unless the opposite hand is still holding the same key.
+    """
+
+    old_key = held_by_hand[hand_index]
+
+    if old_key == "" or old_key == " ":
+        held_by_hand[hand_index] = ""
+        return
+
+    other_index = 1 - hand_index
+    other_key = held_by_hand[other_index]
+
+    # important part:
+    # do NOT keyUp if the opposite hand still owns this same key
+    if old_key == other_key:
+        held_by_hand[hand_index] = ""
+        print("KEEP KEY DOWN:", old_key, "opposite hand still holds it")
+        return
+
+    hold_key_up(old_key)
+    held_by_hand[hand_index] = ""
+
 
 
 running = True
@@ -10431,30 +10471,37 @@ while running:
 
         if typing_mode == 4:
 
-            def send_sign_to_keyboard(sign):
+            def send_sign_to_keyboard(sign, hand_index):
 
-                global held
+                holds = ['e', 'w', 'r', 'z', 'x', 'l', 'o', 'v', 'p',
+                         'a', 'r', 'd', 'b', 'i', 'q', 'f', 'm', 'h',
+                         's', 't', 'u', 'g']
 
-                holds = ['e', 'w', 'r', 'z', 'x', 'l', 'o', 'v', 'p', 'a', 'r', 'd', 'b', 'i', 'q', 'f', 'm', 'h', 's', 't', 'u', 'g']
+                if sign == "":
+                    sign = " "
 
                 if sign not in holds:
-                    try:
-                        pyautogui.write(sign)
-                        print("write:", sign)
-                    except Exception as e:
-                        print("pyautogui error:", e)
+                    if sign != " ":
+                        try:
+                            pyautogui.write(sign)
+                            print("write:", sign)
+                        except Exception as e:
+                            print("pyautogui error:", e)
 
-                else:
-                    try:
-                        press_key_down(sign)
-                        print("Press:", sign)
-                        held = sign
-                    except Exception as e:
-                        print("pyautogui error:", e)
+                    held_by_hand[hand_index] = ""
+                    return
+
+                try:
+                    # use hold_key_down because your hold_key_up uses pyautogui
+                    hold_key_down(sign)
+                    print("Press:", sign)
+                    held_by_hand[hand_index] = sign
+
+                except Exception as e:
+                    print("pyautogui error:", e)
 
 
-            match_l = ''
-            match_r = ''
+
 
 
             if hands[0] == hands_0[0]:
@@ -10472,29 +10519,28 @@ while running:
             elif hands_1[1] == hands[1]:
                 match_l = hands_1[1]
 
-
             if match_r != last_r:
-
                 print()
                 print('match_r')
                 print(match_r)
 
-                hold_key_up(last_r)
+                hold_key_up_hand(HELD_RIGHT)
+
                 bong_on = 1
                 code = ''
-                send_sign_to_keyboard(match_r)
+                send_sign_to_keyboard(match_r, HELD_RIGHT)
                 last_r = match_r
 
             if match_l != last_l:
-
                 print()
                 print('match_l')
                 print(match_l)
 
-                hold_key_up(last_l)
+                hold_key_up_hand(HELD_LEFT)
+
                 bong_on = 1
                 code = ''
-                send_sign_to_keyboard(match_l)
+                send_sign_to_keyboard(match_l, HELD_LEFT)
                 last_l = match_l
 
 
