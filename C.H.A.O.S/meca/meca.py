@@ -3428,11 +3428,11 @@ def submit(letter):
             # print("times")
             # print(times)
 
-            if phrase == code[len(code) - len(phrase):len(code)]:
-                se += 1
-
-            else:
-                se = int(se / 2)
+            # if phrase == code[len(code) - len(phrase):len(code)]:
+            #     se += 1
+            #
+            # else:
+            #     se = int(se / 2)
 
             code = ''
 
@@ -9116,7 +9116,7 @@ while running:
 
 
 
-        # rainbow = 2
+        # rainbow = 1
         region = image_array[pos_x:pos_x + l, pos_y:pos_y + h]
 
         if rainbow == 0:
@@ -9208,8 +9208,8 @@ while running:
 
             fade_max = 8
 
-            fade = score % fade_max
-            fade = 1
+            fade = len(message) % fade_max
+            # fade = 1
 
             # print(fade)
 
