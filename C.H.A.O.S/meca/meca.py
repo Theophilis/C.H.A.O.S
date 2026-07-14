@@ -465,7 +465,11 @@ pygame.camera.init()
 
 
 
+
+
 signame = 'Chal'
+
+
 
 
 signame = "Chaotomata"
@@ -475,7 +479,7 @@ signame = "Chaotomata"
 signame = "Theophilis"
 
 
-
+signame = "Embassy"
 
 
 
@@ -3616,7 +3620,7 @@ hand_r1 = [0, 0, 0, 0, 0, 0]
 
 palm_r = [0, 0, 0, 0, 0, 0]
 
-tips_r = [64, 16, 0, 24, 0]
+tips_r = [80, 16, 0, 24, 0]
 
 
 
@@ -3686,7 +3690,7 @@ hand_l0 = [0, 0, 0, 0, 0, 0]
 hand_l1 = [0, 0, 0, 0, 0, 0]
 
 palm_l = [0, 0, 0, 0, 0, 0]
-tips_l = [0, 24, 0, 16, 64]
+tips_l = [0, 24, 0, 16, 80]
 
 left_roi = [(xl_pos + (x_s + x_g) * (n + 1), yl_pos + tips_l[n],
              xl_pos + (x_s + x_g) * (n + 1) + x_s, yl_pos + tips_l[n] + y_s) for n in range(5)]
@@ -10109,7 +10113,7 @@ while running:
         letter_0, code_00 = handle(hands_0, code_00)
         letter_1, code_01 = handle(hands_1, code_01)
 
-        typing_mode = 0
+        typing_mode = 4
 
         typed = 0
         bong = 0
@@ -10530,6 +10534,7 @@ while running:
                 code = ''
                 send_sign_to_keyboard(match_r, HELD_RIGHT)
                 last_r = match_r
+                message += match_r
 
             if match_l != last_l:
                 print()
@@ -10542,6 +10547,7 @@ while running:
                 code = ''
                 send_sign_to_keyboard(match_l, HELD_LEFT)
                 last_l = match_l
+                message += match_l
 
 
 
