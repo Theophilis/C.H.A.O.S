@@ -472,14 +472,30 @@ signame = 'Chal'
 
 
 
+signame = "Theophilis"
+
+
+
+
+
+
+
+
+
+
+
+
+signame = "Embassy"
+
+
+
+
+
+
 signame = "Chaotomata"
 
 
 
-signame = "Theophilis"
-
-
-signame = "Embassy"
 
 
 
@@ -497,7 +513,7 @@ screen_width, screen_height = 1922, 1082
 
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('C.H.A.O.S')
+pygame.display.set_caption('C.H.A.O.S MECA')
 
 
 
@@ -3538,9 +3554,33 @@ flex_p = 42
 ambient = 1
 ambient_rgb_ref = None
 ambient_delta = 0.0
-# 0.0 = no correction, 1.0 = full correction.
-# Start gentle.
+
+ambient_gain = np.ones(3, dtype=np.float32)
+
 AMBIENT_CORRECT_STRENGTH = 0.75
+AMBIENT_GAIN_SMOOTH = 0.15
+AMBIENT_GAIN_MIN = 0.70
+AMBIENT_GAIN_MAX = 1.40
+
+
+
+
+NEUTRAL_SIZE = 64
+
+# Top-center of the camera frame.
+neut_x = int(screen_width // 2 - NEUTRAL_SIZE // 2)
+neut_y = int(screen_height //6)
+
+neutral_roi = (
+    neut_x,
+    neut_y,
+    neut_x + NEUTRAL_SIZE,
+    neut_y + NEUTRAL_SIZE,
+)
+
+neut = 1
+
+
 
 
 
@@ -3552,58 +3592,119 @@ if ambient == 1:
     # Pick empty background zones, away from your hand boxes.
     # array3d uses [x, y], so these are x1, y1, x2, y2.
     AMBIENT_SAMPLE_BOXES = [
-        (20, 20, 180, 180),  # upper left background
-        (screen_width - 180, 20, screen_width - 20, 180),  # upper right background
+        neutral_roi,
+
+        # Keep the two corners as backup references.
+        # Using three areas means one hand passing over one box
+        # will not completely corrupt the lighting measurement.
+        (20, 20, 180, 180),
+        (
+            screen_width - 180,
+            20,
+            screen_width - 20,
+            180,
+        ),
     ]
 
 
     def sample_ambient_rgb(frame):
+        """
+        Sample several static wall regions.
+
+        Median inside each box rejects individual highlights.
+        Median across boxes rejects one contaminated box.
+        """
         samples = []
 
+        frame_width, frame_height = frame.shape[:2]
+
         for x1, y1, x2, y2 in AMBIENT_SAMPLE_BOXES:
+            x1 = max(0, min(frame_width, int(x1)))
+            x2 = max(0, min(frame_width, int(x2)))
+            y1 = max(0, min(frame_height, int(y1)))
+            y2 = max(0, min(frame_height, int(y2)))
+
+            if x2 <= x1 or y2 <= y1:
+                continue
+
             crop = frame[x1:x2, y1:y2]
 
-            if crop.size > 0:
-                samples.append(crop.reshape(-1, 3).mean(axis=0))
+            if crop.size == 0:
+                continue
 
-        if len(samples) == 0:
-            return frame.reshape(-1, 3).mean(axis=0)
+            pixels = crop.reshape(-1, 3).astype(np.float32)
 
-        return np.mean(samples, axis=0)
+            # Median is less sensitive to glare and shadows than mean.
+            samples.append(np.median(pixels, axis=0))
+
+        if not samples:
+            pixels = frame.reshape(-1, 3).astype(np.float32)
+            return np.median(pixels, axis=0)
+
+        return np.median(
+            np.stack(samples, axis=0),
+            axis=0,
+        )
 
 
     def calibrate_ambient(frame):
         global ambient_rgb_ref
+        global ambient_gain
+        global ambient_delta
 
         ambient_rgb_ref = sample_ambient_rgb(frame).astype(np.float32)
+        ambient_gain = np.ones(3, dtype=np.float32)
+        ambient_delta = 0.0
+
         print("AMBIENT CALIBRATED:", ambient_rgb_ref)
 
 
     def correct_ambient_light(frame):
-        global ambient_rgb_ref, ambient_delta
+        global ambient_rgb_ref
+        global ambient_gain
+        global ambient_delta
 
         if ambient_rgb_ref is None:
             calibrate_ambient(frame)
-            return frame
+            return frame.copy()
 
-        now_rgb = sample_ambient_rgb(frame).astype(np.float32)
+        current_rgb = sample_ambient_rgb(frame).astype(np.float32)
 
-        # How much the room lighting changed from calibration.
-        ambient_delta = float(np.mean(np.abs(now_rgb - ambient_rgb_ref)))
+        ambient_delta = float(
+            np.mean(np.abs(current_rgb - ambient_rgb_ref))
+        )
 
-        # Per-channel gain correction.
-        gain = ambient_rgb_ref / np.maximum(now_rgb, 1.0)
+        # Per-channel multiplier needed to make the wall look
+        # like it did during calibration.
+        target_gain = ambient_rgb_ref / np.maximum(current_rgb, 1.0)
 
-        # Prevent wild correction if a hand/object covers the sample box.
-        gain = np.clip(gain, 0.65, 1.55)
+        target_gain = np.clip(
+            target_gain,
+            AMBIENT_GAIN_MIN,
+            AMBIENT_GAIN_MAX,
+        )
 
-        # Blend correction strength.
-        blended_gain = 1.0 + AMBIENT_CORRECT_STRENGTH * (gain - 1.0)
+        # Partial correction prevents overcorrection.
+        target_gain = (
+                1.0
+                + AMBIENT_CORRECT_STRENGTH
+                * (target_gain - 1.0)
+        )
 
-        corrected = frame.astype(np.float32) * blended_gain
-        corrected = np.clip(corrected, 0, 255).astype(np.uint8)
+        # Smooth gain changes to prevent frame-to-frame flicker.
+        ambient_gain = (
+                ambient_gain * (1.0 - AMBIENT_GAIN_SMOOTH)
+                + target_gain * AMBIENT_GAIN_SMOOTH
+        )
 
-        return corrected
+        corrected = (
+                frame.astype(np.float32)
+                * ambient_gain.reshape(1, 1, 3)
+        )
+
+        return np.clip(corrected, 0, 255).astype(np.uint8)
+
+
 
 
 ####right hand####
@@ -3825,8 +3926,12 @@ if hand_numb > 1:
         print(left_hand_x)
 
 
+
+
+
+
 def right_hand_detect():
-    global hand_r, hand_r0, hand_r1, right_hand, right_roi, hand_x, hands, hands_0, hands_1, roir_map, distr_map
+    global hand_r, hand_r0, hand_r1, right_hand, right_roi, hand_x, hands, hands_0, hands_1, roir_map, distr_map, neutral_roi, neut
 
 
     place = 0
@@ -3834,6 +3939,7 @@ def right_hand_detect():
     flex_c_live = flex_c + ambient_delta * 0.35
     flex_m_live = flex_m + (ambient_delta ** 2) * 0.05
     flex_p_live = flex_p + ambient_delta * 0.35
+
 
 
 
@@ -3921,7 +4027,7 @@ def right_hand_detect():
 
 
 def left_hand_detect():
-    global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x, roil_map, distl_map
+    global hand_l, hand_l0, hand_l1, left_hand, left_roi, roil_map, distl_map, hands, hands_0, hands_1, hand_x, roil_map, distl_map, neutral_roi, neut
 
     place = 0
 
@@ -8801,6 +8907,9 @@ def hold_key_up_hand(hand_index):
     held_by_hand[hand_index] = ""
 
 
+typing_mode = 4
+
+
 
 running = True
 while running:
@@ -9209,7 +9318,7 @@ while running:
             fade_max = 8
 
             fade = len(message) % fade_max
-            # fade = 1
+            fade = 1
 
             # print(fade)
 
@@ -9254,7 +9363,7 @@ while running:
                 # Edge highlight momentum
                 speed_boost = len(message)
                 region[edge_mask] = region_original[edge_mask]
-                rainbow_array[edge_mask] += speed_boost + set
+                rainbow_array[edge_mask] += speed_boost + se
                 rainbow_array %= color_max
 
             elif fade == 6:
@@ -9272,7 +9381,7 @@ while running:
 
                 speed_boost = len(message)
                 region[edge_mask] = region_original[edge_mask]
-                rainbow_array[edge_mask] += speed_boost + set
+                rainbow_array[edge_mask] += speed_boost + se
                 rainbow_array %= color_max
 
 
@@ -9302,7 +9411,7 @@ while running:
 
                 region = result.astype(np.uint8)
                 region[edge_mask] = region_original[edge_mask]
-                rainbow_array[edge_mask] += len(message) + set
+                rainbow_array[edge_mask] += len(message) + se
                 rainbow_array %= color_max
 
 
@@ -9499,9 +9608,6 @@ while running:
 
 
 
-
-
-
         ####right hand####
 
         right_hand_detect()
@@ -9509,6 +9615,24 @@ while running:
 
         ####left hand####
         left_hand_detect()
+
+        if neut == 1:
+            x1, y1, x2, y2 = neutral_roi
+
+            pygame.draw.rect(
+                screen,
+                (255, 255, 0),
+                pygame.Rect(x1, y1, x2 - x1, y2 - y1),
+                2,
+            )
+
+            neutral_label = text_font.render(
+                f"neutral delta: {ambient_delta:.2f}",
+                True,
+                (255, 255, 255),
+            )
+
+            screen.blit(neutral_label, (x1, y2 + 4))
 
 
         #
@@ -9637,6 +9761,7 @@ while running:
         # # print(right_hand)
         # # print(hands)
         # # print(hands_0)
+
 
     elif detect_change == 2:
 
@@ -9988,6 +10113,7 @@ while running:
 
             save_edge_template(current_template)
 
+
     elif detect_change == 4:
 
         dc4_finger_buttons_detect()
@@ -10113,7 +10239,9 @@ while running:
         letter_0, code_00 = handle(hands_0, code_00)
         letter_1, code_01 = handle(hands_1, code_01)
 
-        typing_mode = 4
+
+
+        typing_max = 5
 
         typed = 0
         bong = 0
@@ -10524,6 +10652,7 @@ while running:
                 match_l = hands_1[1]
 
             if match_r != last_r:
+
                 print()
                 print('match_r')
                 print(match_r)
@@ -10536,7 +10665,11 @@ while running:
                 last_r = match_r
                 message += match_r
 
+                print(len(message))
+                print(rainbow_speed)
+
             if match_l != last_l:
+
                 print()
                 print('match_l')
                 print(match_l)
@@ -10548,6 +10681,11 @@ while running:
                 send_sign_to_keyboard(match_l, HELD_LEFT)
                 last_l = match_l
                 message += match_l
+
+                print(len(message))
+                print(rainbow_speed)
+
+
 
 
 
@@ -11117,30 +11255,7 @@ while running:
 
 
 
-    #####bong#####
-    x = screen_width - screen_width/8
-    y = screen_height - screen_height/8
 
-    xs = 30
-    ys = 30
-
-    design = pygame.Rect(x, y, xs, ys)
-    design_i = pygame.Rect(x, y, int(xs/2), int(ys/2))
-    pygame.draw.rect(screen, (100, 10, 100), design)
-    pygame.draw.rect(screen, (0, 0, 0), design_i)
-
-    if design.collidepoint((mx, my)):
-
-        if click:
-            print('bong')
-            bong_on += 1
-            bong_on = bong_on%2
-
-            print("bong_on")
-            print(bong_on)
-
-
-            click = False
 
 
 
@@ -11168,6 +11283,9 @@ while running:
 
 
             click = False
+
+
+
 
 
     #####rainbow#####
@@ -11192,6 +11310,46 @@ while running:
 
 
             click = False
+
+
+
+
+
+
+    #####typing_mode#####
+    x = screen_width/2
+    y = screen_height/8
+
+    xs = 50
+    ys = 50
+
+    design = pygame.Rect(x, y, xs, ys)
+    design_i = pygame.Rect(x, y, int(xs/2), int(ys/2))
+    pygame.draw.rect(screen, (255, 255, 0), design)
+    pygame.draw.rect(screen, (0, 255, 255), design_i)
+
+    if design.collidepoint((mx, my)):
+
+        lesson_t = lable_font.render(str(typing_mode), True, value_color[0])
+        screen.blit(lesson_t, (x, y))
+
+        if click:
+
+            print('typing mode')
+
+            typing_mode += 1
+            typing_mode = typing_mode%typing_max
+
+
+
+
+            print(typing_mode)
+
+
+            click = False
+
+
+
 
 
 
