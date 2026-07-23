@@ -476,19 +476,13 @@ pygame.camera.init()
 signame = "Chaotomata"
 
 
-
-
-
-
-signame = "Embassy"
-
-
-
-
 signame = 'Chal'
 
 
 signame = "Theophilis"
+
+
+signame = "Embassy"
 
 
 
