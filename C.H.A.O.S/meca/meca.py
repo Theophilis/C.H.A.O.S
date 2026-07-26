@@ -479,9 +479,23 @@ pygame.camera.init()
 signame = 'Chal'
 
 
+
+
+
+
+
+
+
+
+###god bless you###
 signame = "Theophilis"
 
 
+
+
+
+
+## god protect you##
 signame = "Embassy"
 
 
