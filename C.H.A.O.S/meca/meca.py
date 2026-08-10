@@ -466,27 +466,8 @@ pygame.camera.init()
 
 
 
-
-
-
-
-
-
-
-
-
-
-signame = 'Chal'
-
-
-
-
-
-###god bless you###
-signame = "Theophilis"
-
-
-
+#### i love you ####
+signame = "Chaotomata"
 
 
 
@@ -497,14 +478,17 @@ signame = "Embassy"
 
 
 
+###god bless you###
+signame = "Theophilis"
 
 
-#### i love you ####
-signame = "Chaotomata"
+
+
+signame = 'Chal'
 
 
 
-#ava#
+#avixia#
 signame = "Lucy"
 
 
@@ -11464,13 +11448,13 @@ while running:
                 # men = 0
 
 
-            elif event.key == pygame.K_F1:
+            elif event.key == pygame.K_1:
 
                 print("wu")
                 phrase = ''
 
 
-            elif event.key == pygame.K_F2:
+            elif event.key == pygame.K_2:
 
                 if ambient == 0:
                     array_past = hand_array.copy()
@@ -11482,9 +11466,7 @@ while running:
 
 
 
-
-
-            elif event.key == pygame.K_F3:
+            elif event.key == pygame.K_3:
 
                 right_open_hand_mask, right_box = capture_open_hand_mask(
 
@@ -11523,7 +11505,7 @@ while running:
                     print("exclusion calibration failed")
 
 
-            elif event.key == pygame.K_F4:
+            elif event.key == pygame.K_4:
                 if ambient == 1:
                     calibrate_ambient(hand_array_raw)
                     array_past = correct_ambient_light(hand_array_raw).copy()
@@ -11535,7 +11517,7 @@ while running:
                     print("detector baseline reset")
 
 
-            elif event.key == pygame.K_F8:
+            elif event.key == pygame.K_8:
                 calibrate_dc4_buttons(hand_array)
 
 
