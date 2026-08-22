@@ -466,20 +466,6 @@ pygame.camera.init()
 
 
 
-#### i love you ####
-signame = "Chaotomata"
-
-
-
-
-## god protect you##
-signame = "Embassy"
-
-
-
-
-###god bless you###
-signame = "Theophilis"
 
 
 
@@ -490,6 +476,25 @@ signame = 'Chal'
 
 #avixia#
 signame = "Lucy"
+
+
+
+
+
+
+#### i love you ####
+signame = "Chaotomata"
+
+
+
+###god bless you###
+signame = "Theophilis"
+
+
+
+
+## god protect you##
+signame = "Embassy"
 
 
 
