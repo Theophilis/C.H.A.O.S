@@ -500,6 +500,12 @@ signame = "Embassy"
 
 
 
+signame = "Szenddaria"
+
+
+
+
+
 ###theo screen###
 screen_width, screen_height = 1280, 960
 
