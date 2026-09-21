@@ -474,8 +474,6 @@ signame = 'Chal'
 
 
 
-#avixia#
-signame = "Lucy"
 
 
 
@@ -495,6 +493,12 @@ signame = "Theophilis"
 
 ## god protect you##
 signame = "Embassy"
+
+
+
+
+#avixia#
+signame = "Lucy"
 
 
 
@@ -4233,935 +4237,671 @@ GLYPH_MAP = {
 
 
 
-glyphs = 1
-message_len = 150
 
 
-if glyphs == 1:
+#### HEMOGLOBIN GLYPH WRITE ####
 
+GLYPH_MAP = {
+    'a': draw_a, 'b': draw_b, 'c': draw_c, 'd': draw_d, 'e': draw_e,
+    'f': draw_f, 'g': draw_g, 'h': draw_h, 'i': draw_i, 'j': draw_j,
+    'k': draw_k, 'l': draw_l, 'm': draw_m, 'n': draw_n, 'o': draw_o,
+    'p': draw_p, 'q': draw_q, 'r': draw_r, 's': draw_s, 't': draw_t,
+    'u': draw_u, 'v': draw_v, 'w': draw_w, 'x': draw_x, 'y': draw_y,
+    'z': draw_z,
+}
 
-    # --- use your existing GLYPH_MAP = {'a': draw_a, ...} ---
-
-    def _poly_signed_area(pts):
-        """Signed area (x,y). Negative => clockwise in screen coords (y down) depends on convention."""
-        # We'll use standard shoelace; then we can test both and force a direction by checking the loop.
-        x = np.array([p[0] for p in pts], dtype=np.float64)
-        y = np.array([p[1] for p in pts], dtype=np.float64)
-        return 0.5 * np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
-
-    def star_loop_vertices(cx, cy, R):
-        """
-        6-vertex star loop (outline) as a closed polyline.
-        IMPORTANT: y grows downward, so angle 270 is "up".
-        """
-        # These angles produce a nice hexagram loop. We'll reorder later anyway.
-        ang = np.deg2rad([270, 330, 30, 90, 150, 210])  # starts near "top", goes around
-        xs = cx + R * np.cos(ang)
-        ys = cy + R * np.sin(ang)  # sin positive = down
-        pts = list(zip(xs, ys))
-        pts.append(pts[0])
-        return pts
-
-    def sample_polyline(points, step):
-        out = []
-        for i in range(len(points) - 1):
-            x0, y0 = points[i]
-            x1, y1 = points[i + 1]
-            dx = x1 - x0
-            dy = y1 - y0
-            seg_len = float(np.hypot(dx, dy))
-            if seg_len < 1e-9:
-                continue
-            n = max(1, int(seg_len // step))
-            for k in range(n):
-                t = (k * step) / seg_len
-                out.append((x0 + t * dx, y0 + t * dy))
-        return out
+hemoglobin_page_0 = -1
 
 
 
 
-    def reorder_start_top_left_clockwise(loop_pts):
-        """
-        loop_pts: closed polyline [(x,y), ..., (x,y)=first]
-        Returns closed polyline starting at the TOP-LEFT point and going clockwise.
-        """
-        pts = loop_pts[:-1]  # remove closure
-
-        # start = smallest y, then smallest x  (top-left in screen coords)
-        start_i = min(range(len(pts)), key=lambda i: (pts[i][1], pts[i][0]))
-
-        pts = pts[start_i:] + pts[:start_i]
-        pts_closed = pts + [pts[0]]
-
-        # force clockwise: if area is positive, reverse order (keep same start)
-        x = np.array([p[0] for p in pts_closed], dtype=np.float64)
-        y = np.array([p[1] for p in pts_closed], dtype=np.float64)
-        area = 0.5 * np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
-
-        if area > 0:
-            # reverse while preserving start point pts[0]
-            pts_rev = [pts[0]] + list(reversed(pts[1:]))
-            pts_closed = pts_rev + [pts_rev[0]]
-
-        return pts_closed
-
-
-
-    def canvas_write_star_path_aligned(
+def canvas_write_hemoglobin(
         message,
-        size, l_size, x_space, y_space,
-        offset_size, density,
-        x_o, y_o,
         canvas,
-        *,
-        base_radius_px=210.0,   # MUST match your flow_state star radius
-        center_xy=(250.0, 250.0),  # for 500x500
-        loop=True,
-    ):
-        """
-        Writes glyphs along the SAME Star of David geometry used in your flow_state.
-        Starts at TOP-LEFT of the star path and moves CLOCKWISE.
-
-        Keeps the SAME coordinate transforms as your canvas_write() so glyphs aren't inverted.
-        """
-
-        rainbow_reset = 0
-        m_list = list(message.lower())
-
-        # --- match your canvas_write() transform ---
-        canvas = np.rot90(canvas)
-        canvas = np.flipud(canvas)
-
-        h, w = canvas.shape[:2]
-        x_shift = 128
-        y_shift = 16
-
-        # Align to the flow-state star: same center & radius, but allow an (x_o,y_o) offset
-        cx0, cy0 = center_xy
-        cx = cx0 + x_o - x_shift
-        cy = cy0 + y_o - y_shift
-        R = float(base_radius_px)
-
-        # Build loop and force start/top-left + clockwise
-        loop_pts = star_loop_vertices(cx, cy, R)
-        loop_pts = reorder_start_top_left_clockwise(loop_pts)
-        loop_pts = [(y, x) for (x, y) in loop_pts]
-
-        # Sample along the loop
-        step = max(1.0, float(l_size + x_space))
-        path_pts = sample_polyline(loop_pts, step=step)
-
-        if not path_pts:
-            canvas = np.flipud(canvas)
-            canvas = np.rot90(canvas, 3)
-            return canvas, rainbow_reset
-
-        idx = 0
-        for ch in m_list:
-            if ch == ' ':
-                idx += 1
-                continue
-
-            fn = GLYPH_MAP.get(ch)
-            if fn is None:
-                idx += 1
-                continue
-
-            if idx >= len(path_pts):
-                if not loop:
-                    break
-                idx = 0
-                rainbow_reset = 1
-
-            px, py = path_pts[idx]
-            idx += 1
-
-            # center glyph at path point
-            corner = (int(px - l_size / 2), int(py - l_size / 2))
-
-            # stamp with your "density" offsets
-            for off in (0, offset_size, density):
-                fn(l_size, canvas, (corner[0] + off, corner[1]))
-                fn(l_size, canvas, (corner[0] - off, corner[1]))
-                fn(l_size, canvas, (corner[0], corner[1] + off))
-                fn(l_size, canvas, (corner[0], corner[1] - off))
-
-        # --- undo transform ---
-        canvas = np.flipud(canvas)
-        canvas = np.rot90(canvas, 3)
-
-        return canvas, rainbow_reset
-
-
-
-
-
-
-    def star_loop_vertices(cx, cy, R):
-        # closed loop points (x,y); order doesn’t matter because we reorder start later
-        ang = np.deg2rad([270, 330, 30, 90, 150, 210])
-        xs = cx + R * np.cos(ang)
-        ys = cy + R * np.sin(ang)
-        pts = list(zip(xs, ys))
-        pts.append(pts[0])
-        return pts
-
-    def sample_polyline(points, step):
-        out = []
-        for i in range(len(points) - 1):
-            x0, y0 = points[i]
-            x1, y1 = points[i + 1]
-            dx = x1 - x0
-            dy = y1 - y0
-            seg_len = float(np.hypot(dx, dy))
-            if seg_len < 1e-9:
-                continue
-            n = max(1, int(seg_len // step))
-            for k in range(n):
-                t = (k * step) / seg_len
-                out.append((x0 + t * dx, y0 + t * dy))
-        return out
-
-    def reorder_start_top_left_clockwise(loop_pts):
-        pts = loop_pts[:-1]
-
-        # start at top-left (min y, then min x)
-        start_i = min(range(len(pts)), key=lambda i: (pts[i][1], pts[i][0]))
-        pts = pts[start_i:] + pts[:start_i]
-        pts_closed = pts + [pts[0]]
-
-        # force clockwise (area test)
-        x = np.array([p[0] for p in pts_closed], dtype=np.float64)
-        y = np.array([p[1] for p in pts_closed], dtype=np.float64)
-        area = 0.5 * np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
-        if area > 0:
-            pts_rev = [pts[0]] + list(reversed(pts[1:]))
-            pts_closed = pts_rev + [pts_rev[0]]
-
-        return pts_closed
-
-
-
-    def build_star_spiral_points(
-        l_size, x_space,
-        cx, cy,
-        base_radius_px,
-        in_step_px,
-        min_radius_px,
-    ):
-        step = max(1.0, float(l_size + x_space))
-        pts_all = []
-
-        R = float(base_radius_px)
-        while R >= float(min_radius_px):
-            loop_pts = star_loop_vertices(cx, cy, R)          # (x,y) original
-            loop_pts = [(y, x) for (x, y) in loop_pts]        # to transformed space
-            loop_pts = reorder_start_top_left_clockwise(loop_pts)
-            ring_pts = sample_polyline(loop_pts, step=step)
-            if not ring_pts:
-                break
-            pts_all.extend(ring_pts)
-            R -= float(in_step_px)
-
-        return pts_all
-
-
-    ###object of power###use with caution###
-    def canvas_write_star_spiral_wholy(
-        message,
-        size, l_size, x_space, y_space,
-        offset_size, density,
-        x_o, y_o,
-        canvas,
-        *,
-        base_radius_px=210.0,
-        center_xy=(250.0, 250.0),
-        x_shift=128,
-        y_shift=16,
-        in_step_px=18.0,
-        min_radius_px=60.0,
-        wrap_message=True,     # if False, will stop when message ends
-    ):
-        """
-        Pure renderer:
-        - builds the entire spiral path (all rings) each call
-        - types along the entire spiral each call
-        - does NOT assume any saved state in flow
-        """
-        m = message.lower()
-        if len(m) == 0:
-            return canvas, 0
-
-        # match your canvas_write() transform
-        canvas = np.rot90(canvas)
-        canvas = np.flipud(canvas)
-
-        cx0, cy0 = center_xy
-        cx = cx0 + x_o - x_shift
-        cy = cy0 + y_o - y_shift
-
-        spiral_pts = build_star_spiral_points(
-            l_size, x_space,
-            cx, cy,
-            base_radius_px,
-            in_step_px,
-            min_radius_px,
-        )
-
-        rainbow_reset = 0
-        if not spiral_pts:
-            canvas = np.flipud(canvas)
-            canvas = np.rot90(canvas, 3)
-            return canvas, rainbow_reset
-
-        # draw exactly the spiral length (or until message ends if wrap_message=False)
-        for i, (px, py) in enumerate(spiral_pts):
-            if wrap_message:
-                ch = m[i % len(m)]
-            else:
-                if i >= len(m):
-                    break
-                ch = m[i]
-
-            if ch == ' ':
-                continue
-
-            fn = GLYPH_MAP.get(ch)
-            if fn is None:
-                continue
-
-            corner = (int(px - l_size / 2), int(py - l_size / 2))
-
-            for off in (0, offset_size, density):
-                fn(l_size, canvas, (corner[0] + off, corner[1]))
-                fn(l_size, canvas, (corner[0] - off, corner[1]))
-                fn(l_size, canvas, (corner[0], corner[1] + off))
-                fn(l_size, canvas, (corner[0], corner[1] - off))
-
-        # undo transform
-        canvas = np.flipud(canvas)
-        canvas = np.rot90(canvas, 3)
-        return canvas, rainbow_reset
-
-
-
-    def canvas_write_star_spiral(
-        message,
-        size, l_size, x_space, y_space,
-        offset_size, density,
-        x_o, y_o,
-        canvas=0,
-        *,
-        base_radius_px=210.0,
-        in_step_px=18.0,
-        min_radius_px=60.0,
-        x_shift=128,     # you said these shifts look best
-        y_shift=16,
-        wrap_message=False,   # True => repeat message to fill whole spiral
-        start_on_sample_top_left=True,  # keeps start stable
-    ):
-        """
-        Like canvas_write(), but lays text along nested Star-of-David loops.
-        - Outer loop first, then steps inward after each full loop.
-        - Draws onto `canvas` (your flow array) in the same transformed coordinate system
-          as canvas_write (rot90 + flipud), then un-transforms at end.
-        - Does NOT keep state; it renders from `message` each call.
-        """
-        rainbow_reset = 0
-        m = message.lower()
-        if len(m) == 0:
-            return canvas, rainbow_reset
-
-        # --- match your canvas_write() coordinate transform ---
-        canvas = np.rot90(canvas)
-        canvas = np.flipud(canvas)
-
-        h, w = canvas.shape[:2]
-
-        # Your star is aligned relative to the canvas center, then offset by x_o/y_o and your shifts
-        cx0 = (w - 1) / 2.0
-        cy0 = (h - 1) / 2.0
-
-        cx = cx0 + x_o - x_shift
-        cy = cy0 + y_o - y_shift
-
-        step = max(1.0, float(l_size + x_space))
-
-        # --- build all spiral points (ring0 + ring1 + ...) ---
-        spiral_pts = []
-        R = float(base_radius_px)
-
-        while R >= float(min_radius_px):
-            loop_pts = star_loop_vertices(cx, cy, R)       # (x,y) in original space
-            loop_pts = [(y, x) for (x, y) in loop_pts]     # map into transformed space (transpose)
-            loop_pts = reorder_start_top_left_clockwise(loop_pts)
-
-            ring_pts = sample_polyline(loop_pts, step=step)
-            if not ring_pts:
-                break
-
-            # optional: start each ring at the most top-left sampled point (stabilizes visual start)
-            if start_on_sample_top_left:
-                si = min(range(len(ring_pts)), key=lambda i: (ring_pts[i][1], ring_pts[i][0]))
-                ring_pts = ring_pts[si:] + ring_pts[:si]
-
-            spiral_pts.extend(ring_pts)
-
-            R -= float(in_step_px)
-
-
-
-        spiral_pts = spiral_pts[::-1]
-
-        if not spiral_pts:
-            canvas = np.flipud(canvas)
-            canvas = np.rot90(canvas, 3)
-            return canvas, rainbow_reset
-
-        # --- draw message along spiral points ---
-        n_slots = len(spiral_pts)
-        if wrap_message:
-            n_draw = n_slots
-        else:
-            n_draw = min(len(m), n_slots)
-
-        for i in range(n_draw):
-            ch = m[i % len(m)] if wrap_message else m[i]
-            if ch == ' ':
-                continue
-
-            fn = GLYPH_MAP.get(ch)
-            if fn is None:
-                continue
-
-            px, py = spiral_pts[i]
-            corner = (int(px - l_size / 2), int(py - l_size / 2))
-
-            for off in (0, offset_size, density):
-                fn(l_size, canvas, (corner[0] + off, corner[1]))
-                fn(l_size, canvas, (corner[0] - off, corner[1]))
-                fn(l_size, canvas, (corner[0], corner[1] + off))
-                fn(l_size, canvas, (corner[0], corner[1] - off))
-
-        # --- undo transform ---
-        canvas = np.flipud(canvas)
-        canvas = np.rot90(canvas, 3)
-
-        print(len(message))
-        print(message)
-
-        if len(message) > 137:
-            rainbow_reset = 1
-
-        return canvas, rainbow_reset
-
-
-
-    typed_total_0 = 0
-
-    def canvas_write_star_spiral_shrink(
-        message,
-        size, l_size, x_space, y_space,
-        offset_size, density,
-        x_o, y_o,
-        canvas=0,
-        *,
-        base_radius_px=210.0,
-        in_step_px=18.0,
-        min_radius_px=60.0,
-        x_shift=128,
-        y_shift=16,
-        wrap_message=False,
-        start_on_sample_top_left=True,
-
-        # NEW: shrink behavior
-        shrink_per_ring=0.7,   # 0.90–0.97 feels good
-        min_l_size=12,          # don’t go smaller than this
-    ):
-
-        global typed_total, typed_total_0
-        rainbow_reset = 0
-        m = message.lower()
-        if len(m) == 0:
-            return canvas, rainbow_reset
-
-        canvas = np.rot90(canvas)
-        canvas = np.flipud(canvas)
-
-        h, w = canvas.shape[:2]
-        cx0 = (w - 1) / 2.0
-        cy0 = (h - 1) / 2.0
-
-        cx = cx0 + x_o - x_shift
-        cy = cy0 + y_o - y_shift
-
-        spiral_pts = []
-        spiral_sizes = []  # store per-point l_size to use when drawing
-
-        R = float(base_radius_px)
-        ring_idx = 0
-
-        while R >= float(min_radius_px):
-            # compute ring-specific glyph size
-            ring_l = int(round(l_size * (shrink_per_ring ** ring_idx)))
-            ring_l = max(int(min_l_size), ring_l)
-
-            # ring-specific spacing step (shrink with glyph)
-            ring_step = max(1.0, float(ring_l + x_space))
-
-            loop_pts = star_loop_vertices(cx, cy, R)       # (x,y)
-            loop_pts = [(y, x) for (x, y) in loop_pts]     # transpose into transformed canvas space
-            loop_pts = reorder_start_top_left_clockwise(loop_pts)
-
-            ring_pts = sample_polyline(loop_pts, step=ring_step)
-            if not ring_pts:
-                break
-
-            if start_on_sample_top_left:
-                si = min(range(len(ring_pts)), key=lambda i: (ring_pts[i][1], ring_pts[i][0]))
-                ring_pts = ring_pts[si:] + ring_pts[:si]
-
-            spiral_pts.extend(ring_pts)
-            spiral_sizes.extend([ring_l] * len(ring_pts))
-
-            R -= float(in_step_px)
-            ring_idx += 1
-
-            # optional early stop if glyphs are tiny
-            if ring_l <= min_l_size:
-                # still allow a couple inner rings if you want; otherwise break
-                pass
-
-        if not spiral_pts:
-            canvas = np.flipud(canvas)
-            canvas = np.rot90(canvas, 3)
-            return canvas, rainbow_reset
-
-        n_slots = len(spiral_pts)
-
-        message_len = len(spiral_pts)
-
-        # trigger “page full” exactly like your other writer
-        if typed_total%message_len == 0:
-            print('loop')
-            print(typed_total)
-            if typed_total == typed_total_0:
-                yeah = 1
-
-            else:
-                typed_total_0 = typed_total
-                print(typed_total_0)
-                if rainbow_reset == 0:
-                    rainbow_reset = 1
-                    print('reset')
-                    print(rainbow_reset)
-
-        if len(m) > n_slots:
-            m = m[-n_slots:]
-
-        n_draw = n_slots if wrap_message else min(len(m), n_slots)
-
-        spiral_pts = spiral_pts[::-1]
-
-
-        for i in range(n_draw):
-            ch = m[i % len(m)] if wrap_message else m[i]
-            if ch == ' ':
-                continue
-
-            fn = GLYPH_MAP.get(ch)
-            if fn is None:
-                continue
-
-            px, py = spiral_pts[i]
-            ring_l = spiral_sizes[i]
-
-            # optional: shrink boldness with ring size
-            ring_offset = 0 if ring_l < 18 else offset_size
-            ring_density = 0 if ring_l < 18 else density
-
-            corner = (int(px - ring_l / 2), int(py - ring_l / 2))
-
-            for off in (0, ring_offset, ring_density):
-                fn(ring_l, canvas, (corner[0] + off, corner[1]))
-                fn(ring_l, canvas, (corner[0] - off, corner[1]))
-                fn(ring_l, canvas, (corner[0], corner[1] + off))
-                fn(ring_l, canvas, (corner[0], corner[1] - off))
-
-        canvas = np.flipud(canvas)
-        canvas = np.rot90(canvas, 3)
-
-        return canvas, rainbow_reset
-
-
-
-
-
-
-
-
-    def _sample_segment_with_step(A, B, step):
-        """
-        Sample points along segment A->B with spacing ~step.
-        A,B are (x,y) floats.
-        Returns list of (x,y) floats including A and B.
-        """
-        ax, ay = A
-        bx, by = B
-        dx = bx - ax
-        dy = by - ay
-        L = float(np.hypot(dx, dy))
-        if L < 1e-9:
+        l_size=28,
+        x_space=7,
+        offset_size=1,
+        density=1,
+
+        lobe_offset_x=95,
+        lobe_offset_y=90,
+
+        lobe_rx=82,
+        lobe_ry=68,
+
+        layers=6,
+        layer_step=9,
+
+        organic=0.15,
+        bridge_bow=36,
+
+        spacing_scale=0.60
+):
+
+    global rainbow_reset
+
+    # ==========================================================
+    # GLYPHS
+    # ==========================================================
+
+    glyph_map = {
+        'a': draw_a,
+        'b': draw_b,
+        'c': draw_c,
+        'd': draw_d,
+        'e': draw_e,
+        'f': draw_f,
+        'g': draw_g,
+        'h': draw_h,
+        'i': draw_i,
+        'j': draw_j,
+        'k': draw_k,
+        'l': draw_l,
+        'm': draw_m,
+        'n': draw_n,
+        'o': draw_o,
+        'p': draw_p,
+        'q': draw_q,
+        'r': draw_r,
+        's': draw_s,
+        't': draw_t,
+        'u': draw_u,
+        'v': draw_v,
+        'w': draw_w,
+        'x': draw_x,
+        'y': draw_y,
+        'z': draw_z,
+    }
+
+
+    # ==========================================================
+    # EVEN CURVE SAMPLER
+    # ==========================================================
+
+    def sample_even(points, step):
+
+        pts = np.asarray(points, dtype=np.float32)
+
+        if len(pts) < 2:
             return []
 
-        # number of steps based on desired spacing
-        n = max(1, int(L // step))
-        pts = []
-        for i in range(n + 1):
-            t = (i * step) / L
-            if t >= 1.0:
-                pts.append((bx, by))
-                break
-            pts.append((ax + t * dx, ay + t * dy))
-        return pts
+        delta = pts[1:] - pts[:-1]
+
+        segment_lengths = np.sqrt(
+            np.sum(delta * delta, axis=1)
+        )
+
+        cumulative = np.concatenate((
+            [0.0],
+            np.cumsum(segment_lengths)
+        ))
+
+        total = float(cumulative[-1])
+
+        if total <= 0:
+            return []
+
+        distances = np.arange(
+            0.0,
+            total,
+            max(1.0, float(step))
+        )
+
+        xs = np.interp(
+            distances,
+            cumulative,
+            pts[:, 0]
+        )
+
+        ys = np.interp(
+            distances,
+            cumulative,
+            pts[:, 1]
+        )
+
+        return list(zip(xs, ys))
 
 
-    def _offsets_signed(spread, max_k):
-        """
-        Deterministic offset ordering:
-          -far left ... -near left, 0, +near right ... +far right
-        This tends to feel natural visually (and avoids "all right side first").
-        """
-        offs = []
-        for k in range(max_k, 0, -1):
-            offs.append(-k * spread)
-        offs.append(0.0)
-        for k in range(1, max_k + 1):
-            offs.append(+k * spread)
-        return offs
+    # ==========================================================
+    # ONE HEMOGLOBIN LOBE
+    # ==========================================================
 
-
-    def _lane_basis(theta):
-        """
-        Unit direction (ux,uy) and unit normal (nx,ny) for lane direction theta.
-        """
-        ux = float(np.cos(theta))
-        uy = float(np.sin(theta))
-        nx = -uy
-        ny = ux
-        return ux, uy, nx, ny
-
-
-
-    def build_bethlehem_lane_slots_phased(
-            *,
-            cx, cy,
-            long_len,
-            short_len,
-            l_size,
-            x_space,
-            n_layers=7,
-            shrink_per_layer=0.86,
-            lane_width_layers=3,
-            lane_spread_px=10.0,
-            diag_scale=1.0,
-
-            # spacing safety
-            spacing_scale=0.45,
-            stamp_margin_px=3.0,
-            offset_size=1,
-            density=1,
-
-            reverse_all=False
+    def make_lobe(
+            cx,
+            cy,
+            rx,
+            ry,
+            start_angle
     ):
-        TH_VERT = np.deg2rad(90)
-        TH_HORZ = np.deg2rad(0)
-        TH_D1 = np.deg2rad(45)  # TL->BR
-        TH_D2 = np.deg2rad(-45)  # BL->TR
 
-        lanes = [
-            ("V", TH_VERT, long_len),
-            ("H", TH_HORZ, long_len),
-            ("D1", TH_D1, short_len * diag_scale),
-            ("D2", TH_D2, short_len * diag_scale),
-        ]
+        t = np.linspace(
+            start_angle,
+            start_angle + 2.0 * np.pi,
+            400
+        )
 
-        def basis(theta):
-            ux = float(np.cos(theta))
-            uy = float(np.sin(theta))
-            nx = -uy
-            ny = ux
-            return nx, ny
+        x = cx + rx * np.cos(t)
+        y = cy + ry * np.sin(t)
 
-        def endpoints(name, L):
-            if name == "V":
-                return (cx, cy - L), (cx, cy + L)  # top->bottom
-            if name == "H":
-                return (cx - L, cy), (cx + L, cy)  # left->right
-            if name == "D1":
-                return (cx - L, cy - L), (cx + L, cy + L)  # TL->BR
-            return (cx - L, cy + L), (cx + L, cy - L)  # BL->TR
+        # protein-like asymmetry
+        x += (
+            rx
+            * organic
+            * np.cos(2.0 * t)
+        )
 
-        slots = []
+        y += (
+            ry
+            * organic
+            * 0.60
+            * np.sin(2.0 * t)
+        )
 
-        # phase bands: 0=centerline, 1=±1, 2=±2 ...
-        for phase_k in range(0, lane_width_layers + 1):
-            for name, th, L in lanes:
-                nx, ny = basis(th)
-                A0, B0 = endpoints(name, L)
-
-                for layer in range(n_layers):
-                    ring_l = int(round(l_size * (shrink_per_layer ** layer)))
-                    if ring_l < 8:
-                        break
-
-                    # triangle narrowing inward
-                    max_k_layer = max(0, lane_width_layers - (layer // 2))
-                    if phase_k > max_k_layer:
-                        continue
-
-                    spread = float(lane_spread_px) * (shrink_per_layer ** layer)
-
-                    # offsets for this phase
-                    if phase_k == 0:
-                        offsets = [0.0]
-                    else:
-                        offsets = [-phase_k * spread, +phase_k * spread]
-
-                    stamp_footprint = 2.0 * max(offset_size, density)
-                    step = (
-                            float(ring_l) + float(x_space) +
-                            float(ring_l) * float(spacing_scale) +
-                            float(stamp_footprint) +
-                            float(stamp_margin_px)
-                    )
-                    step = max(1.0, step)
-
-                    for off in offsets:
-                        A = (A0[0] + off * nx, A0[1] + off * ny)
-                        B = (B0[0] + off * nx, B0[1] + off * ny)
-
-                        pts = _sample_segment_with_step(A, B, step=step)
-                        for (px, py) in pts:
-                            slots.append((px, py, ring_l))
-
-        if reverse_all:
-            slots = slots[::-1]
-
-        return slots
+        return list(zip(x, y))
 
 
+    # ==========================================================
+    # BRIDGE BETWEEN TWO LOBES
+    # ==========================================================
 
-    def canvas_write_bethlehem_lanes(
-            message,
-            canvas,
-            *,
-            slots,  # [(x,y,ring_l), ...] original coords
-            offset_size=1,
-            density=1,
-            wrap_message=False
+    def make_bridge(
+            A,
+            B,
+            control
     ):
-        global typed_total, typed_total_0, rainbow_reset
+
+        ax, ay = A
+        bx, by = B
+        cx, cy = control
+
+        t = np.linspace(
+            0.0,
+            1.0,
+            120
+        )
+
+        omt = 1.0 - t
+
+        x = (
+            omt * omt * ax
+            + 2.0 * omt * t * cx
+            + t * t * bx
+        )
+
+        y = (
+            omt * omt * ay
+            + 2.0 * omt * t * cy
+            + t * t * by
+        )
+
+        return list(zip(x, y))
 
 
-        m = message.lower()
-        if len(m) == 0 or not slots:
-            return canvas, 0
+    # ==========================================================
+    # BUILD COMPLETE HEMOGLOBIN PATH
+    # ==========================================================
 
-        n_slots = len(slots)
-        print(n_slots)
+    original_h, original_w = canvas.shape[:2]
 
+    cx = (original_w - 1) / 2.0
+    cy = (original_h - 1) / 2.0
 
-        # trigger “page full” exactly like your other writer
-        if typed_total%n_slots == 0:
-            print('loop')
-            print(typed_total)
-            if typed_total == typed_total_0:
-                yeah = 1
-
-            else:
-                typed_total_0 = typed_total
-                print(typed_total_0)
-                if rainbow_reset == 0:
-                    rainbow_reset = 1
-                    print('reset')
-                    print(rainbow_reset)
-
-        if len(m) > n_slots:
-            m = m[-n_slots:]
+    slots = []
 
 
+    for layer in range(layers):
 
-        # smooth rolling window
-        if (not wrap_message) and (len(m) > n_slots):
-            m = m[-n_slots:]
+        # ------------------------------------------------------
+        # GLYPHS SHRINK TOWARD CENTER
+        # ------------------------------------------------------
 
-        canvas = np.rot90(canvas)
-        canvas = np.flipud(canvas)
-
-        # mapping for your rot90+flipud (square): (x,y)->(y,x)
-        def to_transformed(x, y):
-            return (y, x)
-
-        n_draw = n_slots if wrap_message else min(len(m), n_slots)
-
-        for i in range(n_draw):
-            ch = m[i % len(m)] if wrap_message else m[i]
-            if ch == ' ':
-                continue
-
-            fn = GLYPH_MAP.get(ch)
-            if fn is None:
-                continue
-
-            x, y, ring_l = slots[i]
-            tx, ty = to_transformed(x, y)
-
-            corner = (int(tx - ring_l / 2), int(ty - ring_l / 2))
-
-            # prevent overlap on small rings
-            ring_offset = 0 if ring_l < 20 else offset_size
-            ring_density = 0 if ring_l < 20 else density
-
-            for off in (0, ring_offset, ring_density):
-                fn(ring_l, canvas, (corner[0] + off, corner[1]))
-                fn(ring_l, canvas, (corner[0] - off, corner[1]))
-                fn(ring_l, canvas, (corner[0], corner[1] + off))
-                fn(ring_l, canvas, (corner[0], corner[1] - off))
-
-        canvas = np.flipud(canvas)
-        canvas = np.rot90(canvas, 3)
-
-        return canvas, n_slots
+        glyph_size = max(
+            12,
+            int(
+                round(
+                    l_size
+                    * (0.91 ** layer)
+                )
+            )
+        )
 
 
+        # ------------------------------------------------------
+        # LOBES SHRINK TOWARD CENTER
+        # ------------------------------------------------------
 
-    def canvas_write_bethlehem_lanes(
-            message,
-            canvas,
-            *,
-            slots,  # [(x,y,ring_l), ...] original coords
-            offset_size=1,
-            density=1,
-            wrap_message=False,
-            clip_mode="skip",  # "skip" or "clamp"
-    ):
-        global typed_total, typed_total_0, rainbow_reset
+        rx = (
+            lobe_rx
+            - layer * layer_step
+        )
 
-        m = message.lower()
-        if len(m) == 0 or not slots:
-            return canvas, 0
+        ry = (
+            lobe_ry
+            - layer * layer_step
+        )
 
-        n_slots = len(slots)
+        if rx < 25 or ry < 20:
+            break
 
 
-        if n_slots <= 0:
-            return canvas, 0
+        # ------------------------------------------------------
+        # MOVE INNER LAYERS TOWARD MOLECULE CENTER
+        # ------------------------------------------------------
 
-        # rolling window once
-        if (not wrap_message) and (len(m) > n_slots):
-            m = m[-n_slots:]
+        pull = layer * 3.0
 
-        # rotation clock: only once per new multiple, and not at 0
-        if (typed_total > 0) and (typed_total % n_slots == 0) and (typed_total != typed_total_0):
-            typed_total_0 = typed_total
-            rainbow_reset = 1
-            # print("reset", typed_total, "slots", n_slots)
 
-        # draw transform (matches your system)
-        canvas = np.rot90(canvas)
-        canvas = np.flipud(canvas)
+        centers = {
 
-        H, W = canvas.shape[:2]
+            "TL": (
+                cx - lobe_offset_x + pull,
+                cy - lobe_offset_y + pull
+            ),
 
-        # mapping for your rot90+flipud (square): (x,y)->(y,x)
-        def to_transformed(x, y):
-            return (y, x)
+            "TR": (
+                cx + lobe_offset_x - pull,
+                cy - lobe_offset_y + pull
+            ),
 
-        def fits(cx0, cy0, size):
-            pad = size
-            return (
-                    0 <= cx0 and
-                    0 <= cy0 and
-                    cx0 + pad < W and
-                    cy0 + pad < H
+            "BR": (
+                cx + lobe_offset_x - pull,
+                cy + lobe_offset_y - pull
+            ),
+
+            "BL": (
+                cx - lobe_offset_x + pull,
+                cy + lobe_offset_y - pull
+            ),
+        }
+
+
+        # ------------------------------------------------------
+        # LETTER SPACING
+        # ------------------------------------------------------
+
+        step = max(
+            1.0,
+            float(
+                glyph_size
+                + x_space
+            )
+            * spacing_scale
+        )
+
+
+        # ------------------------------------------------------
+        # BUILD THE FOUR PROTEIN LOBES
+        # ------------------------------------------------------
+
+        lobes = {}
+
+        for name in (
+            "TL",
+            "TR",
+            "BR",
+            "BL"
+        ):
+
+            lx, ly = centers[name]
+
+            # start on side facing center
+            inward_angle = np.arctan2(
+                cy - ly,
+                cx - lx
             )
 
-        n_draw = n_slots if wrap_message else min(len(m), n_slots)
+            dense = make_lobe(
+                lx,
+                ly,
+                rx,
+                ry,
+                inward_angle
+            )
 
-        for i in range(n_draw):
-            ch = m[i % len(m)] if wrap_message else m[i]
-            if ch == ' ':
-                continue
+            lobes[name] = sample_even(
+                dense,
+                step
+            )
 
-            fn = GLYPH_MAP.get(ch)
-            if fn is None:
-                continue
 
-            x, y, ring_l = slots[i]
-            tx, ty = to_transformed(x, y)
+        if any(
+            len(lobes[name]) == 0
+            for name in lobes
+        ):
+            continue
 
-            base_corner = (int(tx - ring_l / 2), int(ty - ring_l / 2))
 
-            # reduce stamp expansion for small glyphs
-            ring_offset = 0 if ring_l < 20 else offset_size
-            ring_density = 0 if ring_l < 20 else density
+        # ------------------------------------------------------
+        # INNER CONTACT POINTS
+        # ------------------------------------------------------
 
-            for off in (0, ring_offset, ring_density):
-                corners = (
-                    (base_corner[0] + off, base_corner[1]),
-                    (base_corner[0] - off, base_corner[1]),
-                    (base_corner[0], base_corner[1] + off),
-                    (base_corner[0], base_corner[1] - off),
+        inner = {
+            name: lobes[name][0]
+            for name in lobes
+        }
+
+
+        # ------------------------------------------------------
+        # BRIDGES AROUND THE CENTRAL HEME OPENING
+        # ------------------------------------------------------
+
+        bow = (
+            bridge_bow
+            + layer * 2.0
+        )
+
+
+        top_bridge = sample_even(
+
+            make_bridge(
+
+                inner["TL"],
+                inner["TR"],
+
+                (
+                    cx,
+                    cy - bow
                 )
+            ),
 
-                for cx0, cy0 in corners:
-                    if fits(cx0, cy0, ring_l):
-                        fn(ring_l, canvas, (cx0, cy0))
-                    else:
-                        if clip_mode == "clamp":
-                            # clamp so the entire glyph fits (prevents crash)
-                            cx1 = min(max(cx0, 0), W - ring_l)
-                            cy1 = min(max(cy0, 0), H - ring_l)
-                            fn(ring_l, canvas, (cx1, cy1))
-                        # clip_mode == "skip": do nothing (skip out-of-bounds stamp)
+            step
+        )
 
-        # undo transform
-        canvas = np.flipud(canvas)
-        canvas = np.rot90(canvas, 3)
 
+        right_bridge = sample_even(
+
+            make_bridge(
+
+                inner["TR"],
+                inner["BR"],
+
+                (
+                    cx + bow,
+                    cy
+                )
+            ),
+
+            step
+        )
+
+
+        bottom_bridge = sample_even(
+
+            make_bridge(
+
+                inner["BR"],
+                inner["BL"],
+
+                (
+                    cx,
+                    cy + bow
+                )
+            ),
+
+            step
+        )
+
+
+        left_bridge = sample_even(
+
+            make_bridge(
+
+                inner["BL"],
+                inner["TL"],
+
+                (
+                    cx - bow,
+                    cy
+                )
+            ),
+
+            step
+        )
+
+
+        # ------------------------------------------------------
+        # ONE CONTINUOUS MOLECULE ROUTE
+        # ------------------------------------------------------
+
+        route = []
+
+        route.extend(
+            lobes["TL"]
+        )
+
+        route.extend(
+            top_bridge[1:]
+        )
+
+        route.extend(
+            lobes["TR"]
+        )
+
+        route.extend(
+            right_bridge[1:]
+        )
+
+        route.extend(
+            lobes["BR"]
+        )
+
+        route.extend(
+            bottom_bridge[1:]
+        )
+
+        route.extend(
+            lobes["BL"]
+        )
+
+        route.extend(
+            left_bridge[1:]
+        )
+
+
+        # ------------------------------------------------------
+        # ADD THIS LAYER TO THE GLYPH LANES
+        # ------------------------------------------------------
+
+        for x, y in route:
+
+            slots.append((
+                float(x),
+                float(y),
+                int(glyph_size)
+            ))
+
+
+    # ==========================================================
+    # NOTHING TO DRAW
+    # ==========================================================
+
+    n_slots = len(slots)
+
+    if n_slots == 0:
+        return canvas, 0
+
+
+    # ==========================================================
+    # MESSAGE
+    # ==========================================================
+
+    m = message.lower()
+
+    # rolling window after molecule fills
+    if len(m) > n_slots:
+        m = m[-n_slots:]
+
+
+    # ==========================================================
+    # HEMOGLOBIN PAGE / RAINBOW RESET
+    #
+    # Function attribute means no separate global
+    # hemoglobin_page_0 variable is necessary.
+    # ==========================================================
+
+    if not hasattr(
+        canvas_write_hemoglobin,
+        "last_page"
+    ):
+        canvas_write_hemoglobin.last_page = 0
+
+
+    page = len(message) // n_slots
+
+
+    if (
+        len(message) > 0
+        and len(message) % n_slots == 0
+        and page != canvas_write_hemoglobin.last_page
+    ):
+
+        canvas_write_hemoglobin.last_page = page
+
+        rainbow_reset = 1
+
+
+    if len(m) == 0:
         return canvas, n_slots
 
 
-    size = 64
-    l_size = 32
-    x_space = 8
-    y_space = 16
-    offset_size = 1
-    density = 1
-    x_o = 128
-    y_o = 32 + water_line * (size + 16)
+    # ==========================================================
+    # CANVAS TRANSFORM
+    # ==========================================================
+
+    canvas = np.rot90(canvas)
+    canvas = np.flipud(canvas)
+
+    H, W = canvas.shape[:2]
 
 
+    # ==========================================================
+    # DRAW MESSAGE ACROSS HEMOGLOBIN
+    # ==========================================================
 
-    bethlehem_slots = build_bethlehem_lane_slots_phased(
-        cx=(l - 1) / 2.0,
-        cy=(h - 1) / 2.0,
-        long_len=min(h, l) * 0.48,
-        short_len=min(h, l) * 0.30,
-        l_size=l_size,
-        x_space=x_space,
-        n_layers=7,
-        shrink_per_layer=0.86,
-        lane_width_layers=3,
-        lane_spread_px=10.0,
-        diag_scale=1.0,
-        spacing_scale=0.45,
-        stamp_margin_px=3.0,
-        offset_size=offset_size,
-        density=density,
+    for i, ch in enumerate(m):
+
+        if i >= n_slots:
+            break
+
+        if ch == ' ':
+            continue
+
+
+        fn = glyph_map.get(ch)
+
+        if fn is None:
+            continue
+
+
+        x, y, glyph_size = slots[i]
+
+
+        # your established transformed mapping
+        tx = y
+        ty = x
+
+
+        corner_x = int(
+            tx - glyph_size / 2
+        )
+
+        corner_y = int(
+            ty - glyph_size / 2
+        )
+
+
+        # ------------------------------------------------------
+        # KEEP GLYPH INSIDE ARRAY
+        # ------------------------------------------------------
+
+        if (
+            corner_x < 0
+            or corner_y < 0
+            or corner_x + glyph_size >= W
+            or corner_y + glyph_size >= H
+        ):
+            continue
+
+
+        # ------------------------------------------------------
+        # SMALL INNER GLYPHS NEED LESS BOLDNESS
+        # ------------------------------------------------------
+
+        if glyph_size < 20:
+
+            offsets = (0,)
+
+        else:
+
+            offsets = (
+                0,
+                offset_size,
+                density
+            )
+
+
+        # ------------------------------------------------------
+        # STAMP GLYPH
+        # ------------------------------------------------------
+
+        for off in offsets:
+
+            fn(
+                glyph_size,
+                canvas,
+                (
+                    corner_x + off,
+                    corner_y
+                )
+            )
+
+            fn(
+                glyph_size,
+                canvas,
+                (
+                    corner_x - off,
+                    corner_y
+                )
+            )
+
+            fn(
+                glyph_size,
+                canvas,
+                (
+                    corner_x,
+                    corner_y + off
+                )
+            )
+
+            fn(
+                glyph_size,
+                canvas,
+                (
+                    corner_x,
+                    corner_y - off
+                )
+            )
+
+
+    # ==========================================================
+    # UNDO TRANSFORM
+    # ==========================================================
+
+    canvas = np.flipud(canvas)
+    canvas = np.rot90(
+        canvas,
+        3
     )
+
+
+    return canvas, n_slots
+
+
+
+
+
+
+
 
 
 
@@ -8934,151 +8674,17 @@ while running:
         hand_array = correct_ambient_light(hand_array_raw)
 
 
-    type = 6
-    ####water type####
-
-    if type == 1:
-        size = 64
-        l_size = 32
-        x_space = 8
-        y_space = 16
-        offset_size = 1
-        density = 1
-        x_o = 128
-        y_o = 32 + water_line* (size+16)
-
-
-        if len(message) > 0:
-            canvas , rainbow_reset = canvas_write(message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, flow)
-
-            # print()
-            # print("canvas")
-            # print(canvas)
-
-
-    if type == 2:
-        size = 64
-        l_size = 32
-        x_space = 8
-        y_space = 16
-        offset_size = 1
-        density = 1
-        x_o = 128
-        y_o = 32 + water_line* (size+16)
-
-
-        if len(message) > 0:
-            canvas, rainbow_reset = canvas_write_star_path_aligned(
-                message,
-                size, l_size, x_space, y_space,
-                offset_size, density,
-                x_o, y_o,
-                flow,
-                base_radius_px=210.0,  # match your flow_state star radius
-                center_xy=(250.0, 250.0),  # for 500x500
-                loop=True
-            )
-
-
-    if type == 3:
-        size = 64
-        l_size = 32
-        x_space = 8
-        y_space = 16
-        offset_size = 1
-        density = 1
-        x_o = 128
-        y_o = 32 + water_line* (size+16)
-
-
-        if len(message) > 0:
 
 
 
-            canvas, rainbow_reset = canvas_write_star_spiral_wholy(
-                message, size, l_size, x_space, y_space, offset_size, density, x_o, y_o, flow,
-                in_step_px=18.0, min_radius_px=60.0, wrap_message=True
-            )
+
+    if len(message) > 0:
+        flow, n_slots = canvas_write_hemoglobin(
+            message,
+            flow
+        )
 
 
-    if type == 4:
-        size = 64
-        l_size = 32
-        x_space = 8
-        y_space = 16
-        offset_size = 1
-        density = 1
-        x_o = 128
-        y_o = 32 + water_line * (size+16)
-
-
-        if len(message) > 0:
-
-
-            canvas, rainbow_reset = canvas_write_star_spiral(
-                message,
-                size, l_size, x_space, y_space, offset_size, density,
-                x_o, y_o,
-                flow,
-                base_radius_px=210.0,
-                in_step_px=l_size,
-                min_radius_px=60.0,
-                x_shift=128,
-                y_shift=16,
-                wrap_message=False,  # set True if you want to fill whole spiral every call
-            )
-
-
-    if type == 5:
-        size = 64
-        l_size = 32
-        x_space = 8
-        y_space = 16
-        offset_size = 1
-        density = 1
-        x_o = 128
-        y_o = 32 + water_line * (size+16)
-
-
-        if len(message) > 0:
-
-
-            canvas, rainbow_reset = canvas_write_star_spiral_shrink(
-                message,
-                size, l_size, x_space, y_space, offset_size, density,
-                x_o, y_o,
-                flow,
-                base_radius_px=210.0,
-                in_step_px=l_size,
-                min_radius_px=60.0,
-                x_shift=128,
-                y_shift=16,
-                wrap_message=False,  # set True if you want to fill whole spiral every call
-            )
-
-
-    if type == 6:
-        size = 64
-        l_size = 32
-        x_space = 8
-        y_space = 16
-        offset_size = 1
-        density = 1
-        x_o = 128
-        y_o = 32 + water_line * (size+16)
-
-
-        if len(message) > 0:
-
-
-            flow, n_slots = canvas_write_bethlehem_lanes(
-                message,
-                flow,
-                slots=bethlehem_slots,
-                offset_size=offset_size,
-                density=density,
-                wrap_message=False
-            )
 
 
 
@@ -9093,9 +8699,6 @@ while running:
 
         rainbow_reset = 0
 
-        if type < 5:
-            messages.append(message[::])
-            message = ''
 
 
         if ruler > 3:
