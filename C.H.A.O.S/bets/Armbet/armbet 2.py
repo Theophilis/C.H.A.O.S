@@ -1,7 +1,9 @@
 import pickle
 
-text = open('library/bible-niv.txt', 'r')
-read = text.read()
+with open('library/bible-Theophilis.txt', 'r', encoding='utf-8') as text:
+    read = text.read()
+
+
 
 read = read[1:]
 read = read.lower()
