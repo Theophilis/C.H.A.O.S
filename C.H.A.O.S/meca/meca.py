@@ -9734,14 +9734,14 @@ while running:
 
 
     ###stats###
-    times_limit = 20
+    times_limit = 32
     for x in range(len(times)):
         if x > times_limit:
             break
         lesson_t = text_font.render(str(times[x]), True, value_color[9])
         screen.blit(lesson_t, (screen_width / 128, screen_height / 16 + lesson_t.get_height()*x))
 
-    times_limit = 20
+    times_limit = 32
     sign_items = list(sign_bank.items())[::]
 
 
@@ -9784,7 +9784,7 @@ while running:
 
     for x in range(len(ladder_list)):
 
-        if x > 20:
+        if x > 32:
             break
 
 
