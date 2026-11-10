@@ -2133,7 +2133,7 @@ def Chaos_Window():
 
     name = "Theophilis Chaotomata"
 
-    phrase = ('god bless you jesus christ')
+    phrase = ('she asked us if well die please as we walk in box my heart open and break dear to begin')
 
     # phrase = ('est eir ess eat ead eop lis eca ese end eli ell rem efo eas een eac omm esu eth ene eig eep eav evi oes elf eph ect eal emp eet')
 
@@ -2491,7 +2491,7 @@ def Chaos_Window():
             #size 56 1 glyph    56
 
             # inside guide==7
-            target_cols = 16  # how many glyphs across you want
+            target_cols = 14  # how many glyphs across you want
             size_space_target = WIDTH / target_cols
             size = max(8, int(size_space_target / 8))  # rough conversion; tune
 
